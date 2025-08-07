@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PrivateIndexRouteImport } from './routes/private/index'
 import { Route as PostIndexRouteImport } from './routes/post/index'
 import { Route as PostPostIdIndexRouteImport } from './routes/post/$postId/index'
 
@@ -22,6 +23,11 @@ const AboutRoute = AboutRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivateIndexRoute = PrivateIndexRouteImport.update({
+  id: '/private/',
+  path: '/private/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PostIndexRoute = PostIndexRouteImport.update({
@@ -39,12 +45,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/post': typeof PostIndexRoute
+  '/private': typeof PrivateIndexRoute
   '/post/$postId': typeof PostPostIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/post': typeof PostIndexRoute
+  '/private': typeof PrivateIndexRoute
   '/post/$postId': typeof PostPostIdIndexRoute
 }
 export interface FileRoutesById {
@@ -52,20 +60,22 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/post/': typeof PostIndexRoute
+  '/private/': typeof PrivateIndexRoute
   '/post/$postId/': typeof PostPostIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/post' | '/post/$postId'
+  fullPaths: '/' | '/about' | '/post' | '/private' | '/post/$postId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/post' | '/post/$postId'
-  id: '__root__' | '/' | '/about' | '/post/' | '/post/$postId/'
+  to: '/' | '/about' | '/post' | '/private' | '/post/$postId'
+  id: '__root__' | '/' | '/about' | '/post/' | '/private/' | '/post/$postId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   PostIndexRoute: typeof PostIndexRoute
+  PrivateIndexRoute: typeof PrivateIndexRoute
   PostPostIdIndexRoute: typeof PostPostIdIndexRoute
 }
 
@@ -83,6 +93,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/private/': {
+      id: '/private/'
+      path: '/private'
+      fullPath: '/private'
+      preLoaderRoute: typeof PrivateIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/post/': {
@@ -106,6 +123,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   PostIndexRoute: PostIndexRoute,
+  PrivateIndexRoute: PrivateIndexRoute,
   PostPostIdIndexRoute: PostPostIdIndexRoute,
 }
 export const routeTree = rootRouteImport

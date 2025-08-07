@@ -13,9 +13,15 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  resolve: {
+    alias: {
+      '@': '/src',
+    },
+  },
   server: {
     watch: {
       usePolling: true,
     },
+    allowedHosts: ['localhost', '127.0.0.1', 'ee27bd4dc253.ngrok-free.app'],
   },
 });

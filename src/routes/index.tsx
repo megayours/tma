@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
+import { List, Section } from '@telegram-apps/telegram-ui';
 
 export const Route = createFileRoute('/')({
   component: Index,
@@ -6,8 +7,10 @@ export const Route = createFileRoute('/')({
 
 function Index() {
   return (
-    <div className="p-2">
-      <h3>Welcome Home!</h3>
+    <List className="p-2">
+      <Section>
+        <h1>Welcome Home!</h1>
+      </Section>
       <h1>Hello World</h1>
       <h2>Hello World</h2>
       <h3>Hello World</h3>
@@ -19,6 +22,6 @@ function Index() {
         Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.
         Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.
       </p>
-    </div>
+    </List>
   );
 }

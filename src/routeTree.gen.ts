@@ -14,6 +14,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as PrivateIndexRouteImport } from './routes/private/index'
 import { Route as PostIndexRouteImport } from './routes/post/index'
 import { Route as PostPostIdIndexRouteImport } from './routes/post/$postId/index'
+import { Route as AuthDiscordV1CallbackIndexRouteImport } from './routes/auth/discord/v1/callback/index'
 
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
@@ -40,6 +41,12 @@ const PostPostIdIndexRoute = PostPostIdIndexRouteImport.update({
   path: '/post/$postId/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthDiscordV1CallbackIndexRoute =
+  AuthDiscordV1CallbackIndexRouteImport.update({
+    id: '/auth/discord/v1/callback/',
+    path: '/auth/discord/v1/callback/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -47,6 +54,7 @@ export interface FileRoutesByFullPath {
   '/post': typeof PostIndexRoute
   '/private': typeof PrivateIndexRoute
   '/post/$postId': typeof PostPostIdIndexRoute
+  '/auth/discord/v1/callback': typeof AuthDiscordV1CallbackIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -54,6 +62,7 @@ export interface FileRoutesByTo {
   '/post': typeof PostIndexRoute
   '/private': typeof PrivateIndexRoute
   '/post/$postId': typeof PostPostIdIndexRoute
+  '/auth/discord/v1/callback': typeof AuthDiscordV1CallbackIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -62,13 +71,33 @@ export interface FileRoutesById {
   '/post/': typeof PostIndexRoute
   '/private/': typeof PrivateIndexRoute
   '/post/$postId/': typeof PostPostIdIndexRoute
+  '/auth/discord/v1/callback/': typeof AuthDiscordV1CallbackIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/post' | '/private' | '/post/$postId'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/post'
+    | '/private'
+    | '/post/$postId'
+    | '/auth/discord/v1/callback'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/post' | '/private' | '/post/$postId'
-  id: '__root__' | '/' | '/about' | '/post/' | '/private/' | '/post/$postId/'
+  to:
+    | '/'
+    | '/about'
+    | '/post'
+    | '/private'
+    | '/post/$postId'
+    | '/auth/discord/v1/callback'
+  id:
+    | '__root__'
+    | '/'
+    | '/about'
+    | '/post/'
+    | '/private/'
+    | '/post/$postId/'
+    | '/auth/discord/v1/callback/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -77,6 +106,7 @@ export interface RootRouteChildren {
   PostIndexRoute: typeof PostIndexRoute
   PrivateIndexRoute: typeof PrivateIndexRoute
   PostPostIdIndexRoute: typeof PostPostIdIndexRoute
+  AuthDiscordV1CallbackIndexRoute: typeof AuthDiscordV1CallbackIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -116,6 +146,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PostPostIdIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/discord/v1/callback/': {
+      id: '/auth/discord/v1/callback/'
+      path: '/auth/discord/v1/callback'
+      fullPath: '/auth/discord/v1/callback'
+      preLoaderRoute: typeof AuthDiscordV1CallbackIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -125,6 +162,7 @@ const rootRouteChildren: RootRouteChildren = {
   PostIndexRoute: PostIndexRoute,
   PrivateIndexRoute: PrivateIndexRoute,
   PostPostIdIndexRoute: PostPostIdIndexRoute,
+  AuthDiscordV1CallbackIndexRoute: AuthDiscordV1CallbackIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

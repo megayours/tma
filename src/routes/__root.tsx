@@ -10,6 +10,8 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { isTMA } from '@telegram-apps/bridge';
 import { init, backButton } from '@telegram-apps/sdk-react';
 import { useEffect } from 'react';
+import { AppRoot } from '@telegram-apps/telegram-ui';
+import { Navbar } from '@/NavBar';
 
 function TelegramAppHandler() {
   const location = useLocation();
@@ -43,27 +45,18 @@ function TelegramAppHandler() {
 }
 
 export const Route = createRootRoute({
-  component: () => (
-    <>
-      <TelegramAppHandler />
-      <div className="flex gap-2 p-2">
-        <Link to="/" className="[&.active]:font-bold">
-          Home
-        </Link>{' '}
-        <Link to="/about" className="[&.active]:font-bold">
-          About
-        </Link>{' '}
-        <Link to="/post" className="[&.active]:font-bold">
-          Post
-        </Link>{' '}
-        <Link to="/private" className="[&.active]:font-bold">
-          Private
-        </Link>
-      </div>
-      <hr />
-      <Outlet />
-      <TanStackRouterDevtools />
-      <ReactQueryDevtools initialIsOpen={false} />
-    </>
-  ),
+  component: () => {
+    return (
+      <>
+        <TelegramAppHandler />
+        <AppRoot>
+          <Navbar />
+          <hr />
+          <Outlet />
+          <TanStackRouterDevtools />
+          <ReactQueryDevtools initialIsOpen={false} />
+        </AppRoot>
+      </>
+    );
+  },
 });

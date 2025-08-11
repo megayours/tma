@@ -14,9 +14,38 @@
   --font-family-heading: var(--font-sf);
 }
 
+/* Telegram theme variables */
+:root {
+  --tg-bg-color: #ffffff;
+  --tg-text-color: #000000;
+  --tg-hint-color: #999999;
+  --tg-link-color: #2481cc;
+  --tg-button-color: #2481cc;
+  --tg-button-text-color: #ffffff;
+  --tg-secondary-bg-color: #f1f1f1;
+}
+
+/* Dark mode Telegram theme variables */
+.dark {
+  --tg-bg-color: #212d3b;
+  --tg-text-color: #ffffff;
+  --tg-hint-color: #aaaaaa;
+  --tg-link-color: #64baf0;
+  --tg-button-color: #8774e1;
+  --tg-button-text-color: #ffffff;
+  --tg-secondary-bg-color: #2a3441;
+}
+
 @layer base {
   html {
     font-family: var(--font-sf);
+    background-color: var(--tg-bg-color);
+    color: var(--tg-text-color);
+  }
+
+  body {
+    background-color: var(--tg-bg-color);
+    color: var(--tg-text-color);
   }
 
   h1,
@@ -26,6 +55,7 @@
   h5,
   h6 {
     font-family: var(--font-sf);
+    color: var(--tg-text-color);
   }
 
   h1 {
@@ -75,6 +105,33 @@
     font-weight: 400;
     line-height: 1.6;
     letter-spacing: 0.01em;
+    color: var(--tg-text-color);
+  }
+
+  /* Telegram-specific utility classes */
+  .tg-bg {
+    background-color: var(--tg-bg-color);
+  }
+
+  .tg-secondary-bg {
+    background-color: var(--tg-secondary-bg-color);
+  }
+
+  .tg-text {
+    color: var(--tg-text-color);
+  }
+
+  .tg-hint {
+    color: var(--tg-hint-color);
+  }
+
+  .tg-link {
+    color: var(--tg-link-color);
+  }
+
+  .tg-button {
+    background-color: var(--tg-button-color);
+    color: var(--tg-button-text-color);
   }
 
   /* Font utility classes */

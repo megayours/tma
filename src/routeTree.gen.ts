@@ -11,9 +11,12 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ProfileIndexRouteImport } from './routes/profile/index'
 import { Route as PrivateIndexRouteImport } from './routes/private/index'
 import { Route as PostIndexRouteImport } from './routes/post/index'
+import { Route as ProfilePromptIndexRouteImport } from './routes/profile/prompt/index'
 import { Route as PostPostIdIndexRouteImport } from './routes/post/$postId/index'
+import { Route as ProfilePromptNewIndexRouteImport } from './routes/profile/prompt/new/index'
 import { Route as AuthDiscordV1CallbackIndexRouteImport } from './routes/auth/discord/v1/callback/index'
 
 const AboutRoute = AboutRouteImport.update({
@@ -26,6 +29,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProfileIndexRoute = ProfileIndexRouteImport.update({
+  id: '/profile/',
+  path: '/profile/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivateIndexRoute = PrivateIndexRouteImport.update({
   id: '/private/',
   path: '/private/',
@@ -36,9 +44,19 @@ const PostIndexRoute = PostIndexRouteImport.update({
   path: '/post/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProfilePromptIndexRoute = ProfilePromptIndexRouteImport.update({
+  id: '/profile/prompt/',
+  path: '/profile/prompt/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PostPostIdIndexRoute = PostPostIdIndexRouteImport.update({
   id: '/post/$postId/',
   path: '/post/$postId/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfilePromptNewIndexRoute = ProfilePromptNewIndexRouteImport.update({
+  id: '/profile/prompt/new/',
+  path: '/profile/prompt/new/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthDiscordV1CallbackIndexRoute =
@@ -53,7 +71,10 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/post': typeof PostIndexRoute
   '/private': typeof PrivateIndexRoute
+  '/profile': typeof ProfileIndexRoute
   '/post/$postId': typeof PostPostIdIndexRoute
+  '/profile/prompt': typeof ProfilePromptIndexRoute
+  '/profile/prompt/new': typeof ProfilePromptNewIndexRoute
   '/auth/discord/v1/callback': typeof AuthDiscordV1CallbackIndexRoute
 }
 export interface FileRoutesByTo {
@@ -61,7 +82,10 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/post': typeof PostIndexRoute
   '/private': typeof PrivateIndexRoute
+  '/profile': typeof ProfileIndexRoute
   '/post/$postId': typeof PostPostIdIndexRoute
+  '/profile/prompt': typeof ProfilePromptIndexRoute
+  '/profile/prompt/new': typeof ProfilePromptNewIndexRoute
   '/auth/discord/v1/callback': typeof AuthDiscordV1CallbackIndexRoute
 }
 export interface FileRoutesById {
@@ -70,7 +94,10 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/post/': typeof PostIndexRoute
   '/private/': typeof PrivateIndexRoute
+  '/profile/': typeof ProfileIndexRoute
   '/post/$postId/': typeof PostPostIdIndexRoute
+  '/profile/prompt/': typeof ProfilePromptIndexRoute
+  '/profile/prompt/new/': typeof ProfilePromptNewIndexRoute
   '/auth/discord/v1/callback/': typeof AuthDiscordV1CallbackIndexRoute
 }
 export interface FileRouteTypes {
@@ -80,7 +107,10 @@ export interface FileRouteTypes {
     | '/about'
     | '/post'
     | '/private'
+    | '/profile'
     | '/post/$postId'
+    | '/profile/prompt'
+    | '/profile/prompt/new'
     | '/auth/discord/v1/callback'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -88,7 +118,10 @@ export interface FileRouteTypes {
     | '/about'
     | '/post'
     | '/private'
+    | '/profile'
     | '/post/$postId'
+    | '/profile/prompt'
+    | '/profile/prompt/new'
     | '/auth/discord/v1/callback'
   id:
     | '__root__'
@@ -96,7 +129,10 @@ export interface FileRouteTypes {
     | '/about'
     | '/post/'
     | '/private/'
+    | '/profile/'
     | '/post/$postId/'
+    | '/profile/prompt/'
+    | '/profile/prompt/new/'
     | '/auth/discord/v1/callback/'
   fileRoutesById: FileRoutesById
 }
@@ -105,7 +141,10 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   PostIndexRoute: typeof PostIndexRoute
   PrivateIndexRoute: typeof PrivateIndexRoute
+  ProfileIndexRoute: typeof ProfileIndexRoute
   PostPostIdIndexRoute: typeof PostPostIdIndexRoute
+  ProfilePromptIndexRoute: typeof ProfilePromptIndexRoute
+  ProfilePromptNewIndexRoute: typeof ProfilePromptNewIndexRoute
   AuthDiscordV1CallbackIndexRoute: typeof AuthDiscordV1CallbackIndexRoute
 }
 
@@ -125,6 +164,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/profile/': {
+      id: '/profile/'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/private/': {
       id: '/private/'
       path: '/private'
@@ -139,11 +185,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PostIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/profile/prompt/': {
+      id: '/profile/prompt/'
+      path: '/profile/prompt'
+      fullPath: '/profile/prompt'
+      preLoaderRoute: typeof ProfilePromptIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/post/$postId/': {
       id: '/post/$postId/'
       path: '/post/$postId'
       fullPath: '/post/$postId'
       preLoaderRoute: typeof PostPostIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile/prompt/new/': {
+      id: '/profile/prompt/new/'
+      path: '/profile/prompt/new'
+      fullPath: '/profile/prompt/new'
+      preLoaderRoute: typeof ProfilePromptNewIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth/discord/v1/callback/': {
@@ -161,7 +221,10 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   PostIndexRoute: PostIndexRoute,
   PrivateIndexRoute: PrivateIndexRoute,
+  ProfileIndexRoute: ProfileIndexRoute,
   PostPostIdIndexRoute: PostPostIdIndexRoute,
+  ProfilePromptIndexRoute: ProfilePromptIndexRoute,
+  ProfilePromptNewIndexRoute: ProfilePromptNewIndexRoute,
   AuthDiscordV1CallbackIndexRoute: AuthDiscordV1CallbackIndexRoute,
 }
 export const routeTree = rootRouteImport

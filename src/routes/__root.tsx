@@ -12,11 +12,13 @@ import { init, backButton } from '@telegram-apps/sdk-react';
 import { useEffect } from 'react';
 import { AppRoot } from '@telegram-apps/telegram-ui';
 import { Navbar } from '@/NavBar';
+import { useTelegramTheme } from '@/auth/useTelegram';
 
 function TelegramAppHandler() {
   const location = useLocation();
   const router = useRouter();
   const pathname = location.pathname;
+  const { isDark, themeParams, isTelegram } = useTelegramTheme();
 
   useEffect(() => {
     if (isTMA()) {
@@ -41,6 +43,17 @@ function TelegramAppHandler() {
     }
   }, [pathname, router]);
 
+  // Log theme information for debugging
+  useEffect(() => {
+    if (isTelegram) {
+      console.log('Telegram Theme:', {
+        isDark,
+        themeParams,
+        isTelegram,
+      });
+    }
+  }, [isDark, themeParams, isTelegram]);
+
   return null;
 }
 
@@ -50,11 +63,16 @@ export const Route = createRootRoute({
       <>
         <TelegramAppHandler />
         <AppRoot>
-          <Navbar />
-          <hr />
-          <Outlet />
-          <TanStackRouterDevtools />
-          <ReactQueryDevtools initialIsOpen={false} />
+          <div className="bg-tg-bg h-screen">
+            <main className="bg-tg-bg flex-grow pb-16">
+              <Outlet />
+            </main>
+            <div className="bg-tg-link border-tg-section-separator fixed right-0 bottom-0 left-0 z-10 flex h-16 items-center border-t">
+              <Navbar />
+            </div>
+            {/* <TanStackRouterDevtools /> */}
+            {/* <ReactQueryDevtools initialIsOpen={false} /> */}
+          </div>
         </AppRoot>
       </>
     );

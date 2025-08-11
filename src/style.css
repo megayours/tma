@@ -1,9 +1,6 @@
 @import 'tailwindcss';
-@layer theme, base, components, utilities;
-@import 'tailwindcss/theme.css' layer(theme);
-@import 'tailwindcss/preflight.css' layer(base);
-@import 'tailwindcss/utilities.css' layer(utilities);
 
+/* Tailwind theme tokens */
 @theme {
   --color-main: oklch(0.72 0.11 178);
   --color-secondary: oklch(0.72 0.34 270);
@@ -12,9 +9,26 @@
     'Helvetica Neue', Helvetica, Arial, sans-serif;
   --font-family-sans: var(--font-sf);
   --font-family-heading: var(--font-sf);
+
+  /* Telegram theme colors */
+  --color-tg-bg: var(--tg-bg-color);
+  --color-tg-text: var(--tg-text-color);
+  --color-tg-hint: var(--tg-hint-color);
+  --color-tg-link: var(--tg-link-color);
+  --color-tg-button: var(--tg-button-color);
+  --color-tg-button-text: var(--tg-button-text-color);
+  --color-tg-secondary-bg: var(--tg-secondary-bg-color);
+  --color-tg-accent-text: var(--tg-accent-text-color);
+  --color-tg-destructive-text: var(--tg-destructive-text-color);
+  --color-tg-header-bg: var(--tg-header-bg-color);
+  --color-tg-section-bg: var(--tg-section-bg-color);
+  --color-tg-section-header-text: var(--tg-section-header-text-color);
+  --color-tg-section-separator: var(--tg-section-separator-color);
+  --color-tg-subtitle-text: var(--tg-subtitle-text-color);
+  --color-tg-bottom-bar-bg: var(--tg-bottom-bar-bg-color);
 }
 
-/* Telegram theme variables */
+/* Telegram light theme vars */
 :root {
   --tg-bg-color: #ffffff;
   --tg-text-color: #000000;
@@ -23,9 +37,17 @@
   --tg-button-color: #2481cc;
   --tg-button-text-color: #ffffff;
   --tg-secondary-bg-color: #f1f1f1;
+  --tg-accent-text-color: #2481cc;
+  --tg-destructive-text-color: #ff453a;
+  --tg-header-bg-color: #ffffff;
+  --tg-section-bg-color: #ffffff;
+  --tg-section-header-text-color: #000000;
+  --tg-section-separator-color: #e5e5e5;
+  --tg-subtitle-text-color: #666666;
+  --tg-bottom-bar-bg-color: #f8f8f8;
 }
 
-/* Dark mode Telegram theme variables */
+/* Telegram dark theme vars */
 .dark {
   --tg-bg-color: #212d3b;
   --tg-text-color: #ffffff;
@@ -34,8 +56,17 @@
   --tg-button-color: #8774e1;
   --tg-button-text-color: #ffffff;
   --tg-secondary-bg-color: #2a3441;
+  --tg-accent-text-color: #64baf0;
+  --tg-destructive-text-color: #ff6b6b;
+  --tg-header-bg-color: #1c1c1c;
+  --tg-section-bg-color: #212d3b;
+  --tg-section-header-text-color: #e5e5e5;
+  --tg-section-separator-color: #3d3d3d;
+  --tg-subtitle-text-color: #cccccc;
+  --tg-bottom-bar-bg-color: #3e464c;
 }
 
+/* Base typography and font classes */
 @layer base {
   html {
     font-family: var(--font-sf);
@@ -106,32 +137,6 @@
     line-height: 1.6;
     letter-spacing: 0.01em;
     color: var(--tg-text-color);
-  }
-
-  /* Telegram-specific utility classes */
-  .tg-bg {
-    background-color: var(--tg-bg-color);
-  }
-
-  .tg-secondary-bg {
-    background-color: var(--tg-secondary-bg-color);
-  }
-
-  .tg-text {
-    color: var(--tg-text-color);
-  }
-
-  .tg-hint {
-    color: var(--tg-hint-color);
-  }
-
-  .tg-link {
-    color: var(--tg-link-color);
-  }
-
-  .tg-button {
-    background-color: var(--tg-button-color);
-    color: var(--tg-button-text-color);
   }
 
   /* Font utility classes */

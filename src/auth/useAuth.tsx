@@ -14,7 +14,7 @@ export function useAuth() {
       try {
         if (isTMA()) {
           setIsTelegram(true);
-          setUser(telegramUser);
+          setUser(telegramUser?.initData);
 
           // Validate the user asynchronously
           if (telegramUser) {

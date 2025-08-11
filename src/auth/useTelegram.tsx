@@ -1,10 +1,21 @@
 import { isTMA } from '@telegram-apps/bridge';
-import { useRawInitData, initData } from '@telegram-apps/sdk-react';
+import { useRawInitData, useLaunchParams } from '@telegram-apps/sdk-react';
 import { useEffect, useState } from 'react';
 
-export function useTelegramRawInitData(): string | undefined {
+export function useTelegramRawInitData():
+  | {
+      initData: string | undefined;
+      isTMA: boolean;
+      launchParams: any;
+    }
+  | undefined {
   if (isTMA()) {
-    return useRawInitData();
+    console.log('launchParams', useLaunchParams());
+    return {
+      initData: useRawInitData(),
+      launchParams: useLaunchParams(),
+      isTMA: true,
+    };
   } else {
     return undefined;
   }
@@ -18,68 +29,54 @@ function telegramColorToHex(color: number): string {
 export function useTelegramTheme() {
   const [isDark, setIsDark] = useState(false);
   const [themeParams, setThemeParams] = useState<any>(null);
+  const rawInitData = useTelegramRawInitData();
 
   useEffect(() => {
-    if (isTMA()) {
-      // Access theme params from the global initData object
-      const tgThemeParams = (window as any).Telegram?.WebApp?.themeParams;
+    if (rawInitData?.isTMA && rawInitData.launchParams?.tgWebAppThemeParams) {
+      const tgThemeParams = rawInitData.launchParams.tgWebAppThemeParams;
+      console.log('Using launchParams theme:', tgThemeParams);
 
-      if (tgThemeParams) {
-        setThemeParams(tgThemeParams);
+      setThemeParams(tgThemeParams);
 
-        // Determine if theme is dark based on Telegram's theme params
-        const isDarkTheme = tgThemeParams.color_scheme === 'dark';
-        setIsDark(isDarkTheme);
+      // Determine if theme is dark based on background color
+      // Telegram dark themes typically have darker background colors
+      const bgColor = tgThemeParams.bg_color;
+      const isDarkTheme =
+        bgColor && parseInt(bgColor.replace('#', ''), 16) < 0x808080;
+      setIsDark(isDarkTheme);
 
-        // Apply theme to document
-        document.documentElement.classList.toggle('dark', isDarkTheme);
+      // Apply theme to document
+      document.documentElement.classList.toggle('dark', isDarkTheme);
 
-        // Apply Telegram theme colors as CSS custom properties
-        if (tgThemeParams.bg_color) {
+      // Apply all Telegram theme colors as CSS custom properties
+      const themeProperties = [
+        'bg_color',
+        'text_color',
+        'hint_color',
+        'link_color',
+        'button_color',
+        'button_text_color',
+        'secondary_bg_color',
+        'accent_text_color',
+        'destructive_text_color',
+        'header_bg_color',
+        'section_bg_color',
+        'section_header_text_color',
+        'section_separator_color',
+        'subtitle_text_color',
+        'bottom_bar_bg_color',
+      ];
+
+      themeProperties.forEach(prop => {
+        if (tgThemeParams[prop]) {
           document.documentElement.style.setProperty(
-            '--tg-bg-color',
-            telegramColorToHex(tgThemeParams.bg_color)
+            `--tg-${prop.replace(/_/g, '-')}`,
+            tgThemeParams[prop]
           );
         }
-        if (tgThemeParams.text_color) {
-          document.documentElement.style.setProperty(
-            '--tg-text-color',
-            telegramColorToHex(tgThemeParams.text_color)
-          );
-        }
-        if (tgThemeParams.hint_color) {
-          document.documentElement.style.setProperty(
-            '--tg-hint-color',
-            telegramColorToHex(tgThemeParams.hint_color)
-          );
-        }
-        if (tgThemeParams.link_color) {
-          document.documentElement.style.setProperty(
-            '--tg-link-color',
-            telegramColorToHex(tgThemeParams.link_color)
-          );
-        }
-        if (tgThemeParams.button_color) {
-          document.documentElement.style.setProperty(
-            '--tg-button-color',
-            telegramColorToHex(tgThemeParams.button_color)
-          );
-        }
-        if (tgThemeParams.button_text_color) {
-          document.documentElement.style.setProperty(
-            '--tg-button-text-color',
-            telegramColorToHex(tgThemeParams.button_text_color)
-          );
-        }
-        if (tgThemeParams.secondary_bg_color) {
-          document.documentElement.style.setProperty(
-            '--tg-secondary-bg-color',
-            telegramColorToHex(tgThemeParams.secondary_bg_color)
-          );
-        }
-      }
+      });
     }
-  }, []);
+  }, [rawInitData]);
 
   return {
     isDark,
@@ -101,30 +98,32 @@ export function useTelegramColors() {
       buttonColor: '#2481cc',
       buttonTextColor: '#ffffff',
       secondaryBgColor: '#f1f1f1',
+      accentTextColor: '#2481cc',
+      destructiveTextColor: '#ff453a',
+      headerBgColor: '#ffffff',
+      sectionBgColor: '#ffffff',
+      sectionHeaderTextColor: '#000000',
+      sectionSeparatorColor: '#e5e5e5',
+      subtitleTextColor: '#666666',
+      bottomBarBgColor: '#f8f8f8',
     };
   }
 
   return {
-    bgColor: themeParams.bg_color
-      ? telegramColorToHex(themeParams.bg_color)
-      : '#ffffff',
-    textColor: themeParams.text_color
-      ? telegramColorToHex(themeParams.text_color)
-      : '#000000',
-    hintColor: themeParams.hint_color
-      ? telegramColorToHex(themeParams.hint_color)
-      : '#999999',
-    linkColor: themeParams.link_color
-      ? telegramColorToHex(themeParams.link_color)
-      : '#2481cc',
-    buttonColor: themeParams.button_color
-      ? telegramColorToHex(themeParams.button_color)
-      : '#2481cc',
-    buttonTextColor: themeParams.button_text_color
-      ? telegramColorToHex(themeParams.button_text_color)
-      : '#ffffff',
-    secondaryBgColor: themeParams.secondary_bg_color
-      ? telegramColorToHex(themeParams.secondary_bg_color)
-      : '#f1f1f1',
+    bgColor: themeParams.bg_color || '#ffffff',
+    textColor: themeParams.text_color || '#000000',
+    hintColor: themeParams.hint_color || '#999999',
+    linkColor: themeParams.link_color || '#2481cc',
+    buttonColor: themeParams.button_color || '#2481cc',
+    buttonTextColor: themeParams.button_text_color || '#ffffff',
+    secondaryBgColor: themeParams.secondary_bg_color || '#f1f1f1',
+    accentTextColor: themeParams.accent_text_color || '#2481cc',
+    destructiveTextColor: themeParams.destructive_text_color || '#ff453a',
+    headerBgColor: themeParams.header_bg_color || '#ffffff',
+    sectionBgColor: themeParams.section_bg_color || '#ffffff',
+    sectionHeaderTextColor: themeParams.section_header_text_color || '#000000',
+    sectionSeparatorColor: themeParams.section_separator_color || '#e5e5e5',
+    subtitleTextColor: themeParams.subtitle_text_color || '#666666',
+    bottomBarBgColor: themeParams.bottom_bar_bg_color || '#f8f8f8',
   };
 }

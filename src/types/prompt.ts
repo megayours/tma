@@ -30,3 +30,10 @@ export const PromptSchema = z.object({
   versions: z.array(PromptVersionSchema),
 });
 export type Prompt = z.infer<typeof PromptSchema>;
+
+export const CompactPromptSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+});
+
+export type CompactPrompt = z.infer<typeof CompactPromptSchema>;

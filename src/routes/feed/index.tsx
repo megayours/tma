@@ -1,8 +1,12 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useState, useEffect, useRef } from 'react';
 import { useGetPrompts } from '@/hooks/usePrompts';
-import { LatestImage } from '@/components/lib/LatestContent/LatestImage';
+import { LatestImage } from '@/components/lib/LatestContent/LatestImages';
+import { LatestVideo } from '@/components/lib/LatestContent/LatestVideos';
 import type { Prompt } from '@/types/prompt';
+import { Card, CardContent } from '@/components/ui/Card';
+import { Banner } from '@telegram-apps/telegram-ui';
+import { FaArrowRight } from 'react-icons/fa';
 
 export const Route = createFileRoute('/feed/')({
   component: Feed,
@@ -32,26 +36,19 @@ function ShowContent({
   }
 
   return (
-    <div className="flex h-full flex-col items-center justify-center gap-4 p-4">
-      <h2 className="text-center text-2xl font-bold">{prompt.name}</h2>
-      <p className="max-w-md text-center text-gray-600">{prompt.description}</p>
+    <div className="flex h-full flex-col items-center justify-center gap-4 p-10">
+      <div className="flex flex-col items-center justify-center gap-4">
+        <h2 className="text-center text-2xl font-bold">{prompt.name}</h2>
+        <p className="max-w-md text-center text-gray-600">
+          {prompt.description}
+        </p>
+      </div>
 
       <div className="flex w-full flex-1 items-center justify-center">
         {prompt.type === 'images' && <LatestImage prompt={prompt} />}
-        {/* Add other content types here as needed */}
+        {prompt.type === 'videos' && <LatestVideo prompt={prompt} />}
       </div>
 
-      <div className="flex w-full max-w-sm flex-row justify-center gap-2">
-        <Link
-          to="/post/$postId"
-          params={{ postId: prompt.id.toString() }}
-          className="w-full"
-        >
-          <button className="w-full rounded-md bg-blue-500 px-4 py-2 text-white transition-colors hover:bg-blue-600">
-            Try it
-          </button>
-        </Link>
-      </div>
       <div className="bottom-0 h-10 w-full"></div>
     </div>
   );
@@ -70,7 +67,7 @@ export function Feed() {
     },
     pagination: {
       page: currentPage,
-      size: 10,
+      size: 1,
     },
   });
 

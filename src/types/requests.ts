@@ -62,7 +62,7 @@ export const ContentFiltersSchema = z.object({
 export type ContentFilters = z.infer<typeof ContentFiltersSchema>;
 
 export const ContentRequestSchema = z.object({
-  filters: ContentFiltersSchema.optional(),
-  pagination: ContentPaginationSchema.optional(),
+  filters: FilterSchema.optional(),
+  pagination: PaginationSchema.optional(),
 });
 export type ContentRequest = z.infer<typeof ContentRequestSchema>;

@@ -11,17 +11,6 @@ export const PaginationResponseSchema = z.object({
 });
 export type PaginationResponse = z.infer<typeof PaginationResponseSchema>;
 
-// Raw API response schema (snake_case) for prompts
-export const RawPromptVersionSchema = z.object({
-  id: z.number(),
-  version: z.number(),
-  created_at: z.number(),
-  min_tokens: z.number().optional(),
-  max_tokens: z.number().optional(),
-  additional_content_ids: z.array(z.string()).nullable().optional(),
-});
-export type RawPromptVersion = z.infer<typeof RawPromptVersionSchema>;
-
 export const RawPromptSchema = z.object({
   id: z.number(),
   name: z.string(),
@@ -38,7 +27,7 @@ export const RawPromptSchema = z.object({
   images: z.array(z.string()),
   videos: z.array(z.string()),
   gifs: z.array(z.string()),
-  versions: z.array(RawPromptVersionSchema),
+  versions: z.any().optional(),
 });
 export type RawPrompt = z.infer<typeof RawPromptSchema>;
 

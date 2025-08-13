@@ -81,7 +81,7 @@ function RouteComponent() {
       const timeline = gsap.timeline();
 
       timeline.to(imageDiv, {
-        height: expandedHeight, // Use calculated height
+        height: '1000', // Use calculated height
         width: '100%',
         duration: 0.5,
         ease: 'power2.inOut',

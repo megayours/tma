@@ -20,9 +20,6 @@ function RouteComponent() {
   const timelines = useRef<gsap.core.Timeline[]>([]);
   const initialHeight = '200px';
 
-  // Calculate container width once at startup
-  const containerWidth = containerRef.current?.offsetWidth || 400; // fallback to 400px
-
   const animateCard = (index: number) => {
     // Prevent clicks during animation
     if (isAnimating) return;
@@ -33,6 +30,10 @@ function RouteComponent() {
     const img = imageDiv?.querySelector('img') as HTMLImageElement;
 
     if (!card || !imageDiv) return;
+
+    // Calculate container width when needed (ensures ref is ready)
+    const containerWidth =
+      containerRef.current?.offsetWidth || card.offsetWidth || 400;
 
     // Calculate the expanded height based on image aspect ratio
     let expandedHeight = '600px'; // fallback

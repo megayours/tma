@@ -10,7 +10,7 @@ export function useTelegramRawInitData():
     }
   | undefined {
   if (isTMA()) {
-    console.log('launchParams', useLaunchParams());
+    console.log('launchParam', useLaunchParams());
     return {
       initData: useRawInitData(),
       launchParams: useLaunchParams(),

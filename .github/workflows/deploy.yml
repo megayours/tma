@@ -22,7 +22,7 @@ jobs:
         with:
           node-version: 20
           cache: npm
-      - run: npm ci
+      - run: npm install
       - run: npm run build
       # SPA fallback: make 404.html for client-side routes
       - run: cp dist/index.html dist/404.html

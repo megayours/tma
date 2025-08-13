@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { PromptSchema, type Prompt } from './prompt';
+import { PromptSchema } from './prompt';
 import { ContentTypeSchema } from './requests';
 import { ContractSchema } from './contract';
 

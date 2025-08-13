@@ -1,12 +1,9 @@
-import { createFileRoute, Link } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router';
 import { useState, useEffect, useRef } from 'react';
 import { useGetPrompts } from '@/hooks/usePrompts';
 import { LatestImage } from '@/components/lib/LatestContent/LatestImages';
 import { LatestVideo } from '@/components/lib/LatestContent/LatestVideos';
 import type { Prompt } from '@/types/prompt';
-import { Card, CardContent } from '@/components/ui/Card';
-import { Banner } from '@telegram-apps/telegram-ui';
-import { FaArrowRight } from 'react-icons/fa';
 
 export const Route = createFileRoute('/feed/')({
   component: Feed,

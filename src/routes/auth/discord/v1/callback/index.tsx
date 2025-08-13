@@ -3,7 +3,6 @@ import {
   redirect,
   useNavigate,
   isRedirect,
-  useRouter,
 } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 

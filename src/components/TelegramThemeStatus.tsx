@@ -8,7 +8,6 @@ import {
   CardContent,
   Badge,
   Alert,
-  AlertTitle,
   AlertDescription,
 } from './ui';
 

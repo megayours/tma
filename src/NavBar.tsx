@@ -3,7 +3,7 @@ import { useAuth } from '@/auth/useAuth';
 import { Link } from '@tanstack/react-router';
 
 export function Navbar() {
-  const { user, logout, isAuthenticated } = useAuth();
+  const { logout, isAuthenticated } = useAuth();
 
   return (
     <>

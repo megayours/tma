@@ -1,12 +1,9 @@
 import {
   createRootRoute,
-  Link,
   Outlet,
   useLocation,
   useRouter,
 } from '@tanstack/react-router';
-import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { isTMA } from '@telegram-apps/bridge';
 import { init, backButton, expandViewport } from '@telegram-apps/sdk-react';
 import { useEffect } from 'react';

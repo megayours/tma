@@ -1,26 +1,15 @@
 'use client';
 
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { type PromptsRequest, PromptsRequestSchema } from '@/types/requests';
 import {
   type PromptsResponse,
   type RawPromptsResponse,
   type RawPrompt,
-  type RawPromptVersion,
   RawPromptsResponseSchema,
 } from '@/types/response';
 import { safeParse, getValidationErrors } from '../utils/validation';
 import { apiGet } from '@/lib/api';
-
-// Helper function to map raw prompt version to expected format
-const mapRawPromptVersionToPromptVersion = (rawVersion: RawPromptVersion) => ({
-  id: rawVersion.id,
-  version: rawVersion.version,
-  createdAt: rawVersion.created_at,
-  minTokens: rawVersion.min_tokens ?? 0,
-  maxTokens: rawVersion.max_tokens ?? 0,
-  additionalContentIds: rawVersion.additional_content_ids ?? null,
-});
 
 // Helper function to map raw prompt to expected format
 const mapRawPromptToPrompt = (rawPrompt: RawPrompt) => ({
@@ -39,7 +28,7 @@ const mapRawPromptToPrompt = (rawPrompt: RawPrompt) => ({
   images: rawPrompt.images,
   videos: rawPrompt.videos,
   gifs: rawPrompt.gifs,
-  versions: rawPrompt.versions.map(mapRawPromptVersionToPromptVersion),
+  versions: rawPrompt.versions,
 });
 
 export const useGetPrompts = (

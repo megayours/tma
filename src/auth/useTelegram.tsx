@@ -20,12 +20,6 @@ export function useTelegramRawInitData():
     return undefined;
   }
 }
-
-// Utility function to convert Telegram color to hex
-function telegramColorToHex(color: number): string {
-  return `#${color.toString(16).padStart(6, '0')}`;
-}
-
 export function useTelegramTheme() {
   const [isDark, setIsDark] = useState(false);
   const [themeParams, setThemeParams] = useState<any>(null);

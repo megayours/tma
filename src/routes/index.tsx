@@ -1,12 +1,11 @@
-import { createFileRoute, Link } from '@tanstack/react-router';
-import { List, Section } from '@telegram-apps/telegram-ui';
-import { ThemeDemo } from '../components/ThemeDemo';
-import { ThemeUsageExamples } from '../components/ThemeUsageExamples';
-import { TelegramThemeStatus } from '../components/TelegramThemeStatus';
-import { TelegramThemeDemo } from '../components/TelegramThemeDemo';
-import { TelegramUIComponentsDemo } from '../components/TelegramUIComponentsDemo';
-import { ExampleApp } from '../components/ExampleApp';
+import { createFileRoute } from '@tanstack/react-router';
 import { Feed } from './feed';
+// import { ThemeDemo } from '../components/ThemeDemo';
+// import { ThemeUsageExamples } from '../components/ThemeUsageExamples';
+// import { TelegramThemeStatus } from '../components/TelegramThemeStatus';
+// import { TelegramThemeDemo } from '../components/TelegramThemeDemo';
+// import { TelegramUIComponentsDemo } from '../components/TelegramUIComponentsDemo';
+// import { ExampleApp } from '../components/ExampleApp';
 
 export const Route = createFileRoute('/')({
   component: Index,

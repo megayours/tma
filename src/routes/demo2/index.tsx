@@ -54,6 +54,7 @@ function RouteComponent() {
       // Shrink the active card's image
       timeline.to(imageDiv, {
         height: initialHeight,
+        width: '100%',
         duration: 2,
         ease: 'power2.inOut',
       });
@@ -68,7 +69,7 @@ function RouteComponent() {
       const timeline = gsap.timeline();
 
       timeline.to(imageDiv, {
-        height: 'auto',
+        height: '100%', // Use specific height instead of 'auto' for better compatibility
         width: '100%',
         duration: 2,
         ease: 'power2.inOut',

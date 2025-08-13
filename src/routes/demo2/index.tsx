@@ -20,6 +20,9 @@ function RouteComponent() {
   const timelines = useRef<gsap.core.Timeline[]>([]);
   const initialHeight = '200px';
 
+  // Calculate container width once at startup
+  const containerWidth = containerRef.current?.offsetWidth || 400; // fallback to 400px
+
   const animateCard = (index: number) => {
     // Prevent clicks during animation
     if (isAnimating) return;
@@ -27,8 +30,16 @@ function RouteComponent() {
     const cards = gsap.utils.toArray('.card');
     const card = cards[index] as HTMLElement;
     const imageDiv = card.querySelector('.image-container') as HTMLElement;
+    const img = imageDiv?.querySelector('img') as HTMLImageElement;
 
     if (!card || !imageDiv) return;
+
+    // Calculate the expanded height based on image aspect ratio
+    let expandedHeight = '600px'; // fallback
+    if (img && img.naturalWidth && img.naturalHeight) {
+      const aspectRatio = img.naturalHeight / img.naturalWidth;
+      expandedHeight = `${containerWidth * aspectRatio}px`;
+    }
 
     // Set animation lock
     setIsAnimating(true);
@@ -46,7 +57,7 @@ function RouteComponent() {
         opacity: 1,
         y: 0,
         height: initialHeight,
-        duration: 1,
+        duration: 0.5,
         stagger: 0, // All cards animate at the same time
         ease: 'power2.inOut',
       });
@@ -55,7 +66,7 @@ function RouteComponent() {
       timeline.to(imageDiv, {
         height: initialHeight,
         width: '100%',
-        duration: 2,
+        duration: 1,
         ease: 'power2.inOut',
       });
 
@@ -69,9 +80,9 @@ function RouteComponent() {
       const timeline = gsap.timeline();
 
       timeline.to(imageDiv, {
-        height: '100%', // Use specific height instead of 'auto' for better compatibility
+        height: expandedHeight, // Use calculated height
         width: '100%',
-        duration: 2,
+        duration: 0.5,
         ease: 'power2.inOut',
       });
 

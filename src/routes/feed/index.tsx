@@ -67,7 +67,7 @@ export function Feed() {
     },
     pagination: {
       page: currentPage,
-      size: 1,
+      size: 10,
     },
   });
 

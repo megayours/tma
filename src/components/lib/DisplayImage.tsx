@@ -1,4 +1,3 @@
-import '@telegram-apps/telegram-ui/dist/styles.css';
 import { Card } from '@telegram-apps/telegram-ui';
 import type { ImageStatus } from '@/types/image';
 import { useGetImage } from '@/hooks/useImages';

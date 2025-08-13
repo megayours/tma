@@ -1,6 +1,5 @@
 import { DisplayImage } from '../DisplayImage';
 import { useGetLatestImages } from '@/hooks/useImages';
-import type { ImageStatus } from '@/types/image';
 
 export function LatestImage({ prompt }: { prompt: any }) {
   const { images, isLoading } = useGetLatestImages({

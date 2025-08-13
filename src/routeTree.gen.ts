@@ -16,6 +16,7 @@ import { Route as ProfileIndexRouteImport } from './routes/profile/index'
 import { Route as PrivateIndexRouteImport } from './routes/private/index'
 import { Route as PostIndexRouteImport } from './routes/post/index'
 import { Route as FeedIndexRouteImport } from './routes/feed/index'
+import { Route as Demo2IndexRouteImport } from './routes/demo2/index'
 import { Route as ProfilePromptIndexRouteImport } from './routes/profile/prompt/index'
 import { Route as PostPostIdIndexRouteImport } from './routes/post/$postId/index'
 import { Route as ProfilePromptNewIndexRouteImport } from './routes/profile/prompt/new/index'
@@ -56,6 +57,11 @@ const FeedIndexRoute = FeedIndexRouteImport.update({
   path: '/feed/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const Demo2IndexRoute = Demo2IndexRouteImport.update({
+  id: '/demo2/',
+  path: '/demo2/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProfilePromptIndexRoute = ProfilePromptIndexRouteImport.update({
   id: '/profile/prompt/',
   path: '/profile/prompt/',
@@ -82,6 +88,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/demo': typeof DemoRoute
+  '/demo2': typeof Demo2IndexRoute
   '/feed': typeof FeedIndexRoute
   '/post': typeof PostIndexRoute
   '/private': typeof PrivateIndexRoute
@@ -95,6 +102,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/demo': typeof DemoRoute
+  '/demo2': typeof Demo2IndexRoute
   '/feed': typeof FeedIndexRoute
   '/post': typeof PostIndexRoute
   '/private': typeof PrivateIndexRoute
@@ -109,6 +117,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/demo': typeof DemoRoute
+  '/demo2/': typeof Demo2IndexRoute
   '/feed/': typeof FeedIndexRoute
   '/post/': typeof PostIndexRoute
   '/private/': typeof PrivateIndexRoute
@@ -124,6 +133,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/demo'
+    | '/demo2'
     | '/feed'
     | '/post'
     | '/private'
@@ -137,6 +147,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/demo'
+    | '/demo2'
     | '/feed'
     | '/post'
     | '/private'
@@ -150,6 +161,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/demo'
+    | '/demo2/'
     | '/feed/'
     | '/post/'
     | '/private/'
@@ -164,6 +176,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   DemoRoute: typeof DemoRoute
+  Demo2IndexRoute: typeof Demo2IndexRoute
   FeedIndexRoute: typeof FeedIndexRoute
   PostIndexRoute: typeof PostIndexRoute
   PrivateIndexRoute: typeof PrivateIndexRoute
@@ -225,6 +238,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FeedIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/demo2/': {
+      id: '/demo2/'
+      path: '/demo2'
+      fullPath: '/demo2'
+      preLoaderRoute: typeof Demo2IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/profile/prompt/': {
       id: '/profile/prompt/'
       path: '/profile/prompt'
@@ -260,6 +280,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   DemoRoute: DemoRoute,
+  Demo2IndexRoute: Demo2IndexRoute,
   FeedIndexRoute: FeedIndexRoute,
   PostIndexRoute: PostIndexRoute,
   PrivateIndexRoute: PrivateIndexRoute,

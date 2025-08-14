@@ -17,8 +17,10 @@ import { Route as PrivateIndexRouteImport } from './routes/private/index'
 import { Route as PostIndexRouteImport } from './routes/post/index'
 import { Route as FeedIndexRouteImport } from './routes/feed/index'
 import { Route as Demo2IndexRouteImport } from './routes/demo2/index'
+import { Route as Demo2BackupRouteImport } from './routes/demo2/backup'
 import { Route as ProfilePromptIndexRouteImport } from './routes/profile/prompt/index'
 import { Route as PostPostIdIndexRouteImport } from './routes/post/$postId/index'
+import { Route as Demo2ItemIndexRouteImport } from './routes/demo2/item/index'
 import { Route as ProfilePromptNewIndexRouteImport } from './routes/profile/prompt/new/index'
 import { Route as AuthDiscordV1CallbackIndexRouteImport } from './routes/auth/discord/v1/callback/index'
 
@@ -62,6 +64,11 @@ const Demo2IndexRoute = Demo2IndexRouteImport.update({
   path: '/demo2/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const Demo2BackupRoute = Demo2BackupRouteImport.update({
+  id: '/demo2/backup',
+  path: '/demo2/backup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProfilePromptIndexRoute = ProfilePromptIndexRouteImport.update({
   id: '/profile/prompt/',
   path: '/profile/prompt/',
@@ -70,6 +77,11 @@ const ProfilePromptIndexRoute = ProfilePromptIndexRouteImport.update({
 const PostPostIdIndexRoute = PostPostIdIndexRouteImport.update({
   id: '/post/$postId/',
   path: '/post/$postId/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Demo2ItemIndexRoute = Demo2ItemIndexRouteImport.update({
+  id: '/demo2/item/',
+  path: '/demo2/item/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProfilePromptNewIndexRoute = ProfilePromptNewIndexRouteImport.update({
@@ -88,11 +100,13 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/demo': typeof DemoRoute
+  '/demo2/backup': typeof Demo2BackupRoute
   '/demo2': typeof Demo2IndexRoute
   '/feed': typeof FeedIndexRoute
   '/post': typeof PostIndexRoute
   '/private': typeof PrivateIndexRoute
   '/profile': typeof ProfileIndexRoute
+  '/demo2/item': typeof Demo2ItemIndexRoute
   '/post/$postId': typeof PostPostIdIndexRoute
   '/profile/prompt': typeof ProfilePromptIndexRoute
   '/profile/prompt/new': typeof ProfilePromptNewIndexRoute
@@ -102,11 +116,13 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/demo': typeof DemoRoute
+  '/demo2/backup': typeof Demo2BackupRoute
   '/demo2': typeof Demo2IndexRoute
   '/feed': typeof FeedIndexRoute
   '/post': typeof PostIndexRoute
   '/private': typeof PrivateIndexRoute
   '/profile': typeof ProfileIndexRoute
+  '/demo2/item': typeof Demo2ItemIndexRoute
   '/post/$postId': typeof PostPostIdIndexRoute
   '/profile/prompt': typeof ProfilePromptIndexRoute
   '/profile/prompt/new': typeof ProfilePromptNewIndexRoute
@@ -117,11 +133,13 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/demo': typeof DemoRoute
+  '/demo2/backup': typeof Demo2BackupRoute
   '/demo2/': typeof Demo2IndexRoute
   '/feed/': typeof FeedIndexRoute
   '/post/': typeof PostIndexRoute
   '/private/': typeof PrivateIndexRoute
   '/profile/': typeof ProfileIndexRoute
+  '/demo2/item/': typeof Demo2ItemIndexRoute
   '/post/$postId/': typeof PostPostIdIndexRoute
   '/profile/prompt/': typeof ProfilePromptIndexRoute
   '/profile/prompt/new/': typeof ProfilePromptNewIndexRoute
@@ -133,11 +151,13 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/demo'
+    | '/demo2/backup'
     | '/demo2'
     | '/feed'
     | '/post'
     | '/private'
     | '/profile'
+    | '/demo2/item'
     | '/post/$postId'
     | '/profile/prompt'
     | '/profile/prompt/new'
@@ -147,11 +167,13 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/demo'
+    | '/demo2/backup'
     | '/demo2'
     | '/feed'
     | '/post'
     | '/private'
     | '/profile'
+    | '/demo2/item'
     | '/post/$postId'
     | '/profile/prompt'
     | '/profile/prompt/new'
@@ -161,11 +183,13 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/demo'
+    | '/demo2/backup'
     | '/demo2/'
     | '/feed/'
     | '/post/'
     | '/private/'
     | '/profile/'
+    | '/demo2/item/'
     | '/post/$postId/'
     | '/profile/prompt/'
     | '/profile/prompt/new/'
@@ -176,11 +200,13 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   DemoRoute: typeof DemoRoute
+  Demo2BackupRoute: typeof Demo2BackupRoute
   Demo2IndexRoute: typeof Demo2IndexRoute
   FeedIndexRoute: typeof FeedIndexRoute
   PostIndexRoute: typeof PostIndexRoute
   PrivateIndexRoute: typeof PrivateIndexRoute
   ProfileIndexRoute: typeof ProfileIndexRoute
+  Demo2ItemIndexRoute: typeof Demo2ItemIndexRoute
   PostPostIdIndexRoute: typeof PostPostIdIndexRoute
   ProfilePromptIndexRoute: typeof ProfilePromptIndexRoute
   ProfilePromptNewIndexRoute: typeof ProfilePromptNewIndexRoute
@@ -245,6 +271,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Demo2IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/demo2/backup': {
+      id: '/demo2/backup'
+      path: '/demo2/backup'
+      fullPath: '/demo2/backup'
+      preLoaderRoute: typeof Demo2BackupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/profile/prompt/': {
       id: '/profile/prompt/'
       path: '/profile/prompt'
@@ -257,6 +290,13 @@ declare module '@tanstack/react-router' {
       path: '/post/$postId'
       fullPath: '/post/$postId'
       preLoaderRoute: typeof PostPostIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo2/item/': {
+      id: '/demo2/item/'
+      path: '/demo2/item'
+      fullPath: '/demo2/item'
+      preLoaderRoute: typeof Demo2ItemIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/profile/prompt/new/': {
@@ -280,11 +320,13 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   DemoRoute: DemoRoute,
+  Demo2BackupRoute: Demo2BackupRoute,
   Demo2IndexRoute: Demo2IndexRoute,
   FeedIndexRoute: FeedIndexRoute,
   PostIndexRoute: PostIndexRoute,
   PrivateIndexRoute: PrivateIndexRoute,
   ProfileIndexRoute: ProfileIndexRoute,
+  Demo2ItemIndexRoute: Demo2ItemIndexRoute,
   PostPostIdIndexRoute: PostPostIdIndexRoute,
   ProfilePromptIndexRoute: ProfilePromptIndexRoute,
   ProfilePromptNewIndexRoute: ProfilePromptNewIndexRoute,

@@ -1,12 +1,24 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, Link } from '@tanstack/react-router';
 import '@telegram-apps/telegram-ui/dist/styles.css';
 import { Card } from '@telegram-apps/telegram-ui';
 
 import { gsap } from 'gsap';
+import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
 import { useGSAP } from '@gsap/react';
-import { useRef, useState } from 'react';
+import { useRef, useState, useCallback } from 'react';
 
-gsap.registerPlugin(useGSAP);
+// Add styles to hide scrollbars
+const scrollbarHideStyles = `
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+`;
+
+gsap.registerPlugin(useGSAP, ScrollToPlugin);
 
 export const Route = createFileRoute('/demo2/')({
   component: RouteComponent,
@@ -14,95 +26,127 @@ export const Route = createFileRoute('/demo2/')({
 
 function RouteComponent() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const imgRef = useRef<HTMLDivElement>(null);
   const [activeCard, setActiveCard] = useState<number | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
   const timelines = useRef<gsap.core.Timeline[]>([]);
-  const initialHeight = '200px';
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const imageContainerRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  const animateCard = (index: number) => {
-    // Prevent clicks during animation
-    if (isAnimating) return;
+  const openCard = useCallback(
+    (index: number) => {
+      if (isAnimating) return;
 
-    const cards = gsap.utils.toArray('.card');
-    const card = cards[index] as HTMLElement;
-    const imageDiv = card.querySelector('.image-container') as HTMLElement;
-    const img = imageDiv?.querySelector('img') as HTMLImageElement;
+      const currentCard = cards[index];
+      const cardElement = cardRefs.current[index];
+      console.log(
+        'Opening card:',
+        currentCard,
+        cardElement,
+        imageContainerRefs.current[index]
+      );
 
-    if (!card || !imageDiv) return;
+      if (cardElement && currentCard) {
+        // Kill any existing animations
+        gsap.killTweensOf(cardElement);
+        gsap.killTweensOf(imageContainerRefs.current[index]);
 
-    // Calculate container width when needed (ensures ref is ready)
-    const containerWidth =
-      containerRef.current?.offsetWidth || card.offsetWidth || 400;
+        setIsAnimating(true);
+        setActiveCard(index);
 
-    // Calculate the expanded height based on image aspect ratio
-    let expandedHeight = '600px'; // fallback
-    if (img && img.naturalWidth && img.naturalHeight) {
-      const aspectRatio = img.naturalHeight / img.naturalWidth;
-      expandedHeight = `${containerWidth * aspectRatio}px`;
-    }
+        const tl = gsap.timeline({
+          onComplete: () => {
+            setIsAnimating(false);
+            console.log('Open animation completed');
+          },
+        });
 
-    // Set animation lock
-    setIsAnimating(true);
+        // First, scroll to the top of the card
+        tl.to(containerRef.current, {
+          scrollTo: {
+            y: cardElement,
+            offsetY: 40,
+          },
+          duration: 0.4,
+          ease: 'power2.out',
+        });
 
-    // Kill any existing timeline for this card
-    timelines.current[index]?.kill();
+        // Then animate both the card and the image container to grow to full screen height
+        tl.to(
+          [cardElement, imageContainerRefs.current[index]],
+          {
+            height: '80vh',
+            minHeight: '80vh',
+            position: 'relative',
+            width: '100%',
+            duration: 0.6,
+            ease: 'power1.out',
+          },
+          '-=0.2'
+        ); // Start the resize animation slightly before scroll completes
 
-    if (activeCard === index) {
-      // Reverse animation - show all cards and shrink the active one
-      const timeline = gsap.timeline();
+        // Store the timeline for cleanup
+        timelines.current[index] = tl;
+      }
+    },
+    [isAnimating]
+  );
 
-      // Show all other cards at the same time
-      const otherCards = cards.filter((_, otherIndex) => otherIndex !== index);
-      timeline.to(otherCards as HTMLElement[], {
-        opacity: 1,
-        y: 0,
-        height: initialHeight,
-        duration: 0.5,
-        stagger: 0, // All cards animate at the same time
-        ease: 'power2.inOut',
-      });
+  const closeCardAnimation = useCallback(
+    (index: number) => {
+      if (isAnimating) return;
 
-      // Shrink the active card's image
-      timeline.to(imageDiv, {
-        height: initialHeight,
-        width: '100%',
-        duration: 1,
-        ease: 'power2.inOut',
-      });
+      const cardElement = cardRefs.current[index];
+      console.log('Closing card:', index);
 
-      // Release lock when animation completes
-      timeline.call(() => setIsAnimating(false));
+      if (cardElement) {
+        // Kill any existing animations
+        gsap.killTweensOf(cardElement);
+        gsap.killTweensOf(imageContainerRefs.current[index]);
 
-      timelines.current[index] = timeline;
-      setActiveCard(null);
-    } else {
-      // Forward animation - hide other cards and expand the active one
-      const timeline = gsap.timeline();
+        setIsAnimating(true);
+        setActiveCard(null);
 
-      timeline.to(imageDiv, {
-        height: '1000', // Use calculated height
-        width: '100%',
-        duration: 0.5,
-        ease: 'power2.inOut',
-      });
+        const tl = gsap.timeline({
+          onComplete: () => {
+            setIsAnimating(false);
+            console.log('Close animation completed');
+          },
+        });
 
-      const otherCards = cards.filter((_, otherIndex) => otherIndex !== index);
-      timeline.to(otherCards as HTMLElement[], {
-        opacity: 0,
-        duration: 1,
-        height: 0,
-        stagger: 0, // All cards animate at the same time
-        ease: 'power2.inOut',
-      });
+        // Animate both the card and the image container back to original size
+        tl.to([cardElement, imageContainerRefs.current[index]], {
+          height: '200px',
+          minHeight: '200px',
+          width: '100%',
+          duration: 0.6,
+          ease: 'power1.in',
+        });
 
-      // Release lock when animation completes
-      timeline.call(() => setIsAnimating(false));
+        timelines.current[index] = tl;
+      }
+    },
+    [isAnimating]
+  );
 
-      timelines.current[index] = timeline;
-      setActiveCard(index);
-    }
-  };
+  const animateCard = useCallback(
+    (index: number) => {
+      const isCurrentlyActive = activeCard === index;
+
+      if (isCurrentlyActive) {
+        // If already active, close it
+        closeCardAnimation(index);
+      } else {
+        // If not active, open it
+        openCard(index);
+      }
+    },
+    [activeCard, openCard, closeCardAnimation]
+  );
+
+  const closeCard = useCallback(() => {
+    if (activeCard === null || isAnimating) return;
+    closeCardAnimation(activeCard);
+  }, [activeCard, isAnimating, closeCardAnimation]);
 
   const cards = [
     {
@@ -138,32 +182,65 @@ function RouteComponent() {
   ];
 
   return (
-    <div className="relative flex flex-col gap-4 p-4" ref={containerRef}>
-      <h1>Hello!</h1>
-      {cards.map((card, index) => (
-        <Card
-          key={card.id}
-          type="ambient"
-          className="card cursor-pointer"
-          onClick={() => animateCard(index)}
-        >
-          <div
-            className="image-container relative"
-            style={{ height: initialHeight }}
-            ref={imgRef}
+    <>
+      <style>{scrollbarHideStyles}</style>
+      <div
+        className="scrollbar-hide relative flex max-h-screen flex-col gap-4 overflow-y-auto p-4"
+        ref={containerRef}
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
+        <h1>Hello!</h1>
+
+        {cards.map((card, index) => (
+          <Card
+            key={card.id}
+            type="ambient"
+            className={`card cursor-pointer`}
+            style={{ height: '200px', minHeight: '200px' }}
+            ref={el => {
+              cardRefs.current[index] = el;
+            }}
+            onClick={() => animateCard(index)}
           >
-            <img
-              src={card.src}
-              alt={card.title}
-              className="h-full w-full object-cover object-center"
-            />
-          </div>
-          <Card.Chip readOnly>Hot place</Card.Chip>
-          <Card.Cell readOnly subtitle="United states">
-            Going hot
-          </Card.Cell>
-        </Card>
-      ))}
-    </div>
+            <div
+              className="image-container relative flex items-center justify-center"
+              style={{ height: '100%', width: '100%' }}
+              ref={el => {
+                imageContainerRefs.current[index] = el;
+              }}
+            >
+              <img
+                src={card.src}
+                alt={card.title}
+                className="h-full w-full object-cover object-center"
+              />
+            </div>
+            <Card.Chip readOnly>Hot place</Card.Chip>
+            <Card.Cell
+              readOnly
+              subtitle="United states"
+              className="hover:bg-transparent"
+              style={
+                {
+                  backgroundColor: 'transparent !important',
+                  '--hover-bg': 'transparent',
+                  '--hover-bg-opacity': '0',
+                } as React.CSSProperties
+              }
+              onMouseEnter={e => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
+            >
+              <Link to="/demo2/item" params={{ id: card.id }}>
+                {card.title}
+              </Link>
+            </Card.Cell>
+          </Card>
+        ))}
+      </div>
+    </>
   );
 }

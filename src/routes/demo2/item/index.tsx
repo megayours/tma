@@ -7,9 +7,22 @@ export const Route = createFileRoute('/demo2/item/')({
 
 function RouteComponent() {
   return (
-    <div className="relative flex h-[80vh] items-center justify-center overflow-hidden overflow-y-auto">
-      <Card type="ambient" className={`card h-full cursor-pointer`}>
-        <div className="image-container relative flex items-center justify-center">
+    <div
+      className="relative flex items-center justify-center overflow-hidden overflow-y-auto"
+      style={{ height: '100vh' }}
+    >
+      <Card
+        type="ambient"
+        className={`card h-80vh flex max-w-md cursor-pointer flex-col items-center justify-center`}
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '',
+        }}
+      >
+        <div className="image-container relative flex h-full items-center justify-center">
           <img
             src="https://yours-fun-api.testnet.megayours.com/v1/gifs/public/7c84c8b91f2fd007eff3088e2f76bc5869ee47d8edb4122291910e998bbe7652.gif"
             // src="https://yours-fun-api.testnet.megayours.com/v1/gifs/public/4853f749a215f382ed9da2749eeadee6e2537fb0d7f6a8e562f8a14f365fe7c7.gif"

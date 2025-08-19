@@ -1,13 +1,13 @@
 import { DisplayVideo } from '../DisplayVideo';
 
-export function LatestVideo({ prompt }: { prompt: any }) {
+export function LatestVideo({ prompt, bg }: { prompt: any; bg: string }) {
   console.log('PROMPT', prompt);
   // return <DisplayVideo asGif={true} video={prompt.gifs[0]} />;
   return (
     <div
       className="flex h-full w-full items-center justify-center"
       style={{
-        backgroundImage: `url(/backgrounds/doodle.png)`,
+        backgroundImage: `url(${bg})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',

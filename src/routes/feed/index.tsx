@@ -6,6 +6,22 @@ import { LatestVideo } from '@/components/lib/LatestContent/LatestVideos';
 import { LatestSticker } from '@/components/lib/LatestContent/LatestStickers';
 import type { PromptWithContent } from '@/types/content';
 
+// Array of background GIF files
+const backgroundGifs = [
+  '/backgrounds/doodle-heart.gif',
+  '/backgrounds/doodle-muscle.gif',
+  '/backgrounds/doodle-skate.gif',
+  '/backgrounds/doodle-star.gif',
+  '/backgrounds/doodle-stars.gif',
+  '/backgrounds/doodle-sticker.gif',
+];
+
+// Function that randomly returns one GIF from the array
+const getRandomBackgroundGif = (): string => {
+  const randomIndex = Math.floor(Math.random() * backgroundGifs.length);
+  return backgroundGifs[randomIndex];
+};
+
 export const Route = createFileRoute('/feed/')({
   component: Feed,
 });
@@ -39,10 +55,16 @@ function ShowContent({
           <h1>{prompt.name}</h1>
           <p>{prompt.ownerName}</p>
         </div>
-        <div className="h-full w-full">
-          {prompt.type === 'images' && <LatestImage prompt={prompt} />}
-          {prompt.type === 'videos' && <LatestVideo prompt={prompt} />}
-          {prompt.type === 'stickers' && <LatestSticker prompt={prompt} />}
+        <div className="h-full max-h-screen w-full">
+          {prompt.type === 'images' && (
+            <LatestImage prompt={prompt} bg={getRandomBackgroundGif()} />
+          )}
+          {prompt.type === 'videos' && (
+            <LatestVideo prompt={prompt} bg={getRandomBackgroundGif()} />
+          )}
+          {prompt.type === 'stickers' && (
+            <LatestSticker prompt={prompt} bg={getRandomBackgroundGif()} />
+          )}
         </div>
       </div>
 

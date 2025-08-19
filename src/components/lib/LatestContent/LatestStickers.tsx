@@ -1,13 +1,19 @@
 import type { PromptWithContent } from '../../../types/content';
 
-export function LatestSticker({ prompt }: { prompt: PromptWithContent }) {
+export function LatestSticker({
+  prompt,
+  bg,
+}: {
+  prompt: PromptWithContent;
+  bg: string;
+}) {
   console.log('PROMPT', prompt);
 
   return (
     <div
       className="flex h-full w-full items-center justify-center"
       style={{
-        backgroundImage: `url(/backgrounds/doodle-muscle.gif)`,
+        backgroundImage: `url(${bg})`,
         backgroundSize: 'contain',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',

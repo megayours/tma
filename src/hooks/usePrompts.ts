@@ -1,7 +1,11 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { type PromptsRequest, PromptsRequestSchema } from '@/types/requests';
+import {
+  type Pagination,
+  type PromptsRequest,
+  PromptsRequestSchema,
+} from '@/types/requests';
 import {
   type PromptsResponse,
   type RawPromptsResponse,
@@ -10,6 +14,7 @@ import {
 } from '@/types/response';
 import { safeParse, getValidationErrors } from '../utils/validation';
 import { apiGet } from '@/lib/api';
+import type { PromptWithContent } from '@/types/content';
 
 // Helper function to map raw prompt to expected format
 const mapRawPromptToPrompt = (rawPrompt: RawPrompt) => ({
@@ -94,6 +99,68 @@ export const useGetPrompts = (
   return {
     prompts: {
       data: data?.data || [],
+      pagination: data?.pagination || null,
+    },
+    isLoading,
+    error,
+  };
+};
+
+const mapRawPromptToPromptWithContent = (
+  rawPrompt: RawPrompt
+): PromptWithContent => ({
+  ...mapRawPromptToPrompt(rawPrompt),
+  published: (rawPrompt as any).published ?? false,
+  image: rawPrompt.image ?? '',
+  type: rawPrompt.type as 'images' | 'videos' | 'stickers' | 'gifs',
+  latestContentUrl: (rawPrompt as any).latest_content_url,
+  contentId: (rawPrompt as any).content_id,
+  owner: (rawPrompt as any).owner,
+  ownerName: (rawPrompt as any).owner_name,
+  hasUserGenerated: (rawPrompt as any).has_user_generated ?? false,
+  publishedAt: (rawPrompt as any).published_at ?? 0,
+  generationCount: (rawPrompt as any).generation_count ?? 0,
+});
+
+export const useGetRecommendedPrompts = ({
+  type = 'all',
+  excludeUsed = true,
+  pagination,
+}: {
+  type: 'images' | 'videos' | 'gifs' | 'stickers' | 'all';
+  excludeUsed: boolean;
+  pagination: Pagination;
+}) => {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['recommended-prompts', type, excludeUsed, pagination],
+    queryFn: async () => {
+      const response = await apiGet<RawPromptsResponse>(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/discovery/prompts/recommended`,
+        {
+          type,
+          exclude_used: excludeUsed,
+          page: pagination.page,
+          size: pagination.size,
+        }
+      );
+
+      console.log('RESPONSwwwE', response);
+
+      const mappedPrompts: PromptWithContent[] = response.data.map(
+        mapRawPromptToPromptWithContent
+      );
+
+      console.log('RESPONSE', mappedPrompts);
+      return {
+        prompts: mappedPrompts,
+        pagination: response.pagination,
+      };
+    },
+  });
+
+  return {
+    data: {
+      prompts: data?.prompts || [],
       pagination: data?.pagination || null,
     },
     isLoading,

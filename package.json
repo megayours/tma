@@ -22,6 +22,7 @@
     "@tanstack/react-router-devtools": "^1.130.13",
     "@telegram-apps/sdk-react": "^3.3.6",
     "@telegram-apps/telegram-ui": "^2.1.9",
+    "buffer": "^6.0.3",
     "dotenv": "^17.2.1",
     "gsap": "^3.13.0",
     "react": "^18.3.1",

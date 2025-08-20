@@ -47,6 +47,11 @@ export type PromptsResponse = z.infer<typeof PromptsResponseSchema>;
 export const TokenSchema = z.object({
   contract: ContractSchema,
   id: z.string(),
+  name: z.string().optional(),
+  image: z.string().optional(),
+  description: z.string().optional(),
+  attributes: z.any().optional(),
+  owner: z.string(),
 });
 export type Token = z.infer<typeof TokenSchema>;
 

@@ -50,8 +50,6 @@ export const useGetPrompts = (
         );
       }
 
-      console.log('VALIDATED PARAMS', validatedParams);
-      console.log('API URL', import.meta.env.VITE_PUBLIC_API_URL);
       try {
         // Build parameters object
         const params = {
@@ -87,7 +85,6 @@ export const useGetPrompts = (
           pagination: validatedRawData.pagination,
         };
 
-        console.log('RESPONSE', mappedData, validatedParams);
         return mappedData;
       } catch (error) {
         console.error('ERROR', error);
@@ -144,13 +141,10 @@ export const useGetRecommendedPrompts = ({
         }
       );
 
-      console.log('RESPONSwwwE', response);
-
       const mappedPrompts: PromptWithContent[] = response.data.map(
         mapRawPromptToPromptWithContent
       );
 
-      console.log('RESPONSE', mappedPrompts);
       return {
         prompts: mappedPrompts,
         pagination: response.pagination,

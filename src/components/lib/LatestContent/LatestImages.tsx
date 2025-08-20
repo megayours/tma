@@ -19,7 +19,6 @@ export function LatestImage({
   // );
 
   // TODO: temporary, revert once api is updated
-  console.log('PROMPT', prompt);
   return (
     <div
       className="flex h-full w-full items-center justify-center"

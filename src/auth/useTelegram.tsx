@@ -10,7 +10,6 @@ export function useTelegramRawInitData():
     }
   | undefined {
   if (isTMA()) {
-    console.log('launchParam', useLaunchParams());
     return {
       initData: useRawInitData(),
       launchParams: useLaunchParams(),
@@ -28,7 +27,6 @@ export function useTelegramTheme() {
   useEffect(() => {
     if (rawInitData?.isTMA && rawInitData.launchParams?.tgWebAppThemeParams) {
       const tgThemeParams = rawInitData.launchParams.tgWebAppThemeParams;
-      console.log('Using launchParams theme:', tgThemeParams);
 
       setThemeParams(tgThemeParams);
 

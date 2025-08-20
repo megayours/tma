@@ -18,7 +18,6 @@ export function useGetLatestImages(params: LatestImagesParams) {
       images: ImageStatus[];
       pagination: PaginationResponse;
     }> => {
-      console.log('1');
       try {
         const response = await apiGet<any>(
           `${import.meta.env.VITE_PUBLIC_API_URL}/images/statuses`,
@@ -62,7 +61,6 @@ export function useGetImage(imageId: string) {
         const response = await apiGet<any>(
           `${import.meta.env.VITE_PUBLIC_API_URL}/images/data/${imageId}`
         );
-        console.log('response', response);
 
         if (!response) {
           throw new Error('No data received from API');
@@ -77,7 +75,6 @@ export function useGetImage(imageId: string) {
           token: response.token as Token,
           tokens: response.tokens as Token[],
         };
-        console.log('image', image);
         return image;
       } catch (error) {
         console.error('Error fetching image:', error);

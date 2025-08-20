@@ -8,7 +8,7 @@ import { isTMA } from '@telegram-apps/bridge';
 import { init, backButton, expandViewport } from '@telegram-apps/sdk-react';
 import { useEffect } from 'react';
 import { AppRoot } from '@telegram-apps/telegram-ui';
-import { Navbar } from '@/NavBar';
+import { NavBar } from '@/components/lib/auth/NavBar';
 import { useTelegramTheme } from '@/auth/useTelegram';
 
 function TelegramAppHandler() {
@@ -67,12 +67,12 @@ export const Route = createRootRoute({
       <>
         <TelegramAppHandler />
         <AppRoot>
-          <div className="bg-tg-bg h-screen">
+          <div className="bg-tg-bg h-screen overflow-hidden">
             <main className="bg-tg-bg flex-grow pb-16">
               <Outlet />
             </main>
             <div className="fixed right-0 bottom-0 left-0 z-10 flex h-16 items-center">
-              <Navbar />
+              <NavBar />
             </div>
             {/* <TanStackRouterDevtools /> */}
             {/* <ReactQueryDevtools initialIsOpen={false} /> */}

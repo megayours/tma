@@ -1,9 +1,11 @@
 import { useAuth } from '@/auth/useAuth';
+import { ProfileNavBar } from './ProfileNavBar';
 
 import { Link } from '@tanstack/react-router';
 
-export function Navbar() {
-  const { logout, isAuthenticated } = useAuth();
+export function NavBar() {
+  const { logout, isAuthenticated, session } = useAuth();
+  console.log('session', session);
 
   return (
     <>
@@ -36,13 +38,8 @@ export function Navbar() {
         >
           Private
         </Link>
-        {isAuthenticated && (
-          <button
-            onClick={logout}
-            className="tg-button rounded px-3 py-1 text-sm transition-opacity hover:opacity-90"
-          >
-            Logout
-          </button>
+        {isAuthenticated && session && (
+          <ProfileNavBar logout={logout} session={session} />
         )}
       </div>
     </>

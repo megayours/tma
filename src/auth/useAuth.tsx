@@ -8,14 +8,14 @@ export type Session = {
   id: string;
   username: string;
   jwt: string;
-  expiration?: number;
+  expiration?: number | null;
   rawUser: string;
   authToken: string;
 };
 
 export function useAuth() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isAuthenticating, setIsAuthenticating] = useState(true);
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [isTelegram, setIsTelegram] = useState(false);
   const [session, setSession] = useState<Session | null>(null);
   const telegramUser = useTelegramRawInitData();
@@ -24,25 +24,93 @@ export function useAuth() {
   const checkIsTMA = useCallback(() => isTMA(), []);
 
   function getExpTimestamp(token: string) {
-    const payload = token.split('.')[1];
-    const decoded = JSON.parse(Buffer.from(payload, 'base64').toString());
-    return decoded.exp;
+    // Check if this is a Telegram init data string (contains query_id)
+    if (token.includes('query_id=')) {
+      // Parse the URL-encoded query string
+      const urlParams = new URLSearchParams(token);
+      const authDate = urlParams.get('auth_date');
+      if (authDate) {
+        // Convert auth_date to milliseconds (it's in seconds)
+        return parseInt(authDate) * 1000;
+      }
+      return null;
+    }
+
+    // Handle traditional JWT format
+    try {
+      const payload = token.split('.')[1];
+      const decoded = JSON.parse(Buffer.from(payload, 'base64').toString());
+      return decoded.exp * 1000; // Convert to milliseconds
+    } catch (error) {
+      console.error('Error parsing JWT:', error);
+      return null;
+    }
   }
+
+  console.log('isAuthenticated', isAuthenticated);
+  console.log('isAuthenticating', isAuthenticating);
+  console.log('session', session);
+
+  // Separate function to check if session is valid without setting state
+  const isSessionValid = useCallback(() => {
+    console.log('AAAALPHAAAA:');
+    const session = localStorage.getItem('session');
+    if (!session) return false;
+
+    const sessionData = JSON.parse(session);
+
+    console.log('ALPHA:', sessionData, sessionData.auth_provider);
+    if (sessionData.auth_provider === 'discord') {
+      const sessionExpirationMargin = 1000 * 60 * 60 * 1; // 1 hour
+      if (sessionData.expiration > Date.now() + sessionExpirationMargin) {
+        return true;
+      } else {
+        localStorage.removeItem('session');
+        return false;
+      }
+    } else if (sessionData.auth_provider === 'telegram') {
+      console.log('PROVIDER IS TELEGRAM');
+
+      const jwt = JSON.parse(session).jwt;
+      const jwtQueryParams = new URLSearchParams(jwt);
+      const jwtAuthDate = jwtQueryParams.get('auth_date');
+      if (!jwtAuthDate) return false;
+      const jwtAuthDateTimestamp = parseInt(jwtAuthDate) * 1000;
+
+      if (jwtAuthDateTimestamp < Date.now() + 1000 * 60 * 60 * 1) {
+        localStorage.removeItem('session');
+        console.log('Telegram session expired, clearing');
+        return false;
+      }
+      return true;
+    }
+
+    return false;
+  }, []);
 
   useEffect(() => {
     const initializeAuth = async () => {
+      console.log(1);
       // Prevent multiple simultaneous authentication attempts
-      if (isAuthenticating && session) return;
+      if (isAuthenticating) return;
 
       // Check if we already have a valid session first
-      if (checkIsAuthenticated()) {
-        setIsAuthenticating(false);
+      console.log(isSessionValid(), 'IS SESSION VALID');
+      if (await isSessionValid()) {
+        console.log('0.1');
+        const sessionData = JSON.parse(localStorage.getItem('session') || '{}');
+        setSession(sessionData);
+        setIsAuthenticated(true);
         return;
       }
+      console.log('2');
+
+      setIsAuthenticating(true);
 
       try {
         if (checkIsTMA()) {
           setIsTelegram(true);
+          console.log('Logging in with Telegram');
 
           // Validate the user asynchronously
           if (telegramUser) {
@@ -68,6 +136,7 @@ export function useAuth() {
                   id: data.id,
                   username: data.name,
                   jwt: telegramUser.initData,
+                  expiration: getExpTimestamp(telegramUser.initData),
                   rawUser: JSON.stringify(data),
                   authToken: 'tma ' + telegramUser.initData,
                 };
@@ -149,36 +218,18 @@ export function useAuth() {
         setIsAuthenticating(false);
       }
     };
+    console.log('00');
+    console.log(
+      isAuthenticating,
+      '🧼🧼 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
+    );
 
-    initializeAuth();
-  }, [checkIsTMA, telegramUser?.initData]); // Only depend on the actual initData, not the entire telegramUser object
-
-  const checkIsAuthenticated = () => {
-    const session = localStorage.getItem('session');
-    if (session && JSON.parse(session).auth_provider === 'discord') {
-      //check if the session is valid
-      const sessionData = JSON.parse(session);
-      const sessionExpirationMargin = 1000 * 60 * 60 * 1; // 1 hour
-      if (sessionData.expiration > Date.now() + sessionExpirationMargin) {
-        // we prefer to refresh the session a bit before it expires for smoother experience
-        setIsAuthenticated(true);
-        setSession(sessionData);
-        return true;
-      } else {
-        localStorage.removeItem('session');
-        setIsAuthenticated(false);
-        return false;
-      }
-    } else if (session && JSON.parse(session).auth_provider === 'telegram') {
-      setIsAuthenticated(true);
-      setSession(JSON.parse(session));
-      return true;
-    } else {
-      setIsAuthenticated(false);
-      setSession(null);
-      return false;
+    if (!isAuthenticating && !isAuthenticated) {
+      console.log('🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥');
+      initializeAuth();
     }
-  };
+    console.log('ZZZ');
+  }, [checkIsTMA, telegramUser?.initData, isSessionValid]); // Removed isAuthenticating from dependencies
 
   const logout = () => {
     localStorage.removeItem('session');

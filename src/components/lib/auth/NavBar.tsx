@@ -13,7 +13,7 @@ export function NavBar() {
         title="Navigation"
         description="Navigate to different pages"
       ></Section> */}
-      <div className="bg-tg-bg text-tg-text flex h-full w-full items-center justify-around p-2">
+      <div className="bg-tg-bg text-tg-text flex h-full w-full items-center justify-around px-4 py-4 pb-6">
         <Link
           to="/"
           className="tg-link px-2 py-1 hover:opacity-80 [&.active]:font-bold"

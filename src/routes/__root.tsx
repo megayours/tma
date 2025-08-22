@@ -10,6 +10,8 @@ import { useEffect } from 'react';
 import { AppRoot } from '@telegram-apps/telegram-ui';
 import { NavBar } from '@/components/lib/auth/NavBar';
 import { useTelegramTheme } from '@/auth/useTelegram';
+import { ConsoleLogDevtools } from '@/components/ConsoleLogDevtools';
+import { useState } from 'react';
 
 function TelegramAppHandler() {
   const location = useLocation();
@@ -63,21 +65,32 @@ function TelegramAppHandler() {
 
 export const Route = createRootRoute({
   component: () => {
+    // const [consoleReady, setConsoleReady] = useState(false);
+
+    // const handleConsoleReady = () => {
+    //   setConsoleReady(true);
+    // };
+
     return (
       <>
-        <TelegramAppHandler />
-        <AppRoot>
-          <div className="bg-tg-bg h-screen overflow-hidden">
-            <main className="bg-tg-bg flex-grow pb-16">
-              <Outlet />
-            </main>
-            <div className="fixed right-0 bottom-0 left-0 z-10 flex h-16 items-center">
-              <NavBar />
+        {/* <ConsoleLogDevtools initialIsOpen={true} onReady={handleConsoleReady} /> */}
+        {/* {consoleReady && ( */}
+        <>
+          <TelegramAppHandler />
+          <AppRoot>
+            <div className="bg-tg-bg h-screen overflow-hidden">
+              <main className="bg-tg-bg flex-grow pb-16">
+                <Outlet />
+              </main>
+              <div className="fixed right-0 bottom-0 left-0 z-10 flex h-16 items-center">
+                <NavBar />
+              </div>
+              {/* <TanStackRouterDevtools /> */}
+              {/* <ReactQueryDevtools initialIsOpen={false} /> */}
             </div>
-            {/* <TanStackRouterDevtools /> */}
-            {/* <ReactQueryDevtools initialIsOpen={false} /> */}
-          </div>
-        </AppRoot>
+          </AppRoot>
+        </>
+        {/* )} */}
       </>
     );
   },

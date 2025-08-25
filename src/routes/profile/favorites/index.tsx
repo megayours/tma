@@ -24,40 +24,7 @@ function RouteComponent() {
   );
 
   if (isLoadingFavorites) {
-    return (
-      <Section>
-        <Card>
-          <CardHeader>
-            <div className="bg-tg-hint h-6 w-32 animate-pulse rounded"></div>
-            <div className="bg-tg-hint h-4 w-24 animate-pulse rounded"></div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-              {[...Array(8)].map((_, index) => (
-                <Card
-                  key={index}
-                  variant="secondary"
-                  className="overflow-hidden"
-                >
-                  <CardContent className="p-0">
-                    <div className="relative">
-                      <div className="bg-tg-hint h-32 w-full animate-pulse"></div>
-                      <div className="absolute top-2 right-2">
-                        <div className="bg-tg-hint h-5 w-5 animate-pulse rounded-full"></div>
-                      </div>
-                    </div>
-                    <div className="p-3">
-                      <div className="bg-tg-hint mb-2 h-4 w-20 animate-pulse rounded"></div>
-                      <div className="bg-tg-hint h-3 w-16 animate-pulse rounded"></div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </Section>
-    );
+    return <Section>Loading...</Section>;
   }
 
   if (favorites && favorites.length === 0) {

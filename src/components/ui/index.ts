@@ -57,3 +57,11 @@ export type {
 // Modal
 export { Modal, ModalContent, ModalFooter } from './Modal';
 export type { ModalProps, ModalContentProps, ModalFooterProps } from './Modal';
+
+// CriticalButton
+export { CriticalButton, createButtonContent } from './CriticalButton';
+export type {
+  CriticalButtonProps,
+  CriticalButtonState,
+  CriticalButtonContent,
+} from './CriticalButton';

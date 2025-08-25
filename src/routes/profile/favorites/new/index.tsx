@@ -6,11 +6,10 @@ import {
 } from '@/hooks/useCollections';
 import type { SupportedCollection } from '@/hooks/useCollections';
 import { Button, Card, Input } from '@telegram-apps/telegram-ui';
-import { useEffect, useState } from 'react';
-import {
-  useGetNFTByCollectionAndTokenId,
-  useGetTokensByCollection,
-} from '@/hooks/useCollections';
+import { CriticalButton, createButtonContent } from '@/components/ui';
+import { useState } from 'react';
+import { useGetNFTByCollectionAndTokenId } from '@/hooks/useCollections';
+import { Section } from '@telegram-apps/telegram-ui';
 
 export const Route = createFileRoute('/profile/favorites/new/')({
   component: RouteComponent,
@@ -24,58 +23,52 @@ function RouteComponent() {
   const [selectedCollection, setSelectedCollection] = useState<
     SupportedCollection | undefined
   >(undefined);
-  const [selectedPage, setSelectedPage] = useState<number>(1);
   const [searchToken, setSearchToken] = useState<string>('# ');
-
-  // Move the hook to the top level
-  const { data: tokensData, isLoading } = useGetTokensByCollection(
-    selectedCollection,
-    selectedPage,
-    10
-  );
-
-  // Simulate a selected collection for testing
-  useEffect(() => {
-    if (supportedCollections && supportedCollections.length > 0) {
-      setSelectedCollection(supportedCollections[0]);
-      setStep(1);
-    }
-  }, [supportedCollections]);
-
-  console.log('supportedCollections', supportedCollections);
-  console.log('tokensData', tokensData);
-  console.log('tokensData?.tokens', tokensData?.tokens);
-  console.log('selectedCollection', selectedCollection);
 
   const selectedCollections = () => {
     return (
-      <div className="grid h-full grid-cols-3 gap-2 overflow-y-auto p-4">
-        {supportedCollections?.map((collection: SupportedCollection) => (
-          <Card
-            key={collection.address}
-            className="bg-tg-secondary flex flex-col items-center justify-center gap-4 p-2"
-            onClick={() => {
-              setSelectedCollection(collection);
-              setStep(1);
-            }}
-          >
-            <img
-              src={collection.image}
-              alt={collection.name}
-              className="h-12 w-24 rounded-lg object-cover"
-            />
-            <div className="text-tg-text mt-4 text-center text-xs font-bold break-words">
-              {collection.name}
-            </div>
-          </Card>
-        ))}
-      </div>
+      <Section className="flex flex-col gap-4 p-4">
+        <h2 className="text-tg-text mb-4 text-xl font-semibold">
+          Select a collection
+        </h2>
+        <div className="grid h-full grid-cols-3 gap-2 overflow-y-auto p-4">
+          {supportedCollections?.map((collection: SupportedCollection) => (
+            <Card
+              key={collection.address}
+              className="bg-tg-secondary flex flex-col items-center justify-center gap-4 p-2"
+              onClick={() => {
+                setSelectedCollection(collection);
+                setStep(1);
+              }}
+            >
+              <img
+                src={collection.image}
+                alt={collection.name}
+                className="h-12 w-24 rounded-lg object-cover"
+              />
+              <div className="text-tg-text mt-4 text-center text-xs font-bold break-words">
+                {collection.name}
+              </div>
+            </Card>
+          ))}
+        </div>
+      </Section>
     );
   };
 
   const selectTokenById = (collection: SupportedCollection) => {
     return (
-      <div className="flex flex-col gap-4 p-4">
+      <div className="flex flex-col p-2">
+        <div>
+          <Button
+            mode="plain"
+            size="s"
+            onClick={() => setStep(0)}
+            className="w-fit"
+          >
+            ←
+          </Button>
+        </div>
         <h1 className="text-tg-text text-4xl">{collection.name}</h1>
         <div className="relative flex flex-col gap-4">
           <Input
@@ -115,12 +108,15 @@ function RouteComponent() {
     collection: SupportedCollection;
     tokenId: string;
   }) => {
-    const { data: nftData, isLoading: isNFTLoading } =
-      useGetNFTByCollectionAndTokenId(
-        collection.chain,
-        collection.address,
-        tokenId
-      );
+    const {
+      data: nftData,
+      isLoading: isNFTLoading,
+      error,
+    } = useGetNFTByCollectionAndTokenId(
+      collection.chain,
+      collection.address,
+      tokenId
+    );
 
     // Move the hook to the top level of the component
     const addToFavoritesMutation = useAddToFavoritesMutation(
@@ -128,7 +124,23 @@ function RouteComponent() {
       tokenId
     );
 
-    if (isNFTLoading) return <div></div>;
+    if (isNFTLoading) return <div>Loading...</div>;
+
+    if (error) return <div>Error: {error.message}</div>;
+
+    if (nftData === null) {
+      return (
+        <Card className="flex flex-col items-center justify-center gap-4 p-6">
+          <div className="text-tg-text text-center text-lg">
+            🚫 This NFT does not exist
+          </div>
+          <div className="text-tg-hint text-center text-sm">
+            Token #{tokenId} was not found in {collection.name}
+          </div>
+        </Card>
+      );
+    }
+
     return (
       <>
         <Card className="flex flex-col items-center justify-center gap-2 p-2">
@@ -141,20 +153,30 @@ function RouteComponent() {
             {nftData?.contract.name} #{tokenId}
           </div>
         </Card>
-        <Button
+        <CriticalButton
           className="w-full"
-          mode="filled"
-          size="l"
-          stretched
+          size="lg"
+          state={
+            addToFavoritesMutation.isPending
+              ? 'loading'
+              : addToFavoritesMutation.isSuccess
+                ? 'success'
+                : 'normal'
+          }
+          normalContent={createButtonContent('Add to favorites', {
+            emoji: '❤️',
+          })}
+          loadingContent={createButtonContent('Adding...', {})}
+          successContent={createButtonContent('Added to favorites!', {
+            emoji: '✅',
+          })}
+          redirectUrl="/"
           onClick={() => {
-            console.log('Is there a session?', session);
             if (session) {
               addToFavoritesMutation.mutate(session);
             }
           }}
-        >
-          Add to favorites
-        </Button>
+        />
       </>
     );
   };

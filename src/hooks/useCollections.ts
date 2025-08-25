@@ -100,7 +100,7 @@ export function useGetNFTByCollectionAndTokenId(
 ) {
   const { data, isLoading, error } = useQuery({
     queryKey: ['nftByCollectionAndTokenId', chain, address, tokenId],
-    queryFn: async (): Promise<Token> => {
+    queryFn: async (): Promise<Token | null> => {
       const response = await fetch(
         `${import.meta.env.VITE_PUBLIC_API_URL}/tokens/${chain}/${address}/${tokenId}`,
         {
@@ -110,6 +110,11 @@ export function useGetNFTByCollectionAndTokenId(
           },
         }
       );
+
+      if (response.status === 404) {
+        // NFT doesn't exist - this is a normal case, not an error
+        return null;
+      }
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -153,7 +158,17 @@ export function useAddToFavoritesMutation(
       );
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        let errorMessage = `HTTP error! status: ${response.status}`;
+        try {
+          const errorData = await response.json();
+          if (errorData.message) {
+            errorMessage += ` - ${errorData.message}`;
+          }
+        } catch {
+          // If response body is not JSON, use status text
+          errorMessage += ` - ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -165,6 +180,9 @@ export function useAddToFavoritesMutation(
       queryClient.invalidateQueries({
         queryKey: ['favorites', session.id],
       });
+    },
+    onError: (error, variables, context) => {
+      console.error('Error adding to favorites:', error.message || error);
     },
   });
 }

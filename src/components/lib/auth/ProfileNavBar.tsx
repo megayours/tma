@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react';
 import type { Session } from '@/auth/useAuth';
-import { PiPlus, PiSignOut } from 'react-icons/pi';
-import { useGetFavorites } from '@/hooks/useFavorites';
-import { Avatar, AvatarStack } from '@telegram-apps/telegram-ui';
+import { PiPlus, PiX } from 'react-icons/pi';
+import { useGetFavorites, useRemoveFromFavorites } from '@/hooks/useFavorites';
+import { Avatar } from '@telegram-apps/telegram-ui';
 import { Link } from '@tanstack/react-router';
 
 export function ProfileNavBar({
-  logout,
+  logout: _logout,
   session,
 }: {
   logout: () => void;
@@ -18,15 +18,12 @@ export function ProfileNavBar({
     [session.id, session.authToken]
   );
   const { favorites, isLoadingFavorites } = useGetFavorites(memoizedSession);
+  const { removeFromFavorites, isRemoving, removingTokenId } =
+    useRemoveFromFavorites(memoizedSession);
   console.log('favorites', favorites);
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
-  };
-
-  const handleLogout = () => {
-    logout();
-    setIsDropdownOpen(false);
   };
 
   return (
@@ -48,20 +45,56 @@ export function ProfileNavBar({
 
       {/* Dropdown Menu */}
       {isDropdownOpen && (
-        <div className="ring-opacity-5 absolute right-0 bottom-full z-50 mb-2 h-100 rounded-md bg-white px-2 shadow-lg ring-1 ring-black">
-          <div className="relative mt-4 flex flex-col items-center justify-between gap-2">
+        <div className="ring-opacity-5 absolute right-0 bottom-full z-50 mb-2 rounded-md bg-white p-3 shadow-lg ring-1 ring-black">
+          <div className="flex flex-col items-center gap-2">
             {favorites && favorites.length > 0 && (
-              <AvatarStack>
+              <div className="flex flex-col gap-2">
                 {favorites.map(favorite => (
-                  <Avatar
-                    key={favorite.token.id}
-                    size={40}
-                    src={`${favorite.token.image || '/nfts/ape.jpg'}`}
-                    alt="Favorite"
-                    className="h-16 w-16 rounded-full"
-                  />
+                  <div key={favorite.token.id} className="relative">
+                    <Avatar
+                      size={40}
+                      src={`${favorite.token.image || '/nfts/ape.jpg'}`}
+                      alt="Favorite"
+                      className={`h-16 w-16 rounded-full transition-all duration-200 ${
+                        isRemoving && removingTokenId === favorite.token.id
+                          ? 'opacity-50 grayscale'
+                          : ''
+                      }`}
+                    />
+                    {/* Remove button - always visible for touch */}
+                    <button
+                      onClick={e => {
+                        e.stopPropagation();
+                        if (
+                          !isRemoving ||
+                          removingTokenId !== favorite.token.id
+                        ) {
+                          removeFromFavorites(favorite.token);
+                        }
+                      }}
+                      disabled={
+                        isRemoving && removingTokenId === favorite.token.id
+                      }
+                      className={`absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full text-white shadow-md transition-all duration-200 ${
+                        isRemoving && removingTokenId === favorite.token.id
+                          ? 'cursor-not-allowed bg-gray-400'
+                          : 'bg-red-500/80 active:scale-95 active:bg-red-600'
+                      }`}
+                      title={
+                        isRemoving && removingTokenId === favorite.token.id
+                          ? 'Removing...'
+                          : 'Remove from favorites'
+                      }
+                    >
+                      {isRemoving && removingTokenId === favorite.token.id ? (
+                        <div className="h-3 w-3 animate-spin rounded-full border border-white border-t-transparent"></div>
+                      ) : (
+                        <PiX className="h-3 w-3" />
+                      )}
+                    </button>
+                  </div>
                 ))}
-              </AvatarStack>
+              </div>
             )}
             {/* Add to Favorites Link */}
             <Link

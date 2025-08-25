@@ -1,6 +1,7 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Pagination } from '../types/requests';
 import type { Token } from '../types/response';
+import type { Session } from '@/auth/useAuth';
 
 export type SupportedCollection = {
   address: string;
@@ -90,4 +91,80 @@ export function useGetTokensByCollection(
   });
 
   return { data, isLoading, error };
+}
+
+export function useGetNFTByCollectionAndTokenId(
+  chain: string,
+  address: string,
+  tokenId: string
+) {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['nftByCollectionAndTokenId', chain, address, tokenId],
+    queryFn: async (): Promise<Token> => {
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/tokens/${chain}/${address}/${tokenId}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('data', data);
+      return data as Token;
+    },
+    enabled: !!chain && !!address && !!tokenId, // Only run if we have required data
+  });
+
+  return { data, isLoading, error };
+}
+
+export function useAddToFavoritesMutation(
+  collection: SupportedCollection,
+  tokenId: string
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (session: Session) => {
+      console.log('Adding to favorites', collection, tokenId);
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/profile/favorites`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: session.authToken,
+          },
+          body: JSON.stringify({
+            contract: {
+              chain: collection.chain,
+              address: collection.address,
+            },
+            id: tokenId,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('data', data);
+      return data;
+    },
+    onSuccess: (data, session) => {
+      // Invalidate the favorites query to refetch the updated list
+      queryClient.invalidateQueries({
+        queryKey: ['favorites', session.id],
+      });
+    },
+  });
 }

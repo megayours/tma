@@ -1,11 +1,16 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useAuth } from '../../../../auth/useAuth';
-import { useGetSupportedCollections } from '@/hooks/useCollections';
+import {
+  useAddToFavoritesMutation,
+  useGetSupportedCollections,
+} from '@/hooks/useCollections';
 import type { SupportedCollection } from '@/hooks/useCollections';
-import { Card } from '@telegram-apps/telegram-ui';
+import { Button, Card, Input } from '@telegram-apps/telegram-ui';
 import { useEffect, useState } from 'react';
-import { useGetTokensByCollection } from '@/hooks/useCollections';
-import { Pagination } from '@/components/ui/Pagination';
+import {
+  useGetNFTByCollectionAndTokenId,
+  useGetTokensByCollection,
+} from '@/hooks/useCollections';
 
 export const Route = createFileRoute('/profile/favorites/new/')({
   component: RouteComponent,
@@ -20,6 +25,7 @@ function RouteComponent() {
     SupportedCollection | undefined
   >(undefined);
   const [selectedPage, setSelectedPage] = useState<number>(1);
+  const [searchToken, setSearchToken] = useState<string>('# ');
 
   // Move the hook to the top level
   const { data: tokensData, isLoading } = useGetTokensByCollection(
@@ -69,27 +75,87 @@ function RouteComponent() {
 
   const selectTokenById = (collection: SupportedCollection) => {
     return (
-      <div className="flex flex-col p-4">
-        <h1 className="text-tg-text text-xxl text-center font-bold">
-          {collection.name}
-        </h1>
-        {isLoading && <div>Loading tokens...</div>}
-        {tokensData && (
-          <div className="flex flex-col gap-2">
-            {/* Render your tokens here */}
-            <p>Tokens loaded: {tokensData.tokens.length}</p>
-            {tokensData.tokens.map(token => (
-              <div key={token.id}>{token.name}</div>
-            ))}
-
-            <Pagination
-              page={selectedPage}
-              setPage={setSelectedPage}
-              totalPages={tokensData?.pagination.totalPages || 1}
+      <div className="flex flex-col gap-4 p-4">
+        <h1 className="text-tg-text text-4xl">{collection.name}</h1>
+        <div className="relative flex flex-col gap-4">
+          <Input
+            header="Token Id"
+            placeholder="#..."
+            type="text"
+            inputMode="numeric"
+            value={searchToken}
+            onChange={e => {
+              console.log('e.target.value', e.target.value);
+              // Remove any existing '#' and spaces, then add the prefix
+              const cleanValue = e.target.value.replace(/^#\s*/, '');
+              setSearchToken(cleanValue ? `# ${cleanValue}` : '# ');
+            }}
+            className="h-20 text-6xl"
+            style={{
+              fontSize: '3rem',
+            }}
+          />
+        </div>
+        {selectedCollection && searchToken !== '# ' && (
+          <>
+            <DisplayNFT
+              collection={selectedCollection}
+              tokenId={searchToken.replace(/^#\s*/, '')}
             />
-          </div>
+          </>
         )}
       </div>
+    );
+  };
+
+  const DisplayNFT = ({
+    collection,
+    tokenId,
+  }: {
+    collection: SupportedCollection;
+    tokenId: string;
+  }) => {
+    const { data: nftData, isLoading: isNFTLoading } =
+      useGetNFTByCollectionAndTokenId(
+        collection.chain,
+        collection.address,
+        tokenId
+      );
+
+    // Move the hook to the top level of the component
+    const addToFavoritesMutation = useAddToFavoritesMutation(
+      collection,
+      tokenId
+    );
+
+    if (isNFTLoading) return <div></div>;
+    return (
+      <>
+        <Card className="flex flex-col items-center justify-center gap-2 p-2">
+          <img
+            src={nftData?.image}
+            alt={nftData?.contract.name}
+            className="mx-auto h-64 w-64 rounded-lg object-cover"
+          />
+          <div className="text-tg-text text-center text-sm font-bold">
+            {nftData?.contract.name} #{tokenId}
+          </div>
+        </Card>
+        <Button
+          className="w-full"
+          mode="filled"
+          size="l"
+          stretched
+          onClick={() => {
+            console.log('Is there a session?', session);
+            if (session) {
+              addToFavoritesMutation.mutate(session);
+            }
+          }}
+        >
+          Add to favorites
+        </Button>
+      </>
     );
   };
 

@@ -78,7 +78,7 @@ export const Route = createRootRoute({
         <>
           <TelegramAppHandler />
           <AppRoot>
-            <div className="bg-tg-bg h-screen overflow-hidden">
+            <div className="bg-tg-bg min-h-screen">
               <main className="bg-tg-bg flex-grow pb-16">
                 <Outlet />
               </main>

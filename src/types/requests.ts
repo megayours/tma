@@ -29,6 +29,8 @@ export type Filter = z.infer<typeof FilterSchema>;
 export const PaginationSchema = z.object({
   page: z.number().optional(),
   size: z.number().optional(),
+  total: z.number().optional(),
+  totalPages: z.number().optional(),
 });
 export type Pagination = z.infer<typeof PaginationSchema>;
 

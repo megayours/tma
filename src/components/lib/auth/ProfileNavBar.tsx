@@ -65,7 +65,8 @@ export function ProfileNavBar({
             )}
             {/* Add to Favorites Link */}
             <Link
-              to="/profile"
+              onClick={() => setIsDropdownOpen(false)}
+              to="/profile/favorites/new"
               className="text-tg-text bg-tg-secondary-bg hover:bg-tg-secondary-bg/80 block rounded-full p-2 text-left text-sm transition-colors"
             >
               <PiPlus className="h-3 w-3" />

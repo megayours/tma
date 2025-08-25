@@ -9,27 +9,22 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as DemoRouteImport } from './routes/demo'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProfileIndexRouteImport } from './routes/profile/index'
 import { Route as PrivateIndexRouteImport } from './routes/private/index'
 import { Route as PostIndexRouteImport } from './routes/post/index'
 import { Route as FeedIndexRouteImport } from './routes/feed/index'
-import { Route as Demo3IndexRouteImport } from './routes/demo3/index'
 import { Route as Demo2IndexRouteImport } from './routes/demo2/index'
 import { Route as Demo2BackupRouteImport } from './routes/demo2/backup'
 import { Route as ProfilePromptIndexRouteImport } from './routes/profile/prompt/index'
+import { Route as ProfileFavoritesIndexRouteImport } from './routes/profile/favorites/index'
 import { Route as PostPostIdIndexRouteImport } from './routes/post/$postId/index'
 import { Route as Demo2ItemIndexRouteImport } from './routes/demo2/item/index'
 import { Route as ProfilePromptNewIndexRouteImport } from './routes/profile/prompt/new/index'
+import { Route as ProfileFavoritesNewIndexRouteImport } from './routes/profile/favorites/new/index'
 import { Route as AuthDiscordV1CallbackIndexRouteImport } from './routes/auth/discord/v1/callback/index'
 
-const DemoRoute = DemoRouteImport.update({
-  id: '/demo',
-  path: '/demo',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
@@ -60,11 +55,6 @@ const FeedIndexRoute = FeedIndexRouteImport.update({
   path: '/feed/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const Demo3IndexRoute = Demo3IndexRouteImport.update({
-  id: '/demo3/',
-  path: '/demo3/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const Demo2IndexRoute = Demo2IndexRouteImport.update({
   id: '/demo2/',
   path: '/demo2/',
@@ -78,6 +68,11 @@ const Demo2BackupRoute = Demo2BackupRouteImport.update({
 const ProfilePromptIndexRoute = ProfilePromptIndexRouteImport.update({
   id: '/profile/prompt/',
   path: '/profile/prompt/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileFavoritesIndexRoute = ProfileFavoritesIndexRouteImport.update({
+  id: '/profile/favorites/',
+  path: '/profile/favorites/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PostPostIdIndexRoute = PostPostIdIndexRouteImport.update({
@@ -95,6 +90,12 @@ const ProfilePromptNewIndexRoute = ProfilePromptNewIndexRouteImport.update({
   path: '/profile/prompt/new/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProfileFavoritesNewIndexRoute =
+  ProfileFavoritesNewIndexRouteImport.update({
+    id: '/profile/favorites/new/',
+    path: '/profile/favorites/new/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthDiscordV1CallbackIndexRoute =
   AuthDiscordV1CallbackIndexRouteImport.update({
     id: '/auth/discord/v1/callback/',
@@ -105,34 +106,34 @@ const AuthDiscordV1CallbackIndexRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/demo': typeof DemoRoute
   '/demo2/backup': typeof Demo2BackupRoute
   '/demo2': typeof Demo2IndexRoute
-  '/demo3': typeof Demo3IndexRoute
   '/feed': typeof FeedIndexRoute
   '/post': typeof PostIndexRoute
   '/private': typeof PrivateIndexRoute
   '/profile': typeof ProfileIndexRoute
   '/demo2/item': typeof Demo2ItemIndexRoute
   '/post/$postId': typeof PostPostIdIndexRoute
+  '/profile/favorites': typeof ProfileFavoritesIndexRoute
   '/profile/prompt': typeof ProfilePromptIndexRoute
+  '/profile/favorites/new': typeof ProfileFavoritesNewIndexRoute
   '/profile/prompt/new': typeof ProfilePromptNewIndexRoute
   '/auth/discord/v1/callback': typeof AuthDiscordV1CallbackIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/demo': typeof DemoRoute
   '/demo2/backup': typeof Demo2BackupRoute
   '/demo2': typeof Demo2IndexRoute
-  '/demo3': typeof Demo3IndexRoute
   '/feed': typeof FeedIndexRoute
   '/post': typeof PostIndexRoute
   '/private': typeof PrivateIndexRoute
   '/profile': typeof ProfileIndexRoute
   '/demo2/item': typeof Demo2ItemIndexRoute
   '/post/$postId': typeof PostPostIdIndexRoute
+  '/profile/favorites': typeof ProfileFavoritesIndexRoute
   '/profile/prompt': typeof ProfilePromptIndexRoute
+  '/profile/favorites/new': typeof ProfileFavoritesNewIndexRoute
   '/profile/prompt/new': typeof ProfilePromptNewIndexRoute
   '/auth/discord/v1/callback': typeof AuthDiscordV1CallbackIndexRoute
 }
@@ -140,17 +141,17 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/demo': typeof DemoRoute
   '/demo2/backup': typeof Demo2BackupRoute
   '/demo2/': typeof Demo2IndexRoute
-  '/demo3/': typeof Demo3IndexRoute
   '/feed/': typeof FeedIndexRoute
   '/post/': typeof PostIndexRoute
   '/private/': typeof PrivateIndexRoute
   '/profile/': typeof ProfileIndexRoute
   '/demo2/item/': typeof Demo2ItemIndexRoute
   '/post/$postId/': typeof PostPostIdIndexRoute
+  '/profile/favorites/': typeof ProfileFavoritesIndexRoute
   '/profile/prompt/': typeof ProfilePromptIndexRoute
+  '/profile/favorites/new/': typeof ProfileFavoritesNewIndexRoute
   '/profile/prompt/new/': typeof ProfilePromptNewIndexRoute
   '/auth/discord/v1/callback/': typeof AuthDiscordV1CallbackIndexRoute
 }
@@ -159,51 +160,51 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
-    | '/demo'
     | '/demo2/backup'
     | '/demo2'
-    | '/demo3'
     | '/feed'
     | '/post'
     | '/private'
     | '/profile'
     | '/demo2/item'
     | '/post/$postId'
+    | '/profile/favorites'
     | '/profile/prompt'
+    | '/profile/favorites/new'
     | '/profile/prompt/new'
     | '/auth/discord/v1/callback'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/about'
-    | '/demo'
     | '/demo2/backup'
     | '/demo2'
-    | '/demo3'
     | '/feed'
     | '/post'
     | '/private'
     | '/profile'
     | '/demo2/item'
     | '/post/$postId'
+    | '/profile/favorites'
     | '/profile/prompt'
+    | '/profile/favorites/new'
     | '/profile/prompt/new'
     | '/auth/discord/v1/callback'
   id:
     | '__root__'
     | '/'
     | '/about'
-    | '/demo'
     | '/demo2/backup'
     | '/demo2/'
-    | '/demo3/'
     | '/feed/'
     | '/post/'
     | '/private/'
     | '/profile/'
     | '/demo2/item/'
     | '/post/$postId/'
+    | '/profile/favorites/'
     | '/profile/prompt/'
+    | '/profile/favorites/new/'
     | '/profile/prompt/new/'
     | '/auth/discord/v1/callback/'
   fileRoutesById: FileRoutesById
@@ -211,30 +212,23 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
-  DemoRoute: typeof DemoRoute
   Demo2BackupRoute: typeof Demo2BackupRoute
   Demo2IndexRoute: typeof Demo2IndexRoute
-  Demo3IndexRoute: typeof Demo3IndexRoute
   FeedIndexRoute: typeof FeedIndexRoute
   PostIndexRoute: typeof PostIndexRoute
   PrivateIndexRoute: typeof PrivateIndexRoute
   ProfileIndexRoute: typeof ProfileIndexRoute
   Demo2ItemIndexRoute: typeof Demo2ItemIndexRoute
   PostPostIdIndexRoute: typeof PostPostIdIndexRoute
+  ProfileFavoritesIndexRoute: typeof ProfileFavoritesIndexRoute
   ProfilePromptIndexRoute: typeof ProfilePromptIndexRoute
+  ProfileFavoritesNewIndexRoute: typeof ProfileFavoritesNewIndexRoute
   ProfilePromptNewIndexRoute: typeof ProfilePromptNewIndexRoute
   AuthDiscordV1CallbackIndexRoute: typeof AuthDiscordV1CallbackIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/demo': {
-      id: '/demo'
-      path: '/demo'
-      fullPath: '/demo'
-      preLoaderRoute: typeof DemoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/about': {
       id: '/about'
       path: '/about'
@@ -277,13 +271,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FeedIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/demo3/': {
-      id: '/demo3/'
-      path: '/demo3'
-      fullPath: '/demo3'
-      preLoaderRoute: typeof Demo3IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/demo2/': {
       id: '/demo2/'
       path: '/demo2'
@@ -303,6 +290,13 @@ declare module '@tanstack/react-router' {
       path: '/profile/prompt'
       fullPath: '/profile/prompt'
       preLoaderRoute: typeof ProfilePromptIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile/favorites/': {
+      id: '/profile/favorites/'
+      path: '/profile/favorites'
+      fullPath: '/profile/favorites'
+      preLoaderRoute: typeof ProfileFavoritesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/post/$postId/': {
@@ -326,6 +320,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfilePromptNewIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/profile/favorites/new/': {
+      id: '/profile/favorites/new/'
+      path: '/profile/favorites/new'
+      fullPath: '/profile/favorites/new'
+      preLoaderRoute: typeof ProfileFavoritesNewIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth/discord/v1/callback/': {
       id: '/auth/discord/v1/callback/'
       path: '/auth/discord/v1/callback'
@@ -339,17 +340,17 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
-  DemoRoute: DemoRoute,
   Demo2BackupRoute: Demo2BackupRoute,
   Demo2IndexRoute: Demo2IndexRoute,
-  Demo3IndexRoute: Demo3IndexRoute,
   FeedIndexRoute: FeedIndexRoute,
   PostIndexRoute: PostIndexRoute,
   PrivateIndexRoute: PrivateIndexRoute,
   ProfileIndexRoute: ProfileIndexRoute,
   Demo2ItemIndexRoute: Demo2ItemIndexRoute,
   PostPostIdIndexRoute: PostPostIdIndexRoute,
+  ProfileFavoritesIndexRoute: ProfileFavoritesIndexRoute,
   ProfilePromptIndexRoute: ProfilePromptIndexRoute,
+  ProfileFavoritesNewIndexRoute: ProfileFavoritesNewIndexRoute,
   ProfilePromptNewIndexRoute: ProfilePromptNewIndexRoute,
   AuthDiscordV1CallbackIndexRoute: AuthDiscordV1CallbackIndexRoute,
 }

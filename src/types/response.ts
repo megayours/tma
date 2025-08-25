@@ -51,7 +51,7 @@ export const TokenSchema = z.object({
   image: z.string().optional(),
   description: z.string().optional(),
   attributes: z.any().optional(),
-  owner: z.string(),
+  owner: z.string().optional(),
 });
 export type Token = z.infer<typeof TokenSchema>;
 

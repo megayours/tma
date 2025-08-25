@@ -168,7 +168,7 @@ export function Feed() {
           min-height: 100vh;
         }
       `}</style>
-      <article ref={containerRef} className="scroller">
+      <article ref={containerRef} className="scroller overflow-y-auto">
         {promptsWithContent.map((prompt: PromptWithContent) => (
           // prompt.type !== 'stickers' && (
           <section key={prompt.id} className="flex snap-start flex-col">

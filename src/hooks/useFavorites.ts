@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
 import type { Session } from '@/auth/useAuth';
-import type { Contract } from '../types/contract';
 import type { Token } from '../types/response';
 
 export type Favorite = {
@@ -9,10 +8,11 @@ export type Favorite = {
   updatedAt: string;
 };
 
-export function useGetFavorites(session: Session) {
+export function useGetFavorites(session?: Session) {
   const { data, isLoading } = useQuery({
-    queryKey: ['favorites', session.id],
+    queryKey: ['favorites', session?.id],
     queryFn: async (): Promise<Favorite[]> => {
+      if (!session) return [];
       const response = await fetch(
         `${import.meta.env.VITE_PUBLIC_API_URL}/profile/favorites/${session.id}`,
         {
@@ -35,7 +35,7 @@ export function useGetFavorites(session: Session) {
 
       return [];
     },
-    enabled: !!session.id && !!session.authToken,
+    enabled: !!session?.id && !!session?.authToken,
   });
 
   return { favorites: data, isLoadingFavorites: isLoading };

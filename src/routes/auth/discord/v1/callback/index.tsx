@@ -3,7 +3,6 @@ import {
   redirect,
   useNavigate,
   isRedirect,
-  useRouter,
 } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 
@@ -41,8 +40,6 @@ export const Route = createFileRoute('/auth/discord/v1/callback/')({
     }
 
     try {
-      console.log('code', code);
-      console.log('state', state);
       // Call the Discord callback endpoint directly
       const callbackResponse = await fetch(
         `https://yours-fun-api.testnet.megayours.com/v1/auth/discord/callback?code=${code}&state=${state || ''}`,
@@ -54,8 +51,6 @@ export const Route = createFileRoute('/auth/discord/v1/callback/')({
         }
       );
 
-      // console.log('callbackResponse', callbackResponse);
-
       if (!callbackResponse.ok) {
         console.log('Failed to complete Discord authentication');
         throw new Error('Failed to complete Discord authentication');
@@ -63,7 +58,6 @@ export const Route = createFileRoute('/auth/discord/v1/callback/')({
 
       const tokenData = await callbackResponse.json();
 
-      console.log('tokenData', tokenData);
       // Store the token in localStorage
       localStorage.setItem('discord_token', tokenData.token);
       localStorage.setItem('auth_provider', 'discord');

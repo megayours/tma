@@ -10,7 +10,6 @@ export function useTelegramRawInitData():
     }
   | undefined {
   if (isTMA()) {
-    console.log('launchParams', useLaunchParams());
     return {
       initData: useRawInitData(),
       launchParams: useLaunchParams(),
@@ -20,12 +19,6 @@ export function useTelegramRawInitData():
     return undefined;
   }
 }
-
-// Utility function to convert Telegram color to hex
-function telegramColorToHex(color: number): string {
-  return `#${color.toString(16).padStart(6, '0')}`;
-}
-
 export function useTelegramTheme() {
   const [isDark, setIsDark] = useState(false);
   const [themeParams, setThemeParams] = useState<any>(null);
@@ -34,7 +27,6 @@ export function useTelegramTheme() {
   useEffect(() => {
     if (rawInitData?.isTMA && rawInitData.launchParams?.tgWebAppThemeParams) {
       const tgThemeParams = rawInitData.launchParams.tgWebAppThemeParams;
-      console.log('Using launchParams theme:', tgThemeParams);
 
       setThemeParams(tgThemeParams);
 

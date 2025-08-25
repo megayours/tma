@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   Button,
   Card,
@@ -10,7 +10,6 @@ import {
   Input,
   Badge,
   Alert,
-  AlertTitle,
   AlertDescription,
   List,
   ListItem,
@@ -210,7 +209,7 @@ export function ExampleApp() {
             <div>
               <label className="tg-text text-sm font-medium">Role</label>
               <select
-                className="tg-text mt-1 w-full rounded-md border border-current border-opacity-20 bg-transparent px-3 py-2"
+                className="tg-text border-opacity-20 mt-1 w-full rounded-md border border-current bg-transparent px-3 py-2"
                 value={newUser.role}
                 onChange={e => setNewUser({ ...newUser, role: e.target.value })}
               >

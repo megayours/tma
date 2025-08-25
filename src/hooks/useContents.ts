@@ -54,8 +54,6 @@ export const useGetContent = (params: ContentFilters) => {
           apiParams
         );
 
-        console.log('ACTUAL API RESPONSE:', JSON.stringify(rawData, null, 2));
-
         // Validate raw response data
         const validatedRawData = safeParse(
           RawContentListResponseSchema,

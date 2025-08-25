@@ -1,18 +1,17 @@
 import {
   createRootRoute,
-  Link,
   Outlet,
   useLocation,
   useRouter,
 } from '@tanstack/react-router';
-import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { isTMA } from '@telegram-apps/bridge';
 import { init, backButton, expandViewport } from '@telegram-apps/sdk-react';
 import { useEffect } from 'react';
 import { AppRoot } from '@telegram-apps/telegram-ui';
-import { Navbar } from '@/NavBar';
+import { NavBar } from '@/components/lib/auth/NavBar';
 import { useTelegramTheme } from '@/auth/useTelegram';
+import { ConsoleLogDevtools } from '@/components/ConsoleLogDevtools';
+import { useState } from 'react';
 
 function TelegramAppHandler() {
   const location = useLocation();
@@ -66,21 +65,32 @@ function TelegramAppHandler() {
 
 export const Route = createRootRoute({
   component: () => {
+    // const [consoleReady, setConsoleReady] = useState(false);
+
+    // const handleConsoleReady = () => {
+    //   setConsoleReady(true);
+    // };
+
     return (
       <>
-        <TelegramAppHandler />
-        <AppRoot>
-          <div className="bg-tg-bg h-screen">
-            <main className="bg-tg-bg flex-grow pb-16">
-              <Outlet />
-            </main>
-            <div className="fixed right-0 bottom-0 left-0 z-10 flex h-16 items-center">
-              <Navbar />
+        {/* <ConsoleLogDevtools initialIsOpen={true} onReady={handleConsoleReady} /> */}
+        {/* {consoleReady && ( */}
+        <>
+          <TelegramAppHandler />
+          <AppRoot>
+            <div className="bg-tg-bg min-h-screen">
+              <main className="bg-tg-bg flex-grow pb-16">
+                <Outlet />
+              </main>
+              <div className="fixed right-0 bottom-0 left-0 z-10 flex h-16 items-center">
+                <NavBar />
+              </div>
+              {/* <TanStackRouterDevtools /> */}
+              {/* <ReactQueryDevtools initialIsOpen={false} /> */}
             </div>
-            {/* <TanStackRouterDevtools /> */}
-            {/* <ReactQueryDevtools initialIsOpen={false} /> */}
-          </div>
-        </AppRoot>
+          </AppRoot>
+        </>
+        {/* )} */}
       </>
     );
   },

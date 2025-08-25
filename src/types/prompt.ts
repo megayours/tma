@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ContractSchema, type Contract } from './contract';
+import { ContractSchema } from './contract';
 
 export const PromptVersionSchema = z.object({
   id: z.number(),

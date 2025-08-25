@@ -5,6 +5,7 @@ import tailwindcss from '@tailwindcss/vite';
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: '/',
   plugins: [
     tanstackRouter({
       target: 'react',
@@ -22,6 +23,6 @@ export default defineConfig({
     watch: {
       usePolling: true,
     },
-    allowedHosts: ['localhost', '127.0.0.1', 'ultrayours.loca.lt'],
+    allowedHosts: ['localhost', '127.0.0.1', 'mini.megayours.fun'],
   },
 });

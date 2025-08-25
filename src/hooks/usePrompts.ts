@@ -1,26 +1,20 @@
 'use client';
 
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { type PromptsRequest, PromptsRequestSchema } from '@/types/requests';
+import { useQuery } from '@tanstack/react-query';
+import {
+  type Pagination,
+  type PromptsRequest,
+  PromptsRequestSchema,
+} from '@/types/requests';
 import {
   type PromptsResponse,
   type RawPromptsResponse,
   type RawPrompt,
-  type RawPromptVersion,
   RawPromptsResponseSchema,
 } from '@/types/response';
 import { safeParse, getValidationErrors } from '../utils/validation';
 import { apiGet } from '@/lib/api';
-
-// Helper function to map raw prompt version to expected format
-const mapRawPromptVersionToPromptVersion = (rawVersion: RawPromptVersion) => ({
-  id: rawVersion.id,
-  version: rawVersion.version,
-  createdAt: rawVersion.created_at,
-  minTokens: rawVersion.min_tokens ?? 0,
-  maxTokens: rawVersion.max_tokens ?? 0,
-  additionalContentIds: rawVersion.additional_content_ids ?? null,
-});
+import type { PromptWithContent } from '@/types/content';
 
 // Helper function to map raw prompt to expected format
 const mapRawPromptToPrompt = (rawPrompt: RawPrompt) => ({
@@ -39,7 +33,7 @@ const mapRawPromptToPrompt = (rawPrompt: RawPrompt) => ({
   images: rawPrompt.images,
   videos: rawPrompt.videos,
   gifs: rawPrompt.gifs,
-  versions: rawPrompt.versions.map(mapRawPromptVersionToPromptVersion),
+  versions: rawPrompt.versions,
 });
 
 export const useGetPrompts = (
@@ -56,8 +50,6 @@ export const useGetPrompts = (
         );
       }
 
-      console.log('VALIDATED PARAMS', validatedParams);
-      console.log('API URL', import.meta.env.VITE_PUBLIC_API_URL);
       try {
         // Build parameters object
         const params = {
@@ -93,7 +85,6 @@ export const useGetPrompts = (
           pagination: validatedRawData.pagination,
         };
 
-        console.log('RESPONSE', mappedData, validatedParams);
         return mappedData;
       } catch (error) {
         console.error('ERROR', error);
@@ -105,6 +96,65 @@ export const useGetPrompts = (
   return {
     prompts: {
       data: data?.data || [],
+      pagination: data?.pagination || null,
+    },
+    isLoading,
+    error,
+  };
+};
+
+const mapRawPromptToPromptWithContent = (
+  rawPrompt: RawPrompt
+): PromptWithContent => ({
+  ...mapRawPromptToPrompt(rawPrompt),
+  published: (rawPrompt as any).published ?? false,
+  image: rawPrompt.image ?? '',
+  type: rawPrompt.type as 'images' | 'videos' | 'stickers' | 'gifs',
+  latestContentUrl: (rawPrompt as any).latest_content_url,
+  contentId: (rawPrompt as any).content_id,
+  owner: (rawPrompt as any).owner,
+  ownerName: (rawPrompt as any).owner_name,
+  hasUserGenerated: (rawPrompt as any).has_user_generated ?? false,
+  publishedAt: (rawPrompt as any).published_at ?? 0,
+  generationCount: (rawPrompt as any).generation_count ?? 0,
+});
+
+export const useGetRecommendedPrompts = ({
+  type = 'all',
+  excludeUsed = true,
+  pagination,
+}: {
+  type: 'images' | 'videos' | 'gifs' | 'stickers' | 'all';
+  excludeUsed: boolean;
+  pagination: Pagination;
+}) => {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['recommended-prompts', type, excludeUsed, pagination],
+    queryFn: async () => {
+      const response = await apiGet<RawPromptsResponse>(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/discovery/prompts/recommended`,
+        {
+          type,
+          exclude_used: excludeUsed,
+          page: pagination.page,
+          size: pagination.size,
+        }
+      );
+
+      const mappedPrompts: PromptWithContent[] = response.data.map(
+        mapRawPromptToPromptWithContent
+      );
+
+      return {
+        prompts: mappedPrompts,
+        pagination: response.pagination,
+      };
+    },
+  });
+
+  return {
+    data: {
+      prompts: data?.prompts || [],
       pagination: data?.pagination || null,
     },
     isLoading,

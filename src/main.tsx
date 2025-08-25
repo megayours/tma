@@ -4,6 +4,7 @@ import { RouterProvider, createRouter } from '@tanstack/react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AppRoot } from '@telegram-apps/telegram-ui';
 import { ThemeProvider } from './auth/ThemeProvider';
+import './style.css';
 
 // Import the generated route tree
 import { routeTree } from './routeTree.gen';

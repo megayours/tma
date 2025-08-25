@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { PromptSchema, type Prompt } from './prompt';
+import { PromptSchema } from './prompt';
 import { ContentTypeSchema } from './requests';
 import { ContractSchema } from './contract';
 
@@ -47,6 +47,11 @@ export type PromptsResponse = z.infer<typeof PromptsResponseSchema>;
 export const TokenSchema = z.object({
   contract: ContractSchema,
   id: z.string(),
+  name: z.string().optional(),
+  image: z.string().optional(),
+  description: z.string().optional(),
+  attributes: z.any().optional(),
+  owner: z.string().optional(),
 });
 export type Token = z.infer<typeof TokenSchema>;
 

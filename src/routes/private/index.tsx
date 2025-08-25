@@ -7,13 +7,13 @@ export const Route = createFileRoute('/private/')({
 });
 
 function PrivatePage() {
-  const { user, isAuthenticated } = useAuth();
-  console.log('user', user);
+  const { session, isAuthenticated } = useAuth();
+  console.log('session', session);
 
   return (
     <ProtectedRoute>
       Private Page: Authenticated: {isAuthenticated ? 'Yes' : 'No'} Username:{' '}
-      {user && user.username} ID: {user && user.id}
+      {session && session.username} ID: {session && session.id}
     </ProtectedRoute>
   );
 }

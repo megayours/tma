@@ -1,5 +1,6 @@
 import { useAuth } from '@/auth/useAuth';
 import { ProfileNavBar } from './ProfileNavBar';
+import { CreatePostButton } from '@/components/ui/CreatePostButton';
 
 import { Link } from '@tanstack/react-router';
 
@@ -26,12 +27,7 @@ export function NavBar() {
         >
           About
         </Link>
-        <Link
-          to="/post"
-          className="tg-link px-2 py-1 hover:opacity-80 [&.active]:font-bold"
-        >
-          Post
-        </Link>
+        <CreatePostButton />
         <Link
           to="/private"
           className="tg-link px-2 py-1 hover:opacity-80 [&.active]:font-bold"

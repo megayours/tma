@@ -1,5 +1,41 @@
 @import 'tailwindcss';
 
+/* Mobile keyboard handling */
+:root {
+  --viewport-height: 100vh;
+  --keyboard-height: 0px;
+}
+
+@supports (height: 100dvh) {
+  :root {
+    --viewport-height: 100dvh;
+  }
+}
+
+/* Smooth keyboard transitions */
+.keyboard-aware {
+  transition: transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: transform;
+}
+
+/* Visual viewport API support for smoother keyboard handling */
+@supports (height: 100svh) {
+  .keyboard-aware-container {
+    height: 100svh; /* Small viewport height - excludes keyboard */
+  }
+}
+
+/* Safe area insets for mobile devices */
+.safe-area-inset-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Enhanced mobile input handling */
+.mobile-input-container {
+  transform: translateY(var(--keyboard-offset, 0px));
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
 /* Tailwind theme tokens */
 @theme {
   --color-main: oklch(0.72 0.11 178);

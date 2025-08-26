@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   type Pagination,
   type PromptsRequest,
@@ -15,6 +15,8 @@ import {
 import { safeParse, getValidationErrors } from '../utils/validation';
 import { apiGet } from '@/lib/api';
 import type { PromptWithContent } from '@/types/content';
+import type { Session } from '@/auth/useAuth';
+import type { Prompt, Version } from '@/types/prompt';
 
 // Helper function to map raw prompt to expected format
 const mapRawPromptToPrompt = (rawPrompt: RawPrompt) => ({
@@ -35,73 +37,6 @@ const mapRawPromptToPrompt = (rawPrompt: RawPrompt) => ({
   gifs: rawPrompt.gifs,
   versions: rawPrompt.versions,
 });
-
-export const useGetPrompts = (
-  params: PromptsRequest = { promptType: 'images' }
-) => {
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['prompts', params],
-    queryFn: async (): Promise<PromptsResponse> => {
-      // Validate input parameters
-      const validatedParams = safeParse(PromptsRequestSchema, params);
-      if (!validatedParams) {
-        throw new Error(
-          `Invalid request parameters: ${getValidationErrors(PromptsRequestSchema, params)}`
-        );
-      }
-
-      try {
-        // Build parameters object
-        const params = {
-          account: validatedParams.accountId,
-          chain: validatedParams.chain,
-          prompt_name: validatedParams.promptName,
-          contract_address: validatedParams.contractAddress,
-          token_collection_name: validatedParams.tokenCollectionName,
-          type: validatedParams.promptType,
-          usage_since: validatedParams.usageSince,
-          sort_by: validatedParams.filters?.sortBy,
-          sort_order: validatedParams.filters?.sortOrder,
-          page: validatedParams.pagination?.page,
-          size: validatedParams.pagination?.size,
-        };
-
-        const rawData = await apiGet<RawPromptsResponse>(
-          `${import.meta.env.VITE_PUBLIC_API_URL}/prompts`,
-          params
-        );
-
-        // Validate raw response data
-        const validatedRawData = safeParse(RawPromptsResponseSchema, rawData);
-        if (!validatedRawData) {
-          throw new Error(
-            `Invalid response data: ${getValidationErrors(RawPromptsResponseSchema, rawData)}`
-          );
-        }
-
-        // Map raw data to expected format
-        const mappedData: PromptsResponse = {
-          data: validatedRawData.data.map(mapRawPromptToPrompt),
-          pagination: validatedRawData.pagination,
-        };
-
-        return mappedData;
-      } catch (error) {
-        console.error('ERROR', error);
-        throw error; // Re-throw the error so TanStack Query can handle it properly
-      }
-    },
-  });
-
-  return {
-    prompts: {
-      data: data?.data || [],
-      pagination: data?.pagination || null,
-    },
-    isLoading,
-    error,
-  };
-};
 
 const mapRawPromptToPromptWithContent = (
   rawPrompt: RawPrompt
@@ -160,4 +95,118 @@ export const useGetRecommendedPrompts = ({
     isLoading,
     error,
   };
+};
+
+export const useGetPrompt = (promptId: string, session: Session | null) => {
+  return useQuery({
+    queryKey: ['prompt', promptId, session?.authToken],
+    queryFn: async () => {
+      if (!session) return;
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/prompts/${promptId}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: session.authToken,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error('Prompt not found');
+        }
+        throw new Error(`Failed to fetch prompt: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      const prompt: Prompt = {
+        ...data,
+        createdAt: data.created_at,
+        updatedAt: data.updated_at,
+        deletedAt: data.deleted_at,
+        lastUsed: data.last_used,
+        maxTokens: data.max_tokens,
+        minTokens: data.min_tokens,
+        ownerId: data.owner_id,
+        published: data.published_at,
+        usageCount: data.usage_count,
+        versions: data.versions.map((version: any) => ({
+          ...version,
+          id: version.id,
+          model: version.model,
+          minTokens: version.min_tokens,
+          maxTokens: version.max_tokens,
+          text: version.text,
+          version: version.version,
+          createdAt: version.created_at,
+        })),
+        additionalContentIds: data.additional_content_ids,
+      };
+      return prompt;
+    },
+    enabled: !!session,
+  });
+};
+
+export const useCreatePromptMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      session,
+      type,
+      name,
+    }: {
+      session: Session | null;
+      type: 'images' | 'videos' | 'stickers' | 'animated_stickers';
+      name: string;
+    }) => {
+      if (!session) return;
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/prompts`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: session.authToken,
+          },
+          body: JSON.stringify({ name: name, type: type }),
+        }
+      );
+      if (!response.ok) {
+        throw new Error('Failed to create prompt');
+      }
+      const data = await response.json();
+
+      const prompt: Prompt = {
+        id: data.id,
+        contracts: data.contracts,
+        createdAt: data.created_at,
+        name: data.name,
+        description: data.description,
+        image: data.image,
+        type: data.type,
+        published: data.published,
+        lastUsed: data.last_used,
+        updatedAt: data.updated_at,
+        usageCount: data.usage_count,
+        versions: data.versions.map((version: any) => ({
+          id: version.id,
+          model: version.model,
+          text: version.text,
+          version: version.version,
+          createdAt: version.created_at,
+          minTokens: version.min_tokens,
+          maxTokens: version.max_tokens,
+        })),
+      };
+      return prompt;
+    },
+    // invalidate the prompts query
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['prompts'] });
+    },
+  });
 };

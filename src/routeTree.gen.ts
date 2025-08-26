@@ -20,10 +20,14 @@ import { Route as Demo2IndexRouteImport } from './routes/demo2/index'
 import { Route as Demo2BackupRouteImport } from './routes/demo2/backup'
 import { Route as ProfilePromptIndexRouteImport } from './routes/profile/prompt/index'
 import { Route as ProfileFavoritesIndexRouteImport } from './routes/profile/favorites/index'
+import { Route as PostCreateIndexRouteImport } from './routes/post/create/index'
 import { Route as PostPostIdIndexRouteImport } from './routes/post/$postId/index'
 import { Route as Demo2ItemIndexRouteImport } from './routes/demo2/item/index'
-import { Route as ProfilePromptNewIndexRouteImport } from './routes/profile/prompt/new/index'
 import { Route as ProfileFavoritesNewIndexRouteImport } from './routes/profile/favorites/new/index'
+import { Route as PostCreateVideoIndexRouteImport } from './routes/post/create/video/index'
+import { Route as PostCreateStickerIndexRouteImport } from './routes/post/create/sticker/index'
+import { Route as PostCreateImageIndexRouteImport } from './routes/post/create/image/index'
+import { Route as ProfilePromptEditPromptIdIndexRouteImport } from './routes/profile/prompt/edit/$promptId/index'
 import { Route as AuthDiscordV1CallbackIndexRouteImport } from './routes/auth/discord/v1/callback/index'
 
 const AboutRoute = AboutRouteImport.update({
@@ -81,6 +85,11 @@ const ProfileFavoritesIndexRoute = ProfileFavoritesIndexRouteImport.update({
   path: '/profile/favorites/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PostCreateIndexRoute = PostCreateIndexRouteImport.update({
+  id: '/post/create/',
+  path: '/post/create/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PostPostIdIndexRoute = PostPostIdIndexRouteImport.update({
   id: '/post/$postId/',
   path: '/post/$postId/',
@@ -91,15 +100,31 @@ const Demo2ItemIndexRoute = Demo2ItemIndexRouteImport.update({
   path: '/demo2/item/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ProfilePromptNewIndexRoute = ProfilePromptNewIndexRouteImport.update({
-  id: '/profile/prompt/new/',
-  path: '/profile/prompt/new/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ProfileFavoritesNewIndexRoute =
   ProfileFavoritesNewIndexRouteImport.update({
     id: '/profile/favorites/new/',
     path: '/profile/favorites/new/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const PostCreateVideoIndexRoute = PostCreateVideoIndexRouteImport.update({
+  id: '/post/create/video/',
+  path: '/post/create/video/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PostCreateStickerIndexRoute = PostCreateStickerIndexRouteImport.update({
+  id: '/post/create/sticker/',
+  path: '/post/create/sticker/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PostCreateImageIndexRoute = PostCreateImageIndexRouteImport.update({
+  id: '/post/create/image/',
+  path: '/post/create/image/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfilePromptEditPromptIdIndexRoute =
+  ProfilePromptEditPromptIdIndexRouteImport.update({
+    id: '/profile/prompt/edit/$promptId/',
+    path: '/profile/prompt/edit/$promptId/',
     getParentRoute: () => rootRouteImport,
   } as any)
 const AuthDiscordV1CallbackIndexRoute =
@@ -121,11 +146,15 @@ export interface FileRoutesByFullPath {
   '/profile': typeof ProfileIndexRoute
   '/demo2/item': typeof Demo2ItemIndexRoute
   '/post/$postId': typeof PostPostIdIndexRoute
+  '/post/create': typeof PostCreateIndexRoute
   '/profile/favorites': typeof ProfileFavoritesIndexRoute
   '/profile/prompt': typeof ProfilePromptIndexRoute
+  '/post/create/image': typeof PostCreateImageIndexRoute
+  '/post/create/sticker': typeof PostCreateStickerIndexRoute
+  '/post/create/video': typeof PostCreateVideoIndexRoute
   '/profile/favorites/new': typeof ProfileFavoritesNewIndexRoute
-  '/profile/prompt/new': typeof ProfilePromptNewIndexRoute
   '/auth/discord/v1/callback': typeof AuthDiscordV1CallbackIndexRoute
+  '/profile/prompt/edit/$promptId': typeof ProfilePromptEditPromptIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -139,11 +168,15 @@ export interface FileRoutesByTo {
   '/profile': typeof ProfileIndexRoute
   '/demo2/item': typeof Demo2ItemIndexRoute
   '/post/$postId': typeof PostPostIdIndexRoute
+  '/post/create': typeof PostCreateIndexRoute
   '/profile/favorites': typeof ProfileFavoritesIndexRoute
   '/profile/prompt': typeof ProfilePromptIndexRoute
+  '/post/create/image': typeof PostCreateImageIndexRoute
+  '/post/create/sticker': typeof PostCreateStickerIndexRoute
+  '/post/create/video': typeof PostCreateVideoIndexRoute
   '/profile/favorites/new': typeof ProfileFavoritesNewIndexRoute
-  '/profile/prompt/new': typeof ProfilePromptNewIndexRoute
   '/auth/discord/v1/callback': typeof AuthDiscordV1CallbackIndexRoute
+  '/profile/prompt/edit/$promptId': typeof ProfilePromptEditPromptIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -158,11 +191,15 @@ export interface FileRoutesById {
   '/profile/': typeof ProfileIndexRoute
   '/demo2/item/': typeof Demo2ItemIndexRoute
   '/post/$postId/': typeof PostPostIdIndexRoute
+  '/post/create/': typeof PostCreateIndexRoute
   '/profile/favorites/': typeof ProfileFavoritesIndexRoute
   '/profile/prompt/': typeof ProfilePromptIndexRoute
+  '/post/create/image/': typeof PostCreateImageIndexRoute
+  '/post/create/sticker/': typeof PostCreateStickerIndexRoute
+  '/post/create/video/': typeof PostCreateVideoIndexRoute
   '/profile/favorites/new/': typeof ProfileFavoritesNewIndexRoute
-  '/profile/prompt/new/': typeof ProfilePromptNewIndexRoute
   '/auth/discord/v1/callback/': typeof AuthDiscordV1CallbackIndexRoute
+  '/profile/prompt/edit/$promptId/': typeof ProfilePromptEditPromptIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -178,11 +215,15 @@ export interface FileRouteTypes {
     | '/profile'
     | '/demo2/item'
     | '/post/$postId'
+    | '/post/create'
     | '/profile/favorites'
     | '/profile/prompt'
+    | '/post/create/image'
+    | '/post/create/sticker'
+    | '/post/create/video'
     | '/profile/favorites/new'
-    | '/profile/prompt/new'
     | '/auth/discord/v1/callback'
+    | '/profile/prompt/edit/$promptId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -196,11 +237,15 @@ export interface FileRouteTypes {
     | '/profile'
     | '/demo2/item'
     | '/post/$postId'
+    | '/post/create'
     | '/profile/favorites'
     | '/profile/prompt'
+    | '/post/create/image'
+    | '/post/create/sticker'
+    | '/post/create/video'
     | '/profile/favorites/new'
-    | '/profile/prompt/new'
     | '/auth/discord/v1/callback'
+    | '/profile/prompt/edit/$promptId'
   id:
     | '__root__'
     | '/'
@@ -214,11 +259,15 @@ export interface FileRouteTypes {
     | '/profile/'
     | '/demo2/item/'
     | '/post/$postId/'
+    | '/post/create/'
     | '/profile/favorites/'
     | '/profile/prompt/'
+    | '/post/create/image/'
+    | '/post/create/sticker/'
+    | '/post/create/video/'
     | '/profile/favorites/new/'
-    | '/profile/prompt/new/'
     | '/auth/discord/v1/callback/'
+    | '/profile/prompt/edit/$promptId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -233,11 +282,15 @@ export interface RootRouteChildren {
   ProfileIndexRoute: typeof ProfileIndexRoute
   Demo2ItemIndexRoute: typeof Demo2ItemIndexRoute
   PostPostIdIndexRoute: typeof PostPostIdIndexRoute
+  PostCreateIndexRoute: typeof PostCreateIndexRoute
   ProfileFavoritesIndexRoute: typeof ProfileFavoritesIndexRoute
   ProfilePromptIndexRoute: typeof ProfilePromptIndexRoute
+  PostCreateImageIndexRoute: typeof PostCreateImageIndexRoute
+  PostCreateStickerIndexRoute: typeof PostCreateStickerIndexRoute
+  PostCreateVideoIndexRoute: typeof PostCreateVideoIndexRoute
   ProfileFavoritesNewIndexRoute: typeof ProfileFavoritesNewIndexRoute
-  ProfilePromptNewIndexRoute: typeof ProfilePromptNewIndexRoute
   AuthDiscordV1CallbackIndexRoute: typeof AuthDiscordV1CallbackIndexRoute
+  ProfilePromptEditPromptIdIndexRoute: typeof ProfilePromptEditPromptIdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -319,6 +372,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfileFavoritesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/post/create/': {
+      id: '/post/create/'
+      path: '/post/create'
+      fullPath: '/post/create'
+      preLoaderRoute: typeof PostCreateIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/post/$postId/': {
       id: '/post/$postId/'
       path: '/post/$postId'
@@ -333,18 +393,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Demo2ItemIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/profile/prompt/new/': {
-      id: '/profile/prompt/new/'
-      path: '/profile/prompt/new'
-      fullPath: '/profile/prompt/new'
-      preLoaderRoute: typeof ProfilePromptNewIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/profile/favorites/new/': {
       id: '/profile/favorites/new/'
       path: '/profile/favorites/new'
       fullPath: '/profile/favorites/new'
       preLoaderRoute: typeof ProfileFavoritesNewIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/post/create/video/': {
+      id: '/post/create/video/'
+      path: '/post/create/video'
+      fullPath: '/post/create/video'
+      preLoaderRoute: typeof PostCreateVideoIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/post/create/sticker/': {
+      id: '/post/create/sticker/'
+      path: '/post/create/sticker'
+      fullPath: '/post/create/sticker'
+      preLoaderRoute: typeof PostCreateStickerIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/post/create/image/': {
+      id: '/post/create/image/'
+      path: '/post/create/image'
+      fullPath: '/post/create/image'
+      preLoaderRoute: typeof PostCreateImageIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile/prompt/edit/$promptId/': {
+      id: '/profile/prompt/edit/$promptId/'
+      path: '/profile/prompt/edit/$promptId'
+      fullPath: '/profile/prompt/edit/$promptId'
+      preLoaderRoute: typeof ProfilePromptEditPromptIdIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth/discord/v1/callback/': {
@@ -369,11 +450,15 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileIndexRoute: ProfileIndexRoute,
   Demo2ItemIndexRoute: Demo2ItemIndexRoute,
   PostPostIdIndexRoute: PostPostIdIndexRoute,
+  PostCreateIndexRoute: PostCreateIndexRoute,
   ProfileFavoritesIndexRoute: ProfileFavoritesIndexRoute,
   ProfilePromptIndexRoute: ProfilePromptIndexRoute,
+  PostCreateImageIndexRoute: PostCreateImageIndexRoute,
+  PostCreateStickerIndexRoute: PostCreateStickerIndexRoute,
+  PostCreateVideoIndexRoute: PostCreateVideoIndexRoute,
   ProfileFavoritesNewIndexRoute: ProfileFavoritesNewIndexRoute,
-  ProfilePromptNewIndexRoute: ProfilePromptNewIndexRoute,
   AuthDiscordV1CallbackIndexRoute: AuthDiscordV1CallbackIndexRoute,
+  ProfilePromptEditPromptIdIndexRoute: ProfilePromptEditPromptIdIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -65,11 +65,10 @@ function TelegramAppHandler() {
 
 export const Route = createRootRoute({
   component: () => {
-    // const [consoleReady, setConsoleReady] = useState(false);
-
-    // const handleConsoleReady = () => {
-    //   setConsoleReady(true);
-    // };
+    const location = useLocation();
+    const shouldHideNavBar = location.pathname.startsWith(
+      '/profile/prompt/edit'
+    );
 
     return (
       <>
@@ -79,12 +78,16 @@ export const Route = createRootRoute({
           <TelegramAppHandler />
           <AppRoot>
             <div className="bg-tg-bg min-h-screen">
-              <main className="bg-tg-bg flex-grow pb-16">
+              <main
+                className={`bg-tg-bg flex-grow ${shouldHideNavBar ? '' : 'pb-16'}`}
+              >
                 <Outlet />
               </main>
-              <div className="fixed right-0 bottom-0 left-0 z-10 flex h-16 items-center">
-                <NavBar />
-              </div>
+              {!shouldHideNavBar && (
+                <div className="fixed right-0 bottom-0 left-0 z-10 flex h-16 items-center">
+                  <NavBar />
+                </div>
+              )}
               {/* <TanStackRouterDevtools /> */}
               {/* <ReactQueryDevtools initialIsOpen={false} /> */}
             </div>

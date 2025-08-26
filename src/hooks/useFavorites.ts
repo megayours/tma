@@ -1,11 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Session } from '@/auth/useAuth';
-import type { Token } from '../types/response';
+import type { Token } from '@/types/token';
 
 export type Favorite = {
   token: Token;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: number;
+  updatedAt: number;
 };
 
 export function useGetFavorites(session?: Session) {

@@ -1,5 +1,5 @@
 import type { CompactPrompt } from './prompt';
-import type { Token } from './response';
+import type { Token } from './token';
 
 export interface ImageStatus {
   id: string;

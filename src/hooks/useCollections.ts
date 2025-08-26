@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Pagination } from '../types/requests';
-import type { Token } from '../types/response';
+import type { Token } from '../types/token';
 import type { Session } from '@/auth/useAuth';
 
 export type SupportedCollection = {

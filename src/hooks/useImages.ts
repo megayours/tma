@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { apiGet } from '@/lib/api';
 import type { Pagination, Filter } from '@/types/requests';
-import type { Token, PaginationResponse } from '../types/response';
+import type { Token } from '../types/token';
+import type { PaginationResponse } from '../types/response';
 import type { Image, ImageStatus } from '../types/image';
 import type { CompactPrompt } from '../types/prompt';
 

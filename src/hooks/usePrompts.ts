@@ -210,3 +210,30 @@ export const useCreatePromptMutation = () => {
     },
   });
 };
+
+const useAddInputToPromptMutation = () => {
+  return useMutation({
+    mutationFn: async ({
+      session,
+      promptId,
+      input,
+    }: {
+      session: Session | null;
+      promptId: string;
+      input: string;
+    }) => {
+      if (!session) return;
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/prompts/${promptId}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: session.authToken,
+          },
+          body: JSON.stringify({ input: input }),
+        }
+      );
+    },
+  });
+};

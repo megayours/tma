@@ -12,6 +12,7 @@ import { NavBar } from '@/components/lib/auth/NavBar';
 import { useTelegramTheme } from '@/auth/useTelegram';
 import { ConsoleLogDevtools } from '@/components/ConsoleLogDevtools';
 import { useState } from 'react';
+import { RiCloseLargeFill } from 'react-icons/ri';
 
 function TelegramAppHandler() {
   const location = useLocation();
@@ -66,6 +67,7 @@ function TelegramAppHandler() {
 export const Route = createRootRoute({
   component: () => {
     const location = useLocation();
+    const router = useRouter();
     const shouldHideNavBar = location.pathname.startsWith(
       '/profile/prompt/edit'
     );
@@ -81,6 +83,16 @@ export const Route = createRootRoute({
               <main
                 className={`bg-tg-bg flex-grow ${shouldHideNavBar ? '' : 'pb-16'}`}
               >
+                {shouldHideNavBar && (
+                  <div className="fixed top-5 left-5 z-10">
+                    <RiCloseLargeFill
+                      className="h-10 w-10"
+                      onClick={() => {
+                        router.navigate({ to: '/' });
+                      }}
+                    />
+                  </div>
+                )}
                 <Outlet />
               </main>
               {!shouldHideNavBar && (

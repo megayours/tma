@@ -1,17 +1,39 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Prompt } from '@/types/prompt';
 import { Textarea } from '@telegram-apps/telegram-ui';
 import { AddContentButton } from '../ui/AddContentButton';
 import { IoSend } from 'react-icons/io5';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
+import { InputsEditor } from './InputsEditor';
 
-export const PromptEditor = ({ prompt }: { prompt: Prompt | null }) => {
+export const PromptEditor = ({
+  prompt: initialPrompt,
+}: {
+  prompt: Prompt | null;
+}) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [promptText, setPromptText] = useState('');
+  const [prompt, setPrompt] = useState<Prompt | null>(initialPrompt);
+  const [hasChanges, setHasChanges] = useState(false);
+  const promptTextareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Function to update prompt and track changes
+  const updatePrompt = (updates: Partial<Prompt>) => {
+    if (prompt) {
+      setPrompt({ ...prompt, ...updates });
+      setHasChanges(true);
+    }
+  };
 
   const handleGenerate = async () => {
     if (!promptText.trim() || isGenerating) return;
+
+    // Check if the prompt has been modified
+    if (hasChanges) {
+      // TODO: update the prompt if it changed
+      console.log('Prompt has been modified, updating...');
+    }
 
     setIsGenerating(true);
 
@@ -101,14 +123,23 @@ export const PromptEditor = ({ prompt }: { prompt: Prompt | null }) => {
 
       {/* Fixed bottom toolbar with smooth keyboard transitions */}
       <div className="mobile-input-container keyboard-aware bg-tg-secondary-bg border-tg-hint/20 safe-area-inset-bottom fixed right-0 bottom-0 left-0 z-50 border-t">
+        <div id="custom-input-container"></div>
+        <div>
+          <InputsEditor prompt={prompt} />
+        </div>
         <div className="flex flex-row items-center p-4">
           <div className="flex items-center justify-center">
-            <AddContentButton />
+            <AddContentButton
+              updatePrompt={updatePrompt}
+              prompt={prompt}
+              promptTextareaRef={promptTextareaRef}
+            />
           </div>
           <div className="flex flex-1 flex-col gap-2 px-4">
             <Textarea
               placeholder="Enter your prompt..."
               className="transition-all duration-200 focus:scale-[1.02]"
+              ref={promptTextareaRef}
               value={promptText}
               onChange={e => setPromptText(e.target.value)}
               disabled={isGenerating}

@@ -1,17 +1,175 @@
-import { useState } from 'react';
+import {
+  Button,
+  Card,
+  Cell,
+  Divider,
+  Input,
+  Placeholder,
+  Section,
+} from '@telegram-apps/telegram-ui';
+import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { IoArrowBackOutline } from 'react-icons/io5';
+import { useGetFavorites } from '@/hooks/useFavorites';
+import { useAuth } from '@/auth/useAuth';
+import type { Prompt } from '../../types/prompt';
 
-interface AddContentButtonProps {
-  onAddContent?: (type: string) => void;
-}
+export const SelectActor = ({
+  prompt,
+  updatePrompt,
+}: {
+  prompt: Prompt;
+  updatePrompt: ((updates: Partial<Prompt>) => void) | null;
+}) => {
+  const inputRef = useRef<HTMLInputElement>(null);
 
-export function AddContentButton({ onAddContent }: AddContentButtonProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  // Focus on input when component mounts
+  useEffect(() => {
+    if (inputRef.current) {
+      // Small delay to ensure the component is rendered
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+    }
+  }, []);
+
+  const handleActorSelect = () => {
+    if (updatePrompt) {
+      updatePrompt({
+        maxTokens: (prompt.maxTokens ?? 0) + 1,
+        minTokens: (prompt.minTokens ?? 0) + 1,
+      });
+      // Todo close modal
+    }
+  };
 
   return (
-    <div className="relative flex items-center justify-center">
+    <>
+      <Button onClick={handleActorSelect}>
+        PLEASE CLICK ME, I am useless button
+      </Button>
+    </>
+  );
+  /* 
+    <Section>
+      <Input
+        ref={inputRef}
+        header="Actor Name"
+        value={actorName}
+        onChange={handleActorNameChange}
+        placeholder="Enter actor name..."
+      />
+      <Button
+        onClick={handleActorSelect}
+        size="l"
+        className="w-full"
+        disabled={!actorName.trim()}
+      >
+        Use "{actorName || 'Actor'}" as Actor
+      </Button>
+      <Section>
+        <Section>
+          <h1 className="text-tg-text">Your NFTs</h1>
+          <div className="flex flex-row p-2">
+            {favorites &&
+              favorites.length > 0 &&
+              favorites?.map(favorite => (
+                <Card
+                  key={favorite.token.id}
+                  className="border-tg-section-separator flex h-30 w-30 flex-row gap-2"
+                >
+                  <img
+                    src={favorite.token.image}
+                    alt={favorite.token.name}
+                    className="h-20 w-30 object-cover"
+                  />
+                  <h2 className="text-tg-text text-center text-sm wrap-break-word">
+                    {favorite.token.name}
+                  </h2>
+                </Card>
+              ))}
+          </div>
+        </Section>
+        <div className="flex flex-row items-center justify-center">OR</div>
+        <Section>
+          <div className="bg-tg-section-bg">
+            <h1>User Selected NFT</h1>
+            <div className="flex flex-col items-center justify-center p-4">
+              <Placeholder
+                description="Description"
+                header="Title"
+                className="bg-tg-section-bg border-tg-section-separator h-80 w-60 rounded-lg border"
+              >
+                <img
+                  alt="Telegram sticker"
+                  className="blt0jZBzpxuR4oDhJc8s"
+                  src="https://xelene.me/telegram.gif"
+                />
+              </Placeholder>
+            </div>
+          </div>
+        </Section>
+      </Section> 
+    </Section> 
+  ); */
+};
+
+export const SelectPrompt = ({
+  updatePrompt,
+  prompt,
+}: {
+  updatePrompt: ((updates: Partial<Prompt>) => void) | null;
+  prompt: Prompt;
+}) => {
+  console.log('PROMPT', prompt);
+  return <div>Select Prompt</div>;
+};
+
+export const SelectImage = ({
+  prompt,
+  updatePrompt,
+}: {
+  prompt: Prompt;
+  updatePrompt: ((updates: Partial<Prompt>) => void) | null;
+}) => {
+  console.log('PROMPT', prompt);
+  return <div>Select Image</div>;
+};
+
+export function AddContentButton({
+  updatePrompt,
+  prompt,
+  promptTextareaRef,
+}: {
+  updatePrompt: ((updates: Partial<Prompt>) => void) | null;
+  prompt: Prompt;
+  promptTextareaRef: React.RefObject<HTMLTextAreaElement | null>;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedContent, setSelectedContent] = useState<string | null>(null);
+
+  const addActor = () => {
+    setSelectedContent('actor'); // now not used
+    updatePrompt?.({
+      maxTokens: (prompt.maxTokens ?? 0) + 1,
+      minTokens: (prompt.minTokens ?? 0) + 1,
+    });
+    setIsOpen(false);
+    // focus on textarea by using ref
+    if (promptTextareaRef.current) {
+      promptTextareaRef.current.focus();
+    }
+  };
+
+  const handleClick = () => {
+    setIsOpen(!isOpen);
+  };
+
+  return (
+    <>
       <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="bg-tg-button-secondary text-tg-button-accent-color-text hover:bg-tg-button-accent-color/80 relative flex h-10 w-10 items-center justify-center rounded-lg shadow-sm transition-all duration-200 hover:scale-110 active:scale-95"
+        onClick={handleClick}
+        className="bg-tg-button text-tg-button-text hover:bg-tg-button/80 flex h-10 w-10 items-center justify-center rounded-lg shadow-sm transition-all duration-200 hover:scale-110 active:scale-95"
         aria-label="Add content"
       >
         <svg
@@ -30,22 +188,52 @@ export function AddContentButton({ onAddContent }: AddContentButtonProps) {
         </svg>
       </button>
 
-      {isOpen && (
-        <>
-          {/* Backdrop to close menu */}
-          <div
-            className="fixed inset-0 z-10"
-            onClick={() => setIsOpen(false)}
-          />
-
-          {/* Menu positioned above the button */}
-          <div className="absolute bottom-full left-1/2 z-20 mb-2 w-[200px] -translate-x-1/2 transform">
-            <div className="bg-tg-secondary-bg border-tg-hint/20 flex w-full flex-col gap-2 rounded-lg border p-2 shadow-lg">
-              {/* Menu content will go here */}
+      {isOpen &&
+        selectedContent === null &&
+        createPortal(
+          <>
+            {/* Menu positioned above the button */}
+            <div className="relative">
+              <div className="bg-tg-section-bg border-tg-hint/20 flex w-full flex-col gap-2 border p-2">
+                {/* Menu content will go here */}
+                <Cell onClick={() => addActor()}>Actor</Cell>
+                <Divider />
+                <Cell onClick={() => setSelectedContent('prompt')}>Prompt</Cell>
+                <Divider />
+                <Cell onClick={() => setSelectedContent('image')}>Image</Cell>
+              </div>
             </div>
-          </div>
-        </>
-      )}
-    </div>
+          </>,
+          document.getElementById('custom-input-container')!
+        )}
+
+      {isOpen &&
+        selectedContent === 'prompt' &&
+        createPortal(
+          <div>Prompt Editor</div>,
+          document.getElementById('custom-input-container')!
+        )}
+
+      {/* {isOpen &&
+        selectedContent !== null &&
+        createPortal(
+          <Section>
+            <IoArrowBackOutline onClick={() => setSelectedContent(null)} />
+            <div className="text-tg-text min-h-40">
+              Select {selectedContent}
+              {selectedContent === 'actor' && (
+                <SelectActor updatePrompt={updatePrompt} prompt={prompt} />
+              )}
+              {selectedContent === 'prompt' && (
+                <SelectPrompt updatePrompt={updatePrompt} prompt={prompt} />
+              )}
+              {selectedContent === 'image' && (
+                <SelectImage prompt={prompt} updatePrompt={updatePrompt} />
+              )}
+            </div>
+          </Section>,
+          document.getElementById('custom-input-container')!
+        )} */}
+    </>
   );
 }

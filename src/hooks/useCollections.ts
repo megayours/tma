@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Pagination } from '../types/requests';
 import type { Token } from '../types/response';
+import { useSession } from '@/auth/SessionProvider';
 import type { Session } from '@/auth/useAuth';
 
 export type SupportedCollection = {
@@ -11,15 +12,18 @@ export type SupportedCollection = {
 };
 
 export function useGetSupportedCollections() {
+  const { session } = useSession();
   const { data, isLoading, error } = useQuery({
     queryKey: ['supportedCollections'],
     queryFn: async () => {
+      if (!session) return;
       const response = await fetch(
         `${import.meta.env.VITE_PUBLIC_API_URL}/tokens/used-collections`,
         {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            Authorization: session.authToken,
           },
         }
       );

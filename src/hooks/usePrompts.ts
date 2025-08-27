@@ -211,29 +211,40 @@ export const useCreatePromptMutation = () => {
   });
 };
 
-const useAddInputToPromptMutation = () => {
-  return useMutation({
-    mutationFn: async ({
-      session,
-      promptId,
-      input,
-    }: {
-      session: Session | null;
-      promptId: string;
-      input: string;
-    }) => {
+export const useGetMyPrompts = (
+  session: Session,
+  pagination: Pagination,
+  type?: 'images' | 'videos' | 'stickers' | 'animated_stickers'
+) => {
+  return useQuery({
+    queryKey: ['my-prompts', session?.authToken, pagination, type],
+    queryFn: async () => {
       if (!session) return;
+      const params = new URLSearchParams({
+        account: session.id,
+        page: pagination.page?.toString() ?? '1',
+        size: pagination.size?.toString() ?? '10',
+        ...(type && { type }),
+      });
       const response = await fetch(
-        `${import.meta.env.VITE_PUBLIC_API_URL}/prompts/${promptId}`,
+        `${import.meta.env.VITE_PUBLIC_API_URL}/prompts?${params.toString()}`,
         {
-          method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
             Authorization: session.authToken,
           },
-          body: JSON.stringify({ input: input }),
         }
       );
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch prompts: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      console.log('data', data);
+      return data;
     },
+    enabled: !!session,
   });
 };

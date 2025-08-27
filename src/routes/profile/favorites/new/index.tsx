@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useAuth } from '../../../../auth/useAuth';
+import { useSession } from '@/auth/SessionProvider';
 import {
   useAddToFavoritesMutation,
   useGetSupportedCollections,
@@ -17,7 +17,7 @@ export const Route = createFileRoute('/profile/favorites/new/')({
 
 function RouteComponent() {
   // get current favorites from the backend
-  const { session } = useAuth();
+  const { session } = useSession();
   const { data: supportedCollections } = useGetSupportedCollections();
   const [step, setStep] = useState<number>(0);
   const [selectedCollection, setSelectedCollection] = useState<

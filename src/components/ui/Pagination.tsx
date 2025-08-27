@@ -1,3 +1,4 @@
+import { Pagination as TGPagination } from '@telegram-apps/telegram-ui';
 interface PaginationProps {
   page: number;
   setPage: (page: number) => void;
@@ -12,21 +13,11 @@ export function Pagination({
   className = '',
 }: PaginationProps) {
   return (
-    <div className={`flex w-full flex-row gap-2 ${className}`}>
-      <button
-        className="bg-tg-primary text-tg-text rounded-lg p-2"
-        onClick={() => setPage(page - 1)}
-        disabled={page === 1}
-      >
-        Previous Page
-      </button>
-      <button
-        className="bg-tg-primary text-tg-text rounded-lg p-2"
-        onClick={() => setPage(page + 1)}
-        disabled={page === totalPages}
-      >
-        Next Page
-      </button>
-    </div>
+    <TGPagination
+      count={totalPages}
+      page={page}
+      siblingCount={1}
+      onChange={(_, page) => setPage(page)}
+    />
   );
 }

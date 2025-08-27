@@ -14,12 +14,6 @@ export type ContentSortBy = z.infer<typeof ContentSortBySchema>;
 export const ContentSortOrderSchema = z.enum(['asc', 'desc']);
 export type ContentSortOrder = z.infer<typeof ContentSortOrderSchema>;
 
-export const ContentPaginationSchema = z.object({
-  page: z.string().default('1'),
-  size: z.string().default('10'),
-});
-export type ContentPagination = z.infer<typeof ContentPaginationSchema>;
-
 export const FilterSchema = z.object({
   sortBy: z.enum(['last_used', 'created_at']).optional(),
   sortOrder: z.enum(['asc', 'desc']).optional(),

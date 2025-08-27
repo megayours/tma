@@ -1,25 +1,18 @@
 import { useMemo, useState } from 'react';
-import type { Session } from '@/auth/useAuth';
+import { useSession } from '@/auth/SessionProvider';
 import { PiPlus, PiX } from 'react-icons/pi';
 import { useGetFavorites, useRemoveFromFavorites } from '@/hooks/useFavorites';
-import { Avatar } from '@telegram-apps/telegram-ui';
-import { Link } from '@tanstack/react-router';
+import { Avatar, Button, Divider } from '@telegram-apps/telegram-ui';
+import { Link, useNavigate } from '@tanstack/react-router';
 
-export function ProfileNavBar({
-  logout: _logout,
-  session,
-}: {
-  logout: () => void;
-  session: Session;
-}) {
+export function ProfileNavBar({ logout: _logout }: { logout: () => void }) {
+  const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const memoizedSession = useMemo(
-    () => session,
-    [session.id, session.authToken]
-  );
-  const { favorites, isLoadingFavorites } = useGetFavorites(memoizedSession);
+
+  const { session } = useSession();
+  const { favorites, isLoadingFavorites } = useGetFavorites(session!);
   const { removeFromFavorites, isRemoving, removingTokenId } =
-    useRemoveFromFavorites(memoizedSession);
+    useRemoveFromFavorites(session!);
   console.log('favorites', favorites);
 
   const toggleDropdown = () => {
@@ -45,17 +38,20 @@ export function ProfileNavBar({
 
       {/* Dropdown Menu */}
       {isDropdownOpen && (
-        <div className="ring-opacity-5 absolute right-0 bottom-full z-50 mb-2 rounded-md bg-white p-3 shadow-lg ring-1 ring-black">
+        <div className="bg-tg-section-header-text/80 absolute right-0 bottom-full z-50 mb-2 rounded-lg p-5">
           <div className="flex flex-col items-center gap-2">
             {favorites && favorites.length > 0 && (
               <div className="flex flex-col gap-2">
                 {favorites.map(favorite => (
-                  <div key={favorite.token.id} className="relative">
+                  <div
+                    key={favorite.token.id}
+                    className="relative flex flex-row items-center justify-center gap-2"
+                  >
                     <Avatar
-                      size={40}
+                      size={72} // it just works
                       src={`${favorite.token.image || '/nfts/ape.jpg'}`}
                       alt="Favorite"
-                      className={`h-16 w-16 rounded-full transition-all duration-200 ${
+                      className={`h-72 w-72 rounded-full transition-all duration-200 ${
                         isRemoving && removingTokenId === favorite.token.id
                           ? 'opacity-50 grayscale'
                           : ''
@@ -97,13 +93,24 @@ export function ProfileNavBar({
               </div>
             )}
             {/* Add to Favorites Link */}
-            <Link
-              onClick={() => setIsDropdownOpen(false)}
-              to="/profile/favorites/new"
+            <Button
+              onClick={() => {
+                navigate({
+                  to: '/profile/favorites/new',
+                });
+                setIsDropdownOpen(false);
+              }}
               className="text-tg-text bg-tg-secondary-bg hover:bg-tg-secondary-bg/80 block rounded-full p-2 text-left text-sm transition-colors"
+              size="l"
+              mode="filled"
+              stretched={true}
             >
-              <PiPlus className="h-3 w-3" />
-            </Link>
+              +
+            </Button>
+            <Divider />
+            <div className="text-tg-button-text">
+              <Link to={'/profile'}>Profile</Link>
+            </div>
             {/* Logout Button
             NO LOGOUT BUTTON FOR NOW. BUT IT WORKS.
             <div className="border-t border-gray-100 py-1">

@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useGetFavorites } from '@/hooks/useFavorites';
-import { useAuth } from '@/auth/useAuth';
+import { useSession } from '@/auth/SessionProvider';
 import { Button, Section } from '@telegram-apps/telegram-ui';
 import {
   Card,
@@ -18,10 +18,8 @@ export const Route = createFileRoute('/profile/favorites/')({
 
 function RouteComponent() {
   // get current favorites from the backend
-  const { session } = useAuth();
-  const { favorites, isLoadingFavorites } = useGetFavorites(
-    session || undefined
-  );
+  const { session } = useSession();
+  const { favorites, isLoadingFavorites } = useGetFavorites(session);
 
   if (isLoadingFavorites) {
     return <Section>Loading...</Section>;

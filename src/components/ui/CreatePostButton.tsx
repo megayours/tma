@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { useAuth } from '../../auth/useAuth';
+import { useSession } from '@/auth/SessionProvider';
 import { useCreatePromptMutation } from '../../hooks/usePrompts';
 
 export function CreatePostButton() {
-  const { session } = useAuth();
+  const { session } = useSession();
   const { mutateAsync: createPrompt } = useCreatePromptMutation();
 
   const [showOptions, setShowOptions] = useState(false);

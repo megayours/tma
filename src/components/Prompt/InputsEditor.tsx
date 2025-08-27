@@ -3,9 +3,9 @@ import { Button, Chip, Divider } from '@telegram-apps/telegram-ui';
 
 export const InputsEditor = ({ prompt }: { prompt: Prompt }) => {
   return (
-    <div className="flex h-12 flex-row items-center justify-center">
+    <div className="flex h-12 flex-row items-center justify-center gap-2">
       {Array.from({ length: prompt.maxTokens ?? 1 }).map((_, index) => (
-        <>
+        <div key={index}>
           <Button
             mode="white"
             key={index}
@@ -15,9 +15,9 @@ export const InputsEditor = ({ prompt }: { prompt: Prompt }) => {
             }}
             size="s"
           >
-            Actor {index}
+            NFT {index + 1}
           </Button>
-        </>
+        </div>
       ))}
     </div>
   );

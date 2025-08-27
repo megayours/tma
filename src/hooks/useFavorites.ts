@@ -8,7 +8,7 @@ export type Favorite = {
   updatedAt: string;
 };
 
-export function useGetFavorites(session?: Session) {
+export function useGetFavorites(session: Session | null) {
   const { data, isLoading } = useQuery({
     queryKey: ['favorites', session?.id],
     queryFn: async (): Promise<Favorite[]> => {

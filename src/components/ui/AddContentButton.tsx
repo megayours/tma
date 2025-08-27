@@ -9,12 +9,9 @@ import {
 } from '@telegram-apps/telegram-ui';
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { IoArrowBackOutline } from 'react-icons/io5';
-import { useGetFavorites } from '@/hooks/useFavorites';
-import { useAuth } from '@/auth/useAuth';
 import type { Prompt } from '../../types/prompt';
 
-export const SelectActor = ({
+export const SelectNFT = ({
   prompt,
   updatePrompt,
 }: {
@@ -33,7 +30,7 @@ export const SelectActor = ({
     }
   }, []);
 
-  const handleActorSelect = () => {
+  const handleNFTSelect = () => {
     if (updatePrompt) {
       updatePrompt({
         maxTokens: (prompt.maxTokens ?? 0) + 1,
@@ -45,7 +42,7 @@ export const SelectActor = ({
 
   return (
     <>
-      <Button onClick={handleActorSelect}>
+      <Button onClick={handleNFTSelect}>
         PLEASE CLICK ME, I am useless button
       </Button>
     </>
@@ -54,18 +51,18 @@ export const SelectActor = ({
     <Section>
       <Input
         ref={inputRef}
-        header="Actor Name"
-        value={actorName}
-        onChange={handleActorNameChange}
-        placeholder="Enter actor name..."
+        header="NFT Name"
+        value={nftName}
+        onChange={handleNFTNameChange}
+        placeholder="Enter NFT name..."
       />
       <Button
-        onClick={handleActorSelect}
+        onClick={handleNFTSelect}
         size="l"
         className="w-full"
-        disabled={!actorName.trim()}
+        disabled={!nftName.trim()}
       >
-        Use "{actorName || 'Actor'}" as Actor
+        Use "{nftName || 'NFT'}" as NFT
       </Button>
       <Section>
         <Section>
@@ -148,8 +145,8 @@ export function AddContentButton({
   const [isOpen, setIsOpen] = useState(false);
   const [selectedContent, setSelectedContent] = useState<string | null>(null);
 
-  const addActor = () => {
-    setSelectedContent('actor'); // now not used
+  const addNFT = () => {
+    setSelectedContent('nft'); // now not used
     updatePrompt?.({
       maxTokens: (prompt.maxTokens ?? 0) + 1,
       minTokens: (prompt.minTokens ?? 0) + 1,
@@ -196,7 +193,7 @@ export function AddContentButton({
             <div className="relative">
               <div className="bg-tg-section-bg border-tg-hint/20 flex w-full flex-col gap-2 border p-2">
                 {/* Menu content will go here */}
-                <Cell onClick={() => addActor()}>Actor</Cell>
+                <Cell onClick={() => addNFT()}>NFT</Cell>
                 <Divider />
                 <Cell onClick={() => setSelectedContent('prompt')}>Prompt</Cell>
                 <Divider />
@@ -221,8 +218,8 @@ export function AddContentButton({
             <IoArrowBackOutline onClick={() => setSelectedContent(null)} />
             <div className="text-tg-text min-h-40">
               Select {selectedContent}
-              {selectedContent === 'actor' && (
-                <SelectActor updatePrompt={updatePrompt} prompt={prompt} />
+              {selectedContent === 'nft' && (
+                <SelectNFT updatePrompt={updatePrompt} prompt={prompt} />
               )}
               {selectedContent === 'prompt' && (
                 <SelectPrompt updatePrompt={updatePrompt} prompt={prompt} />

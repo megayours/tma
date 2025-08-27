@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { PromptEditor } from '@/components/Prompt/PromptEditor';
-import { useAuth } from '@/auth/useAuth';
+import { useSession } from '@/auth/SessionProvider';
 import { useGetPrompt } from '@/hooks/usePrompts';
 
 export const Route = createFileRoute('/profile/prompt/edit/$promptId/')({
@@ -9,7 +9,7 @@ export const Route = createFileRoute('/profile/prompt/edit/$promptId/')({
 
 function RouteComponent() {
   const { promptId } = Route.useParams();
-  const { session } = useAuth();
+  const { session } = useSession();
   const { data: prompt, isLoading, error } = useGetPrompt(promptId, session);
 
   if (isLoading) return <div>Loading prompt...</div>;

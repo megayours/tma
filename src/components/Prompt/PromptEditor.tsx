@@ -1,7 +1,12 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
 import type { Prompt } from '@/types/prompt';
-import { Textarea } from '@telegram-apps/telegram-ui';
+import {
+  Button,
+  Divider,
+  IconButton,
+  Textarea,
+} from '@telegram-apps/telegram-ui';
 import { AddContentButton } from '../ui/AddContentButton';
 import { IoSend } from 'react-icons/io5';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
@@ -127,7 +132,8 @@ export const PromptEditor = ({
         <div>
           <InputsEditor prompt={prompt} />
         </div>
-        <div className="flex flex-row items-center p-4">
+        <Divider />
+        <div className="flex flex-row items-center gap-2 px-2">
           <div className="flex items-center justify-center">
             <AddContentButton
               updatePrompt={updatePrompt}
@@ -135,7 +141,7 @@ export const PromptEditor = ({
               promptTextareaRef={promptTextareaRef}
             />
           </div>
-          <div className="flex flex-1 flex-col gap-2 px-4">
+          <div className="bg-tg-section-bg flex flex-1 flex-col">
             <Textarea
               placeholder="Enter your prompt..."
               className="transition-all duration-200 focus:scale-[1.02]"
@@ -145,18 +151,15 @@ export const PromptEditor = ({
               disabled={isGenerating}
             />
           </div>
-          <div className="flex items-center">
-            <button
+          <div className="">
+            <IconButton
+              mode="plain"
+              size="l"
               onClick={handleGenerate}
               disabled={isGenerating || !promptText.trim()}
-              className="bg-tg-button-secondary text-tg-button-accent-color-text hover:bg-tg-button-accent-color/80 flex h-14 w-14 items-center justify-center rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {isGenerating ? (
-                <AiOutlineLoading3Quarters className="h-8 w-8 animate-spin" />
-              ) : (
-                <IoSend className="h-8 w-8" />
-              )}
-            </button>
+              <IoSend className="text-tg-hint" />
+            </IconButton>
           </div>
         </div>
       </div>

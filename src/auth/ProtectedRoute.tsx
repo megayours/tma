@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
-import { useAuth } from './useAuth';
-import { SessionProvider } from './SessionProvider';
+import { useAuthContext } from './AuthProvider';
 import { Link } from '@tanstack/react-router';
 
 interface ProtectedRouteProps {
@@ -8,8 +7,7 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { isAuthenticated, isAuthenticating, isTelegram, session, logout } =
-    useAuth();
+  const { isAuthenticated, isAuthenticating, isTelegram } = useAuthContext();
 
   // Add your authentication logic here
   // For now, just render children
@@ -37,11 +35,6 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
       <div className="p-4">
         <h2 className="mb-4 text-xl font-semibold">Not Authenticated</h2>
         <p className="mb-4">isTelegram: {isTelegram ? 'true' : 'false'}</p>
-        {session && (
-          <div className="mb-4 rounded bg-gray-100 p-3">
-            <p>User: {session.username || 'Unknown'}</p>
-          </div>
-        )}
         <Link
           to="/"
           search={{
@@ -58,27 +51,5 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     );
   }
 
-  return (
-    <SessionProvider
-      session={session}
-      isAuthenticated={isAuthenticated}
-      isAuthenticating={isAuthenticating}
-      logout={logout}
-    >
-      {/* {session && (
-          <div className="border-b bg-gray-100 p-2">
-            <div className="flex items-center justify-between">
-              <span>Welcome, {session.username || 'User'}!</span>
-              <button
-                onClick={logout}
-                className="rounded bg-red-600 px-3 py-1 text-sm text-white hover:bg-red-700"
-              >
-                Logout
-              </button>
-            </div>
-          </div>
-        )} */}
-      {children}
-    </SessionProvider>
-  );
+  return <>{children}</>;
 }

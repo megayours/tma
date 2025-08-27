@@ -1,4 +1,4 @@
-import { useAuth } from '@/auth/useAuth';
+import { useAuthContext } from '@/auth/AuthProvider';
 import { ProfileNavBar } from './ProfileNavBar';
 import { CreatePostButton } from '@/components/ui/CreatePostButton';
 
@@ -7,7 +7,7 @@ import { ProtectedRoute } from '@/auth/ProtectedRoute';
 import { Button } from '@telegram-apps/telegram-ui';
 
 export function NavBar() {
-  const { logout, isAuthenticated, session } = useAuth();
+  const { logout, isAuthenticated, session } = useAuthContext();
   console.log('session', session);
 
   if (!isAuthenticated) {

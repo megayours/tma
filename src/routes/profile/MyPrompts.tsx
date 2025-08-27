@@ -4,8 +4,12 @@ import { Pagination } from '../../components/ui/Pagination';
 import type { Pagination as PaginationType } from '@/types/pagination';
 import { useSession } from '@/auth/SessionProvider';
 import type { Prompt } from '../../types/prompt';
+import { Button, Card } from '@telegram-apps/telegram-ui';
+import { useNavigate } from '@tanstack/react-router';
+import { IoTrashBinOutline } from 'react-icons/io5';
 
 export default function MyPrompts() {
+  const navigate = useNavigate();
   const { session } = useSession();
   const [pagination, setPagination] = useState<PaginationType>({
     page: 1,
@@ -29,9 +33,48 @@ export default function MyPrompts() {
     <div>
       <div>My Prompts</div>
       {data && (
-        <div>
+        <div className="flex flex-col gap-2">
           {data?.data.map((prompt: Prompt) => (
-            <div key={prompt.id}>{prompt.name}</div>
+            <Card
+              key={prompt.id}
+              type="plain"
+              onClick={() => {
+                navigate({
+                  to: '/profile/prompt/edit/$promptId',
+                  params: { promptId: prompt.id?.toString() ?? '' },
+                });
+              }}
+            >
+              <Card.Chip readOnly>{prompt.type}</Card.Chip>
+              <img
+                alt={prompt.name}
+                src={prompt.image ?? '/gifs/loadings.gif'}
+                className="block h-30 w-full object-cover"
+              />
+              <Card.Cell
+                readOnly
+                subtitle={prompt.type}
+                className="relative w-full"
+              >
+                <div className="flex w-full flex-row items-center justify-between">
+                  <h1 className="flex-1 text-sm font-bold">{prompt.name}</h1>
+                  <div className="absolute top-1/2 right-0 -translate-y-1/2">
+                    <Button
+                      before={<IoTrashBinOutline />}
+                      mode="filled"
+                      size="s"
+                      onClick={event => {
+                        // stop propagation to the card
+                        event.stopPropagation();
+                        console.log('copy');
+                      }}
+                    >
+                      <span className="text-tg-button-text">Delete</span>
+                    </Button>
+                  </div>
+                </div>
+              </Card.Cell>
+            </Card>
           ))}
         </div>
       )}

@@ -16,10 +16,17 @@ function ProfileLayout() {
           <h1 className="mb-4 text-2xl font-bold">Profile</h1>
           {/* You can add navigation links here if needed */}
         </nav>
-        <Section>
-          <h1>Your prompts</h1>
-          <MyPrompts />
-        </Section>
+
+        {/* This renders the index content when at /profile */}
+        <main className="profile-content">
+          <Section>
+            <h1>Your prompts</h1>
+            <MyPrompts />
+          </Section>
+
+          {/* This renders child routes under /profile */}
+          <Outlet />
+        </main>
       </div>
     </ProtectedRoute>
   );

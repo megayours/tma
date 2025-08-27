@@ -4,6 +4,7 @@ import { RouterProvider, createRouter } from '@tanstack/react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AppRoot } from '@telegram-apps/telegram-ui';
 import { ThemeProvider } from './auth/ThemeProvider';
+import { AuthProvider } from './auth/AuthProvider';
 import './style.css';
 
 // Import the generated route tree
@@ -36,11 +37,13 @@ if (!rootElement.innerHTML) {
   root.render(
     <StrictMode>
       <ThemeProvider>
-        <AppRoot>
-          <QueryClientProvider client={queryClient}>
-            <RouterProvider router={router} />
-          </QueryClientProvider>
-        </AppRoot>
+        <AuthProvider>
+          <AppRoot>
+            <QueryClientProvider client={queryClient}>
+              <RouterProvider router={router} />
+            </QueryClientProvider>
+          </AppRoot>
+        </AuthProvider>
       </ThemeProvider>
     </StrictMode>
   );

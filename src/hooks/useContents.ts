@@ -1,13 +1,16 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ContentFiltersSchema, type ContentFilters } from '../types/requests';
 import { safeParse } from '@/utils/validation';
-import { apiGet } from '../lib/api';
 import {
+  type Content,
   type ContentListResponse,
   type RawContentListResponse,
   type RawContentResponse,
+  type Token,
   RawContentListResponseSchema,
 } from '../types/response';
+import type { Session } from '@/auth/useAuth';
+import type { PromptVersion } from '@/types/prompt';
 
 // Helper function to map raw content to expected format
 const mapRawContentToContent = (rawContent: RawContentResponse) => ({
@@ -21,9 +24,13 @@ const mapRawContentToContent = (rawContent: RawContentResponse) => ({
   token: rawContent.token,
   tokens: rawContent.tokens,
   promptId: rawContent.prompt_id,
+  session: rawContent.session,
 });
 
-export const useGetContent = (params: ContentFilters) => {
+export const useGetContent = (
+  params: ContentFilters,
+  session: Session | null | undefined
+) => {
   return useQuery({
     queryKey: ['content', params],
     queryFn: async (): Promise<ContentListResponse> => {
@@ -49,10 +56,30 @@ export const useGetContent = (params: ContentFilters) => {
           size: validatedParams.pagination?.size,
         };
 
-        const rawData = await apiGet<RawContentListResponse>(
-          `${import.meta.env.VITE_PUBLIC_API_URL}/content`,
-          apiParams
-        );
+        // Build query string from parameters
+        const queryParams = new URLSearchParams();
+        Object.entries(apiParams).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            queryParams.append(key, String(value));
+          }
+        });
+
+        const queryString = queryParams.toString();
+        const url = `${import.meta.env.VITE_PUBLIC_API_URL}/content${queryString ? `?${queryString}` : ''}`;
+
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(session?.authToken && { Authorization: session.authToken }),
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const rawData: RawContentListResponse = await response.json();
 
         // Validate raw response data
         const validatedRawData = safeParse(
@@ -75,5 +102,87 @@ export const useGetContent = (params: ContentFilters) => {
         throw error;
       }
     },
+  });
+};
+
+export const usePreviewContentMutation = (
+  session: Session | null | undefined
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      promptId,
+      contentIds,
+      tokens,
+    }: {
+      promptId: number;
+      contentIds: number[];
+      tokens: Token[];
+    }) => {
+      if (!session) return;
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/prompts/${promptId}/preview/async`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: session.authToken,
+          },
+          body: JSON.stringify({
+            prompt_id: promptId,
+            content_ids: tokens.length === 0 ? contentIds : undefined,
+            tokens: tokens.map(token => ({
+              contract: {
+                chain: token.contract.chain,
+                address: token.contract.address,
+              },
+              id: token.id,
+            })),
+          }),
+        }
+      );
+      if (!response.ok) {
+        throw new Error('Failed to preview content');
+      }
+      const data = await response.json();
+      console.log('Async preview content response', data);
+      return { contentId: data.id };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['content'] });
+    },
+  });
+};
+
+export const useGetPreviewContent = (
+  session: Session | null | undefined,
+  promptId: number | null,
+  promptVersion: PromptVersion | null
+) => {
+  return useQuery({
+    queryKey: ['preview-content', promptId],
+    queryFn: async () => {
+      if (!session || !promptId) return;
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/prompts/${promptId}/previews?`,
+        // prompt_version=${promptVersion?.id.toString()}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: session?.authToken,
+          },
+        }
+      );
+      if (!response.ok) {
+        throw new Error('Failed to get preview content');
+      }
+      const data = await response.json();
+      return {
+        pagination: data.pagination,
+        content: data.data as Content[],
+      };
+    },
+    enabled: !!session && !!promptId,
   });
 };

@@ -1,5 +1,5 @@
 import type { Prompt } from '@/types/prompt';
-import { Button, Chip, Divider } from '@telegram-apps/telegram-ui';
+import { Button } from '@telegram-apps/telegram-ui';
 
 export const InputsEditor = ({ prompt }: { prompt: Prompt }) => {
   return (
@@ -7,7 +7,7 @@ export const InputsEditor = ({ prompt }: { prompt: Prompt }) => {
       {Array.from({ length: prompt.maxTokens ?? 1 }).map((_, index) => (
         <div key={index}>
           <Button
-            mode="white"
+            mode="filled"
             key={index}
             className=""
             onClick={() => {
@@ -15,7 +15,7 @@ export const InputsEditor = ({ prompt }: { prompt: Prompt }) => {
             }}
             size="s"
           >
-            NFT {index + 1}
+            <span className="text-tg-button-text">NFT {index + 1}</span>
           </Button>
         </div>
       ))}

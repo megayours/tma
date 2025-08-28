@@ -79,6 +79,7 @@ export const RawContentResponseSchema = z.object({
   token: TokenSchema.optional(),
   tokens: z.array(TokenSchema).optional(),
   prompt_id: z.union([z.string(), z.number()]).nullable().optional(),
+  session: z.any().optional(),
 });
 export type RawContentResponse = z.infer<typeof RawContentResponseSchema>;
 
@@ -112,3 +113,6 @@ export const ContentListResponseSchema = z.object({
   pagination: PaginationResponseSchema,
 });
 export type ContentListResponse = z.infer<typeof ContentListResponseSchema>;
+
+// Export the Content type from content.ts
+export type { Content } from './content';

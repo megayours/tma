@@ -1,4 +1,7 @@
-import { useGetMyPrompts } from '../../hooks/usePrompts';
+import {
+  useDeletePromptMutation,
+  useGetMyPrompts,
+} from '../../hooks/usePrompts';
 import { useEffect, useState } from 'react';
 import { Pagination } from '../../components/ui/Pagination';
 import type { Pagination as PaginationType } from '@/types/pagination';
@@ -13,17 +16,31 @@ export default function MyPrompts() {
   const { session } = useSession();
   const [pagination, setPagination] = useState<PaginationType>({
     page: 1,
-    size: 10,
+    size: 5,
   });
   const [totalPages, setTotalPages] = useState(1);
+  const [deletingPromptId, setDeletingPromptId] = useState<number | null>(null);
 
   const { data, isLoading, error } = useGetMyPrompts(session!, pagination);
+  const { mutateAsync: deletePrompt, isPending: isDeleting } =
+    useDeletePromptMutation(session!);
 
   useEffect(() => {
     if (data?.pagination.totalPages !== totalPages) {
       setTotalPages(data?.pagination.totalPages);
     }
   }, [data]);
+
+  const handleDeletePrompt = async (promptId: number) => {
+    setDeletingPromptId(promptId);
+    try {
+      await deletePrompt({ promptId });
+    } catch (error) {
+      console.error('Failed to delete prompt:', error);
+    } finally {
+      setDeletingPromptId(null);
+    }
+  };
 
   if (!session) {
     return <div>No session available</div>;
@@ -66,8 +83,9 @@ export default function MyPrompts() {
                       onClick={event => {
                         // stop propagation to the card
                         event.stopPropagation();
-                        console.log('copy');
+                        handleDeletePrompt(prompt.id!);
                       }}
+                      loading={deletingPromptId === prompt.id}
                     >
                       <span className="text-tg-button-text">Delete</span>
                     </Button>
@@ -78,7 +96,7 @@ export default function MyPrompts() {
           ))}
         </div>
       )}
-      <div>
+      <div className="flex justify-center">
         <Pagination
           page={pagination.page}
           setPage={page => setPagination({ ...pagination, page })}

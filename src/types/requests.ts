@@ -54,6 +54,7 @@ export const ContentFiltersSchema = z.object({
   createdAfter: z.string().optional(),
   filters: FilterSchema.optional(),
   pagination: PaginationSchema.optional(),
+  session: z.any().optional(),
 });
 export type ContentFilters = z.infer<typeof ContentFiltersSchema>;
 

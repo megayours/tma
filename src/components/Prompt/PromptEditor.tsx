@@ -11,17 +11,40 @@ import { AddContentButton } from '../ui/AddContentButton';
 import { IoSend } from 'react-icons/io5';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { InputsEditor } from './InputsEditor';
+import { usePromptPreviewGeneration } from '@/hooks/usePromptPreviewGeneration';
+import { useSession } from '@/auth/SessionProvider';
+import { ContentPreviews } from './ContentPreview';
 
 export const PromptEditor = ({
   prompt: initialPrompt,
 }: {
   prompt: Prompt | null;
 }) => {
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [promptText, setPromptText] = useState('');
+  const { session } = useSession();
+  const [promptText, setPromptText] = useState(
+    initialPrompt?.versions?.[0]?.text ?? ''
+  );
   const [prompt, setPrompt] = useState<Prompt | null>(initialPrompt);
   const [hasChanges, setHasChanges] = useState(false);
   const promptTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const [selectedVersion, setSelectedVersion] = useState(
+    prompt?.versions?.[(prompt.versions?.length ?? 0) - 1]
+  );
+
+  // Custom hook for prompt generation logic
+  const { isGenerating, generatePromptPreview } = usePromptPreviewGeneration({
+    session,
+    onSuccess: result => {
+      console.log('Generation successful:', result);
+      if (result.generated) {
+        setHasChanges(false);
+      }
+    },
+    onError: error => {
+      console.error('Generation failed:', error);
+      // Handle error here
+    },
+  });
 
   // Function to update prompt and track changes
   const updatePrompt = (updates: Partial<Prompt>) => {
@@ -31,26 +54,14 @@ export const PromptEditor = ({
     }
   };
 
-  const handleGenerate = async () => {
-    if (!promptText.trim() || isGenerating) return;
-
-    // Check if the prompt has been modified
-    if (hasChanges) {
-      // TODO: update the prompt if it changed
-      console.log('Prompt has been modified, updating...');
-    }
-
-    setIsGenerating(true);
-
-    try {
-      // Simulate generation process - replace with your actual API call
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      console.log('Generated content for:', promptText);
-    } catch (error) {
-      console.error('Generation failed:', error);
-    } finally {
-      setIsGenerating(false);
-    }
+  const handleGenerate = () => {
+    const contentId = generatePromptPreview(
+      promptText,
+      prompt!,
+      hasChanges,
+      selectedVersion
+    );
+    console.log('Content ID:', contentId);
   };
 
   useEffect(() => {
@@ -122,14 +133,24 @@ export const PromptEditor = ({
   if (!prompt) return <div>Loading...</div>;
 
   return (
-    <div className="keyboard-aware-container relative min-h-screen">
+    <div className="keyboard-aware-container bg-tg-bg relative min-h-screen">
       {/* Main content area */}
-      <div className="pb-20">{/* Your main content goes here */}</div>
+      <div className="h-full pb-42">
+        <div className="h-full">
+          {/* Your main content goes here */}
+          {selectedVersion && (
+            <ContentPreviews
+              prompt={prompt}
+              selectedVersion={selectedVersion}
+            />
+          )}
+        </div>
+      </div>
 
       {/* Fixed bottom toolbar with smooth keyboard transitions */}
       <div className="mobile-input-container keyboard-aware bg-tg-secondary-bg border-tg-hint/20 safe-area-inset-bottom fixed right-0 bottom-0 left-0 z-50 border-t">
         <div id="custom-input-container"></div>
-        <div>
+        <div className="h-12">
           <InputsEditor prompt={prompt} />
         </div>
         <Divider />
@@ -141,25 +162,29 @@ export const PromptEditor = ({
               promptTextareaRef={promptTextareaRef}
             />
           </div>
-          <div className="bg-tg-section-bg flex flex-1 flex-col">
+          <div className="flex flex-1 flex-col">
             <Textarea
               placeholder="Enter your prompt..."
-              className="transition-all duration-200 focus:scale-[1.02]"
+              className="bg-tg-section-bg text-tg-text transition-all duration-200 focus:scale-[1.02]"
               ref={promptTextareaRef}
               value={promptText}
-              onChange={e => setPromptText(e.target.value)}
+              onChange={e => {
+                setHasChanges(true);
+                setPromptText(e.target.value);
+              }}
               disabled={isGenerating}
             />
           </div>
           <div className="">
-            <IconButton
-              mode="plain"
-              size="l"
+            <Button
+              mode="filled"
+              size="m"
               onClick={handleGenerate}
               disabled={isGenerating || !promptText.trim()}
+              loading={isGenerating}
             >
-              <IoSend className="text-tg-hint" />
-            </IconButton>
+              <IoSend className="text-tg-button-text" />
+            </Button>
           </div>
         </div>
       </div>

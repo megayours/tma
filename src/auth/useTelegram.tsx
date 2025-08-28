@@ -1,6 +1,6 @@
 import { isTMA } from '@telegram-apps/bridge';
 import { useRawInitData, useLaunchParams } from '@telegram-apps/sdk-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 
 export function useTelegramRawInitData():
   | {
@@ -67,13 +67,39 @@ export function useTelegramTheme() {
           );
         }
       });
+    } else {
+      // When not in Telegram, check for system preference or localStorage
+      const savedTheme = localStorage.getItem('theme');
+      const systemPrefersDark = window.matchMedia(
+        '(prefers-color-scheme: dark)'
+      ).matches;
+
+      // Use saved theme, fallback to system preference, then default to light
+      const shouldUseDark =
+        savedTheme === 'dark' || (savedTheme === null && systemPrefersDark);
+      setIsDark(shouldUseDark);
+
+      // Apply theme to document
+      document.documentElement.classList.toggle('dark', shouldUseDark);
     }
   }, [rawInitData]);
+
+  const toggleTheme = useCallback(() => {
+    const newIsDark = !isDark;
+    setIsDark(newIsDark);
+
+    // Save to localStorage
+    localStorage.setItem('theme', newIsDark ? 'dark' : 'light');
+
+    // Apply to document
+    document.documentElement.classList.toggle('dark', newIsDark);
+  }, [isDark]);
 
   return {
     isDark,
     themeParams,
     isTelegram: isTMA(),
+    toggleTheme,
   };
 }
 

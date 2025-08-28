@@ -8,6 +8,7 @@ export const PromptVersionSchema = z.object({
   minTokens: z.number(),
   maxTokens: z.number(),
   additionalContentIds: z.array(z.string()).nullable(),
+  text: z.string().optional(),
 });
 export type PromptVersion = z.infer<typeof PromptVersionSchema>;
 
@@ -15,6 +16,7 @@ export const PromptSchema = z.object({
   id: z.number().nullable(),
   name: z.string(),
   description: z.string().optional(),
+  prompt: z.string().optional(),
   image: z.string().optional(),
   type: z.string().optional(),
   additionalContentIds: z.array(z.string()).optional(),
@@ -33,6 +35,7 @@ export const PromptSchema = z.object({
   versions: z.array(PromptVersionSchema).optional(),
   minTokens: z.number().optional(),
   maxTokens: z.number().optional(),
+  model: z.string().optional(),
   ownerId: z.string().optional(),
 });
 export type Prompt = z.infer<typeof PromptSchema>;

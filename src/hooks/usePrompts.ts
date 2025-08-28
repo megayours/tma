@@ -248,3 +248,104 @@ export const useGetMyPrompts = (
     enabled: !!session,
   });
 };
+
+export const useDeletePromptMutation = (session: Session) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ promptId }: { promptId: number }) => {
+      if (!session) return;
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/prompts/${promptId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: session.authToken,
+          },
+        }
+      );
+      if (!response.ok) {
+        throw new Error('Failed to delete prompt');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['my-prompts'] });
+    },
+  });
+};
+
+export const usePromptMutation = (session: Session | null | undefined) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ prompt }: { prompt: Prompt }) => {
+      if (!session) return;
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/prompts/${prompt.id}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: session.authToken,
+          },
+          body: JSON.stringify({
+            name: prompt.name,
+            description: prompt.description,
+            versions: prompt.versions,
+            prompt: prompt.prompt,
+            additionalContentIds: prompt.additionalContentIds,
+            contracts: prompt.contracts,
+            max_tokens: prompt.maxTokens,
+            min_tokens: prompt.minTokens,
+            model: prompt.model,
+          }),
+        }
+      );
+      if (!response.ok) {
+        throw new Error('Failed to update prompt');
+      }
+      return (await response.json()) as Prompt;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['my-prompts'] });
+    },
+  });
+};
+
+export const usePublishPromptMutation = (session: Session) => {
+  const queryClient = useQueryClient();
+  let promptIdToInvalidate: number;
+  return useMutation({
+    mutationFn: async ({
+      promptId,
+      publish,
+    }: {
+      promptId: number;
+      publish: boolean;
+    }) => {
+      if (!session) return;
+      promptIdToInvalidate = promptId;
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/prompts/${promptId}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: session.authToken,
+          },
+          body: JSON.stringify({ published: publish }),
+        }
+      );
+      if (!response.ok) {
+        throw new Error('Failed to publish prompt');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['my-prompts'] });
+      queryClient.invalidateQueries({
+        queryKey: ['prompt', promptIdToInvalidate],
+      });
+    },
+  });
+};

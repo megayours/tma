@@ -15,13 +15,12 @@ export const ContentPreviews = ({
     useGetPreviewContent(session, prompt.id, selectedVersion);
   console.log('Content:', content);
   return (
-    <div>
-      ContentPreview
-      <div className="flex flex-row">
-        eee
+    <div className="h-full pb-25">
+      <div className="h-full pb-70">ss</div>
+      <div className="bg-tg-secondary-bg flex max-h-20 flex-row gap-2 overflow-x-auto p-2">
         {content?.map((content: Content) => (
-          <div key={content.id}>
-            <img src={content.image} alt={content.id} />
+          <div key={content.id} className="">
+            <img src={content.image} alt={content.id} className="h-18 w-18" />
           </div>
         ))}
       </div>

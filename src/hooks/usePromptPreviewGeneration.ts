@@ -15,7 +15,8 @@ interface UsePromptGenerationReturn {
   generatePromptPreview: (
     promptText: string,
     prompt: Prompt,
-    hasChanges?: boolean
+    hasChanges?: boolean,
+    setSelectedVersion?: any
   ) => Promise<{ contentId: number }>;
   reset: () => void;
 }
@@ -34,7 +35,7 @@ export function usePromptPreviewGeneration(
       promptText: string,
       prompt: Prompt,
       hasChanges = false,
-      setSelectedVersion?: (version: PromptVersion) => void
+      setSelectedVersion?: any
     ) => {
       console.log(
         'Generating prompt preview...',

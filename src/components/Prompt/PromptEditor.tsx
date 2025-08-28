@@ -59,7 +59,7 @@ export const PromptEditor = ({
       promptText,
       prompt!,
       hasChanges,
-      selectedVersion
+      setSelectedVersion
     );
     console.log('Content ID:', contentId);
   };
@@ -136,7 +136,7 @@ export const PromptEditor = ({
     <div className="keyboard-aware-container bg-tg-bg relative min-h-screen">
       {/* Main content area */}
       <div className="h-full pb-42">
-        <div className="h-full">
+        <div className="relative h-full">
           {/* Your main content goes here */}
           {selectedVersion && (
             <ContentPreviews

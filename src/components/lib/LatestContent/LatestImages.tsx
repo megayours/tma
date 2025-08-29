@@ -25,7 +25,7 @@ export function LatestImage({ prompt, bg }: { prompt: Prompt; bg: string }) {
     >
       <div className="flex h-full w-full items-center justify-center rounded-2xl bg-white/50 p-5 shadow-2xl">
         <img
-          src={prompt.image}
+          src={prompt.latestContentUrl}
           alt="latest content"
           className="max-h-full max-w-full rounded-2xl object-contain"
           style={{

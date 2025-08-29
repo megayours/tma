@@ -33,10 +33,12 @@ export const PromptSchema = z.object({
   stickers: z.array(z.string()).optional(),
   animatedStickers: z.array(z.string()).optional(),
   versions: z.array(PromptVersionSchema).optional(),
+  version: z.number().optional(),
   minTokens: z.number().optional(),
   maxTokens: z.number().optional(),
   model: z.string().optional(),
   ownerId: z.string().optional(),
+  latestContentUrl: z.string().optional(),
 });
 export type Prompt = z.infer<typeof PromptSchema>;
 

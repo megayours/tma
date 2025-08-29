@@ -74,7 +74,7 @@ export default function MyPrompts() {
                 className="relative w-full"
               >
                 <div className="flex w-full flex-row items-center justify-between">
-                  <h1 className="flex-1 text-sm font-bold">{prompt.name}</h1>
+                  <h1 className="flex-1 text-sm font-bold">{prompt.id}</h1>
                   <div className="absolute top-1/2 right-0 -translate-y-1/2">
                     <Button
                       before={<IoTrashBinOutline />}

@@ -65,6 +65,10 @@ function ShowContent({
           {prompt.type === 'stickers' && (
             <LatestSticker prompt={prompt} bg={getRandomBackgroundGif()} />
           )}
+          {prompt.type === 'animated_stickers' && (
+            <pre>{JSON.stringify(prompt, null, 2)}</pre>
+            // <LatestSticker prompt={prompt} bg={getRandomBackgroundGif()} />
+          )}
         </div>
       </div>
 

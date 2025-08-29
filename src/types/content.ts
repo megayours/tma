@@ -4,7 +4,7 @@ import type { Token } from './response';
 export interface PromptWithContent extends Prompt {
   published: number;
   image: string;
-  type: 'images' | 'videos' | 'stickers' | 'gifs';
+  type: 'images' | 'videos' | 'stickers' | 'animated_stickers' | 'gifs';
   latestContentUrl?: string;
   contentId?: string;
   owner?: string;

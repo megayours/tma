@@ -83,16 +83,6 @@ export const Route = createRootRoute({
               <main
                 className={`bg-tg-bg flex-grow ${shouldHideNavBar ? '' : 'pb-16'}`}
               >
-                {shouldHideNavBar && (
-                  <div className="fixed top-5 left-5 z-10">
-                    <RiCloseLargeFill
-                      className="h-10 w-10"
-                      onClick={() => {
-                        router.navigate({ to: '/' });
-                      }}
-                    />
-                  </div>
-                )}
                 <Outlet />
               </main>
               {!shouldHideNavBar && (

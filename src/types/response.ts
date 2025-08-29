@@ -28,6 +28,7 @@ export const RawPromptSchema = z.object({
   videos: z.array(z.string()),
   gifs: z.array(z.string()),
   versions: z.any().optional(),
+  lastestContentUrl: z.string().optional(),
 });
 export type RawPrompt = z.infer<typeof RawPromptSchema>;
 

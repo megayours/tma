@@ -149,7 +149,6 @@ export const PromptEditor = ({
 
       {/* Fixed bottom toolbar with smooth keyboard transitions */}
       <div className="mobile-input-container keyboard-aware bg-tg-secondary-bg border-tg-hint/20 safe-area-inset-bottom fixed right-0 bottom-0 left-0 z-50 border-t">
-        <div id="custom-input-container"></div>
         <div className="h-12">
           <InputsEditor prompt={prompt} />
         </div>

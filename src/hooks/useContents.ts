@@ -149,7 +149,7 @@ export const usePreviewContentMutation = (
       return { contentId: data.id };
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['content'] });
+      queryClient.invalidateQueries({ queryKey: ['preview-content'] });
     },
   });
 };

@@ -45,13 +45,13 @@ const mapRawPromptToPromptWithContent = (
   published: (rawPrompt as any).published ?? false,
   image: rawPrompt.image ?? '',
   type: rawPrompt.type as 'images' | 'videos' | 'stickers' | 'gifs',
-  latestContentUrl: (rawPrompt as any).latest_content_url,
   contentId: (rawPrompt as any).content_id,
   owner: (rawPrompt as any).owner,
   ownerName: (rawPrompt as any).owner_name,
   hasUserGenerated: (rawPrompt as any).has_user_generated ?? false,
   publishedAt: (rawPrompt as any).published_at ?? 0,
   generationCount: (rawPrompt as any).generation_count ?? 0,
+  latestContentUrl: (rawPrompt as any).latest_content_url,
 });
 
 export const useGetRecommendedPrompts = ({

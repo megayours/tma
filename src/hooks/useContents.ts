@@ -184,5 +184,14 @@ export const useGetPreviewContent = (
       };
     },
     enabled: !!session && !!promptId,
+    refetchInterval: query => {
+      // Check if any content has "processing" status
+      const hasProcessingContent = query.state.data?.content?.some(
+        (item: Content) => item.status === 'processing'
+      );
+      // Poll every 2 seconds if there's processing content, otherwise don't poll
+      return hasProcessingContent ? 2000 : false;
+    },
+    refetchIntervalInBackground: true, // Continue polling even when tab is not active
   });
 };

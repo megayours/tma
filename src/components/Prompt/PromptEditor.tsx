@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
 import type { Prompt } from '@/types/prompt';
+import type { Token } from '@/types/response';
 import {
   Button,
   Divider,
@@ -17,8 +18,12 @@ import { ContentPreviews } from './ContentPreview';
 
 export const PromptEditor = ({
   prompt: initialPrompt,
+  selectedNFTs,
+  setSelectedNFTs,
 }: {
   prompt: Prompt | null;
+  selectedNFTs: Token[];
+  setSelectedNFTs: (nfts: Token[]) => void;
 }) => {
   const { session } = useSession();
   const [promptText, setPromptText] = useState(
@@ -135,7 +140,7 @@ export const PromptEditor = ({
   return (
     <div className="keyboard-aware-container bg-tg-bg relative min-h-screen">
       {/* Main content area */}
-      <div className="h-full pb-42">
+      <div className="h-full pb-52">
         <div className="relative h-full">
           {/* Your main content goes here */}
           {selectedVersion && (

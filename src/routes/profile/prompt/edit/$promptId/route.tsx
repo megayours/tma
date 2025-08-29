@@ -1,18 +1,31 @@
-import { createFileRoute, Link } from '@tanstack/react-router';
-import { PromptEditor } from '@/components/Prompt/PromptEditor';
+import { createFileRoute, Outlet } from '@tanstack/react-router';
+import { PromptBar } from '@/components/Prompt/PromptBar';
 import { useSession } from '@/auth/SessionProvider';
 import { useGetPrompt } from '@/hooks/usePrompts';
-import { useSelectedNFTs } from '@/contexts/SelectedNFTsContext';
+import {
+  SelectedNFTsProvider,
+  useSelectedNFTs,
+} from '@/contexts/SelectedNFTsContext';
+import { useSettings } from '@/contexts/SettingsContext';
 
-export const Route = createFileRoute('/profile/prompt/edit/$promptId/')({
+export const Route = createFileRoute('/profile/prompt/edit/$promptId')({
   component: RouteComponent,
 });
 
 function RouteComponent() {
+  return (
+    <SelectedNFTsProvider>
+      <RouteContent />
+    </SelectedNFTsProvider>
+  );
+}
+
+function RouteContent() {
   const { promptId } = Route.useParams();
   const { session } = useSession();
   const { data: prompt, isLoading, error } = useGetPrompt(promptId, session);
   const { selectedNFTs, setSelectedNFTs } = useSelectedNFTs();
+  const { settingsOpen, setSettingsOpen } = useSettings();
 
   if (isLoading) return <div>Loading prompt...</div>;
 
@@ -26,9 +39,6 @@ function RouteComponent() {
             The prompt you're looking for doesn't exist or you don't have
             permission to view it.
           </p>
-          <Link to="/" className="text-blue-500">
-            Go back to Home
-          </Link>
         </div>
       );
     }
@@ -43,10 +53,17 @@ function RouteComponent() {
   if (!prompt) return <div>Prompt not found</div>;
 
   return (
-    <PromptEditor
-      prompt={prompt}
-      selectedNFTs={selectedNFTs}
-      setSelectedNFTs={setSelectedNFTs}
-    />
+    <div className="flex h-screen flex-col overflow-hidden">
+      <PromptBar
+        prompt={prompt}
+        selectedNFTs={selectedNFTs}
+        setSelectedNFTs={setSelectedNFTs}
+        settingsOpen={settingsOpen}
+        setSettingsOpen={setSettingsOpen}
+      />
+      <div className="flex-1 overflow-y-hidden">
+        <Outlet />
+      </div>
+    </div>
   );
 }

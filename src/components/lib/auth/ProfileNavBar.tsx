@@ -109,7 +109,9 @@ export function ProfileNavBar({ logout: _logout }: { logout: () => void }) {
             </Button>
             <Divider />
             <div className="text-tg-button-text">
-              <Link to={'/profile'}>Profile</Link>
+              <Link to={'/profile'} onClick={() => setIsDropdownOpen(false)}>
+                Profile
+              </Link>
             </div>
             {/* Logout Button
             NO LOGOUT BUTTON FOR NOW. BUT IT WORKS.

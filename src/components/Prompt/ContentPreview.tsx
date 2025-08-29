@@ -3,6 +3,7 @@ import { useSession } from '../../auth/SessionProvider';
 import { useGetPreviewContent } from '../../hooks/useContents';
 import type { Content } from '@/types/response';
 import { useState, useEffect, useMemo } from 'react';
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 
 export const ContentPreviews = ({
   prompt,
@@ -96,11 +97,29 @@ export const ContentPreviews = ({
                 }`}
                 onClick={() => setSelectedContent(content)}
               >
-                <img
-                  src={content.image}
-                  alt={content.id}
-                  className="h-14 w-14 rounded-lg object-cover"
-                />
+                {content.status === 'completed' && (
+                  <img
+                    key={content.id}
+                    src={content.image}
+                    alt={content.id}
+                    className="h-14 w-14 rounded-lg object-cover"
+                  />
+                )}
+                {content.status === 'processing' && (
+                  <div className="bg-tg-hint/30 h-14 w-14 rounded-lg object-cover">
+                    <DotLottieReact
+                      src={'/lotties/loader.lottie'}
+                      loop
+                      autoplay
+                      className="h-14 w-14"
+                    />
+                  </div>
+                )}
+                {content.status === 'failed' && (
+                  <div className="bg-tg-hint/30 h-14 w-14 rounded-lg object-cover">
+                    FAILED
+                  </div>
+                )}
               </div>
             )),
             // Version separator (except for the last group)

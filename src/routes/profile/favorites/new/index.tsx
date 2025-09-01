@@ -9,7 +9,8 @@ import { Button, Card, Input } from '@telegram-apps/telegram-ui';
 import { CriticalButton, createButtonContent } from '@/components/ui';
 import { useState } from 'react';
 import { useGetNFTByCollectionAndTokenId } from '@/hooks/useCollections';
-import { Section } from '@telegram-apps/telegram-ui';
+import { SelectCollection } from '@/components/SelectCollection';
+import { SelectTokenId } from '@/components/SelectTokenId';
 
 export const Route = createFileRoute('/profile/favorites/new/')({
   component: RouteComponent,
@@ -27,68 +28,26 @@ function RouteComponent() {
 
   const selectedCollections = () => {
     return (
-      <Section className="flex flex-col gap-4 p-4">
-        <h2 className="text-tg-text mb-4 text-xl font-semibold">
-          Select a collection
-        </h2>
-        <div className="grid h-full grid-cols-3 gap-2 overflow-y-auto p-4">
-          {supportedCollections?.map((collection: SupportedCollection) => (
-            <Card
-              key={collection.address}
-              className="bg-tg-secondary flex flex-col items-center justify-center gap-4 p-2"
-              onClick={() => {
-                setSelectedCollection(collection);
-                setStep(1);
-              }}
-            >
-              <img
-                src={collection.image}
-                alt={collection.name}
-                className="h-12 w-24 rounded-lg object-cover"
-              />
-              <div className="text-tg-text mt-4 text-center text-xs font-bold break-words">
-                {collection.name}
-              </div>
-            </Card>
-          ))}
-        </div>
-      </Section>
+      <SelectCollection
+        collections={supportedCollections || []}
+        onCollectionSelect={collection => {
+          setSelectedCollection(collection);
+          setStep(1);
+        }}
+      />
     );
   };
 
   const selectTokenById = (collection: SupportedCollection) => {
     return (
-      <div className="flex flex-col p-2">
-        <div>
-          <Button
-            mode="plain"
-            size="s"
-            onClick={() => setStep(0)}
-            className="w-fit"
-          >
-            ←
-          </Button>
-        </div>
-        <h1 className="text-tg-text text-4xl">{collection.name}</h1>
-        <div className="relative flex flex-col gap-4">
-          <Input
-            header="Token Id"
-            placeholder="#..."
-            type="text"
-            inputMode="numeric"
-            value={searchToken}
-            onChange={e => {
-              console.log('e.target.value', e.target.value);
-              // Remove any existing '#' and spaces, then add the prefix
-              const cleanValue = e.target.value.replace(/^#\s*/, '');
-              setSearchToken(cleanValue ? `# ${cleanValue}` : '# ');
-            }}
-            className="h-20 text-6xl"
-            style={{
-              fontSize: '3rem',
-            }}
-          />
-        </div>
+      <div className="flex flex-col gap-4">
+        <SelectTokenId
+          collection={collection}
+          onBack={() => setStep(0)}
+          onTokenSelect={tokenId => {
+            setSearchToken(`# ${tokenId}`);
+          }}
+        />
         {selectedCollection && searchToken !== '# ' && (
           <>
             <DisplayNFT

@@ -9,6 +9,7 @@ import {
 } from '@telegram-apps/telegram-ui';
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { IoArrowBackOutline } from 'react-icons/io5';
 import type { Prompt } from '../../types/prompt';
 
 export const SelectNFT = ({
@@ -47,7 +48,7 @@ export const SelectNFT = ({
       </Button>
     </>
   );
-  /* 
+  /*
     <Section>
       <Input
         ref={inputRef}
@@ -106,8 +107,8 @@ export const SelectNFT = ({
             </div>
           </div>
         </Section>
-      </Section> 
-    </Section> 
+      </Section>
+    </Section>
   ); */
 };
 
@@ -137,14 +138,19 @@ export function AddContentButton({
   updatePrompt,
   prompt,
   promptTextareaRef,
+  isOpen,
+  setIsOpen,
+  selectedContent,
+  setSelectedContent,
 }: {
   updatePrompt: ((updates: Partial<Prompt>) => void) | null;
   prompt: Prompt;
   promptTextareaRef: React.RefObject<HTMLTextAreaElement | null>;
+  isOpen: boolean;
+  setIsOpen: (isOpen: boolean) => void;
+  selectedContent: string | null;
+  setSelectedContent: (content: string | null) => void;
 }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [selectedContent, setSelectedContent] = useState<string | null>(null);
-
   const addNFT = () => {
     setSelectedContent('nft'); // now not used
     updatePrompt?.({
@@ -163,74 +169,25 @@ export function AddContentButton({
   };
 
   return (
-    <>
-      <button
-        onClick={handleClick}
-        className="bg-tg-button text-tg-button-text hover:bg-tg-button/80 flex h-10 w-10 items-center justify-center rounded-lg shadow-sm transition-all duration-200 hover:scale-110 active:scale-95"
-        aria-label="Add content"
+    <button
+      onClick={handleClick}
+      className="bg-tg-button text-tg-button-text hover:bg-tg-button/80 flex h-10 w-10 items-center justify-center rounded-lg shadow-sm transition-all duration-200 hover:scale-110 active:scale-95"
+      aria-label="Add content"
+    >
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className={`transition-transform duration-200 ${isOpen ? 'rotate-45' : ''}`}
       >
-        <svg
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className={`transition-transform duration-200 ${isOpen ? 'rotate-45' : ''}`}
-        >
-          <line x1="12" y1="5" x2="12" y2="19"></line>
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
-      </button>
-
-      {isOpen &&
-        selectedContent === null &&
-        createPortal(
-          <>
-            {/* Menu positioned above the button */}
-            <div className="relative">
-              <div className="bg-tg-section-bg border-tg-hint/20 flex w-full flex-col gap-2 border p-2">
-                {/* Menu content will go here */}
-                <Cell onClick={() => addNFT()}>NFT</Cell>
-                <Divider />
-                <Cell onClick={() => setSelectedContent('prompt')}>Prompt</Cell>
-                <Divider />
-                <Cell onClick={() => setSelectedContent('image')}>Image</Cell>
-              </div>
-            </div>
-          </>,
-          document.getElementById('custom-input-container')!
-        )}
-
-      {isOpen &&
-        selectedContent === 'prompt' &&
-        createPortal(
-          <div>Prompt Editor</div>,
-          document.getElementById('custom-input-container')!
-        )}
-
-      {/* {isOpen &&
-        selectedContent !== null &&
-        createPortal(
-          <Section>
-            <IoArrowBackOutline onClick={() => setSelectedContent(null)} />
-            <div className="text-tg-text min-h-40">
-              Select {selectedContent}
-              {selectedContent === 'nft' && (
-                <SelectNFT updatePrompt={updatePrompt} prompt={prompt} />
-              )}
-              {selectedContent === 'prompt' && (
-                <SelectPrompt updatePrompt={updatePrompt} prompt={prompt} />
-              )}
-              {selectedContent === 'image' && (
-                <SelectImage prompt={prompt} updatePrompt={updatePrompt} />
-              )}
-            </div>
-          </Section>,
-          document.getElementById('custom-input-container')!
-        )} */}
-    </>
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+    </button>
   );
 }

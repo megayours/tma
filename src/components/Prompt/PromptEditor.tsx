@@ -1,20 +1,25 @@
-import { createFileRoute } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
 import type { Prompt } from '@/types/prompt';
 import type { Token } from '@/types/response';
 import {
+  AvatarStack,
   Button,
   Divider,
   IconButton,
+  Avatar,
   Textarea,
+  Cell,
+  Section,
 } from '@telegram-apps/telegram-ui';
 import { AddContentButton } from '../ui/AddContentButton';
 import { IoSend } from 'react-icons/io5';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
+import { IoArrowBackOutline } from 'react-icons/io5';
 import { InputsEditor } from './InputsEditor';
 import { usePromptPreviewGeneration } from '@/hooks/usePromptPreviewGeneration';
 import { useSession } from '@/auth/SessionProvider';
 import { ContentPreviews } from './ContentPreview';
+import { SelectNFT, SelectPrompt, SelectImage } from '../ui/AddContentButton';
 
 export const PromptEditor = ({
   prompt: initialPrompt,
@@ -35,6 +40,8 @@ export const PromptEditor = ({
   const [selectedVersion, setSelectedVersion] = useState(
     prompt?.versions?.[(prompt.versions?.length ?? 0) - 1]
   );
+  const [isAddContentOpen, setIsAddContentOpen] = useState(false);
+  const [selectedContent, setSelectedContent] = useState<string | null>(null);
 
   // Custom hook for prompt generation logic
   const { isGenerating, generatePromptPreview } = usePromptPreviewGeneration({
@@ -152,6 +159,55 @@ export const PromptEditor = ({
         </div>
       </div>
 
+      {/* Portal container for AddContentButton */}
+      <div
+        id="custom-input-container"
+        className="pointer-events-none fixed inset-0 z-50"
+      >
+        <div className="bg-tg-bg pointer-events-auto absolute bottom-0 left-0 h-100 w-full pb-20">
+          {/* Portal content will be rendered here */}
+          {isAddContentOpen && selectedContent === null && (
+            <div className="flex w-full flex-col gap-2 p-4">
+              <Cell
+                onClick={() => {
+                  updatePrompt?.({
+                    maxTokens: (prompt?.maxTokens ?? 0) + 1,
+                    minTokens: (prompt?.minTokens ?? 0) + 1,
+                  });
+                  setIsAddContentOpen(false);
+                  if (promptTextareaRef.current) {
+                    promptTextareaRef.current.focus();
+                  }
+                }}
+              >
+                NFT
+              </Cell>
+              <Divider />
+              <Cell onClick={() => setSelectedContent('prompt')}>Prompt</Cell>
+              <Divider />
+              <Cell onClick={() => setSelectedContent('image')}>Image</Cell>
+            </div>
+          )}
+
+          {isAddContentOpen && selectedContent !== null && (
+            <Section>
+              <IoArrowBackOutline onClick={() => setSelectedContent(null)} />
+              <div className="text-tg-text min-h-40">
+                Select {selectedContent}
+                {selectedContent === 'nft' && (
+                  <SelectNFT updatePrompt={updatePrompt} prompt={prompt!} />
+                )}
+                {selectedContent === 'prompt' && (
+                  <SelectPrompt updatePrompt={updatePrompt} prompt={prompt!} />
+                )}
+                {selectedContent === 'image' && (
+                  <SelectImage prompt={prompt!} updatePrompt={updatePrompt} />
+                )}
+              </div>
+            </Section>
+          )}
+        </div>
+      </div>
       {/* Fixed bottom toolbar with smooth keyboard transitions */}
       <div className="mobile-input-container keyboard-aware bg-tg-secondary-bg border-tg-hint/20 safe-area-inset-bottom fixed right-0 bottom-0 left-0 z-50 border-t">
         <div className="h-12">
@@ -164,6 +220,10 @@ export const PromptEditor = ({
               updatePrompt={updatePrompt}
               prompt={prompt}
               promptTextareaRef={promptTextareaRef}
+              isOpen={isAddContentOpen}
+              setIsOpen={setIsAddContentOpen}
+              selectedContent={selectedContent}
+              setSelectedContent={setSelectedContent}
             />
           </div>
           <div className="flex flex-1 flex-col">
@@ -179,7 +239,7 @@ export const PromptEditor = ({
               disabled={isGenerating}
             />
           </div>
-          <div className="">
+          <div className="flex flex-col items-center justify-start gap-2">
             <Button
               mode="filled"
               size="m"

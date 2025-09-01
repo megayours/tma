@@ -65,3 +65,7 @@ export type {
   CriticalButtonState,
   CriticalButtonContent,
 } from './CriticalButton';
+
+// TopBar
+export { TopBar } from './TopBar';
+export type { TopBarProps } from './TopBar';

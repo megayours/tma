@@ -1,36 +1,33 @@
-import { createFileRoute } from '@tanstack/react-router';
 import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
-import { useSession } from '@/auth/SessionProvider';
-import { useGetPrompt } from '@/hooks/usePrompts';
-import { useSelectedNFTs } from '@/contexts/SelectedNFTsContext';
-import { useSettings } from '@/contexts/SettingsContext';
+import type { Prompt } from '@/types/prompt';
+import type { Token } from '@/types/response';
 
-export const Route = createFileRoute('/profile/prompt/edit/$promptId/settings')(
-  {
-    component: RouteComponent,
-  }
-);
+interface PromptSettingsProps {
+  prompt: Prompt;
+  selectedNFTs: Token[];
+  isOpen: boolean;
+}
 
-function RouteComponent() {
-  const { promptId } = Route.useParams();
-  const { session } = useSession();
-  const { data: prompt, isLoading, error } = useGetPrompt(promptId, session);
-  const { selectedNFTs } = useSelectedNFTs();
-  const { settingsOpen, setSettingsOpen } = useSettings();
+/**
+ * PromptSettings component that displays prompt settings in a dropdown/popup.
+ * This component is designed to be used within a TopBar or similar container.
+ *
+ * @param prompt - The prompt object containing prompt data
+ * @param selectedNFTs - Array of selected NFT tokens
+ * @param isOpen - Whether the settings popup is open
+ */
+export const PromptSettings = ({
+  prompt,
+  selectedNFTs,
+  isOpen,
+}: PromptSettingsProps) => {
   const settingsRef = useRef<HTMLDivElement>(null);
-
-  // Log when settings are opened (3 dots pressed)
-  useEffect(() => {
-    if (settingsOpen) {
-      console.log('3 dots pressed');
-    }
-  }, [settingsOpen]);
 
   // GSAP animation for settings dropdown
   useEffect(() => {
     if (settingsRef.current) {
-      if (settingsOpen) {
+      if (isOpen) {
         // Animate settings opening (slide down)
         gsap.to(settingsRef.current, {
           height: 'auto',
@@ -58,23 +55,21 @@ function RouteComponent() {
         });
       }
     }
-  }, [settingsOpen]);
+  }, [isOpen]);
 
-  if (isLoading) return <div>Loading prompt settings...</div>;
-
-  if (error) {
-    return (
-      <div className="p-4 text-center">
-        <h2 className="mb-2 text-xl font-semibold">Error</h2>
-        <p className="text-red-600">{error.message}</p>
-      </div>
-    );
-  }
-
-  if (!prompt) return <div>Prompt not found</div>;
+  // Log when settings are opened (3 dots pressed)
+  useEffect(() => {
+    if (isOpen) {
+      console.log('3 dots pressed');
+    }
+  }, [isOpen]);
 
   return (
-    <div ref={settingsRef} className="overflow-hidden" style={{ height: 0 }}>
+    <div
+      ref={settingsRef}
+      className="bg-tg-section-bg h-screen overflow-hidden"
+      style={{ height: 0 }}
+    >
       <div className="p-4">
         <h1 className="mb-4 text-2xl font-bold">Prompt Settings</h1>
         <div className="space-y-4">
@@ -100,9 +95,8 @@ function RouteComponent() {
             <h2 className="mb-2 text-lg font-semibold">Selected NFTs</h2>
             <p className="text-tg-hint">{selectedNFTs.length} NFTs selected</p>
           </div>
-          {/* Add more settings options here */}
         </div>
       </div>
     </div>
   );
-}
+};

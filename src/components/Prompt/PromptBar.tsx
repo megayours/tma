@@ -5,6 +5,8 @@ import type { Prompt } from '@/types/prompt';
 import type { Token } from '@/types/response';
 import { Button, Card, IconButton } from '@telegram-apps/telegram-ui';
 import { BsThreeDots, BsChevronDown } from 'react-icons/bs';
+import { TopBar } from '@/components/ui/TopBar';
+import { PromptSettings } from './PromptSettings';
 
 interface PromptBarProps {
   prompt: Prompt;
@@ -16,7 +18,7 @@ interface PromptBarProps {
 
 /**
  * PromptBar component that displays at the top of the prompt editor page.
- * Shows prompt information and selected NFTs with the ability to expand/collapse details.
+ * Uses the TopBar component to show prompt information and settings popup.
  *
  * @param prompt - The current prompt object
  * @param selectedNFTs - Array of selected NFT tokens
@@ -101,11 +103,10 @@ export const PromptBar = ({
   }, [isExpanded]);
 
   return (
-    <div className="bg-tg-secondary-bg border-tg-hint/20 border-b">
-      {/* Header with prompt name and settings */}
-      <div className="border-tg-hint/20 flex items-center justify-between border-b px-4 py-3">
+    <TopBar
+      title={prompt.name}
+      actions={
         <div className="flex items-center gap-3">
-          <h1 className="text-tg-text text-lg font-semibold">{prompt.name}</h1>
           <button
             onClick={toggleDropdown}
             className="hover:bg-tg-hint/10 flex h-6 w-6 items-center justify-center rounded-full transition-colors"
@@ -114,21 +115,20 @@ export const PromptBar = ({
               <BsChevronDown className="text-tg-hint text-sm" />
             </div>
           </button>
-        </div>
-        <button onClick={toggleSettings}>
           <IconButton
             mode="plain"
             size="l"
             className="text-tg-hint hover:text-tg-text"
+            onClick={toggleSettings}
           >
             <BsThreeDots />
           </IconButton>
-        </button>
-      </div>
-
-      {/* Dropdown content */}
+        </div>
+      }
+    >
+      {/* Dropdown content for prompt details */}
       <div ref={dropdownRef} className="overflow-hidden" style={{ height: 0 }}>
-        <div className="border-tg-hint/20 border-t px-4 py-3">
+        <div className="px-4 py-3">
           <div className="space-y-3">
             {/* Prompt description */}
             {prompt.description && (
@@ -196,6 +196,13 @@ export const PromptBar = ({
           </div>
         </div>
       </div>
-    </div>
+
+      {/* Settings popup */}
+      <PromptSettings
+        prompt={prompt}
+        selectedNFTs={selectedNFTs}
+        isOpen={settingsOpen}
+      />
+    </TopBar>
   );
 };

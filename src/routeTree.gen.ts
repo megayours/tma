@@ -31,7 +31,6 @@ import { Route as PostCreateImageIndexRouteImport } from './routes/post/create/i
 import { Route as ProfilePromptEditPromptIdRouteRouteImport } from './routes/profile/prompt/edit/$promptId/route'
 import { Route as ProfilePromptEditPromptIdIndexRouteImport } from './routes/profile/prompt/edit/$promptId/index'
 import { Route as AuthDiscordV1CallbackIndexRouteImport } from './routes/auth/discord/v1/callback/index'
-import { Route as ProfilePromptEditPromptIdSettingsRouteImport } from './routes/profile/prompt/edit/$promptId/settings'
 
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
@@ -147,12 +146,6 @@ const AuthDiscordV1CallbackIndexRoute =
     path: '/auth/discord/v1/callback/',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ProfilePromptEditPromptIdSettingsRoute =
-  ProfilePromptEditPromptIdSettingsRouteImport.update({
-    id: '/settings',
-    path: '/settings',
-    getParentRoute: () => ProfilePromptEditPromptIdRouteRoute,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -175,7 +168,6 @@ export interface FileRoutesByFullPath {
   '/post/create/sticker': typeof PostCreateStickerIndexRoute
   '/post/create/video': typeof PostCreateVideoIndexRoute
   '/profile/favorites/new': typeof ProfileFavoritesNewIndexRoute
-  '/profile/prompt/edit/$promptId/settings': typeof ProfilePromptEditPromptIdSettingsRoute
   '/auth/discord/v1/callback': typeof AuthDiscordV1CallbackIndexRoute
   '/profile/prompt/edit/$promptId/': typeof ProfilePromptEditPromptIdIndexRoute
 }
@@ -199,7 +191,6 @@ export interface FileRoutesByTo {
   '/post/create/sticker': typeof PostCreateStickerIndexRoute
   '/post/create/video': typeof PostCreateVideoIndexRoute
   '/profile/favorites/new': typeof ProfileFavoritesNewIndexRoute
-  '/profile/prompt/edit/$promptId/settings': typeof ProfilePromptEditPromptIdSettingsRoute
   '/auth/discord/v1/callback': typeof AuthDiscordV1CallbackIndexRoute
   '/profile/prompt/edit/$promptId': typeof ProfilePromptEditPromptIdIndexRoute
 }
@@ -225,7 +216,6 @@ export interface FileRoutesById {
   '/post/create/sticker/': typeof PostCreateStickerIndexRoute
   '/post/create/video/': typeof PostCreateVideoIndexRoute
   '/profile/favorites/new/': typeof ProfileFavoritesNewIndexRoute
-  '/profile/prompt/edit/$promptId/settings': typeof ProfilePromptEditPromptIdSettingsRoute
   '/auth/discord/v1/callback/': typeof AuthDiscordV1CallbackIndexRoute
   '/profile/prompt/edit/$promptId/': typeof ProfilePromptEditPromptIdIndexRoute
 }
@@ -252,7 +242,6 @@ export interface FileRouteTypes {
     | '/post/create/sticker'
     | '/post/create/video'
     | '/profile/favorites/new'
-    | '/profile/prompt/edit/$promptId/settings'
     | '/auth/discord/v1/callback'
     | '/profile/prompt/edit/$promptId/'
   fileRoutesByTo: FileRoutesByTo
@@ -276,7 +265,6 @@ export interface FileRouteTypes {
     | '/post/create/sticker'
     | '/post/create/video'
     | '/profile/favorites/new'
-    | '/profile/prompt/edit/$promptId/settings'
     | '/auth/discord/v1/callback'
     | '/profile/prompt/edit/$promptId'
   id:
@@ -301,7 +289,6 @@ export interface FileRouteTypes {
     | '/post/create/sticker/'
     | '/post/create/video/'
     | '/profile/favorites/new/'
-    | '/profile/prompt/edit/$promptId/settings'
     | '/auth/discord/v1/callback/'
     | '/profile/prompt/edit/$promptId/'
   fileRoutesById: FileRoutesById
@@ -485,25 +472,15 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthDiscordV1CallbackIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/profile/prompt/edit/$promptId/settings': {
-      id: '/profile/prompt/edit/$promptId/settings'
-      path: '/settings'
-      fullPath: '/profile/prompt/edit/$promptId/settings'
-      preLoaderRoute: typeof ProfilePromptEditPromptIdSettingsRouteImport
-      parentRoute: typeof ProfilePromptEditPromptIdRouteRoute
-    }
   }
 }
 
 interface ProfilePromptEditPromptIdRouteRouteChildren {
-  ProfilePromptEditPromptIdSettingsRoute: typeof ProfilePromptEditPromptIdSettingsRoute
   ProfilePromptEditPromptIdIndexRoute: typeof ProfilePromptEditPromptIdIndexRoute
 }
 
 const ProfilePromptEditPromptIdRouteRouteChildren: ProfilePromptEditPromptIdRouteRouteChildren =
   {
-    ProfilePromptEditPromptIdSettingsRoute:
-      ProfilePromptEditPromptIdSettingsRoute,
     ProfilePromptEditPromptIdIndexRoute: ProfilePromptEditPromptIdIndexRoute,
   }
 

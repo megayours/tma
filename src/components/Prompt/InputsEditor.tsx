@@ -45,7 +45,6 @@ const useNFTAnimations = (isModifyingNFTs: boolean) => {
   return { containerRef, contentRef };
 };
 
-
 /**
  * Individual NFT item component
  * Handles the display and interaction for a single NFT
@@ -70,8 +69,8 @@ const NFTItem = ({
 
   return (
     <>
-      {/* Show cloud tooltip when NFT 1 (index 0) is long pressed */}
-      {longPressedIndex === 0 && index === 0 && (
+      {/* Show cloud tooltip when any NFT is long pressed */}
+      {longPressedIndex === index && (
         <NFTCloud
           index={index}
           supportedCollections={supportedCollections || []}

@@ -15,10 +15,7 @@ interface NFTCloudProps {
  * Shows additional options or information for the selected NFT
  * Now keyboard-aware and positions itself properly when keyboard opens
  */
-export const NFTCloud = ({
-  index,
-  supportedCollections,
-}: NFTCloudProps) => {
+export const NFTCloud = ({ index, supportedCollections }: NFTCloudProps) => {
   const [selectedCollection, setSelectedCollection] =
     useState<SupportedCollection | null>(null);
   const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null);
@@ -61,9 +58,8 @@ export const NFTCloud = ({
 
   const cloudContent = (
     <div
-      className="bg-tg-bg border-tg-hint/20 relative max-h-128 min-h-16 overflow-y-auto rounded-lg border shadow-lg"
+      className="bg-tg-bg border-tg-hint/20 relative min-h-16 overflow-y-auto rounded-lg border shadow-lg"
       style={{
-        maxHeight: '512px',
         minHeight: '64px',
         height: 'auto',
         overflow: 'auto',

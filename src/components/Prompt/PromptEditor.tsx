@@ -13,15 +13,14 @@ import {
   Input,
 } from '@telegram-apps/telegram-ui';
 
-import { AddContentButton } from '../ui/AddContentButton';
+import { AddInputButton } from '../ui/AddInputButton';
 import { IoSend } from 'react-icons/io5';
-import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { IoArrowBackOutline } from 'react-icons/io5';
 import { InputsEditor } from './InputsEditor';
 import { usePromptPreviewGeneration } from '@/hooks/usePromptPreviewGeneration';
 import { useSession } from '@/auth/SessionProvider';
 import { ContentPreviews } from './ContentPreview';
-import { SelectNFT, SelectPrompt, SelectImage } from '../ui/AddContentButton';
+import { SelectNFT, SelectPrompt, SelectImage } from '../ui/AddInputButton';
 
 export const PromptEditor = ({
   prompt: initialPrompt,
@@ -42,8 +41,6 @@ export const PromptEditor = ({
   const [selectedVersion, setSelectedVersion] = useState(
     prompt?.versions?.[(prompt.versions?.length ?? 0) - 1]
   );
-  const [isAddContentOpen, setIsAddContentOpen] = useState(false);
-  const [selectedContent, setSelectedContent] = useState<string | null>(null);
 
   // Custom hook for prompt generation logic
   const { isGenerating, generatePromptPreview } = usePromptPreviewGeneration({
@@ -90,60 +87,10 @@ export const PromptEditor = ({
         )}
       </div>
 
-      {/* Portal container for AddContentButton */}
-      {isAddContentOpen && (
-        <div
-          id="custom-input-container"
-          className="bg-tg-bg pointer-events-none fixed right-0 bottom-20 left-0 z-50"
-        >
-          <div className="bg-tg-bg pointer-events-auto absolute bottom-0 left-0 flex w-full pb-20">
-            {/* Portal content will be rendered here */}
-            {isAddContentOpen && selectedContent === null && (
-              <div className="flex w-full flex-col gap-2 p-4">
-                <Cell
-                  onClick={() => {
-                    updatePrompt?.({
-                      maxTokens: (prompt?.maxTokens ?? 0) + 1,
-                      minTokens: (prompt?.minTokens ?? 0) + 1,
-                    });
-                    setIsAddContentOpen(false);
-                    if (promptTextareaRef.current) {
-                      promptTextareaRef.current.focus();
-                    }
-                  }}
-                >
-                  NFT
-                </Cell>
-                <Divider />
-                <Cell onClick={() => setSelectedContent('prompt')}>Prompt</Cell>
-                <Divider />
-                <Cell onClick={() => setSelectedContent('image')}>Image</Cell>
-              </div>
-            )}
-
-            {isAddContentOpen && selectedContent !== null && (
-              <Section>
-                <IoArrowBackOutline onClick={() => setSelectedContent(null)} />
-                <div className="text-tg-text min-h-40">
-                  Select {selectedContent}
-                  {selectedContent === 'nft' && (
-                    <SelectNFT updatePrompt={updatePrompt} prompt={prompt!} />
-                  )}
-                  {selectedContent === 'prompt' && (
-                    <SelectPrompt
-                      updatePrompt={updatePrompt}
-                      prompt={prompt!}
-                    />
-                  )}
-                  {selectedContent === 'image' && (
-                    <SelectImage prompt={prompt!} updatePrompt={updatePrompt} />
-                  )}
-                </div>
-              </Section>
-            )}
-          </div>
-        </div>
-      )}
+      {/* Portal container for AddContentButton and NFTCloud */}
+      <div className="bg-tg-bg pointer-events-none fixed right-0 bottom-20 left-0 z-50 overflow-y-scroll pb-20">
+        <div id="custom-input-container"></div>
+      </div>
 
       {/* Fixed bottom toolbar */}
       <div className="bg-tg-secondary-bg border-tg-hint/20 safe-area-inset-bottom fixed right-0 bottom-0 left-0 z-50 border-t">
@@ -153,14 +100,10 @@ export const PromptEditor = ({
         <Divider />
         <div className="flex flex-row items-center gap-2 px-2">
           <div className="flex items-center justify-center">
-            <AddContentButton
+            <AddInputButton
               updatePrompt={updatePrompt}
               prompt={prompt}
               promptTextareaRef={promptTextareaRef}
-              isOpen={isAddContentOpen}
-              setIsOpen={setIsAddContentOpen}
-              selectedContent={selectedContent}
-              setSelectedContent={setSelectedContent}
             />
           </div>
           <div className="flex flex-1 flex-col">

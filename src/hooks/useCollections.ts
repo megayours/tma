@@ -141,7 +141,8 @@ export function useAddToFavoritesMutation(
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (session: Session) => {
+    mutationFn: async (session: Session | null | undefined) => {
+      if (!session) return;
       console.log('Adding to favorites', collection, tokenId);
       const response = await fetch(
         `${import.meta.env.VITE_PUBLIC_API_URL}/profile/favorites`,

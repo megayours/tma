@@ -2,99 +2,11 @@ import type { Prompt } from '@/types/prompt';
 import { AvatarStack, Button, Avatar } from '@telegram-apps/telegram-ui';
 import React, { useState, useRef, useEffect } from 'react';
 import { gsap } from 'gsap';
+import { useLongPress } from 'use-long-press';
 import { SelectCollection } from '../SelectCollection';
 import { SelectTokenId } from '../SelectTokenId';
 import type { SupportedCollection } from '@/hooks/useCollections';
 import { useGetSupportedCollections } from '@/hooks/useCollections';
-
-/**
- * Custom hook for handling long press interactions
- * Manages the state and timing for long press detection
- * @param isActive - Whether long press detection should be active
- * @param onLongPress - Callback function when long press is detected
- */
-const useLongPress = (
-  isActive: boolean,
-  onLongPress: (index: number) => void
-) => {
-  // Track which NFT is currently being long pressed
-  const [longPressedIndex, setLongPressedIndex] = useState<number | null>(null);
-  // Store the timeout reference to cancel if needed
-  const longPressTimeoutRef = useRef<number | null>(null);
-
-  /**
-   * Handles mouse/touch down events
-   * Starts a timer to detect long press after 500ms
-   */
-  const handleMouseDown = (
-    index: number,
-    event: React.MouseEvent | React.TouchEvent
-  ) => {
-    if (!isActive) return; // Only track long press when modifying NFTs
-
-    // Prevent default behavior to avoid text selection
-    event.preventDefault();
-    event.stopPropagation();
-
-    // Start a 500ms timer to detect long press
-    longPressTimeoutRef.current = setTimeout(() => {
-      setLongPressedIndex(index);
-      onLongPress(index);
-    }, 500);
-  };
-
-  /**
-   * Handles mouse/touch up events
-   * Cancels the long press timer and stops propagation if long press occurred
-   */
-  const handleMouseUp = (event?: React.MouseEvent | React.TouchEvent) => {
-    // Clear the long press timer
-    if (longPressTimeoutRef.current) {
-      clearTimeout(longPressTimeoutRef.current);
-      longPressTimeoutRef.current = null;
-    }
-
-    // If a long press occurred, stop event propagation
-    if (longPressedIndex !== null && event) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-  };
-
-  /**
-   * Handles clicks outside the cloud tooltip
-   * Closes the cloud when clicking outside of it
-   */
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (longPressedIndex !== null) {
-        const target = event.target as Element;
-        // Find the cloud element using data attribute
-        const cloudElement = document.querySelector(
-          `[data-cloud-index="${longPressedIndex}"]`
-        );
-
-        // If click is outside the cloud, close it
-        if (cloudElement && !cloudElement.contains(target)) {
-          setLongPressedIndex(null);
-        }
-      }
-    };
-
-    // Add global click listener when cloud is open
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [longPressedIndex]);
-
-  return {
-    longPressedIndex,
-    setLongPressedIndex,
-    handleMouseDown,
-    handleMouseUp,
-  };
-};
 
 /**
  * Custom hook for managing GSAP animations
@@ -137,6 +49,7 @@ const useNFTAnimations = (isModifyingNFTs: boolean) => {
 /**
  * Cloud tooltip component that appears above NFTs when long pressed
  * Shows additional options or information for the selected NFT
+ * Now keyboard-aware and positions itself properly when keyboard opens
  */
 const NFTCloud = ({
   index,
@@ -150,6 +63,10 @@ const NFTCloud = ({
 
   const handleCollectionSelect = (collection: SupportedCollection) => {
     console.log('NFTCloud: Collection selected:', collection.name);
+    // Remove focus from any active textarea to prevent keyboard from opening
+    if (document.activeElement instanceof HTMLTextAreaElement) {
+      document.activeElement.blur();
+    }
     setSelectedCollection(collection);
   };
 
@@ -175,15 +92,7 @@ const NFTCloud = ({
 
   return (
     <div
-      className="bg-tg-bg absolute -top-100 left-2/3 z-50 max-h-96 w-screen -translate-x-1/2 overflow-y-auto rounded-lg shadow-lg"
-      style={{
-        userSelect: 'none',
-        WebkitUserSelect: 'none',
-        MozUserSelect: 'none',
-        msUserSelect: 'none',
-        touchAction: 'manipulation',
-        pointerEvents: 'auto',
-      }}
+      className="bg-tg-bg overflow-y absolute -top-[400px] left-1/2 z-[9999] max-h-96 w-screen -translate-x-1/2 rounded-lg border border-gray-200 shadow-lg"
       data-cloud-index={index} // Used to identify this specific cloud for click-outside detection
       onClick={handleCloudClick}
     >
@@ -213,62 +122,56 @@ const NFTItem = ({
   index,
   isModifyingNFTs,
   longPressedIndex,
-  onMouseDown,
-  onMouseUp,
+  onLongPress,
   supportedCollections,
 }: {
   index: number;
   isModifyingNFTs: boolean;
   longPressedIndex: number | null;
-  onMouseDown: (
-    index: number,
-    event: React.MouseEvent | React.TouchEvent
-  ) => void;
-  onMouseUp: (event?: React.MouseEvent | React.TouchEvent) => void;
+  onLongPress: (index: number) => void;
   supportedCollections: SupportedCollection[];
-}) => (
-  <div
-    key={index}
-    className="bg-tg-bg relative -ml-2 flex flex-row items-center gap-2 rounded-full px-2 py-1"
-    style={{
-      userSelect: 'none',
-      WebkitUserSelect: 'none',
-      MozUserSelect: 'none',
-      msUserSelect: 'none',
-      touchAction: 'manipulation',
-    }}
-    onMouseDown={e => onMouseDown(index, e)}
-    onMouseUp={e => onMouseUp(e)}
-    onMouseLeave={e => onMouseUp(e)} // Cancel long press if mouse leaves
-    onTouchStart={e => onMouseDown(index, e)}
-    onTouchEnd={e => onMouseUp(e)}
-    onTouchCancel={e => onMouseUp(e)}
-  >
-    {/* Show cloud tooltip when this NFT is long pressed */}
-    {longPressedIndex === index && (
-      <NFTCloud
-        index={index}
-        supportedCollections={supportedCollections || []}
-      />
-    )}
+}) => {
+  const longPressBind = useLongPress(() => onLongPress(index), {
+    threshold: 500, // 500ms threshold for long press
+    cancelOnMovement: true, // Cancel if finger moves
+  });
 
-    {/* Show NFT label when in modification mode */}
-    {isModifyingNFTs && (
-      <h1 className="text-tg-text text-sm">NFT {index + 1}</h1>
-    )}
-
-    {/* NFT avatar */}
-    <Avatar
+  return (
+    <div
       key={index}
-      className=""
-      onClick={() => {
-        console.log('CLICKED');
-      }}
-      src={'/nfts/not-available.png'}
-      size={20}
-    />
-  </div>
-);
+      className="bg-tg-bg relative -ml-2 flex flex-row items-center gap-2 rounded-full px-2 py-1 select-none"
+      {...longPressBind()}
+    >
+      {/* Show cloud tooltip when this NFT is long pressed */}
+      {longPressedIndex === index && (
+        <NFTCloud
+          index={index}
+          supportedCollections={supportedCollections || []}
+        />
+      )}
+
+      {/* Show NFT label when in modification mode */}
+      {isModifyingNFTs && (
+        <h1 className="text-tg-text text-sm select-none">NFT {index + 1}</h1>
+      )}
+
+      {/* NFT avatar */}
+      <Avatar
+        key={index}
+        className=""
+        onClick={() => {
+          console.log('CLICKED');
+          // Close cloud tooltip if it's open
+          if (longPressedIndex === index) {
+            // This will be handled by the parent component's click outside handler
+          }
+        }}
+        src={'/nfts/not-available.png'}
+        size={20}
+      />
+    </div>
+  );
+};
 
 /**
  * Main InputsEditor component
@@ -282,15 +185,29 @@ export const InputsEditor = ({ prompt }: { prompt: Prompt }) => {
 
   // Hook for managing GSAP animations
   const { containerRef, contentRef } = useNFTAnimations(isModifyingNFTs);
+  const [longPressedIndex, setLongPressedIndex] = useState<number | null>(null);
 
-  // Hook for managing long press interactions
-  const { longPressedIndex, handleMouseDown, handleMouseUp } = useLongPress(
-    isModifyingNFTs, // Only allow long press when in modification mode
-    (index: number) => {
-      console.log(`Long pressed NFT ${index + 1}`);
-      // Add your long press action here
+  // Handle long press on NFT items
+  const handleLongPress = (index: number) => {
+    // Remove focus from any active textarea to prevent keyboard from opening
+    if (document.activeElement instanceof HTMLTextAreaElement) {
+      document.activeElement.blur();
     }
-  );
+    setLongPressedIndex(index);
+  };
+
+  // Handle click outside to close cloud tooltip
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (!target.closest('[data-cloud-index]')) {
+        setLongPressedIndex(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   return (
     <div
@@ -301,13 +218,6 @@ export const InputsEditor = ({ prompt }: { prompt: Prompt }) => {
       <div
         ref={contentRef}
         className="flex flex-row items-center"
-        style={{
-          userSelect: 'none',
-          WebkitUserSelect: 'none',
-          MozUserSelect: 'none',
-          msUserSelect: 'none',
-          touchAction: 'manipulation',
-        }}
         onClick={() => !isModifyingNFTs && setIsModifyingNFTs(!isModifyingNFTs)} // Toggle modification mode only when not already modifying
       >
         {/* Render NFT items based on prompt.maxTokens */}
@@ -317,8 +227,7 @@ export const InputsEditor = ({ prompt }: { prompt: Prompt }) => {
             index={index}
             isModifyingNFTs={isModifyingNFTs}
             longPressedIndex={longPressedIndex}
-            onMouseDown={handleMouseDown}
-            onMouseUp={handleMouseUp}
+            onLongPress={handleLongPress}
             supportedCollections={supportedCollections || []}
           />
         ))}

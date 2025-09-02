@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import type { Prompt } from '@/types/prompt';
 import type { Token } from '@/types/response';
 import {
@@ -10,7 +10,9 @@ import {
   Textarea,
   Cell,
   Section,
+  Input,
 } from '@telegram-apps/telegram-ui';
+
 import { AddContentButton } from '../ui/AddContentButton';
 import { IoSend } from 'react-icons/io5';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
@@ -76,140 +78,75 @@ export const PromptEditor = ({
     console.log('Content ID:', contentId);
   };
 
-  useEffect(() => {
-    // Enhanced keyboard handling with Visual Viewport API
-    const handleViewportChange = () => {
-      if (window.visualViewport) {
-        const keyboardHeight =
-          window.innerHeight - window.visualViewport.height;
-        const offsetY = keyboardHeight > 0 ? -keyboardHeight * 0.1 : 0; // Slight offset for better UX
-
-        document.documentElement.style.setProperty(
-          '--keyboard-offset',
-          `${offsetY}px`
-        );
-
-        // Add smooth transition class
-        const container = document.querySelector('.mobile-input-container');
-        if (container) {
-          container.classList.add('keyboard-aware');
-        }
-      }
-    };
-
-    // Fallback for browsers without Visual Viewport API
-    const handleResize = () => {
-      if (!window.visualViewport) {
-        const currentHeight = window.innerHeight;
-        const standardHeight = window.screen.height;
-        const keyboardHeight = standardHeight - currentHeight;
-
-        if (keyboardHeight > 100) {
-          // Keyboard is likely open
-          document.documentElement.style.setProperty(
-            '--keyboard-offset',
-            '-20px'
-          );
-        } else {
-          document.documentElement.style.setProperty(
-            '--keyboard-offset',
-            '0px'
-          );
-        }
-      }
-    };
-
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', handleViewportChange);
-      window.visualViewport.addEventListener('scroll', handleViewportChange);
-    } else {
-      window.addEventListener('resize', handleResize);
-    }
-
-    return () => {
-      if (window.visualViewport) {
-        window.visualViewport.removeEventListener(
-          'resize',
-          handleViewportChange
-        );
-        window.visualViewport.removeEventListener(
-          'scroll',
-          handleViewportChange
-        );
-      } else {
-        window.removeEventListener('resize', handleResize);
-      }
-    };
-  }, []);
-
   if (!prompt) return <div>Loading...</div>;
 
   return (
-    <div className="keyboard-aware-container bg-tg-bg relative min-h-screen">
+    <div className="bg-tg-bg min-h-screen">
       {/* Main content area */}
-      <div className="h-full pb-52">
-        <div className="relative h-full">
-          {/* Your main content goes here */}
-          {selectedVersion && (
-            <ContentPreviews
-              prompt={prompt}
-              selectedVersion={selectedVersion}
-            />
-          )}
-        </div>
+      <div className="h-screen pb-76">
+        {/* Your main content goes here */}
+        {selectedVersion && (
+          <ContentPreviews prompt={prompt} selectedVersion={selectedVersion} />
+        )}
       </div>
 
       {/* Portal container for AddContentButton */}
-      <div
-        id="custom-input-container"
-        className="pointer-events-none fixed inset-0 z-50"
-      >
-        <div className="bg-tg-bg pointer-events-auto absolute bottom-0 left-0 h-100 w-full pb-20">
-          {/* Portal content will be rendered here */}
-          {isAddContentOpen && selectedContent === null && (
-            <div className="flex w-full flex-col gap-2 p-4">
-              <Cell
-                onClick={() => {
-                  updatePrompt?.({
-                    maxTokens: (prompt?.maxTokens ?? 0) + 1,
-                    minTokens: (prompt?.minTokens ?? 0) + 1,
-                  });
-                  setIsAddContentOpen(false);
-                  if (promptTextareaRef.current) {
-                    promptTextareaRef.current.focus();
-                  }
-                }}
-              >
-                NFT
-              </Cell>
-              <Divider />
-              <Cell onClick={() => setSelectedContent('prompt')}>Prompt</Cell>
-              <Divider />
-              <Cell onClick={() => setSelectedContent('image')}>Image</Cell>
-            </div>
-          )}
-
-          {isAddContentOpen && selectedContent !== null && (
-            <Section>
-              <IoArrowBackOutline onClick={() => setSelectedContent(null)} />
-              <div className="text-tg-text min-h-40">
-                Select {selectedContent}
-                {selectedContent === 'nft' && (
-                  <SelectNFT updatePrompt={updatePrompt} prompt={prompt!} />
-                )}
-                {selectedContent === 'prompt' && (
-                  <SelectPrompt updatePrompt={updatePrompt} prompt={prompt!} />
-                )}
-                {selectedContent === 'image' && (
-                  <SelectImage prompt={prompt!} updatePrompt={updatePrompt} />
-                )}
+      {isAddContentOpen && (
+        <div
+          id="custom-input-container"
+          className="bg-tg-bg pointer-events-none fixed right-0 bottom-20 left-0 z-50"
+        >
+          <div className="bg-tg-bg pointer-events-auto absolute bottom-0 left-0 flex w-full pb-20">
+            {/* Portal content will be rendered here */}
+            {isAddContentOpen && selectedContent === null && (
+              <div className="flex w-full flex-col gap-2 p-4">
+                <Cell
+                  onClick={() => {
+                    updatePrompt?.({
+                      maxTokens: (prompt?.maxTokens ?? 0) + 1,
+                      minTokens: (prompt?.minTokens ?? 0) + 1,
+                    });
+                    setIsAddContentOpen(false);
+                    if (promptTextareaRef.current) {
+                      promptTextareaRef.current.focus();
+                    }
+                  }}
+                >
+                  NFT
+                </Cell>
+                <Divider />
+                <Cell onClick={() => setSelectedContent('prompt')}>Prompt</Cell>
+                <Divider />
+                <Cell onClick={() => setSelectedContent('image')}>Image</Cell>
               </div>
-            </Section>
-          )}
+            )}
+
+            {isAddContentOpen && selectedContent !== null && (
+              <Section>
+                <IoArrowBackOutline onClick={() => setSelectedContent(null)} />
+                <div className="text-tg-text min-h-40">
+                  Select {selectedContent}
+                  {selectedContent === 'nft' && (
+                    <SelectNFT updatePrompt={updatePrompt} prompt={prompt!} />
+                  )}
+                  {selectedContent === 'prompt' && (
+                    <SelectPrompt
+                      updatePrompt={updatePrompt}
+                      prompt={prompt!}
+                    />
+                  )}
+                  {selectedContent === 'image' && (
+                    <SelectImage prompt={prompt!} updatePrompt={updatePrompt} />
+                  )}
+                </div>
+              </Section>
+            )}
+          </div>
         </div>
-      </div>
-      {/* Fixed bottom toolbar with smooth keyboard transitions */}
-      <div className="mobile-input-container keyboard-aware bg-tg-secondary-bg border-tg-hint/20 safe-area-inset-bottom fixed right-0 bottom-0 left-0 z-50 border-t">
+      )}
+
+      {/* Fixed bottom toolbar */}
+      <div className="bg-tg-secondary-bg border-tg-hint/20 safe-area-inset-bottom fixed right-0 bottom-0 left-0 z-50 border-t">
         <div className="h-12">
           <InputsEditor prompt={prompt} />
         </div>
@@ -229,7 +166,7 @@ export const PromptEditor = ({
           <div className="flex flex-1 flex-col">
             <Textarea
               placeholder="Enter your prompt..."
-              className="bg-tg-section-bg text-tg-text transition-all duration-200 focus:scale-[1.02]"
+              className="bg-tg-section-bg text-tg-text transition-all duration-200"
               ref={promptTextareaRef}
               value={promptText}
               onChange={e => {

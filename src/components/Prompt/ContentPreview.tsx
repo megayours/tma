@@ -68,14 +68,14 @@ export const ContentPreviews = ({
   }, [content, selectedContent]);
 
   return (
-    <div className="h-full pb-25">
+    <div className="h-full">
       <div className="flex h-full items-center justify-center">
         {selectedContent && (
-          <div className="relative">
+          <div className="relative h-full max-h-full w-full overflow-hidden">
             <img
               src={selectedContent.image}
               alt={selectedContent.id}
-              className="max-h-full max-w-full object-contain"
+              className="h-full w-full object-contain"
             />
             <div className="absolute right-2 bottom-2 rounded bg-black/70 px-2 py-1 text-sm text-white shadow-sm">
               v{selectedContent.prompt?.version || 'N/A'}
@@ -83,14 +83,14 @@ export const ContentPreviews = ({
           </div>
         )}
       </div>
-      <div className="bg-tg-secondary-bg flex max-h-20 flex-row items-center gap-4 overflow-x-auto p-2">
+      <div className="bg-tg-secondary-bg flex max-h-20 w-full flex-row items-center gap-4 overflow-x-auto p-2">
         {groupedContent.flatMap((group, groupIndex) => {
           const items = [
             // Content items for this version
             ...group.items.map((content: Content) => (
               <div
                 key={content.id}
-                className={`flex-shrink-0 cursor-pointer rounded border-2 ${
+                className={`min-w-0 flex-shrink-0 cursor-pointer rounded border-2 ${
                   selectedContent?.id === content.id
                     ? 'border-blue-500'
                     : 'border-transparent'

@@ -1,4 +1,3 @@
-import { Card } from '@telegram-apps/telegram-ui';
 import type { SupportedCollection } from '@/hooks/useCollections';
 
 interface SelectCollectionProps {

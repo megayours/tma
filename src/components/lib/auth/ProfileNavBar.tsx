@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useSession } from '@/auth/SessionProvider';
-import { PiPlus, PiX } from 'react-icons/pi';
+import { PiX } from 'react-icons/pi';
 import { useGetFavorites, useRemoveFromFavorites } from '@/hooks/useFavorites';
 import { Avatar, Button, Divider } from '@telegram-apps/telegram-ui';
 import { Link, useNavigate } from '@tanstack/react-router';
@@ -48,7 +48,7 @@ export function ProfileNavBar({ logout: _logout }: { logout: () => void }) {
                     className="relative flex flex-row items-center justify-center gap-2"
                   >
                     <Avatar
-                      size={72} // it just works
+                      size={48}
                       src={`${favorite.token.image || '/nfts/ape.jpg'}`}
                       alt="Favorite"
                       className={`h-72 w-72 rounded-full transition-all duration-200 ${

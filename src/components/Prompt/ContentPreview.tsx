@@ -13,7 +13,7 @@ export const ContentPreviews = ({
   selectedVersion: PromptVersion;
 }) => {
   const { session } = useSession();
-  const { data: { content, pagination } = { content: [], pagination: {} } } =
+  const { data: { content } = { content: [] } } =
     useGetPreviewContent(session, prompt.id, selectedVersion);
   const [selectedContent, setSelectedContent] = useState<Content | null>(null);
 

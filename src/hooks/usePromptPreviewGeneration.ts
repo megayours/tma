@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import type { Prompt, PromptVersion } from '@/types/prompt';
+import type { Prompt } from '@/types/prompt';
 import type { Session } from '@/auth/useAuth';
 import { usePromptMutation } from './usePrompts';
 import { usePreviewContentMutation } from './useContents';

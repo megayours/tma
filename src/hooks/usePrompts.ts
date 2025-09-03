@@ -1,40 +1,33 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { Pagination } from '@/types/requests';
 import {
-  type Pagination,
-  type PromptsRequest,
-  PromptsRequestSchema,
-} from '@/types/requests';
-import {
-  type PromptsResponse,
   type RawPromptsResponse,
   type RawPrompt,
-  RawPromptsResponseSchema,
 } from '@/types/response';
-import { safeParse, getValidationErrors } from '../utils/validation';
 import { apiGet } from '@/lib/api';
 import type { PromptWithContent } from '@/types/content';
 import type { Session } from '@/auth/useAuth';
-import type { Prompt, Version } from '@/types/prompt';
+import type { Prompt } from '@/types/prompt';
 
 // Helper function to map raw prompt to expected format
 const mapRawPromptToPrompt = (rawPrompt: RawPrompt) => ({
   id: rawPrompt.id,
-  name: rawPrompt.name,
-  description: rawPrompt.description,
+  name: rawPrompt.name ?? 'Untitled',
+  description: rawPrompt.description ?? '',
   image: rawPrompt.image,
   type: rawPrompt.type,
   additionalContentIds: rawPrompt.additional_content_ids ?? [],
-  published: rawPrompt.published,
-  lastUsed: rawPrompt.last_used,
+  published: rawPrompt.published ?? false,
+  lastUsed: rawPrompt.last_used ?? 0,
   createdAt: rawPrompt.created_at,
-  updatedAt: rawPrompt.updated_at,
-  usageCount: rawPrompt.usage_count,
-  contracts: rawPrompt.contracts,
-  images: rawPrompt.images,
-  videos: rawPrompt.videos,
-  gifs: rawPrompt.gifs,
+  updatedAt: rawPrompt.updated_at ?? rawPrompt.created_at,
+  usageCount: rawPrompt.usage_count ?? 0,
+  contracts: rawPrompt.contracts ?? [],
+  images: rawPrompt.images ?? [],
+  videos: rawPrompt.videos ?? [],
+  gifs: rawPrompt.gifs ?? [],
   versions: rawPrompt.versions,
 });
 
@@ -42,48 +35,74 @@ const mapRawPromptToPromptWithContent = (
   rawPrompt: RawPrompt
 ): PromptWithContent => ({
   ...mapRawPromptToPrompt(rawPrompt),
-  published: (rawPrompt as any).published ?? false,
+  published: rawPrompt.published ?? false,
   image: rawPrompt.image ?? '',
-  type: rawPrompt.type as 'images' | 'videos' | 'stickers' | 'gifs',
+  type: rawPrompt.type as 'images' | 'videos' | 'stickers' | 'gifs' | 'animated_stickers',
   contentId: (rawPrompt as any).content_id,
-  owner: (rawPrompt as any).owner,
-  ownerName: (rawPrompt as any).owner_name,
-  hasUserGenerated: (rawPrompt as any).has_user_generated ?? false,
-  publishedAt: (rawPrompt as any).published_at ?? 0,
-  generationCount: (rawPrompt as any).generation_count ?? 0,
-  latestContentUrl: (rawPrompt as any).latest_content_url,
+  owner: rawPrompt.owner_id,
+  ownerName: rawPrompt.owner_name ?? '',
+  hasUserGenerated: rawPrompt.has_generated ?? false,
+  publishedAt: rawPrompt.published_at ?? 0,
+  generationCount: rawPrompt.generation_count ?? 0,
+  latestContentUrl: rawPrompt.latest_content_url,
 });
 
 export const useGetRecommendedPrompts = ({
   type = 'all',
   excludeUsed = true,
   pagination,
+  enabled = true,
 }: {
-  type: 'images' | 'videos' | 'gifs' | 'stickers' | 'all';
+  type: 'images' | 'videos' | 'gifs' | 'stickers' | 'animated_stickers' | 'all';
   excludeUsed: boolean;
   pagination: Pagination;
+  enabled?: boolean;
 }) => {
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['recommended-prompts', type, excludeUsed, pagination],
+    enabled,
     queryFn: async () => {
-      const response = await apiGet<RawPromptsResponse>(
-        `${import.meta.env.VITE_PUBLIC_API_URL}/discovery/prompts/recommended`,
-        {
-          type,
-          exclude_used: excludeUsed,
-          page: pagination.page,
-          size: pagination.size,
+      try {
+        const response = await apiGet<RawPromptsResponse>(
+          `${import.meta.env.VITE_PUBLIC_API_URL}/discovery/prompts/recommended`,
+          {
+            type,
+            exclude_used: excludeUsed,
+            page: pagination.page,
+            size: pagination.size,
+          }
+        );
+
+        console.log('Raw API response:', response);
+        console.log('Response data:', response.data);
+        console.log('Response pagination:', response.pagination);
+        console.log('Response data length:', response.data?.length);
+
+        if (!response || !response.data) {
+          console.error('Invalid response format:', response);
+          throw new Error('Invalid response format: missing data');
         }
-      );
 
-      const mappedPrompts: PromptWithContent[] = response.data.map(
-        mapRawPromptToPromptWithContent
-      );
+        const mappedPrompts: PromptWithContent[] = response.data.map(
+          (rawPrompt, index) => {
+            console.log(`Mapping prompt ${index}:`, rawPrompt);
+            const mapped = mapRawPromptToPromptWithContent(rawPrompt);
+            console.log(`Mapped prompt ${index}:`, mapped);
+            return mapped;
+          }
+        );
 
-      return {
-        prompts: mappedPrompts,
-        pagination: response.pagination,
-      };
+        const result = {
+          prompts: mappedPrompts,
+          pagination: response.pagination || { page: 1, size: 10, total: 0, totalPages: 0 },
+        };
+
+        console.log('Final hook result:', result);
+        return result;
+      } catch (err) {
+        console.error('Failed to fetch recommended prompts:', err);
+        throw new Error(`Failed to load recommendations: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      }
     },
   });
 
@@ -94,6 +113,7 @@ export const useGetRecommendedPrompts = ({
     },
     isLoading,
     error,
+    refetch,
   };
 };
 

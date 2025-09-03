@@ -10,7 +10,7 @@ export function Pagination({
   page,
   setPage,
   totalPages,
-  className = '',
+  className: _className = '',
 }: PaginationProps) {
   return (
     <TGPagination

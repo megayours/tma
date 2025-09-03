@@ -1,4 +1,3 @@
-import { DisplayImage } from '../DisplayImage';
 import type { Prompt } from '@/types/prompt';
 
 export function LatestImage({ prompt, bg }: { prompt: Prompt; bg: string }) {

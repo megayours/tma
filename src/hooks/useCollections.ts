@@ -181,13 +181,13 @@ export function useAddToFavoritesMutation(
       console.log('data', data);
       return data;
     },
-    onSuccess: (data, session) => {
+    onSuccess: (_data, session) => {
       // Invalidate the favorites query to refetch the updated list
       queryClient.invalidateQueries({
         queryKey: ['favorites', session?.id],
       });
     },
-    onError: (error, variables, context) => {
+    onError: (error, _variables, _context) => {
       console.error('Error adding to favorites:', error.message || error);
     },
   });

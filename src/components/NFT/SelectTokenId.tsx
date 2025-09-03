@@ -1,4 +1,4 @@
-import { Button, Card, Input } from '@telegram-apps/telegram-ui';
+import { Button, Input } from '@telegram-apps/telegram-ui';
 import type { SupportedCollection } from '@/hooks/useCollections';
 import { useState, useEffect, useRef } from 'react';
 

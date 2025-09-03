@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { cn } from '../../utils/cn';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';

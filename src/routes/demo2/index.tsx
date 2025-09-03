@@ -143,10 +143,6 @@ function RouteComponent() {
     [activeCard, openCard, closeCardAnimation]
   );
 
-  const closeCard = useCallback(() => {
-    if (activeCard === null || isAnimating) return;
-    closeCardAnimation(activeCard);
-  }, [activeCard, isAnimating, closeCardAnimation]);
 
   const cards = [
     {

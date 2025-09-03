@@ -78,92 +78,253 @@ function ShowContent({
 }
 
 export function Feed() {
+  const [allPrompts, setAllPrompts] = useState<PromptWithContent[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [promptsWithContent, setPromptsWithContent] = useState<
-    PromptWithContent[]
-  >([]);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMorePages, setHasMorePages] = useState(true);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const triggerRef = useRef<HTMLDivElement>(null);
 
-  const { data, isLoading } = useGetRecommendedPrompts({
-    type: 'all',
-    excludeUsed: true,
-    pagination: {
-      page: currentPage,
-      size: 10,
-    },
+  console.log('Feed render:', {
+    currentPage,
+    totalPrompts: allPrompts.length,
+    hasMorePages,
+    isFetchingMore,
   });
 
-  // Update allPrompts when new data comes in
+  // Only auto-fetch the first page
+  const initialQueryParams = {
+    type: 'all' as const,
+    excludeUsed: false,
+    pagination: {
+      page: 1,
+      size: 10,
+    },
+  };
+
+  console.log('Initial API Query params:', initialQueryParams);
+
+  const {
+    data: initialData,
+    isLoading: isInitialLoading,
+    error,
+  } = useGetRecommendedPrompts(initialQueryParams);
+
+  // Handle initial data
   useEffect(() => {
-    if (data.prompts.length > 0) {
-      if (currentPage === 1) {
-        setPromptsWithContent(data.prompts);
-      } else {
-        setPromptsWithContent(prev => [...prev, ...data.prompts]);
+    console.log('Initial data received:', {
+      promptsLength: initialData.prompts.length,
+      pagination: initialData.pagination,
+      error: error?.message,
+    });
+
+    if (initialData.prompts.length > 0) {
+      setAllPrompts(initialData.prompts);
+
+      // Update pagination info
+      const hasMore = initialData.pagination
+        ? initialData.pagination.page < initialData.pagination.totalPages
+        : false;
+      console.log('Initial pagination check:', {
+        currentPageFromData: initialData.pagination?.page,
+        totalPages: initialData.pagination?.totalPages,
+        hasMore,
+      });
+
+      setHasMorePages(hasMore);
+    } else {
+      setHasMorePages(false);
+    }
+  }, [initialData.prompts, initialData.pagination, error]);
+
+  // Manual fetch function for pagination
+  const fetchNextPage = async () => {
+    if (isFetchingMore || !hasMorePages || isInitialLoading) {
+      console.log('Skipping fetch:', {
+        isFetchingMore,
+        hasMorePages,
+        isInitialLoading,
+        currentPage,
+      });
+      return;
+    }
+
+    const nextPageNum = currentPage + 1;
+    console.log(
+      'Manually fetching page:',
+      nextPageNum,
+      'current page was:',
+      currentPage
+    );
+
+    setIsFetchingMore(true);
+    setCurrentPage(nextPageNum); // Update page immediately
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/discovery/prompts/recommended?type=all&exclude_used=false&page=${nextPageNum}&size=10`,
+        {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      // Check if there are more pages
-      if (
-        data.pagination &&
-        data.pagination.page >= data.pagination.totalPages
-      ) {
+      const rawData = await response.json();
+      console.log('Manual fetch response:', rawData);
+
+      if (rawData && rawData.data && rawData.data.length > 0) {
+        // Map the raw data to the expected format
+        const mappedPrompts: PromptWithContent[] = rawData.data.map(
+          (rawPrompt: any): PromptWithContent => ({
+            id: rawPrompt.id,
+            name: rawPrompt.name ?? 'Untitled',
+            description: rawPrompt.description ?? '',
+            image: rawPrompt.image ?? '',
+            type: rawPrompt.type as
+              | 'images'
+              | 'videos'
+              | 'stickers'
+              | 'gifs'
+              | 'animated_stickers',
+            published: rawPrompt.published ?? false,
+            owner: rawPrompt.owner_id,
+            ownerName: rawPrompt.owner_name ?? '',
+            hasUserGenerated: rawPrompt.has_generated ?? false,
+            publishedAt: rawPrompt.published_at ?? 0,
+            generationCount: rawPrompt.generation_count ?? 0,
+            latestContentUrl: rawPrompt.latest_content_url,
+            // Add other required fields with defaults
+            additionalContentIds: [],
+            lastUsed: 0,
+            createdAt: rawPrompt.created_at,
+            updatedAt: rawPrompt.updated_at ?? rawPrompt.created_at,
+            usageCount: rawPrompt.usage_count ?? 0,
+            contracts: [],
+            images: [],
+            videos: [],
+            gifs: [],
+            versions: undefined,
+            contentId: undefined,
+          })
+        );
+
+        setAllPrompts(prev => {
+          console.log(
+            'Adding prompts. Previous count:',
+            prev.length,
+            'Adding:',
+            mappedPrompts.length
+          );
+          return [...prev, ...mappedPrompts];
+        });
+
+        // Check if there are more pages
+        const hasMore = rawData.pagination
+          ? rawData.pagination.page < rawData.pagination.totalPages
+          : false;
+        setHasMorePages(hasMore);
+      } else {
         setHasMorePages(false);
       }
-    }
-  }, [data.prompts, data.pagination, currentPage]);
-
-  // Reset loading state when request completes
-  useEffect(() => {
-    if (!isLoading && isLoadingMore) {
-      setIsLoadingMore(false);
-    }
-  }, [isLoading, isLoadingMore]);
-
-  const containerRef = useRef<HTMLElement>(null);
-
-  const loadNextPage = () => {
-    if (!isLoadingMore && hasMorePages) {
-      setIsLoadingMore(true);
-      setCurrentPage(prev => prev + 1);
+    } catch (err) {
+      console.error('Failed to fetch next page:', err);
+    } finally {
+      setIsFetchingMore(false);
     }
   };
 
+  // Load next page function - now uses manual fetch
+  const loadNextPage = () => {
+    console.log('loadNextPage called - triggering manual fetch');
+    fetchNextPage();
+  };
+
+  // Intersection Observer for infinite scroll
   useEffect(() => {
-    const handleScroll = () => {
-      if (!containerRef.current || isLoadingMore || !hasMorePages) return;
-
-      const container = containerRef.current;
-      const scrollTop = container.scrollTop;
-      const clientHeight = container.clientHeight;
-
-      // Calculate which section is currently visible
-      const sectionHeight = clientHeight; // Each section is full height
-      const currentSectionIndex = Math.floor(scrollTop / sectionHeight);
-
-      // Check if we're on the third-to-last prompt
-      const thirdToLastIndex = promptsWithContent.length > 5 ? 5 : 3;
-
-      if (currentSectionIndex >= thirdToLastIndex && thirdToLastIndex >= 0) {
-        loadNextPage();
-      }
-    };
-
-    const container = containerRef.current;
-    if (container) {
-      container.addEventListener('scroll', handleScroll);
-      return () => container.removeEventListener('scroll', handleScroll);
+    const trigger = triggerRef.current;
+    if (!trigger) {
+      console.log('No trigger element found');
+      return;
     }
-  }, [isLoadingMore, hasMorePages, promptsWithContent.length]);
+
+    console.log('Setting up intersection observer with trigger element');
+
+    const observer = new IntersectionObserver(
+      entries => {
+        const [entry] = entries;
+        console.log('Intersection observer triggered:', {
+          isIntersecting: entry.isIntersecting,
+          intersectionRatio: entry.intersectionRatio,
+          hasMorePages,
+          isFetchingMore,
+          isInitialLoading,
+          currentPage,
+          totalPrompts: allPrompts.length,
+        });
+
+        if (
+          entry.isIntersecting &&
+          hasMorePages &&
+          !isFetchingMore &&
+          !isInitialLoading
+        ) {
+          console.log('Trigger element is visible - calling fetchNextPage');
+          fetchNextPage();
+        }
+      },
+      {
+        root: null, // Use viewport as root
+        rootMargin: '100px', // Trigger 100px before the element is visible
+        threshold: 0.1, // Trigger when 10% of the element is visible
+      }
+    );
+
+    observer.observe(trigger);
+    console.log('Observer attached to trigger element');
+
+    return () => {
+      console.log('Cleaning up observer');
+      observer.unobserve(trigger);
+    };
+  }, [
+    hasMorePages,
+    isFetchingMore,
+    isInitialLoading,
+    currentPage,
+    allPrompts.length,
+  ]);
+
+  // Show error state if there's an error and no data
+  if (error && allPrompts.length === 0) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <div className="p-6 text-center">
+          <div className="mb-2 text-xl text-red-500">⚠️</div>
+          <h2 className="mb-2 text-lg font-semibold">
+            Failed to load recommendations
+          </h2>
+          <p className="mb-4 text-gray-600">{error.message}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
       <style>{`
         .scroller {
-          overflow-y: scroll;
+          overflow-y: auto;
           scroll-snap-type: y mandatory;
-          height: 100vh;
-          max-height: 100vh;
+          height: 100%;
         }
 
         .scroller section {
@@ -172,18 +333,67 @@ export function Feed() {
           min-height: 100vh;
         }
       `}</style>
-      <article ref={containerRef} className="scroller overflow-y-auto">
-        {promptsWithContent.map((prompt: PromptWithContent) => (
-          // prompt.type !== 'stickers' && (
+      <article className="scroller h-full">
+        {/* Debug panel */}
+        <div className="bg-opacity-50 fixed top-4 right-4 z-50 rounded bg-black p-2 text-xs text-white">
+          <div>Page: {currentPage}</div>
+          <div>Items: {allPrompts.length}</div>
+          <div>
+            Loading: {isFetchingMore || isInitialLoading ? 'Yes' : 'No'}
+          </div>
+          <div>HasMore: {hasMorePages ? 'Yes' : 'No'}</div>
+          <button
+            onClick={loadNextPage}
+            className="mt-1 rounded bg-blue-500 px-2 py-1 text-xs"
+            disabled={isFetchingMore || !hasMorePages || isInitialLoading}
+          >
+            Load Next
+          </button>
+          <button
+            onClick={() => {
+              console.log('Direct fetch test button clicked');
+              fetchNextPage();
+            }}
+            className="mt-1 rounded bg-green-500 px-2 py-1 text-xs"
+            disabled={isFetchingMore || isInitialLoading}
+          >
+            Test Fetch
+          </button>
+        </div>
+
+        {allPrompts.map((prompt: PromptWithContent, index: number) => (
           <section key={prompt.id} className="flex snap-start flex-col">
-            <ShowContent prompt={prompt} isLoading={isLoading} />
+            <ShowContent prompt={prompt} isLoading={isInitialLoading} />
+
+            {/* Place trigger element at the 5th-to-last item */}
+            {index === allPrompts.length - 5 && (
+              <div
+                ref={triggerRef}
+                className="flex h-4 w-full items-center justify-center bg-red-500 text-xs opacity-20"
+                style={{ pointerEvents: 'none' }}
+              >
+                TRIGGER ({index + 1}/{allPrompts.length})
+              </div>
+            )}
           </section>
         ))}
-        {isLoadingMore && (
+
+        {(isFetchingMore || isInitialLoading) && (
           <section className="flex snap-start items-center justify-center">
             <div className="text-center">
               <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-gray-900"></div>
               <p className="mt-2">Loading more prompts...</p>
+            </div>
+          </section>
+        )}
+
+        {error && allPrompts.length > 0 && (
+          <section className="flex snap-start items-center justify-center">
+            <div className="p-6 text-center">
+              <div className="mb-2 text-sm text-orange-500">⚠️ Warning</div>
+              <p className="text-sm text-gray-600">
+                Failed to load more content: {error.message}
+              </p>
             </div>
           </section>
         )}

@@ -1,13 +1,8 @@
-import { useState, useRef, useEffect } from 'react';
-import { Link } from '@tanstack/react-router';
-import { gsap } from 'gsap';
+import { useState } from 'react';
 import type { Prompt } from '@/types/prompt';
 import type { Token } from '@/types/response';
 import {
-  Button,
-  Card,
   IconButton,
-  InlineButtons,
 } from '@telegram-apps/telegram-ui';
 import { TopBar } from '@/components/ui/TopBar';
 import { PromptSettings } from './PromptSettings';
@@ -46,13 +41,11 @@ interface PromptBarProps {
 export const PromptBar = ({
   prompt,
   selectedNFTs,
-  setSelectedNFTs,
   settingsOpen,
   setSettingsOpen,
   onPromptUpdate,
 }: PromptBarProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const toggleDropdown = () => {
     setIsExpanded(!isExpanded);

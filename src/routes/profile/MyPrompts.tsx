@@ -21,9 +21,8 @@ export default function MyPrompts() {
   const [totalPages, setTotalPages] = useState(1);
   const [deletingPromptId, setDeletingPromptId] = useState<number | null>(null);
 
-  const { data, isLoading, error } = useGetMyPrompts(session!, pagination);
-  const { mutateAsync: deletePrompt, isPending: isDeleting } =
-    useDeletePromptMutation(session!);
+  const { data } = useGetMyPrompts(session!, pagination);
+  const { mutateAsync: deletePrompt } = useDeletePromptMutation(session!);
 
   useEffect(() => {
     if (data?.pagination.totalPages !== totalPages) {

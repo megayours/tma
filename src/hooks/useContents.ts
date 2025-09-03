@@ -157,7 +157,7 @@ export const usePreviewContentMutation = (
 export const useGetPreviewContent = (
   session: Session | null | undefined,
   promptId: number | null,
-  promptVersion: PromptVersion | null
+  _promptVersion: PromptVersion | null
 ) => {
   return useQuery({
     queryKey: ['preview-content', promptId],

@@ -1,6 +1,6 @@
 import type { Prompt } from '@/types/prompt';
-import { AvatarStack, Button, Avatar } from '@telegram-apps/telegram-ui';
-import React, { useState, useRef, useEffect } from 'react';
+import { Avatar } from '@telegram-apps/telegram-ui';
+import { useState, useRef, useEffect } from 'react';
 import { gsap } from 'gsap';
 import { useLongPress } from 'use-long-press';
 import type { SupportedCollection } from '@/hooks/useCollections';

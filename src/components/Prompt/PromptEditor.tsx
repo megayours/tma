@@ -12,8 +12,6 @@ import { ContentPreviews } from './ContentPreview';
 
 export const PromptEditor = ({
   prompt: initialPrompt,
-  selectedNFTs,
-  setSelectedNFTs,
 }: {
   prompt: Prompt | null;
   selectedNFTs: Token[];

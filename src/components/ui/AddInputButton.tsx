@@ -1,10 +1,7 @@
 import {
   Button,
-  Card,
   Cell,
   Divider,
-  Input,
-  Placeholder,
   Section,
 } from '@telegram-apps/telegram-ui';
 import { useState, useRef, useEffect } from 'react';
@@ -51,7 +48,7 @@ export const SelectNFT = ({
 };
 
 export const SelectPrompt = ({
-  updatePrompt,
+  updatePrompt: _updatePrompt,
   prompt,
 }: {
   updatePrompt: ((updates: Partial<Prompt>) => void) | null;
@@ -63,7 +60,7 @@ export const SelectPrompt = ({
 
 export const SelectImage = ({
   prompt,
-  updatePrompt,
+  updatePrompt: _updatePrompt,
 }: {
   prompt: Prompt;
   updatePrompt: ((updates: Partial<Prompt>) => void) | null;
@@ -103,10 +100,6 @@ export function AddInputButton({
     setSelectedContent(null);
   };
 
-  const handleClose = () => {
-    setIsOpen(false);
-    setSelectedContent(null);
-  };
 
   const handleClick = () => {
     setIsOpen(!isOpen);

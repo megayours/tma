@@ -1,4 +1,3 @@
-import { DisplayVideo } from '../DisplayVideo';
 
 export function LatestVideo({ prompt, bg }: { prompt: any; bg: string }) {
   // return <DisplayVideo asGif={true} video={prompt.gifs[0]} />;

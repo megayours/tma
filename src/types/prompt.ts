@@ -9,6 +9,7 @@ export const PromptVersionSchema = z.object({
   maxTokens: z.number(),
   additionalContentIds: z.array(z.string()).nullable(),
   text: z.string().optional(),
+  model: z.string().optional(),
 });
 export type PromptVersion = z.infer<typeof PromptVersionSchema>;
 

@@ -40,32 +40,16 @@ export const ContentPreviews = ({
       .sort((a, b) => b.version - a.version);
   }, [content]);
 
-  // Set the most recent content as default when content changes
+  // Preselect the first item in grouped content when content loads
   useEffect(() => {
-    if (content?.length > 0 && !selectedContent) {
-      // Find the most recent content by looking for the highest version and most recent creation date
-      const mostRecent = content.reduce((latest, current) => {
-        if (!latest) return current;
-
-        // First compare by version (higher version = more recent)
-        if (current.prompt?.version && latest.prompt?.version) {
-          if (current.prompt.version > latest.prompt.version) return current;
-          if (current.prompt.version < latest.prompt.version) return latest;
-        }
-
-        // If versions are the same, compare by creation date
-        if (current.created_at && latest.created_at) {
-          return new Date(current.created_at) > new Date(latest.created_at)
-            ? current
-            : latest;
-        }
-
-        return latest;
-      });
-
-      setSelectedContent(mostRecent);
+    if (
+      groupedContent.length > 0 &&
+      groupedContent[0].items.length > 0 &&
+      !selectedContent
+    ) {
+      setSelectedContent(groupedContent[0].items[0]);
     }
-  }, [content, selectedContent]);
+  }, [groupedContent, selectedContent]);
 
   return (
     <div className="h-full">
@@ -82,64 +66,67 @@ export const ContentPreviews = ({
             </div>
           </div>
         )}
+        {!selectedContent && <div className="">Unleash your imagination</div>}
       </div>
-      <div className="bg-tg-secondary-bg flex max-h-20 w-full flex-row items-center gap-4 overflow-x-auto p-2">
-        {groupedContent.flatMap((group, groupIndex) => {
-          const items = [
-            // Content items for this version
-            ...group.items.map((content: Content) => (
-              <div
-                key={content.id}
-                className={`min-w-0 flex-shrink-0 cursor-pointer rounded border-2 ${
-                  selectedContent?.id === content.id
-                    ? 'border-blue-500'
-                    : 'border-transparent'
-                }`}
-                onClick={() => setSelectedContent(content)}
-              >
-                {content.status === 'completed' && (
-                  <img
-                    key={content.id}
-                    src={content.image}
-                    alt={content.id}
-                    className="h-14 w-14 rounded-lg object-cover"
-                  />
-                )}
-                {content.status === 'processing' && (
-                  <div className="bg-tg-hint/30 h-14 w-14 rounded-lg object-cover">
-                    <DotLottieReact
-                      src={'/lotties/loader.lottie'}
-                      loop
-                      autoplay
-                      className="h-14 w-14"
+      {groupedContent.length > 0 && (
+        <div className="bg-tg-secondary-bg flex max-h-20 w-full flex-row items-center gap-4 overflow-x-auto p-2">
+          {groupedContent.flatMap((group, groupIndex) => {
+            const items = [
+              // Content items for this version
+              ...group.items.map((content: Content) => (
+                <div
+                  key={content.id}
+                  className={`min-w-0 flex-shrink-0 cursor-pointer rounded border-2 ${
+                    selectedContent?.id === content.id
+                      ? 'border-blue-500'
+                      : 'border-transparent'
+                  }`}
+                  onClick={() => setSelectedContent(content)}
+                >
+                  {content.status === 'completed' && (
+                    <img
+                      key={content.id}
+                      src={content.image}
+                      alt={content.id}
+                      className="h-14 w-14 rounded-lg object-cover"
                     />
-                  </div>
-                )}
-                {content.status === 'failed' && (
-                  <div className="bg-tg-hint/30 h-14 w-14 rounded-lg object-cover">
-                    FAILED
-                  </div>
-                )}
-              </div>
-            )),
-            // Version separator (except for the last group)
-            ...(groupIndex < groupedContent.length - 1
-              ? [
-                  <div
-                    key={`separator-${group.version}`}
-                    className="flex flex-shrink-0 flex-col items-center justify-center"
-                  >
-                    <div className="bg-tg-hint/30 h-8 w-px"></div>
-                    <div className="text-tg-hint mt-1 text-xs font-medium">
-                      v{group.version}
+                  )}
+                  {content.status === 'processing' && (
+                    <div className="bg-tg-hint/30 h-14 w-14 rounded-lg object-cover">
+                      <DotLottieReact
+                        src={'/lotties/loader.lottie'}
+                        loop
+                        autoplay
+                        className="h-14 w-14"
+                      />
                     </div>
-                  </div>,
-                ]
-              : []),
-          ];
-          return items;
-        })}
-      </div>
+                  )}
+                  {content.status === 'failed' && (
+                    <div className="bg-tg-hint/30 h-14 w-14 rounded-lg object-cover">
+                      FAILED
+                    </div>
+                  )}
+                </div>
+              )),
+              // Version separator (except for the last group)
+              ...(groupIndex < groupedContent.length - 1
+                ? [
+                    <div
+                      key={`separator-${group.version}`}
+                      className="flex flex-shrink-0 flex-col items-center justify-center"
+                    >
+                      <div className="bg-tg-hint/30 h-8 w-px"></div>
+                      <div className="text-tg-hint mt-1 text-xs font-medium">
+                        v{group.version}
+                      </div>
+                    </div>,
+                  ]
+                : []),
+            ];
+            return items;
+          })}
+        </div>
+      )}
     </div>
   );
 };

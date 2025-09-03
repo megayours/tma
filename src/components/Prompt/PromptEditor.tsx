@@ -1,26 +1,14 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import type { Prompt } from '@/types/prompt';
 import type { Token } from '@/types/response';
-import {
-  AvatarStack,
-  Button,
-  Divider,
-  IconButton,
-  Avatar,
-  Textarea,
-  Cell,
-  Section,
-  Input,
-} from '@telegram-apps/telegram-ui';
+import { Button, Divider } from '@telegram-apps/telegram-ui';
 
 import { AddInputButton } from '../ui/AddInputButton';
 import { IoSend } from 'react-icons/io5';
-import { IoArrowBackOutline } from 'react-icons/io5';
 import { InputsEditor } from './InputsEditor';
 import { usePromptPreviewGeneration } from '@/hooks/usePromptPreviewGeneration';
 import { useSession } from '@/auth/SessionProvider';
 import { ContentPreviews } from './ContentPreview';
-import { SelectNFT, SelectPrompt, SelectImage } from '../ui/AddInputButton';
 
 export const PromptEditor = ({
   prompt: initialPrompt,
@@ -38,7 +26,15 @@ export const PromptEditor = ({
   );
   const [prompt, setPrompt] = useState<Prompt | null>(initialPrompt);
   const [hasChanges, setHasChanges] = useState(false);
+  const [isTextareaFocused, setIsTextareaFocused] = useState(false);
   const promptTextareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Update local prompt state when initialPrompt changes (e.g., from PromptSettings)
+  useEffect(() => {
+    if (initialPrompt) {
+      setPrompt(initialPrompt);
+    }
+  }, [initialPrompt]);
   const [selectedVersion, setSelectedVersion] = useState(
     prompt?.versions?.[(prompt.versions?.length ?? 0) - 1]
   );
@@ -64,6 +60,14 @@ export const PromptEditor = ({
       setPrompt({ ...prompt, ...updates });
       setHasChanges(true);
     }
+  };
+
+  // Calculate the height class for the textarea
+  const getTextareaHeight = () => {
+    if (!isTextareaFocused) {
+      return 'h-12'; // 1 line when not focused (regardless of content)
+    }
+    return 'h-35'; // Max height when focused
   };
 
   const handleGenerate = () => {
@@ -98,43 +102,47 @@ export const PromptEditor = ({
         <div id="custom-input-container"></div>
       </div>
 
-      {/* Fixed bottom toolbar */}
-      <div className="bg-tg-secondary-bg border-tg-hint/20 safe-area-inset-bottom fixed right-0 bottom-0 left-0 z-30 h-52 border-t">
-        <div className="h-12">
-          <InputsEditor prompt={prompt} />
-        </div>
-        <Divider />
-        <div className="flex h-40 flex-row items-center gap-2 px-2">
-          <div className="flex items-center justify-center">
-            <AddInputButton
-              updatePrompt={updatePrompt}
-              prompt={prompt}
-              promptTextareaRef={promptTextareaRef}
-            />
+      {/* Bottom toolbar */}
+      <div className="bg-tg-secondary-bg border-tg-hint/20 safe-area-inset-bottom fixed right-0 bottom-0 left-0 z-30 border-t">
+        <div className="flex h-full flex-col pb-4">
+          <div className="h-10">
+            <InputsEditor prompt={prompt} />
           </div>
-          <div className="flex flex-1 flex-col">
-            <Textarea
-              placeholder="Enter your prompt..."
-              className="bg-tg-section-bg text-tg-text transition-all duration-200"
-              ref={promptTextareaRef}
-              value={promptText}
-              onChange={e => {
-                setHasChanges(true);
-                setPromptText(e.target.value);
-              }}
-              disabled={isGenerating}
-            />
-          </div>
-          <div className="flex flex-col items-center justify-start gap-2">
-            <Button
-              mode="filled"
-              size="m"
-              onClick={handleGenerate}
-              disabled={isGenerating || !promptText.trim()}
-              loading={isGenerating}
-            >
-              <IoSend className="text-tg-button-text" />
-            </Button>
+          <Divider />
+          <div className="flex flex-row items-center gap-2 px-2 py-2">
+            <div className="flex items-center justify-center">
+              <AddInputButton
+                updatePrompt={updatePrompt}
+                prompt={prompt}
+                promptTextareaRef={promptTextareaRef}
+              />
+            </div>
+            <div className="flex flex-1 flex-col">
+              <textarea
+                placeholder="Enter your prompt..."
+                className={`resize-none rounded-2xl border border-gray-300 bg-gray-100 px-4 py-3 text-gray-900 placeholder-gray-500 transition-all duration-200 outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-400 ${getTextareaHeight()}`}
+                ref={promptTextareaRef}
+                value={promptText}
+                onChange={e => {
+                  setHasChanges(true);
+                  setPromptText(e.target.value);
+                }}
+                onFocus={() => setIsTextareaFocused(true)}
+                onBlur={() => setIsTextareaFocused(false)}
+                disabled={isGenerating}
+              />
+            </div>
+            <div className="flex flex-col items-center justify-start gap-2">
+              <Button
+                mode="filled"
+                size="m"
+                onClick={handleGenerate}
+                disabled={isGenerating || !promptText.trim()}
+                loading={isGenerating}
+              >
+                <IoSend className="text-tg-button-text" />
+              </Button>
+            </div>
           </div>
         </div>
       </div>

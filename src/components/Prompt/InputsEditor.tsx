@@ -78,7 +78,7 @@ const NFTItem = ({
       )}
       <div
         key={index}
-        className="bg-tg-bg relative -ml-2 flex flex-row items-center gap-2 rounded-full px-2 py-1 select-none"
+        className="bg-tg-bg relative -ml-2 flex flex-row items-center gap-2 rounded-full px-2 select-none"
         {...longPressBind()}
         onContextMenu={e => e.preventDefault()}
       >

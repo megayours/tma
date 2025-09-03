@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import type { Prompt } from '@/types/prompt';
 import type { Token } from '@/types/response';
 import {
@@ -12,6 +12,7 @@ import {
 } from '@telegram-apps/telegram-ui';
 import { usePromptMutation } from '@/hooks/usePrompts';
 import { useSession } from '@/auth/SessionProvider';
+import { useModels } from '@/hooks/useModels';
 import {
   IoPersonOutline,
   IoLayersOutline,
@@ -42,37 +43,71 @@ export const PromptSettings = ({
 }: PromptSettingsProps) => {
   const { session } = useSession();
   const promptMutation = usePromptMutation(session);
+  const { models, isLoading: modelsLoading } = useModels();
 
   // Local state for form fields
-  const [editedPrompt, setEditedPrompt] = useState<Prompt>(prompt);
+  const [editedPrompt, setEditedPrompt] = useState<Prompt>(() => {
+    // Set the model from version[0] if available, otherwise use prompt.model
+    const versionZeroModel = prompt.versions?.[0]?.model;
+    const initialModel = versionZeroModel || prompt.model;
+    
+    return {
+      ...prompt,
+      model: initialModel,
+    };
+  });
   const [hasChanges, setHasChanges] = useState(false);
+  const isSaving = useRef(false);
+  const prevIsOpen = useRef(isOpen);
+  
+  // Create a stable reference to the latest values
+  const latestValues = useRef({ hasChanges, editedPrompt, onPromptUpdate });
+  latestValues.current = { hasChanges, editedPrompt, onPromptUpdate };
 
   // Update local state when prompt prop changes
   useEffect(() => {
-    setEditedPrompt(prompt);
+    // Set the model from version[0] if available, otherwise use prompt.model
+    const versionZeroModel = prompt.versions?.[0]?.model;
+    const initialModel = versionZeroModel || prompt.model;
+    
+    setEditedPrompt({
+      ...prompt,
+      model: initialModel,
+    });
     setHasChanges(false);
   }, [prompt]);
 
   // Handle auto-save when settings close
   useEffect(() => {
-    // If settings are closing (isOpen becomes false) and we have changes, auto-save
-    if (!isOpen && hasChanges && editedPrompt.id) {
-      const autoSave = async () => {
-        try {
-          const updatedPrompt = await promptMutation.mutateAsync({
-            prompt: editedPrompt,
-          });
-          if (updatedPrompt) {
-            setHasChanges(false);
-            onPromptUpdate?.(updatedPrompt);
+    // Only trigger auto-save when isOpen changes from true to false
+    if (prevIsOpen.current && !isOpen && !isSaving.current) {
+      const { hasChanges: currentHasChanges, editedPrompt: currentPrompt, onPromptUpdate: currentOnUpdate } = latestValues.current;
+      
+      if (currentHasChanges && currentPrompt.id) {
+        isSaving.current = true;
+        
+        const autoSave = async () => {
+          try {
+            const updatedPrompt = await promptMutation.mutateAsync({
+              prompt: currentPrompt,
+            });
+            if (updatedPrompt) {
+              setHasChanges(false);
+              currentOnUpdate?.(updatedPrompt);
+            }
+          } catch (error) {
+            console.error('Failed to auto-save prompt:', error);
+          } finally {
+            isSaving.current = false;
           }
-        } catch (error) {
-          console.error('Failed to auto-save prompt:', error);
-        }
-      };
-      autoSave();
+        };
+        autoSave();
+      }
     }
-  }, [isOpen, hasChanges, editedPrompt, promptMutation, onPromptUpdate]);
+    
+    // Update the previous isOpen value
+    prevIsOpen.current = isOpen;
+  }, [isOpen, promptMutation]); // Only depend on isOpen and promptMutation
 
   // Handle field updates
   const updateField = (field: keyof Prompt, value: any) => {
@@ -149,13 +184,6 @@ export const PromptSettings = ({
                 ))}
               </Select>
             </Cell>
-            <Textarea
-              header="Prompt Text"
-              placeholder="Enter the main prompt text"
-              value={editedPrompt.prompt || ''}
-              onChange={e => updateField('prompt', e.target.value)}
-              rows={4}
-            />
           </Section>
 
           {/* AI Model Settings Section */}
@@ -163,12 +191,31 @@ export const PromptSettings = ({
             header="AI Model Settings"
             footer="Configure the AI model and token limits for generation."
           >
-            <Input
-              header="Model"
-              placeholder="AI model (e.g., gpt-4, claude-3)"
-              value={editedPrompt.model || ''}
-              onChange={e => updateField('model', e.target.value)}
-            />
+            <Cell
+              before={
+                <IconContainer>
+                  <IoLayersOutline />
+                </IconContainer>
+              }
+            >
+              <Select
+                value={editedPrompt.model || ''}
+                onChange={e => updateField('model', e.target.value)}
+                className="w-full"
+                disabled={modelsLoading}
+              >
+                <option value="">
+                  {modelsLoading ? 'Loading models...' : 'Select a model'}
+                </option>
+                {models
+                  .filter(model => model.isEnabled)
+                  .map(model => (
+                    <option key={model.id} value={model.id}>
+                      {model.name} ({model.provider})
+                    </option>
+                  ))}
+              </Select>
+            </Cell>
             <Input
               header="Min Tokens"
               type="number"
@@ -202,7 +249,7 @@ export const PromptSettings = ({
               }
               after={
                 editedPrompt.createdAt
-                  ? new Date(editedPrompt.createdAt).toLocaleDateString()
+                  ? new Date(editedPrompt.createdAt * 1000).toLocaleDateString()
                   : 'Unknown'
               }
             >
@@ -246,7 +293,7 @@ export const PromptSettings = ({
               }
               after={
                 editedPrompt.lastUsed
-                  ? new Date(editedPrompt.lastUsed).toLocaleDateString()
+                  ? new Date(editedPrompt.lastUsed * 1000).toLocaleDateString()
                   : 'Never'
               }
             >

@@ -31,6 +31,7 @@ export const PromptEditor = ({
   selectedNFTs: Token[];
   setSelectedNFTs: (nfts: Token[]) => void;
 }) => {
+  console.log('PromptEditor', initialPrompt);
   const { session } = useSession();
   const [promptText, setPromptText] = useState(
     initialPrompt?.versions?.[0]?.text ?? ''
@@ -80,25 +81,30 @@ export const PromptEditor = ({
   return (
     <div className="bg-tg-bg min-h-screen">
       {/* Main content area */}
-      <div className="h-screen pb-76">
+      <div className="h-screen pb-100">
         {/* Your main content goes here */}
         {selectedVersion && (
-          <ContentPreviews prompt={prompt} selectedVersion={selectedVersion} />
+          <div className="h-full">
+            <ContentPreviews
+              prompt={prompt}
+              selectedVersion={selectedVersion}
+            />
+          </div>
         )}
       </div>
 
       {/* Portal container for AddContentButton and NFTCloud */}
-      <div className="bg-tg-bg pointer-events-none fixed right-0 bottom-20 left-0 z-50 overflow-y-scroll pb-20">
+      <div className="bg-tg-bg pointer-events-none fixed right-0 bottom-20 left-0 z-29 overflow-y-scroll pb-20">
         <div id="custom-input-container"></div>
       </div>
 
       {/* Fixed bottom toolbar */}
-      <div className="bg-tg-secondary-bg border-tg-hint/20 safe-area-inset-bottom fixed right-0 bottom-0 left-0 z-50 border-t">
+      <div className="bg-tg-secondary-bg border-tg-hint/20 safe-area-inset-bottom fixed right-0 bottom-0 left-0 z-30 h-52 border-t">
         <div className="h-12">
           <InputsEditor prompt={prompt} />
         </div>
         <Divider />
-        <div className="flex flex-row items-center gap-2 px-2">
+        <div className="flex h-40 flex-row items-center gap-2 px-2">
           <div className="flex items-center justify-center">
             <AddInputButton
               updatePrompt={updatePrompt}

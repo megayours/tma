@@ -75,30 +75,6 @@ export function DisplayNFT({
           {nftData.name}
         </div>
       )}
-
-      {nftData?.description && (
-        <div className="text-tg-text text-center text-sm opacity-80">
-          {nftData.description}
-        </div>
-      )}
-
-      {nftData?.attributes && nftData.attributes.length > 0 && (
-        <div className="grid grid-cols-2 gap-2">
-          {nftData.attributes.map((attr: any, index: number) => (
-            <div
-              key={index}
-              className="bg-tg-secondary rounded p-2 text-center"
-            >
-              <div className="text-tg-text text-xs opacity-60">
-                {attr.trait_type}
-              </div>
-              <div className="text-tg-text text-sm font-medium">
-                {attr.value}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 }

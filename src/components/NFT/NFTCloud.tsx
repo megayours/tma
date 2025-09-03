@@ -60,6 +60,7 @@ export const NFTCloud = ({ index, supportedCollections }: NFTCloudProps) => {
     <div
       className="bg-tg-bg border-tg-hint/20 relative min-h-16 overflow-y-auto rounded-lg border shadow-lg"
       style={{
+        maxHeight: '80vh',
         minHeight: '64px',
         height: 'auto',
         overflow: 'auto',

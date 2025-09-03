@@ -135,7 +135,7 @@ export function useGetNFTByCollectionAndTokenId(
 }
 
 export function useAddToFavoritesMutation(
-  collection: SupportedCollection,
+  collection: SupportedCollection | null,
   tokenId: string
 ) {
   const queryClient = useQueryClient();
@@ -143,6 +143,7 @@ export function useAddToFavoritesMutation(
   return useMutation({
     mutationFn: async (session: Session | null | undefined) => {
       if (!session) return;
+      if (!collection) return;
       console.log('Adding to favorites', collection, tokenId);
       const response = await fetch(
         `${import.meta.env.VITE_PUBLIC_API_URL}/profile/favorites`,
@@ -183,7 +184,7 @@ export function useAddToFavoritesMutation(
     onSuccess: (data, session) => {
       // Invalidate the favorites query to refetch the updated list
       queryClient.invalidateQueries({
-        queryKey: ['favorites', session.id],
+        queryKey: ['favorites', session?.id],
       });
     },
     onError: (error, variables, context) => {

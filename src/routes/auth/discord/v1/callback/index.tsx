@@ -67,21 +67,19 @@ export const Route = createFileRoute('/auth/discord/v1/callback/')({
       localStorage.setItem('discord_token', tokenData.token);
       localStorage.setItem('auth_provider', 'discord');
 
-      console.log('redirecting to home page');
-
-      console.log('redirecting to home page');
+      console.log('redirecting to home page or ' + state);
 
       // Redirect to the home page with success message
       throw redirect({
         to: state || '/',
       });
     } catch (error) {
-      console.error('Discord callback error:', error);
-
       // Check if this is a redirect (which is not an error)
       if (isRedirect(error)) {
         throw error; // Re-throw redirects as they're not errors
       }
+
+      console.error('Discord callback error:', error);
 
       // Only handle actual errors
       throw redirect({

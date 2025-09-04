@@ -47,19 +47,12 @@ export function useAuth() {
     }
   }
 
-  console.log('isAuthenticated', isAuthenticated);
-  console.log('isAuthenticating', isAuthenticating);
-  console.log('session', session);
-
   // Separate function to check if session is valid without setting state
   const isSessionValid = useCallback(() => {
-    console.log('AAAALPHAAAA:');
     const session = localStorage.getItem('session');
     if (!session) return false;
 
     const sessionData = JSON.parse(session);
-
-    console.log('ALPHA:', sessionData, sessionData.auth_provider);
     if (sessionData.auth_provider === 'discord') {
       const sessionExpirationMargin = 1000 * 60 * 60 * 1; // 1 hour
       if (sessionData.expiration > Date.now() + sessionExpirationMargin) {
@@ -69,8 +62,6 @@ export function useAuth() {
         return false;
       }
     } else if (sessionData.auth_provider === 'telegram') {
-      console.log('PROVIDER IS TELEGRAM');
-
       const jwt = JSON.parse(session).jwt;
       const jwtQueryParams = new URLSearchParams(jwt);
       const jwtAuthDate = jwtQueryParams.get('auth_date');
@@ -79,7 +70,6 @@ export function useAuth() {
 
       if (jwtAuthDateTimestamp < Date.now() + 1000 * 60 * 60 * 1) {
         localStorage.removeItem('session');
-        console.log('Telegram session expired, clearing');
         return false;
       }
       return true;
@@ -90,27 +80,22 @@ export function useAuth() {
 
   useEffect(() => {
     const initializeAuth = async () => {
-      console.log(1);
       // Prevent multiple simultaneous authentication attempts
       if (isAuthenticating) return;
 
       // Check if we already have a valid session first
-      console.log(isSessionValid(), 'IS SESSION VALID');
       if (await isSessionValid()) {
-        console.log('0.1');
         const sessionData = JSON.parse(localStorage.getItem('session') || '{}');
         setSession(sessionData);
         setIsAuthenticated(true);
         return;
       }
-      console.log('2');
 
       setIsAuthenticating(true);
 
       try {
         if (checkIsTMA()) {
           setIsTelegram(true);
-          console.log('Logging in with Telegram');
 
           // Validate the user asynchronously
           if (telegramUser) {
@@ -159,8 +144,7 @@ export function useAuth() {
           const discordToken = localStorage.getItem('discord_token');
           const authProvider = localStorage.getItem('auth_provider');
 
-          if (!discordToken) throw new Error('No discord token found');
-
+          // Only attempt Discord authentication if we have both token and provider
           if (discordToken && authProvider === 'discord') {
             try {
               // Validate the token with your backend
@@ -218,17 +202,9 @@ export function useAuth() {
         setIsAuthenticating(false);
       }
     };
-    console.log('00');
-    console.log(
-      isAuthenticating,
-      '🧼🧼 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
-    );
-
     if (!isAuthenticating && !isAuthenticated) {
-      console.log('🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥');
       initializeAuth();
     }
-    console.log('ZZZ');
   }, [checkIsTMA, telegramUser?.initData, isSessionValid]); // Removed isAuthenticating from dependencies
 
   const logout = () => {

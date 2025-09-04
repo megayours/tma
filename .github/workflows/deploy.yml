@@ -33,6 +33,9 @@ jobs:
         run: bun run build
         env:
           NODE_ENV: production
+          VITE_PUBLIC_API_URL: ${{ secrets.VITE_PUBLIC_API_URL }}
+          # Add other environment variables here
+          # VITE_OTHER_VAR: ${{ secrets.VITE_OTHER_VAR }}
 
       - name: Add 404 fallback for SPA
         run: cp dist/index.html dist/404.html || true

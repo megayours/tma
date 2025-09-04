@@ -21,7 +21,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
       <div className="p-4">
         <h1 className="mb-4 text-2xl font-bold">Login with Discord</h1>
         <a
-          href={`https://yours-fun-api.testnet.megayours.com/v1/auth/discord/authorize?state=${encodeURIComponent(window.location.pathname)}`}
+          href={`https://yours-fun-api.testnet.megayours.com/v1/auth/discord/authorize?state=${encodeURIComponent(window.location.pathname)}&redirect_base_url=${encodeURIComponent(window.location.origin)}`}
           className="inline-block rounded bg-blue-600 px-6 py-3 text-white transition-colors hover:bg-blue-700"
         >
           Login with Discord

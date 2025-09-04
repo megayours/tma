@@ -35,7 +35,7 @@ const mapRawPromptToPromptWithContent = (
   rawPrompt: RawPrompt
 ): PromptWithContent => ({
   ...mapRawPromptToPrompt(rawPrompt),
-  published: rawPrompt.published ?? false,
+  published: rawPrompt.published_at ?? 0,
   image: rawPrompt.image ?? '',
   type: rawPrompt.type as 'images' | 'videos' | 'stickers' | 'gifs' | 'animated_stickers',
   contentId: (rawPrompt as any).content_id,
@@ -44,7 +44,7 @@ const mapRawPromptToPromptWithContent = (
   hasUserGenerated: rawPrompt.has_generated ?? false,
   publishedAt: rawPrompt.published_at ?? 0,
   generationCount: rawPrompt.generation_count ?? 0,
-  latestContentUrl: rawPrompt.latest_content_url,
+  latestContentUrl: rawPrompt.latest_content_url ?? undefined,
 });
 
 export const useGetRecommendedPrompts = ({

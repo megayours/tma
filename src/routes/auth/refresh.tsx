@@ -1,9 +1,13 @@
-import { createFileRoute, redirect, useSearch } from '@tanstack/react-router';
+import { createFileRoute, useSearch } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { useAuthContext } from '@/auth/AuthProvider';
 
 export const Route = createFileRoute('/auth/refresh')({
   component: AuthRefresh,
+  validateSearch: (search) => ({
+    redirectTo: search.redirectTo as string | undefined,
+    provider: search.provider as string | undefined,
+  }),
 });
 
 function AuthRefresh() {

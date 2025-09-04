@@ -78,6 +78,106 @@ export function useAuth() {
     return false;
   }, []);
 
+  // Function to manually refresh authentication
+  const refreshAuth = useCallback(async () => {
+    setIsAuthenticating(true);
+    try {
+      // Check Discord authentication first
+      const discordToken = localStorage.getItem('discord_token');
+      const authProvider = localStorage.getItem('auth_provider');
+
+      if (discordToken && authProvider === 'discord') {
+        try {
+          const response = await fetch(
+            'https://yours-fun-api.testnet.megayours.com/v1/auth/validate',
+            {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${discordToken}`,
+              },
+            }
+          );
+
+          if (response.ok) {
+            const data = await response.json();
+            const tokenExpirationTime = getExpTimestamp(discordToken);
+
+            const session: Session = {
+              auth_provider: 'discord',
+              id: data.id,
+              username: data.name,
+              jwt: discordToken,
+              expiration: tokenExpirationTime,
+              rawUser: JSON.stringify(data),
+              authToken: 'Bearer ' + discordToken,
+            };
+
+            localStorage.setItem('session', JSON.stringify(session));
+            setSession(session);
+            setIsAuthenticated(true);
+            return true;
+          } else {
+            // Token is invalid, clear storage
+            localStorage.removeItem('discord_token');
+            localStorage.removeItem('discord_user');
+            localStorage.removeItem('auth_provider');
+            localStorage.removeItem('session');
+            setIsAuthenticated(false);
+            setSession(null);
+            return false;
+          }
+        } catch (error) {
+          console.error('Discord token validation error:', error);
+          localStorage.removeItem('session');
+          setIsAuthenticated(false);
+          setSession(null);
+          return false;
+        }
+      }
+
+      // If no Discord token, check Telegram
+      if (checkIsTMA() && telegramUser?.initData) {
+        try {
+          const response = await fetch(
+            `${import.meta.env.VITE_PUBLIC_API_URL}/auth/validate`,
+            {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `tma ${telegramUser.initData}`,
+              },
+            }
+          );
+
+          if (response.ok) {
+            const data = await response.json();
+            const session: Session = {
+              auth_provider: 'telegram',
+              id: data.id,
+              username: data.name,
+              jwt: telegramUser.initData,
+              expiration: getExpTimestamp(telegramUser.initData),
+              rawUser: JSON.stringify(data),
+              authToken: 'tma ' + telegramUser.initData,
+            };
+
+            localStorage.setItem('session', JSON.stringify(session));
+            setSession(session);
+            setIsAuthenticated(true);
+            return true;
+          }
+        } catch (error) {
+          console.error('Telegram token validation error:', error);
+        }
+      }
+
+      return false;
+    } finally {
+      setIsAuthenticating(false);
+    }
+  }, [checkIsTMA, telegramUser?.initData]);
+
   useEffect(() => {
     const initializeAuth = async () => {
       // Prevent multiple simultaneous authentication attempts
@@ -219,5 +319,6 @@ export function useAuth() {
     isTelegram,
     session,
     logout,
+    refreshAuth, // Add this to the return object
   };
 }

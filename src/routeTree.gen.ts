@@ -18,6 +18,7 @@ import { Route as FeedIndexRouteImport } from './routes/feed/index'
 import { Route as Demo3IndexRouteImport } from './routes/demo3/index'
 import { Route as Demo2IndexRouteImport } from './routes/demo2/index'
 import { Route as Demo2BackupRouteImport } from './routes/demo2/backup'
+import { Route as AuthRefreshRouteImport } from './routes/auth/refresh'
 import { Route as ProfilePromptIndexRouteImport } from './routes/profile/prompt/index'
 import { Route as ProfileFavoritesIndexRouteImport } from './routes/profile/favorites/index'
 import { Route as PostCreateIndexRouteImport } from './routes/post/create/index'
@@ -75,6 +76,11 @@ const Demo2IndexRoute = Demo2IndexRouteImport.update({
 const Demo2BackupRoute = Demo2BackupRouteImport.update({
   id: '/demo2/backup',
   path: '/demo2/backup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRefreshRoute = AuthRefreshRouteImport.update({
+  id: '/auth/refresh',
+  path: '/auth/refresh',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProfilePromptIndexRoute = ProfilePromptIndexRouteImport.update({
@@ -150,6 +156,7 @@ const AuthDiscordV1CallbackIndexRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/auth/refresh': typeof AuthRefreshRoute
   '/demo2/backup': typeof Demo2BackupRoute
   '/demo2': typeof Demo2IndexRoute
   '/demo3': typeof Demo3IndexRoute
@@ -174,6 +181,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/auth/refresh': typeof AuthRefreshRoute
   '/demo2/backup': typeof Demo2BackupRoute
   '/demo2': typeof Demo2IndexRoute
   '/demo3': typeof Demo3IndexRoute
@@ -198,6 +206,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/auth/refresh': typeof AuthRefreshRoute
   '/demo2/backup': typeof Demo2BackupRoute
   '/demo2/': typeof Demo2IndexRoute
   '/demo3/': typeof Demo3IndexRoute
@@ -224,6 +233,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
+    | '/auth/refresh'
     | '/demo2/backup'
     | '/demo2'
     | '/demo3'
@@ -248,6 +258,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/about'
+    | '/auth/refresh'
     | '/demo2/backup'
     | '/demo2'
     | '/demo3'
@@ -271,6 +282,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/about'
+    | '/auth/refresh'
     | '/demo2/backup'
     | '/demo2/'
     | '/demo3/'
@@ -296,6 +308,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  AuthRefreshRoute: typeof AuthRefreshRoute
   Demo2BackupRoute: typeof Demo2BackupRoute
   Demo2IndexRoute: typeof Demo2IndexRoute
   Demo3IndexRoute: typeof Demo3IndexRoute
@@ -379,6 +392,13 @@ declare module '@tanstack/react-router' {
       path: '/demo2/backup'
       fullPath: '/demo2/backup'
       preLoaderRoute: typeof Demo2BackupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/refresh': {
+      id: '/auth/refresh'
+      path: '/auth/refresh'
+      fullPath: '/auth/refresh'
+      preLoaderRoute: typeof AuthRefreshRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/profile/prompt/': {
@@ -507,6 +527,7 @@ const ProfilePromptEditRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  AuthRefreshRoute: AuthRefreshRoute,
   Demo2BackupRoute: Demo2BackupRoute,
   Demo2IndexRoute: Demo2IndexRoute,
   Demo3IndexRoute: Demo3IndexRoute,

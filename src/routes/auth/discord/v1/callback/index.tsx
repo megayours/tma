@@ -67,11 +67,15 @@ export const Route = createFileRoute('/auth/discord/v1/callback/')({
       localStorage.setItem('discord_token', tokenData.token);
       localStorage.setItem('auth_provider', 'discord');
 
-      console.log('redirecting to home page or ' + state);
+      console.log('redirecting to auth refresh route');
 
-      // Redirect to the home page with success message
+      // Redirect to a temporary route that will handle auth refresh
       throw redirect({
-        to: state || '/',
+        to: '/auth/refresh',
+        search: {
+          redirectTo: state || '/',
+          provider: 'discord',
+        },
       });
     } catch (error) {
       // Check if this is a redirect (which is not an error)

@@ -8,6 +8,7 @@ interface AuthContextType {
   isTelegram: boolean;
   session: any;
   logout: () => void;
+  refreshAuth: () => Promise<boolean>; // Add this line
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);

@@ -101,7 +101,17 @@ export function Feed() {
     },
   };
 
-  console.log('Initial API Query params:', initialQueryParams);
+  console.log('🚀 Feed Component Loaded');
+  console.log('📋 Initial API Query params:', initialQueryParams);
+  console.log('🌍 Environment check:', {
+    NODE_ENV: import.meta.env.NODE_ENV,
+    MODE: import.meta.env.MODE,
+    API_URL: import.meta.env.VITE_PUBLIC_API_URL,
+    BASE_URL: import.meta.env.BASE_URL,
+    PROD: import.meta.env.PROD,
+    DEV: import.meta.env.DEV
+  });
+  console.log('🔗 Full API endpoint will be:', `${import.meta.env.VITE_PUBLIC_API_URL}/discovery/prompts/recommended`);
 
   const {
     data: initialData,

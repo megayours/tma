@@ -7,17 +7,26 @@ import { ProtectedRoute } from '@/auth/ProtectedRoute';
 import { Button } from '@telegram-apps/telegram-ui';
 
 export function NavBar() {
-  const { logout, isAuthenticated, session } = useAuthContext();
+  const { logout, isAuthenticated, isAuthenticating, session } =
+    useAuthContext();
   console.log('session', session);
 
   if (!isAuthenticated) {
     return (
       <div className="bg-tg-bg text-tg-text mb-6 flex h-full w-full items-center justify-around p-4">
-        <Link to="/private" className="h-full w-full">
-          <Button size="l" mode="filled" stretched={true}>
-            Login
+        <a
+          href={`https://yours-fun-api.testnet.megayours.com/v1/auth/discord/authorize?state=${encodeURIComponent('/')}&redirect_base_url=${encodeURIComponent(window.location.origin)}`}
+          className="h-full w-full"
+        >
+          <Button
+            size="l"
+            mode="filled"
+            stretched={true}
+            loading={isAuthenticating}
+          >
+            Login with Discord
           </Button>
-        </Link>
+        </a>
       </div>
     );
   }

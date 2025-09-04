@@ -78,105 +78,130 @@ export function useAuth() {
     return false;
   }, []);
 
+  // Extract Discord authentication logic into reusable function
+  const authenticateDiscord = useCallback(async (): Promise<boolean> => {
+    const discordToken = localStorage.getItem('discord_token');
+    const authProvider = localStorage.getItem('auth_provider');
+
+    if (!discordToken || authProvider !== 'discord') {
+      return false;
+    }
+
+    try {
+      const response = await fetch(
+        'https://yours-fun-api.testnet.megayours.com/v1/auth/validate',
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${discordToken}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        const tokenExpirationTime = getExpTimestamp(discordToken);
+
+        const session: Session = {
+          auth_provider: 'discord',
+          id: data.id,
+          username: data.name,
+          jwt: discordToken,
+          expiration: tokenExpirationTime,
+          rawUser: JSON.stringify(data),
+          authToken: 'Bearer ' + discordToken,
+        };
+
+        localStorage.setItem('session', JSON.stringify(session));
+        setSession(session);
+        setIsAuthenticated(true);
+        return true;
+      } else {
+        // Token is invalid, clear storage
+        localStorage.removeItem('discord_token');
+        localStorage.removeItem('discord_user');
+        localStorage.removeItem('auth_provider');
+        localStorage.removeItem('session');
+        setIsAuthenticated(false);
+        setSession(null);
+        return false;
+      }
+    } catch (error) {
+      console.error('Discord token validation error:', error);
+      localStorage.removeItem('session');
+      setIsAuthenticated(false);
+      setSession(null);
+      return false;
+    }
+  }, []);
+
+  // Extract Telegram authentication logic into reusable function
+  const authenticateTelegram = useCallback(async (): Promise<boolean> => {
+    if (!checkIsTMA() || !telegramUser?.initData) {
+      return false;
+    }
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/auth/validate`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `tma ${telegramUser.initData}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        const session: Session = {
+          auth_provider: 'telegram',
+          id: data.id,
+          username: data.name,
+          jwt: telegramUser.initData,
+          expiration: getExpTimestamp(telegramUser.initData),
+          rawUser: JSON.stringify(data),
+          authToken: 'tma ' + telegramUser.initData,
+        };
+
+        localStorage.setItem('session', JSON.stringify(session));
+        setSession(session);
+        setIsAuthenticated(true);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Telegram token validation error:', error);
+      return false;
+    }
+  }, [checkIsTMA, telegramUser?.initData]);
+
   // Function to manually refresh authentication
-  const refreshAuth = useCallback(async () => {
+  const refreshAuth = useCallback(async (): Promise<boolean> => {
     setIsAuthenticating(true);
     try {
-      // Check Discord authentication first
-      const discordToken = localStorage.getItem('discord_token');
-      const authProvider = localStorage.getItem('auth_provider');
+      // Wait a moment for the stored tokens to be available
+      await new Promise(resolve => setTimeout(resolve, 100));
 
-      if (discordToken && authProvider === 'discord') {
-        try {
-          const response = await fetch(
-            'https://yours-fun-api.testnet.megayours.com/v1/auth/validate',
-            {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${discordToken}`,
-              },
-            }
-          );
-
-          if (response.ok) {
-            const data = await response.json();
-            const tokenExpirationTime = getExpTimestamp(discordToken);
-
-            const session: Session = {
-              auth_provider: 'discord',
-              id: data.id,
-              username: data.name,
-              jwt: discordToken,
-              expiration: tokenExpirationTime,
-              rawUser: JSON.stringify(data),
-              authToken: 'Bearer ' + discordToken,
-            };
-
-            localStorage.setItem('session', JSON.stringify(session));
-            setSession(session);
-            setIsAuthenticated(true);
-            return true;
-          } else {
-            // Token is invalid, clear storage
-            localStorage.removeItem('discord_token');
-            localStorage.removeItem('discord_user');
-            localStorage.removeItem('auth_provider');
-            localStorage.removeItem('session');
-            setIsAuthenticated(false);
-            setSession(null);
-            return false;
-          }
-        } catch (error) {
-          console.error('Discord token validation error:', error);
-          localStorage.removeItem('session');
-          setIsAuthenticated(false);
-          setSession(null);
-          return false;
-        }
+      // Try Discord authentication first
+      const discordSuccess = await authenticateDiscord();
+      if (discordSuccess) {
+        return true;
       }
 
-      // If no Discord token, check Telegram
-      if (checkIsTMA() && telegramUser?.initData) {
-        try {
-          const response = await fetch(
-            `${import.meta.env.VITE_PUBLIC_API_URL}/auth/validate`,
-            {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `tma ${telegramUser.initData}`,
-              },
-            }
-          );
-
-          if (response.ok) {
-            const data = await response.json();
-            const session: Session = {
-              auth_provider: 'telegram',
-              id: data.id,
-              username: data.name,
-              jwt: telegramUser.initData,
-              expiration: getExpTimestamp(telegramUser.initData),
-              rawUser: JSON.stringify(data),
-              authToken: 'tma ' + telegramUser.initData,
-            };
-
-            localStorage.setItem('session', JSON.stringify(session));
-            setSession(session);
-            setIsAuthenticated(true);
-            return true;
-          }
-        } catch (error) {
-          console.error('Telegram token validation error:', error);
-        }
+      // If Discord fails, try Telegram
+      const telegramSuccess = await authenticateTelegram();
+      if (telegramSuccess) {
+        return true;
       }
 
       return false;
     } finally {
       setIsAuthenticating(false);
     }
-  }, [checkIsTMA, telegramUser?.initData]);
+  }, [authenticateDiscord, authenticateTelegram]);
 
   useEffect(() => {
     const initializeAuth = async () => {
@@ -202,96 +227,17 @@ export function useAuth() {
             if (!telegramUser.initData)
               throw new Error('No telegram init data found');
 
-            try {
-              const response = await fetch(
-                `${import.meta.env.VITE_PUBLIC_API_URL}/auth/validate`,
-                {
-                  method: 'GET',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `tma ${telegramUser.initData}`,
-                  },
-                }
-              );
-
-              const data = await response.json();
-              if (response.ok) {
-                const session: Session = {
-                  auth_provider: 'telegram',
-                  id: data.id,
-                  username: data.name,
-                  jwt: telegramUser.initData,
-                  expiration: getExpTimestamp(telegramUser.initData),
-                  rawUser: JSON.stringify(data),
-                  authToken: 'tma ' + telegramUser.initData,
-                };
-
-                localStorage.setItem('session', JSON.stringify(session));
-                setSession(session);
-                setIsAuthenticated(true);
-              } else {
-                setIsAuthenticated(false);
-              }
-            } catch (error) {
-              console.error('Telegram token validation error:', error);
+            const success = await authenticateTelegram();
+            if (!success) {
               setIsAuthenticated(false);
             }
           } else {
             setIsAuthenticated(false);
           }
         } else {
-          // Discord Login logic here
-          const discordToken = localStorage.getItem('discord_token');
-          const authProvider = localStorage.getItem('auth_provider');
-
-          // Only attempt Discord authentication if we have both token and provider
-          if (discordToken && authProvider === 'discord') {
-            try {
-              // Validate the token with your backend
-              const response = await fetch(
-                'https://yours-fun-api.testnet.megayours.com/v1/auth/validate',
-                {
-                  method: 'GET',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${discordToken}`,
-                  },
-                }
-              );
-
-              if (response.ok) {
-                const data = await response.json();
-
-                const tokenExpirationTime = getExpTimestamp(discordToken);
-
-                const session: Session = {
-                  auth_provider: 'discord',
-                  id: data.id,
-                  username: data.name,
-                  jwt: discordToken,
-                  expiration: tokenExpirationTime,
-                  rawUser: JSON.stringify(data),
-                  authToken: 'Bearer ' + discordToken,
-                };
-
-                // we can save the session
-                localStorage.setItem('session', JSON.stringify(session));
-                setSession(session);
-                setIsAuthenticated(true);
-              } else {
-                // Token is invalid, clear storage
-                localStorage.removeItem('discord_token');
-                localStorage.removeItem('discord_user');
-                localStorage.removeItem('auth_provider');
-                setIsAuthenticated(false);
-              }
-            } catch (error) {
-              console.error('Discord token validation error:', error);
-              // Clear invalid tokens
-              localStorage.removeItem('session');
-              setIsAuthenticated(false);
-            }
-          } else {
+          // Try Discord authentication
+          const success = await authenticateDiscord();
+          if (!success) {
             setIsAuthenticated(false);
           }
         }
@@ -305,7 +251,15 @@ export function useAuth() {
     if (!isAuthenticating && !isAuthenticated) {
       initializeAuth();
     }
-  }, [checkIsTMA, telegramUser?.initData, isSessionValid]); // Removed isAuthenticating from dependencies
+  }, [
+    checkIsTMA,
+    telegramUser?.initData,
+    isSessionValid,
+    authenticateDiscord,
+    authenticateTelegram,
+    isAuthenticating,
+    isAuthenticated,
+  ]);
 
   const logout = () => {
     localStorage.removeItem('session');
@@ -319,6 +273,6 @@ export function useAuth() {
     isTelegram,
     session,
     logout,
-    refreshAuth, // Add this to the return object
+    refreshAuth,
   };
 }

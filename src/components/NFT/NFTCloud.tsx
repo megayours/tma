@@ -3,7 +3,9 @@ import { createPortal } from 'react-dom';
 import { SelectCollection } from './SelectCollection';
 import { SelectTokenId } from './SelectTokenId';
 import { DisplayNFT } from './DisplayNFT';
+import { PickFavoriteNFTs } from './PickFavoriteNFTs';
 import type { SupportedCollection } from '@/hooks/useCollections';
+import { Divider } from '@telegram-apps/telegram-ui';
 
 interface NFTCloudProps {
   index: number;
@@ -80,11 +82,18 @@ export const NFTCloud = ({ index, supportedCollections }: NFTCloudProps) => {
       }}
     >
       {!selectedCollection && (
-        <SelectCollection
-          collections={supportedCollections || []}
-          onCollectionSelect={handleCollectionSelect}
-          size="s"
-        />
+        <div className="flex flex-col p-2">
+          <PickFavoriteNFTs
+            onHandleCollectionSelect={handleCollectionSelect}
+            onTokenSelect={handleTokenSelect}
+          />
+          <Divider />
+          <SelectCollection
+            collections={supportedCollections || []}
+            onCollectionSelect={handleCollectionSelect}
+            size="s"
+          />
+        </div>
       )}
       {selectedCollection && (
         <SelectTokenId

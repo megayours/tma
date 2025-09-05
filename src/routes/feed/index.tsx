@@ -4,7 +4,11 @@ import { useGetRecommendedPrompts } from '@/hooks/usePrompts';
 import { LatestImage } from '@/components/lib/LatestContent/LatestImages';
 import { LatestVideo } from '@/components/lib/LatestContent/LatestVideos';
 import { LatestSticker } from '@/components/lib/LatestContent/LatestStickers';
+import { LatestAnimatedSticker } from '@/components/lib/LatestContent/LatestAnimatedStickers';
 import type { PromptWithContent } from '@/types/content';
+
+// Debug toggle - set to false to disable all debug functionality
+const DEBUG_MODE = false;
 
 // Array of background GIF files
 const backgroundGifs = [
@@ -66,8 +70,10 @@ function ShowContent({
             <LatestSticker prompt={prompt} bg={getRandomBackgroundGif()} />
           )}
           {prompt.type === 'animated_stickers' && (
-            <pre>{JSON.stringify(prompt, null, 2)}</pre>
-            // <LatestSticker prompt={prompt} bg={getRandomBackgroundGif()} />
+            <LatestAnimatedSticker
+              prompt={prompt}
+              bg={getRandomBackgroundGif()}
+            />
           )}
         </div>
       </div>
@@ -84,12 +90,14 @@ export function Feed() {
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const triggerRef = useRef<HTMLDivElement>(null);
 
-  console.log('Feed render:', {
-    currentPage,
-    totalPrompts: allPrompts.length,
-    hasMorePages,
-    isFetchingMore,
-  });
+  if (DEBUG_MODE) {
+    console.log('Feed render:', {
+      currentPage,
+      totalPrompts: allPrompts.length,
+      hasMorePages,
+      isFetchingMore,
+    });
+  }
 
   // Only auto-fetch the first page
   const initialQueryParams = {
@@ -101,17 +109,22 @@ export function Feed() {
     },
   };
 
-  console.log('🚀 Feed Component Loaded');
-  console.log('📋 Initial API Query params:', initialQueryParams);
-  console.log('🌍 Environment check:', {
-    NODE_ENV: import.meta.env.NODE_ENV,
-    MODE: import.meta.env.MODE,
-    API_URL: import.meta.env.VITE_PUBLIC_API_URL,
-    BASE_URL: import.meta.env.BASE_URL,
-    PROD: import.meta.env.PROD,
-    DEV: import.meta.env.DEV
-  });
-  console.log('🔗 Full API endpoint will be:', `${import.meta.env.VITE_PUBLIC_API_URL}/discovery/prompts/recommended`);
+  if (DEBUG_MODE) {
+    console.log('🚀 Feed Component Loaded');
+    console.log('📋 Initial API Query params:', initialQueryParams);
+    console.log('🌍 Environment check:', {
+      NODE_ENV: import.meta.env.NODE_ENV,
+      MODE: import.meta.env.MODE,
+      API_URL: import.meta.env.VITE_PUBLIC_API_URL,
+      BASE_URL: import.meta.env.BASE_URL,
+      PROD: import.meta.env.PROD,
+      DEV: import.meta.env.DEV,
+    });
+    console.log(
+      '🔗 Full API endpoint will be:',
+      `${import.meta.env.VITE_PUBLIC_API_URL}/discovery/prompts/recommended`
+    );
+  }
 
   const {
     data: initialData,
@@ -121,11 +134,13 @@ export function Feed() {
 
   // Handle initial data
   useEffect(() => {
-    console.log('Initial data received:', {
-      promptsLength: initialData.prompts.length,
-      pagination: initialData.pagination,
-      error: error?.message,
-    });
+    if (DEBUG_MODE) {
+      console.log('Initial data received:', {
+        promptsLength: initialData.prompts.length,
+        pagination: initialData.pagination,
+        error: error?.message,
+      });
+    }
 
     if (initialData.prompts.length > 0) {
       setAllPrompts(initialData.prompts);
@@ -134,11 +149,13 @@ export function Feed() {
       const hasMore = initialData.pagination
         ? initialData.pagination.page < initialData.pagination.totalPages
         : false;
-      console.log('Initial pagination check:', {
-        currentPageFromData: initialData.pagination?.page,
-        totalPages: initialData.pagination?.totalPages,
-        hasMore,
-      });
+      if (DEBUG_MODE) {
+        console.log('Initial pagination check:', {
+          currentPageFromData: initialData.pagination?.page,
+          totalPages: initialData.pagination?.totalPages,
+          hasMore,
+        });
+      }
 
       setHasMorePages(hasMore);
     } else {
@@ -149,22 +166,26 @@ export function Feed() {
   // Manual fetch function for pagination
   const fetchNextPage = async () => {
     if (isFetchingMore || !hasMorePages || isInitialLoading) {
-      console.log('Skipping fetch:', {
-        isFetchingMore,
-        hasMorePages,
-        isInitialLoading,
-        currentPage,
-      });
+      if (DEBUG_MODE) {
+        console.log('Skipping fetch:', {
+          isFetchingMore,
+          hasMorePages,
+          isInitialLoading,
+          currentPage,
+        });
+      }
       return;
     }
 
     const nextPageNum = currentPage + 1;
-    console.log(
-      'Manually fetching page:',
-      nextPageNum,
-      'current page was:',
-      currentPage
-    );
+    if (DEBUG_MODE) {
+      console.log(
+        'Manually fetching page:',
+        nextPageNum,
+        'current page was:',
+        currentPage
+      );
+    }
 
     setIsFetchingMore(true);
     setCurrentPage(nextPageNum); // Update page immediately
@@ -183,7 +204,9 @@ export function Feed() {
       }
 
       const rawData = await response.json();
-      console.log('Manual fetch response:', rawData);
+      if (DEBUG_MODE) {
+        console.log('Manual fetch response:', rawData);
+      }
 
       if (rawData && rawData.data && rawData.data.length > 0) {
         // Map the raw data to the expected format
@@ -222,12 +245,14 @@ export function Feed() {
         );
 
         setAllPrompts(prev => {
-          console.log(
-            'Adding prompts. Previous count:',
-            prev.length,
-            'Adding:',
-            mappedPrompts.length
-          );
+          if (DEBUG_MODE) {
+            console.log(
+              'Adding prompts. Previous count:',
+              prev.length,
+              'Adding:',
+              mappedPrompts.length
+            );
+          }
           return [...prev, ...mappedPrompts];
         });
 
@@ -248,7 +273,9 @@ export function Feed() {
 
   // Load next page function - now uses manual fetch
   const loadNextPage = () => {
-    console.log('loadNextPage called - triggering manual fetch');
+    if (DEBUG_MODE) {
+      console.log('loadNextPage called - triggering manual fetch');
+    }
     fetchNextPage();
   };
 
@@ -256,24 +283,30 @@ export function Feed() {
   useEffect(() => {
     const trigger = triggerRef.current;
     if (!trigger) {
-      console.log('No trigger element found');
+      if (DEBUG_MODE) {
+        console.log('No trigger element found');
+      }
       return;
     }
 
-    console.log('Setting up intersection observer with trigger element');
+    if (DEBUG_MODE) {
+      console.log('Setting up intersection observer with trigger element');
+    }
 
     const observer = new IntersectionObserver(
       entries => {
         const [entry] = entries;
-        console.log('Intersection observer triggered:', {
-          isIntersecting: entry.isIntersecting,
-          intersectionRatio: entry.intersectionRatio,
-          hasMorePages,
-          isFetchingMore,
-          isInitialLoading,
-          currentPage,
-          totalPrompts: allPrompts.length,
-        });
+        if (DEBUG_MODE) {
+          console.log('Intersection observer triggered:', {
+            isIntersecting: entry.isIntersecting,
+            intersectionRatio: entry.intersectionRatio,
+            hasMorePages,
+            isFetchingMore,
+            isInitialLoading,
+            currentPage,
+            totalPrompts: allPrompts.length,
+          });
+        }
 
         if (
           entry.isIntersecting &&
@@ -281,7 +314,9 @@ export function Feed() {
           !isFetchingMore &&
           !isInitialLoading
         ) {
-          console.log('Trigger element is visible - calling fetchNextPage');
+          if (DEBUG_MODE) {
+            console.log('Trigger element is visible - calling fetchNextPage');
+          }
           fetchNextPage();
         }
       },
@@ -293,10 +328,14 @@ export function Feed() {
     );
 
     observer.observe(trigger);
-    console.log('Observer attached to trigger element');
+    if (DEBUG_MODE) {
+      console.log('Observer attached to trigger element');
+    }
 
     return () => {
-      console.log('Cleaning up observer');
+      if (DEBUG_MODE) {
+        console.log('Cleaning up observer');
+      }
       observer.unobserve(trigger);
     };
   }, [
@@ -345,31 +384,35 @@ export function Feed() {
       `}</style>
       <article className="scroller h-full">
         {/* Debug panel */}
-        <div className="bg-opacity-50 fixed top-4 right-4 z-50 rounded bg-black p-2 text-xs text-white">
-          <div>Page: {currentPage}</div>
-          <div>Items: {allPrompts.length}</div>
-          <div>
-            Loading: {isFetchingMore || isInitialLoading ? 'Yes' : 'No'}
+        {DEBUG_MODE && (
+          <div className="bg-opacity-50 fixed top-4 right-4 z-50 rounded bg-black p-2 text-xs text-white">
+            <div>Page: {currentPage}</div>
+            <div>Items: {allPrompts.length}</div>
+            <div>
+              Loading: {isFetchingMore || isInitialLoading ? 'Yes' : 'No'}
+            </div>
+            <div>HasMore: {hasMorePages ? 'Yes' : 'No'}</div>
+            <button
+              onClick={loadNextPage}
+              className="mt-1 rounded bg-blue-500 px-2 py-1 text-xs"
+              disabled={isFetchingMore || !hasMorePages || isInitialLoading}
+            >
+              Load Next
+            </button>
+            <button
+              onClick={() => {
+                if (DEBUG_MODE) {
+                  console.log('Direct fetch test button clicked');
+                }
+                fetchNextPage();
+              }}
+              className="mt-1 rounded bg-green-500 px-2 py-1 text-xs"
+              disabled={isFetchingMore || isInitialLoading}
+            >
+              Test Fetch
+            </button>
           </div>
-          <div>HasMore: {hasMorePages ? 'Yes' : 'No'}</div>
-          <button
-            onClick={loadNextPage}
-            className="mt-1 rounded bg-blue-500 px-2 py-1 text-xs"
-            disabled={isFetchingMore || !hasMorePages || isInitialLoading}
-          >
-            Load Next
-          </button>
-          <button
-            onClick={() => {
-              console.log('Direct fetch test button clicked');
-              fetchNextPage();
-            }}
-            className="mt-1 rounded bg-green-500 px-2 py-1 text-xs"
-            disabled={isFetchingMore || isInitialLoading}
-          >
-            Test Fetch
-          </button>
-        </div>
+        )}
 
         {allPrompts.map((prompt: PromptWithContent, index: number) => (
           <section key={prompt.id} className="flex snap-start flex-col">
@@ -379,10 +422,12 @@ export function Feed() {
             {index === allPrompts.length - 5 && (
               <div
                 ref={triggerRef}
-                className="flex h-4 w-full items-center justify-center bg-red-500 text-xs opacity-20"
+                className={`flex h-4 w-full items-center justify-center text-xs ${
+                  DEBUG_MODE ? 'bg-red-500 opacity-20' : 'opacity-0'
+                }`}
                 style={{ pointerEvents: 'none' }}
               >
-                TRIGGER ({index + 1}/{allPrompts.length})
+                {DEBUG_MODE && `TRIGGER (${index + 1}/${allPrompts.length})`}
               </div>
             )}
           </section>

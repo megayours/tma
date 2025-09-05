@@ -58,10 +58,10 @@ export const ContentPreviews = ({
     <div className="flex h-full w-full flex-col">
       <div className="relative flex min-h-0 w-full flex-1 items-center justify-center overflow-hidden p-4">
         {selectedContent && (
-          <div className="container h-full w-full items-center justify-center">
+          <div className="w-full items-center justify-center">
             <DisplayContent
               content={selectedContent}
-              className="h-full w-full rounded-lg object-contain"
+              className="h-full w-full overflow-hidden rounded-lg object-contain"
               showVersion={true}
             />
           </div>

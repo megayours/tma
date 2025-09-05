@@ -5,7 +5,6 @@ import { SelectTokenId } from './SelectTokenId';
 import { DisplayNFT } from './DisplayNFT';
 import { PickFavoriteNFTs } from './PickFavoriteNFTs';
 import type { SupportedCollection } from '@/hooks/useCollections';
-import { Divider } from '@telegram-apps/telegram-ui';
 
 interface NFTCloudProps {
   index: number;
@@ -21,6 +20,9 @@ export const NFTCloud = ({ index, supportedCollections }: NFTCloudProps) => {
   const [selectedCollection, setSelectedCollection] =
     useState<SupportedCollection | null>(null);
   const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null);
+  const [selectionMode, setSelectionMode] = useState<
+    'favorites' | 'collections'
+  >('favorites');
 
   const handleCollectionSelect = (collection: SupportedCollection) => {
     console.log('NFTCloud: Collection selected:', collection.name);
@@ -62,7 +64,7 @@ export const NFTCloud = ({ index, supportedCollections }: NFTCloudProps) => {
     <div
       className="bg-tg-bg border-tg-hint/20 relative min-h-16 overflow-y-auto rounded-lg border shadow-lg"
       style={{
-        maxHeight: '80vh',
+        maxHeight: '60vh',
         minHeight: '64px',
         height: 'auto',
         overflow: 'auto',
@@ -83,16 +85,46 @@ export const NFTCloud = ({ index, supportedCollections }: NFTCloudProps) => {
     >
       {!selectedCollection && (
         <div className="flex flex-col p-2">
-          <PickFavoriteNFTs
-            onHandleCollectionSelect={handleCollectionSelect}
-            onTokenSelect={handleTokenSelect}
-          />
-          <Divider />
-          <SelectCollection
-            collections={supportedCollections || []}
-            onCollectionSelect={handleCollectionSelect}
-            size="s"
-          />
+          {/* Segmented Control */}
+          <div className="mb-3">
+            <div className="bg-tg-secondary border-tg-section-separator flex rounded-lg border p-1">
+              <button
+                className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                  selectionMode === 'favorites'
+                    ? 'bg-tg-button text-tg-button-text'
+                    : 'text-tg-text hover:bg-tg-hint/10'
+                }`}
+                onClick={() => setSelectionMode('favorites')}
+              >
+                Favorites
+              </button>
+              <button
+                className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                  selectionMode === 'collections'
+                    ? 'bg-tg-button text-tg-button-text'
+                    : 'text-tg-text hover:bg-tg-hint/10'
+                }`}
+                onClick={() => setSelectionMode('collections')}
+              >
+                Collections
+              </button>
+            </div>
+          </div>
+
+          {/* Content based on selection mode */}
+          {selectionMode === 'favorites' && (
+            <PickFavoriteNFTs
+              onHandleCollectionSelect={handleCollectionSelect}
+              onTokenSelect={handleTokenSelect}
+            />
+          )}
+          {selectionMode === 'collections' && (
+            <SelectCollection
+              collections={supportedCollections || []}
+              onCollectionSelect={handleCollectionSelect}
+              size="s"
+            />
+          )}
         </div>
       )}
       {selectedCollection && (

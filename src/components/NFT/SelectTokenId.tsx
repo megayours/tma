@@ -25,7 +25,10 @@ export function SelectTokenId({
       const timer = setTimeout(() => {
         inputRef.current?.focus();
         // Move cursor to end of input (after the "# " prefix)
-        inputRef.current?.setSelectionRange(searchToken.length, searchToken.length);
+        inputRef.current?.setSelectionRange(
+          searchToken.length,
+          searchToken.length
+        );
       }, 150);
       return () => clearTimeout(timer);
     }
@@ -49,7 +52,10 @@ export function SelectTokenId({
     // Just ensure cursor is at the end
     if (inputRef.current) {
       setTimeout(() => {
-        inputRef.current?.setSelectionRange(searchToken.length, searchToken.length);
+        inputRef.current?.setSelectionRange(
+          searchToken.length,
+          searchToken.length
+        );
       }, 100);
     }
   };
@@ -61,7 +67,7 @@ export function SelectTokenId({
           ←
         </Button>
       </div>
-      <h1 className="text-tg-text text-4xl">{collection.name}</h1>
+      <h1 className="text-tg-text text-xl">{collection.name}</h1>
       <div className="relative flex flex-col gap-4">
         <Input
           ref={inputRef}
@@ -72,9 +78,9 @@ export function SelectTokenId({
           value={searchToken}
           onChange={handleTokenChange}
           onFocus={handleInputFocus}
-          className="h-20 text-6xl"
+          className="h-15 text-6xl"
           style={{
-            fontSize: '3rem',
+            fontSize: '2rem',
           }}
         />
       </div>

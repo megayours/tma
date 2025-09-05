@@ -45,21 +45,6 @@ export function DisplayNFT({
 
   return (
     <div className={`flex flex-col gap-4 p-4 ${className}`}>
-      <div className="flex items-center justify-between">
-        <h2 className="text-tg-text text-xl font-semibold">
-          {collection.name} #{tokenId}
-        </h2>
-        <button
-          onClick={() => addToFavoritesMutation.mutate(session)}
-          disabled={addToFavoritesMutation.isPending}
-          className="bg-tg-button text-tg-button-text hover:bg-tg-button/80 rounded-lg px-3 py-1 text-sm disabled:opacity-50"
-        >
-          {addToFavoritesMutation.isPending
-            ? 'Adding...'
-            : '❤️ Add to Favorites'}
-        </button>
-      </div>
-
       {nftData?.image && (
         <div className="flex justify-center">
           <img

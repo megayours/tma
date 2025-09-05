@@ -31,12 +31,20 @@ export const TopBar = ({ title, icon, actions, children }: TopBarProps) => {
   return (
     <div className="bg-tg-secondary-bg border-tg-hint/20 relative border-b">
       {/* Header with title, icon and actions */}
-      <div className="border-tg-hint/20 flex items-center justify-between border-b px-4 py-3">
-        <div className="flex items-center gap-3">
-          {icon && <div className="text-tg-hint">{icon}</div>}
-          <h1 className="text-tg-text text-lg font-semibold">{title}</h1>
+      <div className="border-tg-hint/20 grid grid-cols-[1fr_2fr_1fr] items-center border-b px-4">
+        {/* Left column - empty */}
+        <div></div>
+
+        {/* Center column - title */}
+        <div className="flex items-center justify-center gap-2">
+          {icon && <div className="text-tg-hint text-sm">{icon}</div>}
+          <h1 className="text-tg-text text-center text-sm font-medium">
+            {title}
+          </h1>
         </div>
-        {actions && <div>{actions}</div>}
+
+        {/* Right column - actions */}
+        <div className="flex justify-end">{actions}</div>
       </div>
 
       {/* Children content - positioned absolutely to overlay content below */}

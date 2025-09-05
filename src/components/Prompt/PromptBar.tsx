@@ -1,9 +1,7 @@
 import { useState } from 'react';
 import type { Prompt } from '@/types/prompt';
 import type { Token } from '@/types/response';
-import {
-  IconButton,
-} from '@telegram-apps/telegram-ui';
+import { IconButton } from '@telegram-apps/telegram-ui';
 import { TopBar } from '@/components/ui/TopBar';
 import { PromptSettings } from './PromptSettings';
 import { InlineButtonsItem } from '@telegram-apps/telegram-ui/dist/components/Blocks/InlineButtons/components/InlineButtonsItem/InlineButtonsItem';
@@ -45,12 +43,6 @@ export const PromptBar = ({
   setSettingsOpen,
   onPromptUpdate,
 }: PromptBarProps) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  const toggleDropdown = () => {
-    setIsExpanded(!isExpanded);
-  };
-
   const toggleSettings = () => {
     if (settingsOpen) {
       // Closing settings - let PromptSettings handle auto-save
@@ -65,15 +57,11 @@ export const PromptBar = ({
     <TopBar
       title={prompt.name}
       actions={
-        <div className="flex items-center gap-3">
-          <button
-            onClick={toggleDropdown}
-            className="hover:bg-tg-hint/10 flex h-6 w-6 items-center justify-center rounded-full transition-colors"
-          ></button>
+        <div className="flex items-center justify-center gap-3">
           <IconButton
             mode="plain"
-            size="l"
-            className="text-tg-hint hover:text-tg-text"
+            size="s"
+            className="text-tg-hint hover:text-tg-text flex h-12 items-center justify-center"
             onClick={toggleSettings}
           >
             <InlineButtonsItem

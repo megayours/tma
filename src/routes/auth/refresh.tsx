@@ -4,7 +4,7 @@ import { useAuthContext } from '@/auth/AuthProvider';
 
 export const Route = createFileRoute('/auth/refresh')({
   component: AuthRefresh,
-  validateSearch: (search) => ({
+  validateSearch: search => ({
     redirectTo: search.redirectTo as string | undefined,
     provider: search.provider as string | undefined,
   }),

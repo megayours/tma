@@ -81,9 +81,9 @@ export const PromptEditor = ({
   if (!prompt) return <div>Loading...</div>;
 
   return (
-    <div className="bg-tg-bg min-h-screen">
+    <div className="bg-tg-bg">
       {/* Main content area */}
-      <div className="h-screen pb-100">
+      <div className="h-screen pb-60">
         {/* Your main content goes here */}
         {selectedVersion && (
           <div className="h-full">
@@ -96,7 +96,7 @@ export const PromptEditor = ({
       </div>
 
       {/* Portal container for AddContentButton and NFTCloud */}
-      <div className="bg-tg-bg pointer-events-none fixed right-0 bottom-20 left-0 z-29 overflow-y-scroll pb-20">
+      <div className="bg-tg-bg pointer-events-none fixed right-0 bottom-20 left-0 z-29 overflow-y-scroll pb-10">
         <div id="custom-input-container"></div>
       </div>
 

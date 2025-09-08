@@ -64,10 +64,7 @@ export const PromptBar = ({
             className="text-tg-hint hover:text-tg-text flex h-12 items-center justify-center"
             onClick={toggleSettings}
           >
-            <InlineButtonsItem
-              mode="plain"
-              text={`${settingsOpen ? 'Save' : 'Edit'}`}
-            ></InlineButtonsItem>
+            {settingsOpen ? 'Save' : 'Edit'}
           </IconButton>
         </div>
       }

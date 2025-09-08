@@ -10,6 +10,7 @@ import { useEffect } from 'react';
 import { AppRoot } from '@telegram-apps/telegram-ui';
 import { NavBar } from '@/components/lib/auth/NavBar';
 import { useTelegramTheme } from '@/auth/useTelegram';
+import { ToastProvider } from '@/components/ui';
 
 function TelegramAppHandler() {
   const location = useLocation();
@@ -69,7 +70,7 @@ export const Route = createRootRoute({
     );
 
     return (
-      <>
+      <ToastProvider>
         {/* <ConsoleLogDevtools initialIsOpen={true} onReady={handleConsoleReady} /> */}
         {/* {consoleReady && ( */}
         <>
@@ -92,7 +93,7 @@ export const Route = createRootRoute({
           </AppRoot>
         </>
         {/* )} */}
-      </>
+      </ToastProvider>
     );
   },
 });

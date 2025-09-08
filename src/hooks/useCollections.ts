@@ -1,3 +1,4 @@
+import React from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Pagination } from '../types/requests';
 import type { Token } from '../types/response';
@@ -38,6 +39,37 @@ export function useGetSupportedCollections() {
   });
 
   return { data, isLoading, error };
+}
+
+export function useGetCollectionsWithPrompt(prompt?: {
+  contracts?: Array<{
+    chain: string;
+    address: string;
+    name: string;
+    image?: string;
+  }>;
+}) {
+  const {
+    data: supportedCollections,
+    isLoading,
+    error,
+  } = useGetSupportedCollections();
+
+  const collections = React.useMemo(() => {
+    const promptCollections =
+      prompt?.contracts?.map(contract => ({
+        ...contract,
+        image: contract.image || '/nfts/not-available.png',
+      })) || [];
+
+    // If there are prompt contracts, return only those
+    // Otherwise, return supported collections
+    return promptCollections.length > 0
+      ? promptCollections
+      : supportedCollections || [];
+  }, [prompt?.contracts, supportedCollections]);
+
+  return { data: collections, isLoading, error };
 }
 
 export function useGetTokensByCollection(

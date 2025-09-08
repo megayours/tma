@@ -1,21 +1,16 @@
 import { useSession } from '@/auth/SessionProvider';
 import { useGetFavorites } from '@/hooks/useFavorites';
-import type { SupportedCollection } from '@/hooks/useCollections';
 import type { Token } from '@/types/response';
 
 interface PickFavoriteNFTsProps {
-  onHandleCollectionSelect: (collection: SupportedCollection) => void;
-  onTokenSelect: (tokenId: string) => void;
+  onTokenSelect: (favorite: { token: Token }) => void;
 }
 
 /**
  * Component that displays favorite NFTs in a horizontal scrolling list
  * with Telegram-like UI styling
  */
-export const PickFavoriteNFTs = ({
-  onHandleCollectionSelect,
-  onTokenSelect,
-}: PickFavoriteNFTsProps) => {
+export const PickFavoriteNFTs = ({ onTokenSelect }: PickFavoriteNFTsProps) => {
   const { session } = useSession();
   const { favorites, isLoadingFavorites } = useGetFavorites(session);
 
@@ -25,19 +20,7 @@ export const PickFavoriteNFTs = ({
   }
 
   const handleFavoriteClick = (favorite: { token: Token }) => {
-    const { token } = favorite;
-
-    // Create a SupportedCollection from the token's contract
-    const collection: SupportedCollection = {
-      chain: token.contract.chain,
-      address: token.contract.address,
-      name: token.contract.name,
-      image: token.image || '/nfts/not-available.png',
-    };
-
-    // First select the collection, then the token
-    onHandleCollectionSelect(collection);
-    onTokenSelect(token.id);
+    onTokenSelect(favorite);
   };
 
   return (

@@ -1,14 +1,20 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { SelectCollection } from './SelectCollection';
 import { SelectTokenId } from './SelectTokenId';
 import { DisplayNFT } from './DisplayNFT';
 import { PickFavoriteNFTs } from './PickFavoriteNFTs';
 import type { SupportedCollection } from '@/hooks/useCollections';
+import { useGetCollectionsWithPrompt } from '@/hooks/useCollections';
+import type { Prompt } from '../../types/prompt';
+import { useNFTSetsContext } from '@/contexts/NFTSetsContext';
+import type { Token } from '../../types/response';
 
 interface NFTCloudProps {
-  index: number;
-  supportedCollections: SupportedCollection[];
+  setIndex: number;
+  nftIndex: number;
+  prompt: Prompt;
+  onClose: () => void;
 }
 
 /**
@@ -16,13 +22,20 @@ interface NFTCloudProps {
  * Shows additional options or information for the selected NFT
  * Now keyboard-aware and positions itself properly when keyboard opens
  */
-export const NFTCloud = ({ index, supportedCollections }: NFTCloudProps) => {
+export const NFTCloud = ({
+  prompt,
+  setIndex,
+  nftIndex,
+  onClose,
+}: NFTCloudProps) => {
+  const { data: collections } = useGetCollectionsWithPrompt(prompt);
   const [selectedCollection, setSelectedCollection] =
     useState<SupportedCollection | null>(null);
-  const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null);
+  const [selectedTokenId] = useState<string | null>(null);
   const [selectionMode, setSelectionMode] = useState<
     'favorites' | 'collections'
   >('favorites');
+  const { updateNFTInSet } = useNFTSetsContext();
 
   const handleCollectionSelect = (collection: SupportedCollection) => {
     console.log('NFTCloud: Collection selected:', collection.name);
@@ -38,20 +51,24 @@ export const NFTCloud = ({ index, supportedCollections }: NFTCloudProps) => {
   };
 
   const handleTokenSelect = (tokenId: string) => {
-    console.log(
-      'Selected token:',
-      tokenId,
-      'for collection:',
-      selectedCollection?.name
-    );
-    setSelectedTokenId(tokenId);
+    const newToken = {
+      contract: selectedCollection! as SupportedCollection,
+      id: tokenId,
+    };
+    updateNFTInSet(setIndex, nftIndex, newToken);
+  };
+
+  const handleSelectFavorite = (favorite: { token: Token }) => {
+    const newToken = favorite.token;
+
+    console.log('newToken', newToken);
+    updateNFTInSet(setIndex, nftIndex, newToken);
+    onClose(); // Close the cloud
   };
 
   const handleCloudClick = (e: React.MouseEvent) => {
     e.stopPropagation();
   };
-
-  console.log('NFTCloud: supportedCollections:', supportedCollections);
 
   // Find the custom-input-container element
   const portalContainer = document.getElementById('custom-input-container');
@@ -73,7 +90,7 @@ export const NFTCloud = ({ index, supportedCollections }: NFTCloudProps) => {
         pointerEvents: 'auto',
         userSelect: 'auto',
       }}
-      data-cloud-index={index} // Used to identify this specific cloud for click-outside detection
+      data-cloud-index={`${setIndex}-${nftIndex}`} // Used to identify this specific cloud for click-outside detection
       onClick={handleCloudClick}
       onWheel={e => {
         e.stopPropagation();
@@ -113,14 +130,11 @@ export const NFTCloud = ({ index, supportedCollections }: NFTCloudProps) => {
 
           {/* Content based on selection mode */}
           {selectionMode === 'favorites' && (
-            <PickFavoriteNFTs
-              onHandleCollectionSelect={handleCollectionSelect}
-              onTokenSelect={handleTokenSelect}
-            />
+            <PickFavoriteNFTs onTokenSelect={handleSelectFavorite} />
           )}
           {selectionMode === 'collections' && (
             <SelectCollection
-              collections={supportedCollections || []}
+              collections={collections || []}
               onCollectionSelect={handleCollectionSelect}
               size="s"
             />
@@ -128,14 +142,39 @@ export const NFTCloud = ({ index, supportedCollections }: NFTCloudProps) => {
         </div>
       )}
       {selectedCollection && (
-        <SelectTokenId
-          collection={selectedCollection}
-          onBack={handleBack}
-          onTokenSelect={handleTokenSelect}
-        />
-      )}
-      {selectedCollection && selectedTokenId && (
-        <DisplayNFT collection={selectedCollection} tokenId={selectedTokenId} />
+        <>
+          <SelectTokenId
+            collection={selectedCollection}
+            onBack={handleBack}
+            onTokenSelect={handleTokenSelect}
+          />
+
+          <div className="h-[336px]">
+            {selectedCollection && selectedTokenId && (
+              <DisplayNFT
+                collection={selectedCollection}
+                tokenId={selectedTokenId}
+              />
+            )}
+            {selectedCollection && !selectedTokenId && (
+              <div className="flex flex-col gap-4 p-4">
+                {/* Placeholder image with same height as DisplayNFT */}
+                <div className="flex justify-center">
+                  <div className="bg-tg-secondary flex w-64 items-center justify-center rounded-lg">
+                    <div className="text-tg-hint text-center text-sm">
+                      Select a token ID to view NFT
+                    </div>
+                  </div>
+                </div>
+
+                {/* Placeholder title */}
+                <div className="text-tg-hint text-center text-lg font-medium">
+                  {selectedCollection.name}
+                </div>
+              </div>
+            )}
+          </div>
+        </>
       )}
     </div>
   );

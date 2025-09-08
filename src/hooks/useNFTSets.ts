@@ -36,19 +36,47 @@ export const useNFTSets = (prompt: Prompt | null) => {
   const [nftSets, setNftSets] = useState<Token[][]>([]);
   console.log('nftSets', nftSets);
 
-  // Initialize nftSets when prompt or favorites change
+  // Load NFT sets from localStorage when prompt changes
   useEffect(() => {
-    if (!prompt?.id || !favorites || !prompt?.minTokens) {
+    if (!prompt?.id) {
       setNftSets([]);
       return;
     }
 
-    // Only initialize if nftSets is empty
-    if (nftSets.length === 0) {
+    const storageKey = `nftSets_${prompt.id}`;
+    const savedSets = localStorage.getItem(storageKey);
+
+    if (savedSets) {
+      try {
+        const parsedSets = JSON.parse(savedSets);
+        setNftSets(parsedSets);
+        return;
+      } catch (error) {
+        console.error('Error parsing saved NFT sets:', error);
+      }
+    }
+
+    // If no saved sets and we have favorites, create initial set
+    if (favorites && prompt?.minTokens) {
       const initialSet = createNFTSet(favorites, prompt.minTokens);
       setNftSets([initialSet]);
     }
-  }, [prompt?.id, prompt?.minTokens, favorites, nftSets.length]);
+  }, [prompt?.id, prompt?.minTokens, favorites]);
+
+  // Save NFT sets to localStorage whenever they actually change
+  useEffect(() => {
+    console.log('saveNFTSets', nftSets);
+    if (prompt?.id && nftSets.length > 0) {
+      const storageKey = `nftSets_${prompt.id}`;
+      const currentSaved = localStorage.getItem(storageKey);
+
+      // Only save if the data is actually different
+      if (currentSaved !== JSON.stringify(nftSets)) {
+        localStorage.setItem(storageKey, JSON.stringify(nftSets));
+        console.log('NFT sets saved to localStorage');
+      }
+    }
+  }, [nftSets, prompt?.id]);
 
   // Function to add a new NFT set
   const addNFTSet = () => {
@@ -90,15 +118,18 @@ export const useNFTSets = (prompt: Prompt | null) => {
     newToken: Token
   ) => {
     console.log('updateNFTInSet', nftSets);
-    const allSets = nftSets;
-    console.log(1);
-    const setToChange = allSets[setIndex];
-    console.log(2);
-    setToChange[nftIndex] = newToken;
-    console.log(3);
-    allSets[setIndex] = setToChange;
-    console.log(4);
-    setNftSets(allSets);
+    setNftSets(prevNftSets => {
+      const updatedSets = prevNftSets.map((set, i) => {
+        if (i === setIndex) {
+          const updatedSet = [...set];
+          updatedSet[nftIndex] = newToken;
+          return updatedSet;
+        }
+        return set;
+      });
+      console.log('updatedSets', updatedSets);
+      return updatedSets;
+    });
   };
 
   return {

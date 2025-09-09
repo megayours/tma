@@ -43,7 +43,6 @@ export function useGetLatestImages(params: LatestImagesParams) {
           pagination: params.pagination as PaginationResponse,
         };
       } catch (error) {
-        console.log('ERROR', error);
         throw error;
       }
     },

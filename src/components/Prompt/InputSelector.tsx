@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { Token } from '@/types/response';
 import type { Prompt } from '../../types/prompt';
 import { NFTItem } from './NFTItem';
+import { useNFTSetsContext } from '@/contexts/NFTSetsContext';
 
 /**
  * InputSelector component
@@ -21,7 +22,7 @@ export const InputSelector = ({
   setIndex: number;
 }) => {
   const [longPressedIndex, setLongPressedIndex] = useState<number | null>(null);
-
+  const { removeNFTSet } = useNFTSetsContext();
   // Enhanced onCloudClose that resets both states
   const handleCloudClose = () => {
     setLongPressedIndex(null);
@@ -51,7 +52,7 @@ export const InputSelector = ({
   }, []);
 
   return (
-    <div className="flex flex-row items-center">
+    <div className="flex flex-row items-center gap-1 rounded-full bg-blue-500 p-4">
       {/* Render NFT items from the nftSet */}
       {nftSet.map((token, index) => (
         <NFTItem
@@ -66,6 +67,27 @@ export const InputSelector = ({
           setIndex={setIndex}
         />
       ))}
+      {/* Small x button to remove the nft set */}
+      <button
+        className="text-tg-hint hover:text-tg-text rounded p-1 transition-colors"
+        onClick={() => {
+          removeNFTSet(setIndex);
+        }}
+      >
+        <svg
+          className="h-5 w-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
+      </button>
     </div>
   );
 };

@@ -35,7 +35,6 @@ export function SelectTokenId({
   }, [searchToken]);
 
   const handleTokenChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('e.target.value', e.target.value);
     // Remove any existing '#' and spaces, then add the prefix
     const cleanValue = e.target.value.replace(/^#\s*/, '');
     const newValue = cleanValue ? `# ${cleanValue}` : '# ';

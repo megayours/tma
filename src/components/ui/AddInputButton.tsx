@@ -1,9 +1,4 @@
-import {
-  Button,
-  Cell,
-  Divider,
-  Section,
-} from '@telegram-apps/telegram-ui';
+import { Button, Cell, Divider, Section } from '@telegram-apps/telegram-ui';
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { IoArrowBackOutline } from 'react-icons/io5';
@@ -54,7 +49,6 @@ export const SelectPrompt = ({
   updatePrompt: ((updates: Partial<Prompt>) => void) | null;
   prompt: Prompt;
 }) => {
-  console.log('PROMPT', prompt);
   return <div>Select Prompt</div>;
 };
 
@@ -65,7 +59,6 @@ export const SelectImage = ({
   prompt: Prompt;
   updatePrompt: ((updates: Partial<Prompt>) => void) | null;
 }) => {
-  console.log('PROMPT', prompt);
   return <div>Select Image</div>;
 };
 
@@ -99,7 +92,6 @@ export function AddInputButton({
   const handleBackClick = () => {
     setSelectedContent(null);
   };
-
 
   const handleClick = () => {
     setIsOpen(!isOpen);

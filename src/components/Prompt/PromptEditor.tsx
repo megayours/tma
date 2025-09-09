@@ -10,6 +10,7 @@ import { usePromptPreviewGeneration } from '@/hooks/usePromptPreviewGeneration';
 import { useSession } from '@/auth/SessionProvider';
 import { ContentPreviews } from './ContentPreview';
 import { NFTSetsProvider } from '@/contexts/NFTSetsContext';
+import { useToast } from '@/components/ui/toast';
 
 const PromptEditorContent = ({
   prompt: initialPrompt,
@@ -18,8 +19,8 @@ const PromptEditorContent = ({
   selectedNFTs: Token[];
   setSelectedNFTs: (nfts: Token[]) => void;
 }) => {
-  console.log('PromptEditor', initialPrompt);
   const { session } = useSession();
+  const { addToast } = useToast();
   const [promptText, setPromptText] = useState(
     initialPrompt?.versions?.[0]?.text ?? ''
   );
@@ -42,7 +43,6 @@ const PromptEditorContent = ({
   const { isGenerating, generatePromptPreview } = usePromptPreviewGeneration({
     session,
     onSuccess: result => {
-      console.log('Generation successful:', result);
       if (result.generated) {
         setHasChanges(false);
       }
@@ -76,21 +76,19 @@ const PromptEditorContent = ({
     }
 
     try {
-      const results = await generatePromptPreview(
+      await generatePromptPreview(
         promptText,
         prompt,
         hasChanges,
         setSelectedVersion
       );
-
-      console.log('All generations completed:', results);
-
-      // Handle results as needed
-      results.forEach(({ setIndex, result }) => {
-        console.log(`Content ID for set ${setIndex}:`, result.contentId);
-      });
     } catch (error) {
       console.error('Error during generation:', error);
+      addToast({
+        type: 'error',
+        title: 'Generation Error',
+        message: 'An error occurred during generation. Please try again.',
+      });
     }
   };
 

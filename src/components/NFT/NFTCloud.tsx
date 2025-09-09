@@ -38,7 +38,6 @@ export const NFTCloud = ({
   const { updateNFTInSet } = useNFTSetsContext();
 
   const handleCollectionSelect = (collection: SupportedCollection) => {
-    console.log('NFTCloud: Collection selected:', collection.name);
     // Remove focus from any active textarea to prevent keyboard from opening
     if (document.activeElement instanceof HTMLTextAreaElement) {
       document.activeElement.blur();
@@ -58,7 +57,6 @@ export const NFTCloud = ({
   const handleSelectFavorite = (favorite: { token: Token }) => {
     const newToken = favorite.token;
 
-    console.log('newToken', newToken);
     updateNFTInSet(setIndex, nftIndex, newToken);
     onClose(); // Close the cloud
   };
@@ -91,10 +89,6 @@ export const NFTCloud = ({
       onClick={handleCloudClick}
       onWheel={e => {
         e.stopPropagation();
-        console.log('NFTCloud wheel event:', e.deltaY);
-      }}
-      onScroll={e => {
-        console.log('NFTCloud scroll event:', e.currentTarget.scrollTop);
       }}
     >
       {!selectedCollection && (

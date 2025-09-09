@@ -10,14 +10,6 @@ import './style.css';
 // Import the generated route tree
 import { routeTree } from './routeTree.gen';
 
-// Environment variables check - for debugging deployment
-console.log('🔍 Environment Variables Check - v2:');
-console.log('NODE_ENV:', import.meta.env.NODE_ENV);
-console.log('MODE:', import.meta.env.MODE);
-console.log('BASE_URL:', import.meta.env.BASE_URL);
-console.log('VITE_PUBLIC_API_URL:', import.meta.env.VITE_PUBLIC_API_URL);
-console.log('All import.meta.env:', import.meta.env);
-
 // Create a new router instance
 const router = createRouter({ routeTree });
 

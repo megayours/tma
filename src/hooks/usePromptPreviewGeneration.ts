@@ -41,13 +41,6 @@ export function usePromptPreviewGeneration(
       hasChanges = false,
       setSelectedVersion?: any
     ) => {
-      console.log(
-        'Generating prompt preview...',
-        promptText,
-        prompt,
-        hasChanges,
-        nftSets
-      );
       if (!session) {
         throw new Error('No session available');
       }
@@ -72,7 +65,7 @@ export function usePromptPreviewGeneration(
                 prompt: promptText,
               },
             });
-            console.log('New prompt:', newPrompt);
+
             if (newPrompt?.versions?.length) {
               setSelectedVersion?.(
                 newPrompt.versions[newPrompt.versions.length - 1]
@@ -84,12 +77,8 @@ export function usePromptPreviewGeneration(
           }
         }
 
-        console.log('Generating content for all NFT sets:', nftSets);
-
         // Create promises for each NFT set
         const generationPromises = nftSets.map(async (nftSet, index) => {
-          console.log(`Generating for NFT set ${index}:`, nftSet);
-
           // Convert NFT set to tokens format expected by generatePromptPreview
           const tokens = nftSet.map(token => ({
             contract: {
@@ -122,8 +111,6 @@ export function usePromptPreviewGeneration(
 
         // Wait for all generations to complete
         const results = await Promise.all(generationPromises);
-
-        console.log('All generations completed:', results);
 
         // Call success callback if provided
         onSuccess?.({

@@ -13,7 +13,6 @@ export function ProfileNavBar({ logout: _logout }: { logout: () => void }) {
   const { favorites, isLoadingFavorites } = useGetFavorites(session!);
   const { removeFromFavorites, isRemoving, removingTokenId } =
     useRemoveFromFavorites(session!);
-  console.log('favorites', favorites);
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);

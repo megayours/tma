@@ -27,7 +27,6 @@ export const ContentPreviews = ({
     page,
     size: 10,
   });
-  console.log('content', content);
   const [selectedContent, setSelectedContent] = useState<Content | null>(null);
 
   // Update allContent when new data is fetched

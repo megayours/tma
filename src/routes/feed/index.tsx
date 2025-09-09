@@ -8,7 +8,7 @@ import { LatestAnimatedSticker } from '@/components/lib/LatestContent/LatestAnim
 import type { PromptWithContent } from '@/types/content';
 
 // Debug toggle - set to false to disable all debug functionality
-const DEBUG_MODE = false;
+const DEBUG_MODE = true;
 
 // Array of background GIF files
 const backgroundGifs = [
@@ -53,32 +53,28 @@ function ShowContent({
   }
 
   return (
-    <div className="relative flex h-full flex-col items-center justify-center">
-      <div className="flex w-full flex-1 items-center justify-center">
-        <div className="absolute top-5 left-5">
-          <h1>{prompt.name}</h1>
-          <p>{prompt.ownerName}</p>
-        </div>
-        <div className="h-full max-h-screen w-full">
-          {prompt.type === 'images' && (
-            <LatestImage prompt={prompt} bg={getRandomBackgroundGif()} />
-          )}
-          {prompt.type === 'videos' && (
-            <LatestVideo prompt={prompt} bg={getRandomBackgroundGif()} />
-          )}
-          {prompt.type === 'stickers' && (
-            <LatestSticker prompt={prompt} bg={getRandomBackgroundGif()} />
-          )}
-          {prompt.type === 'animated_stickers' && (
-            <LatestAnimatedSticker
-              prompt={prompt}
-              bg={getRandomBackgroundGif()}
-            />
-          )}
-        </div>
+    <div className="relative h-full w-full">
+      <div className="absolute top-5 left-5 z-10">
+        <h1>{prompt.name}</h1>
+        <p>{prompt.ownerName}</p>
       </div>
-
-      <div className="bottom-0 h-10 w-full"></div>
+      <div className="h-full w-full">
+        {prompt.type === 'images' && (
+          <LatestImage prompt={prompt} bg={getRandomBackgroundGif()} />
+        )}
+        {prompt.type === 'videos' && (
+          <LatestVideo prompt={prompt} bg={getRandomBackgroundGif()} />
+        )}
+        {prompt.type === 'stickers' && (
+          <LatestSticker prompt={prompt} bg={getRandomBackgroundGif()} />
+        )}
+        {prompt.type === 'animated_stickers' && (
+          <LatestAnimatedSticker
+            prompt={prompt}
+            bg={getRandomBackgroundGif()}
+          />
+        )}
+      </div>
     </div>
   );
 }
@@ -373,13 +369,12 @@ export function Feed() {
         .scroller {
           overflow-y: auto;
           scroll-snap-type: y mandatory;
-          height: 100%;
+          height: 100vh;
         }
 
         .scroller section {
           scroll-snap-align: start;
           height: 100vh;
-          min-height: 100vh;
         }
       `}</style>
       <article className="scroller h-full">

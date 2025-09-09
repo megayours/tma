@@ -7,7 +7,6 @@ export function LatestAnimatedSticker({
   prompt: PromptWithContent;
   bg: string;
 }) {
-  console.log('prompt', prompt);
   return (
     <div
       className="flex h-full w-full items-center justify-center"

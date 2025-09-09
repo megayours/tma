@@ -34,7 +34,6 @@ export function useGetSupportedCollections() {
       }
 
       const data = await response.json();
-      console.log('data', data);
       return data as SupportedCollection[];
     },
   });
@@ -133,7 +132,6 @@ export function useGetTokensByCollection(
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      console.log('response', data);
       return {
         tokens: data.data,
         pagination: data.pagination,
@@ -176,7 +174,6 @@ export function useGetNFTByCollectionAndTokenId(
       }
 
       const data = await response.json();
-      console.log('data', data);
       return data as Token;
     },
     enabled: !!chain && !!address && !!tokenId, // Only run if we have required data
@@ -195,7 +192,6 @@ export function useAddToFavoritesMutation(
     mutationFn: async (session: Session | null | undefined) => {
       if (!session) return;
       if (!collection) return;
-      console.log('Adding to favorites', collection, tokenId);
       const response = await fetch(
         `${import.meta.env.VITE_PUBLIC_API_URL}/profile/favorites`,
         {
@@ -229,7 +225,6 @@ export function useAddToFavoritesMutation(
       }
 
       const data = await response.json();
-      console.log('data', data);
       return data;
     },
     onSuccess: (_data, session) => {

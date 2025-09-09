@@ -9,7 +9,6 @@ import { Button } from '@telegram-apps/telegram-ui';
 export function NavBar() {
   const { logout, isAuthenticated, isAuthenticating, session } =
     useAuthContext();
-  console.log('session', session);
 
   if (!isAuthenticated) {
     return (

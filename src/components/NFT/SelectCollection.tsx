@@ -46,11 +46,8 @@ export function SelectCollection({
   const config = sizeConfig[size];
 
   const handleCardClick = (collection: SupportedCollection) => {
-    console.log('Card clicked:', collection.name);
     onCollectionSelect(collection);
   };
-
-  console.log('SelectCollection: collections:', collections);
 
   return (
     <div

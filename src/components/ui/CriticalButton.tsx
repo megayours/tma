@@ -145,9 +145,6 @@ export function CriticalButton({
           dotLottieRefCallback={dotLottie => {
             if (dotLottie) {
               dotLottie.addEventListener('complete', () => {
-                console.log('Animation completed!');
-                console.log('Redirect URL:', redirectUrl);
-                // redirect to url using tanstack router
                 if (redirectUrl) {
                   console.log('Navigating to:', redirectUrl);
                   navigate({ to: redirectUrl });

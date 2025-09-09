@@ -1,17 +1,15 @@
 import { useState } from 'react';
 import { IoIosAddCircleOutline } from 'react-icons/io';
-import { NFTSetsProvider, useNFTSetsContext } from '@/contexts/NFTSetsContext';
+import { useNFTSetsContext } from '@/contexts/NFTSetsContext';
 import type { Prompt } from '../../types/prompt';
 import { InputSelector } from './InputSelector';
 
-const InputsEditorContent = ({ prompt }: { prompt: Prompt }) => {
+export const InputsEditor = ({ prompt }: { prompt: Prompt }) => {
   // State to track whether we're in NFT modification mode
   const [isModifyingInputsEditor, setIsModifyingInputsEditor] = useState(false);
 
   // Use the NFT sets from the context
   const { nftSets, addNFTSet, canAddSet } = useNFTSetsContext();
-
-  console.log('nftSets', nftSets);
 
   return (
     <div
@@ -46,13 +44,5 @@ const InputsEditorContent = ({ prompt }: { prompt: Prompt }) => {
         </div>
       )}
     </div>
-  );
-};
-
-export const InputsEditor = ({ prompt }: { prompt: Prompt }) => {
-  return (
-    <NFTSetsProvider prompt={prompt}>
-      <InputsEditorContent prompt={prompt} />
-    </NFTSetsProvider>
   );
 };

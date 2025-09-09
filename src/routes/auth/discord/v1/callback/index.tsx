@@ -51,23 +51,15 @@ export const Route = createFileRoute('/auth/discord/v1/callback/')({
         }
       );
 
-      console.log('callbackResponse', callbackResponse);
-
       if (!callbackResponse.ok) {
-        console.log('Failed to complete Discord authentication');
         throw new Error('Failed to complete Discord authentication');
       }
-      console.log('callbackResponse ok');
 
       const tokenData = await callbackResponse.json();
-
-      console.log('tokenData', tokenData);
 
       // Store the token in localStorage
       localStorage.setItem('discord_token', tokenData.token);
       localStorage.setItem('auth_provider', 'discord');
-
-      console.log('redirecting to auth refresh route');
 
       // Redirect to a temporary route that will handle auth refresh
       throw redirect({

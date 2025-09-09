@@ -145,7 +145,6 @@ export const usePreviewContentMutation = (
         throw new Error('Failed to preview content');
       }
       const data = await response.json();
-      console.log('Async preview content response', data);
       return { contentId: data.id };
     },
     onSuccess: () => {

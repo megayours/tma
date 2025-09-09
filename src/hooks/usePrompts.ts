@@ -2,10 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Pagination } from '@/types/requests';
-import {
-  type RawPromptsResponse,
-  type RawPrompt,
-} from '@/types/response';
+import { type RawPromptsResponse, type RawPrompt } from '@/types/response';
 import { apiGet } from '@/lib/api';
 import type { PromptWithContent } from '@/types/content';
 import type { Session } from '@/auth/useAuth';
@@ -37,7 +34,12 @@ const mapRawPromptToPromptWithContent = (
   ...mapRawPromptToPrompt(rawPrompt),
   published: rawPrompt.published_at ?? 0,
   image: rawPrompt.image ?? '',
-  type: rawPrompt.type as 'images' | 'videos' | 'stickers' | 'gifs' | 'animated_stickers',
+  type: rawPrompt.type as
+    | 'images'
+    | 'videos'
+    | 'stickers'
+    | 'gifs'
+    | 'animated_stickers',
   contentId: (rawPrompt as any).content_id,
   owner: rawPrompt.owner_id,
   ownerName: rawPrompt.owner_name ?? '',
@@ -73,35 +75,34 @@ export const useGetRecommendedPrompts = ({
           }
         );
 
-        console.log('Raw API response:', response);
-        console.log('Response data:', response.data);
-        console.log('Response pagination:', response.pagination);
-        console.log('Response data length:', response.data?.length);
-
         if (!response || !response.data) {
           console.error('Invalid response format:', response);
           throw new Error('Invalid response format: missing data');
         }
 
         const mappedPrompts: PromptWithContent[] = response.data.map(
-          (rawPrompt, index) => {
-            console.log(`Mapping prompt ${index}:`, rawPrompt);
+          rawPrompt => {
             const mapped = mapRawPromptToPromptWithContent(rawPrompt);
-            console.log(`Mapped prompt ${index}:`, mapped);
             return mapped;
           }
         );
 
         const result = {
           prompts: mappedPrompts,
-          pagination: response.pagination || { page: 1, size: 10, total: 0, totalPages: 0 },
+          pagination: response.pagination || {
+            page: 1,
+            size: 10,
+            total: 0,
+            totalPages: 0,
+          },
         };
 
-        console.log('Final hook result:', result);
         return result;
       } catch (err) {
         console.error('Failed to fetch recommended prompts:', err);
-        throw new Error(`Failed to load recommendations: ${err instanceof Error ? err.message : 'Unknown error'}`);
+        throw new Error(
+          `Failed to load recommendations: ${err instanceof Error ? err.message : 'Unknown error'}`
+        );
       }
     },
   });

@@ -78,7 +78,6 @@ function RouteComponent() {
             inputMode="numeric"
             value={searchToken}
             onChange={e => {
-              console.log('e.target.value', e.target.value);
               // Remove any existing '#' and spaces, then add the prefix
               const cleanValue = e.target.value.replace(/^#\s*/, '');
               setSearchToken(cleanValue ? `# ${cleanValue}` : '# ');

@@ -34,10 +34,10 @@ export const useNFTSets = (prompt: Prompt | null) => {
 
   // Initialize nftSets state
   const [nftSets, setNftSets] = useState<Token[][]>([]);
-  console.log('nftSets', nftSets);
 
   // Load NFT sets from localStorage when prompt changes
   useEffect(() => {
+    console.log('REchecking nft sets');
     if (!prompt?.id) {
       setNftSets([]);
       return;
@@ -65,7 +65,6 @@ export const useNFTSets = (prompt: Prompt | null) => {
 
   // Save NFT sets to localStorage whenever they actually change
   useEffect(() => {
-    console.log('saveNFTSets', nftSets);
     if (prompt?.id && nftSets.length > 0) {
       const storageKey = `nftSets_${prompt.id}`;
       const currentSaved = localStorage.getItem(storageKey);
@@ -73,18 +72,15 @@ export const useNFTSets = (prompt: Prompt | null) => {
       // Only save if the data is actually different
       if (currentSaved !== JSON.stringify(nftSets)) {
         localStorage.setItem(storageKey, JSON.stringify(nftSets));
-        console.log('NFT sets saved to localStorage');
       }
     }
   }, [nftSets, prompt?.id]);
 
   // Function to add a new NFT set
   const addNFTSet = () => {
-    console.log('addNFTSet', nftSets);
     if (nftSets.length < 5 && favorites && prompt?.minTokens) {
       const newSet = createNFTSet(favorites, prompt.minTokens);
       setNftSets(prevNftSets => [...prevNftSets, newSet]);
-      console.log('addNFTSet', nftSets);
     } else if (nftSets.length >= 5) {
       addToast({
         type: 'error',
@@ -106,7 +102,6 @@ export const useNFTSets = (prompt: Prompt | null) => {
       const updatedSets = prevNftSets.map((set, i) =>
         i === index ? newSet : set
       );
-      console.log('updatedSets', updatedSets);
       return updatedSets;
     });
   };
@@ -117,7 +112,7 @@ export const useNFTSets = (prompt: Prompt | null) => {
     nftIndex: number,
     newToken: Token
   ) => {
-    console.log('updateNFTInSet', nftSets);
+    console.log('Updating NFT in set', setIndex, nftIndex, newToken);
     setNftSets(prevNftSets => {
       const updatedSets = prevNftSets.map((set, i) => {
         if (i === setIndex) {
@@ -127,7 +122,6 @@ export const useNFTSets = (prompt: Prompt | null) => {
         }
         return set;
       });
-      console.log('updatedSets', updatedSets);
       return updatedSets;
     });
   };

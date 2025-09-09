@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import type { Prompt } from '@/types/prompt';
 import type { Token } from '@/types/response';
+import type { Contract } from '@/types/contract';
 import {
   Input,
   Textarea,
@@ -9,15 +10,19 @@ import {
   Section,
   Cell,
   IconContainer,
+  Checkbox,
+  Button,
 } from '@telegram-apps/telegram-ui';
 import { usePromptMutation } from '@/hooks/usePrompts';
 import { useSession } from '@/auth/SessionProvider';
 import { useModels } from '@/hooks/useModels';
+import { useGetSupportedCollections } from '@/hooks/useCollections';
 import {
   IoPersonOutline,
   IoLayersOutline,
   IoStatsChartOutline,
   IoInformationCircleOutline,
+  IoDocumentTextOutline,
 } from 'react-icons/io5';
 
 interface PromptSettingsProps {
@@ -44,6 +49,7 @@ export const PromptSettings = ({
   const { session } = useSession();
   const promptMutation = usePromptMutation(session);
   const { models, isLoading: modelsLoading } = useModels();
+  const { data: supportedCollections, isLoading: collectionsLoading } = useGetSupportedCollections();
 
   // Local state for form fields
   const [editedPrompt, setEditedPrompt] = useState<Prompt>(() => {
@@ -57,6 +63,15 @@ export const PromptSettings = ({
     };
   });
   const [hasChanges, setHasChanges] = useState(false);
+  const [selectedContracts, setSelectedContracts] = useState<Set<string>>(() => {
+    const contractKeys = new Set<string>();
+    if (prompt.contracts) {
+      prompt.contracts.forEach(contract => {
+        contractKeys.add(`${contract.chain}-${contract.address}`);
+      });
+    }
+    return contractKeys;
+  });
   const isSaving = useRef(false);
   const prevIsOpen = useRef(isOpen);
   
@@ -75,6 +90,15 @@ export const PromptSettings = ({
       model: initialModel,
     });
     setHasChanges(false);
+    
+    // Update selected contracts
+    const contractKeys = new Set<string>();
+    if (prompt.contracts) {
+      prompt.contracts.forEach(contract => {
+        contractKeys.add(`${contract.chain}-${contract.address}`);
+      });
+    }
+    setSelectedContracts(contractKeys);
   }, [prompt]);
 
   // Handle auto-save when settings close
@@ -112,6 +136,67 @@ export const PromptSettings = ({
   // Handle field updates
   const updateField = (field: keyof Prompt, value: any) => {
     setEditedPrompt(prev => ({ ...prev, [field]: value }));
+    setHasChanges(true);
+  };
+
+  // Handle contract selection changes
+  const handleContractToggle = (contract: { chain: string; address: string; name: string }) => {
+    const contractKey = `${contract.chain}-${contract.address}`;
+    const newSelectedContracts = new Set(selectedContracts);
+    
+    if (newSelectedContracts.has(contractKey)) {
+      newSelectedContracts.delete(contractKey);
+    } else {
+      newSelectedContracts.add(contractKey);
+    }
+    
+    setSelectedContracts(newSelectedContracts);
+    
+    // Update the edited prompt with the new contracts list
+    const updatedContracts: Contract[] = [];
+    if (supportedCollections) {
+      supportedCollections.forEach(collection => {
+        const key = `${collection.chain}-${collection.address}`;
+        if (newSelectedContracts.has(key)) {
+          updatedContracts.push({
+            chain: collection.chain,
+            address: collection.address,
+            name: collection.name,
+          });
+        }
+      });
+    }
+    
+    setEditedPrompt(prev => ({ ...prev, contracts: updatedContracts }));
+    setHasChanges(true);
+  };
+
+  // Handle select all contracts
+  const handleSelectAllContracts = () => {
+    if (!supportedCollections) return;
+    
+    const allContractKeys = new Set<string>();
+    const allContracts: Contract[] = [];
+    
+    supportedCollections.forEach(collection => {
+      const key = `${collection.chain}-${collection.address}`;
+      allContractKeys.add(key);
+      allContracts.push({
+        chain: collection.chain,
+        address: collection.address,
+        name: collection.name,
+      });
+    });
+    
+    setSelectedContracts(allContractKeys);
+    setEditedPrompt(prev => ({ ...prev, contracts: allContracts }));
+    setHasChanges(true);
+  };
+
+  // Handle unselect all contracts
+  const handleUnselectAllContracts = () => {
+    setSelectedContracts(new Set());
+    setEditedPrompt(prev => ({ ...prev, contracts: [] }));
     setHasChanges(true);
   };
 
@@ -234,6 +319,80 @@ export const PromptSettings = ({
                 updateField('maxTokens', parseInt(e.target.value) || 0)
               }
             />
+          </Section>
+
+          {/* Contracts Section */}
+          <Section
+            header="Contracts"
+            footer="Select which NFT contracts this prompt should work with."
+          >
+            {collectionsLoading ? (
+              <Cell>Loading contracts...</Cell>
+            ) : (
+              <>
+                {supportedCollections && supportedCollections.length > 0 && (
+                  <div className="mb-4 flex gap-2">
+                    <Button
+                      size="s"
+                      mode="outline"
+                      onClick={handleSelectAllContracts}
+                    >
+                      Select All
+                    </Button>
+                    <Button
+                      size="s"
+                      mode="outline"
+                      onClick={handleUnselectAllContracts}
+                    >
+                      Unselect All
+                    </Button>
+                  </div>
+                )}
+                {supportedCollections && supportedCollections.length > 0 ? (
+                  supportedCollections.map((contract) => {
+                    const contractKey = `${contract.chain}-${contract.address}`;
+                    const isSelected = selectedContracts.has(contractKey);
+                    return (
+                      <Cell
+                        key={contractKey}
+                        before={
+                          <div className="flex items-center">
+                            <img
+                              src={contract.image}
+                              alt={contract.name}
+                              className="mr-3 h-8 w-8 rounded-full"
+                              onError={(e) => {
+                                const img = e.target as HTMLImageElement;
+                                img.src = '/nfts/not-available.png';
+                              }}
+                            />
+                            <IconContainer>
+                              <IoDocumentTextOutline />
+                            </IconContainer>
+                          </div>
+                        }
+                        after={
+                          <Checkbox
+                            checked={isSelected}
+                            onChange={() => handleContractToggle(contract)}
+                          />
+                        }
+                        onClick={() => handleContractToggle(contract)}
+                      >
+                        <div>
+                          <div className="font-medium">{contract.name}</div>
+                          <div className="text-sm text-gray-500">
+                            {contract.chain} • {contract.address.slice(0, 6)}...{contract.address.slice(-4)}
+                          </div>
+                        </div>
+                      </Cell>
+                    );
+                  })
+                ) : (
+                  <Cell>No contracts available</Cell>
+                )}
+              </>
+            )}
           </Section>
 
           {/* Statistics & Info Section */}

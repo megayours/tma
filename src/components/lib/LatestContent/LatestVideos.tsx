@@ -1,4 +1,3 @@
-
 export function LatestVideo({ prompt, bg }: { prompt: any; bg: string }) {
   // return <DisplayVideo asGif={true} video={prompt.gifs[0]} />;
   return (
@@ -12,10 +11,13 @@ export function LatestVideo({ prompt, bg }: { prompt: any; bg: string }) {
       }}
     >
       <div className="flex h-full w-full items-center justify-center rounded-2xl bg-white/70">
-        <img
+        <video
           src={prompt.latestContentUrl}
-          alt="latest content"
           className="h-full w-full rounded-2xl object-contain"
+          autoPlay
+          loop
+          muted
+          playsInline
         />
       </div>
     </div>

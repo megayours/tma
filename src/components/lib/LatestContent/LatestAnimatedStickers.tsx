@@ -18,14 +18,28 @@ export function LatestAnimatedSticker({
       }}
     >
       <div className="flex h-full w-full items-center justify-center bg-white/50 p-5">
-        <img
-          src={prompt.latestContentUrl}
-          alt="latest animated sticker content"
-          className="max-h-full max-w-2/3 rounded-2xl object-contain"
-          style={{
-            borderRadius: '1rem',
-          }}
-        />
+        {prompt.latestContentUrl?.endsWith('.webm') ? (
+          <video
+            src={prompt.latestContentUrl}
+            className="max-h-full max-w-2/3 rounded-2xl object-contain"
+            style={{
+              borderRadius: '1rem',
+            }}
+            autoPlay
+            loop
+            muted
+            playsInline
+          />
+        ) : (
+          <img
+            src={prompt.latestContentUrl}
+            alt="latest animated sticker content"
+            className="max-h-full max-w-2/3 rounded-2xl object-contain"
+            style={{
+              borderRadius: '1rem',
+            }}
+          />
+        )}
       </div>
     </div>
   );

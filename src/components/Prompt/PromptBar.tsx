@@ -53,14 +53,7 @@ export const PromptBar = ({
 
   return (
     <TopBar
-      title={
-        <span>
-          {prompt.name}{' '}
-          <span className="text-tg-hint">
-            ({prompt.published ? 'published' : 'unpublished'})
-          </span>
-        </span>
-      }
+      title={`${prompt.name} (${prompt.published ? 'published' : 'unpublished'})`}
       actions={
         <div className="flex items-center justify-center gap-3">
           <IconButton

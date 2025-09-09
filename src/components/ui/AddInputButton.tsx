@@ -44,7 +44,6 @@ export const SelectNFT = ({
 
 export const SelectPrompt = ({
   updatePrompt: _updatePrompt,
-  prompt,
 }: {
   updatePrompt: ((updates: Partial<Prompt>) => void) | null;
   prompt: Prompt;
@@ -53,7 +52,6 @@ export const SelectPrompt = ({
 };
 
 export const SelectImage = ({
-  prompt,
   updatePrompt: _updatePrompt,
 }: {
   prompt: Prompt;

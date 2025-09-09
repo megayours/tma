@@ -35,7 +35,7 @@ export const PromptSchema = z.object({
   animatedStickers: z.array(z.string()).optional(),
   versions: z.array(PromptVersionSchema).optional(),
   version: z.number().optional(),
-  minTokens: z.number().optional(),
+  minTokens: z.boolean().optional(),
   maxTokens: z.number().optional(),
   model: z.string().optional(),
   ownerId: z.string().optional(),

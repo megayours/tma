@@ -119,9 +119,13 @@ export const useGetRecommendedPrompts = ({
 };
 
 export const useGetPrompt = (promptId: string, session: Session | null) => {
+  const queryKey = ['prompt', promptId, session?.authToken];
+  console.log('useGetPrompt - Query key:', queryKey);
+
   return useQuery({
-    queryKey: ['prompt', promptId, session?.authToken],
+    queryKey,
     queryFn: async () => {
+      console.log('USEGETPROMPT - queryFn executing');
       if (!session) return;
       const response = await fetch(
         `${import.meta.env.VITE_PUBLIC_API_URL}/prompts/${promptId}`,
@@ -142,6 +146,7 @@ export const useGetPrompt = (promptId: string, session: Session | null) => {
       }
 
       const data = await response.json();
+      console.log('data', data);
 
       const prompt: Prompt = {
         ...data,
@@ -301,12 +306,7 @@ export const usePromptMutation = (session: Session | null | undefined) => {
   return useMutation({
     mutationFn: async ({ prompt }: { prompt: Prompt }) => {
       if (!session) return;
-      console.log(
-        'Sending published value:',
-        prompt.published,
-        'as boolean:',
-        prompt.published! > 0 ? true : false
-      );
+
       const response = await fetch(
         `${import.meta.env.VITE_PUBLIC_API_URL}/prompts/${prompt.id}`,
         {
@@ -334,8 +334,25 @@ export const usePromptMutation = (session: Session | null | undefined) => {
       }
       return (await response.json()) as Prompt;
     },
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
+      console.log('PUT mutation success - invalidating queries');
+      console.log('Prompt ID:', variables.prompt.id);
+      console.log('Session token:', session?.authToken);
+      console.log('Query key to invalidate:', [
+        'prompt',
+        variables.prompt.id,
+        session?.authToken,
+      ]);
+
       queryClient.invalidateQueries({ queryKey: ['my-prompts'] });
+      queryClient.invalidateQueries({
+        queryKey: ['prompts'],
+      });
+
+      // Invalidate the specific prompt query
+      queryClient.invalidateQueries({
+        queryKey: ['prompt', variables.prompt.id, session?.authToken],
+      });
     },
   });
 };

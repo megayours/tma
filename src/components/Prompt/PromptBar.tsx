@@ -39,7 +39,6 @@ export const PromptBar = ({
   selectedNFTs,
   settingsOpen,
   setSettingsOpen,
-  onPromptUpdate,
 }: PromptBarProps) => {
   const toggleSettings = () => {
     if (settingsOpen) {
@@ -73,7 +72,6 @@ export const PromptBar = ({
           prompt={prompt}
           selectedNFTs={selectedNFTs}
           isOpen={settingsOpen}
-          onPromptUpdate={onPromptUpdate}
         />
       </div>
     </TopBar>

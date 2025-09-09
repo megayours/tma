@@ -4,7 +4,7 @@ import type { Prompt } from '@/types/prompt';
 // Define the context type
 interface PromptContextType {
   prompt: Prompt;
-  onPromptUpdate: (updatedPrompt: Prompt) => void;
+  onPromptUpdate?: (updatedPrompt: Prompt) => void;
 }
 
 // Create React Context

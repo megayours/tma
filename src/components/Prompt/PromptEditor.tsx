@@ -24,17 +24,12 @@ const PromptEditorContent = ({
   const [promptText, setPromptText] = useState(
     initialPrompt?.versions?.[0]?.text ?? ''
   );
-  const [prompt, setPrompt] = useState<Prompt | null>(initialPrompt);
   const [hasChanges, setHasChanges] = useState(false);
   const [isTextareaFocused, setIsTextareaFocused] = useState(false);
   const promptTextareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Update local prompt state when initialPrompt changes (e.g., from PromptSettings)
-  useEffect(() => {
-    if (initialPrompt) {
-      setPrompt(initialPrompt);
-    }
-  }, [initialPrompt]);
+  // Use the prompt from context directly
+  const prompt = initialPrompt;
   const [selectedVersion, setSelectedVersion] = useState(
     prompt?.versions?.[(prompt.versions?.length ?? 0) - 1]
   );
@@ -53,10 +48,9 @@ const PromptEditorContent = ({
     },
   });
 
-  // Function to update prompt and track changes
+  // Function to track changes (prompt updates will be handled by the mutation)
   const updatePrompt = (updates: Partial<Prompt>) => {
     if (prompt) {
-      setPrompt({ ...prompt, ...updates });
       setHasChanges(true);
     }
   };

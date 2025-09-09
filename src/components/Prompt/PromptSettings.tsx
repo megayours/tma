@@ -30,7 +30,6 @@ interface PromptSettingsProps {
   prompt: Prompt;
   selectedNFTs: Token[];
   isOpen: boolean;
-  onPromptUpdate?: (updatedPrompt: Prompt) => void;
 }
 
 /**
@@ -45,7 +44,6 @@ export const PromptSettings = ({
   prompt,
   selectedNFTs,
   isOpen,
-  onPromptUpdate,
 }: PromptSettingsProps) => {
   const { session } = useSession();
   const promptMutation = usePromptMutation(session);
@@ -74,8 +72,8 @@ export const PromptSettings = ({
   const prevIsOpen = useRef(isOpen);
 
   // Create a stable reference to the latest values
-  const latestValues = useRef({ hasChanges, editedPrompt, onPromptUpdate });
-  latestValues.current = { hasChanges, editedPrompt, onPromptUpdate };
+  const latestValues = useRef({ hasChanges, editedPrompt });
+  latestValues.current = { hasChanges, editedPrompt };
 
   // Update local state when prompt prop changes
   useEffect(() => {
@@ -123,11 +121,8 @@ export const PromptSettings = ({
   useEffect(() => {
     // Only trigger auto-save when isOpen changes from true to false
     if (prevIsOpen.current && !isOpen && !isSaving.current) {
-      const {
-        hasChanges: currentHasChanges,
-        editedPrompt: currentPrompt,
-        onPromptUpdate: currentOnUpdate,
-      } = latestValues.current;
+      const { hasChanges: currentHasChanges, editedPrompt: currentPrompt } =
+        latestValues.current;
 
       if (currentHasChanges && currentPrompt.id) {
         isSaving.current = true;
@@ -149,7 +144,7 @@ export const PromptSettings = ({
             });
             if (updatedPrompt) {
               setHasChanges(false);
-              currentOnUpdate?.(updatedPrompt);
+              // The query will be invalidated and refetched automatically
             }
           } catch (error) {
             console.error('Failed to auto-save prompt:', error);
@@ -178,17 +173,17 @@ export const PromptSettings = ({
     console.log('Toggle clicked, new value:', checked);
     setIsPublishing(true);
     try {
-      const updatedPrompt = await promptMutation.mutateAsync({
+      await promptMutation.mutateAsync({
         prompt: {
           ...editedPrompt,
           published: checked ? 1 : 0, // Keep timestamp locally, API gets boolean
         },
       });
 
-      if (updatedPrompt) {
-        setEditedPrompt(prev => ({ ...prev, published: checked ? 1 : 0 }));
-        onPromptUpdate?.(updatedPrompt);
-      }
+      // Update local state immediately for UI responsiveness
+      setEditedPrompt(prev => ({ ...prev, published: checked ? 1 : 0 }));
+
+      // The query will be invalidated and refetched automatically
     } catch (error) {
       console.error('Failed to update publication status:', error);
     } finally {

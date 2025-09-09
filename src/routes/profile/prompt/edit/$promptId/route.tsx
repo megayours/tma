@@ -1,5 +1,4 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router';
-import { useState, useEffect } from 'react';
 import { PromptBar } from '@/components/Prompt/PromptBar';
 import { useSession } from '@/auth/SessionProvider';
 import { useGetPrompt } from '@/hooks/usePrompts';
@@ -9,7 +8,6 @@ import {
 } from '@/contexts/SelectedNFTsContext';
 import { useSettings } from '@/contexts/SettingsContext';
 import { PromptContext } from '@/contexts/PromptContext';
-import type { Prompt } from '@/types/prompt';
 
 export const Route = createFileRoute('/profile/prompt/edit/$promptId')({
   component: RouteComponent,
@@ -26,25 +24,9 @@ function RouteComponent() {
 function RouteContent() {
   const { promptId } = Route.useParams();
   const { session } = useSession();
-  const {
-    data: fetchedPrompt,
-    isLoading,
-    error,
-  } = useGetPrompt(promptId, session);
-  const [prompt, setPrompt] = useState<Prompt | null>(null);
+  const { data: prompt, isLoading, error } = useGetPrompt(promptId, session);
   const { selectedNFTs, setSelectedNFTs } = useSelectedNFTs();
   const { settingsOpen, setSettingsOpen } = useSettings();
-
-  // Update local prompt state when fetched prompt changes
-  useEffect(() => {
-    if (fetchedPrompt) {
-      setPrompt(fetchedPrompt);
-    }
-  }, [fetchedPrompt]);
-
-  const handlePromptUpdate = (updatedPrompt: Prompt) => {
-    setPrompt(updatedPrompt);
-  };
 
   if (isLoading) return <div>Loading prompt...</div>;
 
@@ -72,8 +54,7 @@ function RouteContent() {
   if (!prompt) return <div>Prompt not found</div>;
 
   const promptContextValue = {
-    prompt,
-    onPromptUpdate: handlePromptUpdate,
+    prompt: prompt!,
   };
 
   return (
@@ -84,7 +65,6 @@ function RouteContent() {
         setSelectedNFTs={setSelectedNFTs}
         settingsOpen={settingsOpen}
         setSettingsOpen={setSettingsOpen}
-        onPromptUpdate={handlePromptUpdate}
       />
       <div className="flex-1 overflow-y-hidden">
         <PromptContext.Provider value={promptContextValue}>

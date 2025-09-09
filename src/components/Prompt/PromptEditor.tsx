@@ -11,25 +11,32 @@ import { useSession } from '@/auth/SessionProvider';
 import { ContentPreviews } from './ContentPreview';
 import { NFTSetsProvider } from '@/contexts/NFTSetsContext';
 import { useToast } from '@/components/ui/toast';
+import { useGetPrompt } from '@/hooks/usePrompts';
 
 const PromptEditorContent = ({
-  prompt: initialPrompt,
+  promptId,
 }: {
-  prompt: Prompt | null;
+  promptId: string;
   selectedNFTs: Token[];
   setSelectedNFTs: (nfts: Token[]) => void;
 }) => {
   const { session } = useSession();
   const { addToast } = useToast();
-  const [promptText, setPromptText] = useState(
-    initialPrompt?.versions?.[0]?.text ?? ''
-  );
   const [hasChanges, setHasChanges] = useState(false);
   const [isTextareaFocused, setIsTextareaFocused] = useState(false);
   const promptTextareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Use the prompt from context directly
-  const prompt = initialPrompt;
+  // Use React Query to get the prompt data
+  const { data: prompt, isLoading, error } = useGetPrompt(promptId, session);
+
+  const [promptText, setPromptText] = useState('');
+
+  // Update promptText when prompt data loads/changes
+  useEffect(() => {
+    if (prompt?.versions?.[0]?.text) {
+      setPromptText(prompt.versions[0].text);
+    }
+  }, [prompt?.versions]);
   const [selectedVersion, setSelectedVersion] = useState(
     prompt?.versions?.[(prompt.versions?.length ?? 0) - 1]
   );
@@ -49,7 +56,7 @@ const PromptEditorContent = ({
   });
 
   // Function to track changes (prompt updates will be handled by the mutation)
-  const updatePrompt = (updates: Partial<Prompt>) => {
+  const updatePrompt = (_updates: Partial<Prompt>) => {
     if (prompt) {
       setHasChanges(true);
     }
@@ -86,7 +93,9 @@ const PromptEditorContent = ({
     }
   };
 
-  if (!prompt) return <div>Loading...</div>;
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error loading prompt: {error.message}</div>;
+  if (!prompt) return <div>Prompt not found</div>;
 
   return (
     <div className="bg-tg-bg">
@@ -157,18 +166,21 @@ const PromptEditorContent = ({
 };
 
 export const PromptEditor = ({
-  prompt: initialPrompt,
+  promptId,
   selectedNFTs,
   setSelectedNFTs,
 }: {
-  prompt: Prompt | null;
+  promptId: string;
   selectedNFTs: Token[];
   setSelectedNFTs: (nfts: Token[]) => void;
 }) => {
+  const { session } = useSession();
+  const { data: prompt } = useGetPrompt(promptId, session);
+
   return (
-    <NFTSetsProvider prompt={initialPrompt}>
+    <NFTSetsProvider prompt={prompt || null}>
       <PromptEditorContent
-        prompt={initialPrompt}
+        promptId={promptId}
         selectedNFTs={selectedNFTs}
         setSelectedNFTs={setSelectedNFTs}
       />

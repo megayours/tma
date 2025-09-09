@@ -10,7 +10,7 @@ import type { Prompt } from '@/types/prompt';
 
 // Helper function to map raw prompt to expected format
 const mapRawPromptToPrompt = (rawPrompt: RawPrompt) => ({
-  id: rawPrompt.id,
+  id: Number(rawPrompt.id),
   name: rawPrompt.name ?? 'Untitled',
   description: rawPrompt.description ?? '',
   image: rawPrompt.image,
@@ -120,12 +120,10 @@ export const useGetRecommendedPrompts = ({
 
 export const useGetPrompt = (promptId: string, session: Session | null) => {
   const queryKey = ['prompt', promptId, session?.authToken];
-  console.log('useGetPrompt - Query key:', queryKey);
 
   return useQuery({
     queryKey,
     queryFn: async () => {
-      console.log('USEGETPROMPT - queryFn executing');
       if (!session) return;
       const response = await fetch(
         `${import.meta.env.VITE_PUBLIC_API_URL}/prompts/${promptId}`,
@@ -146,10 +144,10 @@ export const useGetPrompt = (promptId: string, session: Session | null) => {
       }
 
       const data = await response.json();
-      console.log('data', data);
 
       const prompt: Prompt = {
         ...data,
+        id: Number(data.id),
         createdAt: data.created_at,
         updatedAt: data.updated_at,
         deletedAt: data.deleted_at,
@@ -161,7 +159,7 @@ export const useGetPrompt = (promptId: string, session: Session | null) => {
         usageCount: data.usage_count,
         versions: data.versions.map((version: any) => ({
           ...version,
-          id: version.id,
+          id: Number(version.id),
           model: version.model,
           minTokens: version.min_tokens,
           maxTokens: version.max_tokens,
@@ -207,7 +205,7 @@ export const useCreatePromptMutation = () => {
       const data = await response.json();
 
       const prompt: Prompt = {
-        id: data.id,
+        id: Number(data.id),
         contracts: data.contracts,
         createdAt: data.created_at,
         name: data.name,
@@ -219,7 +217,7 @@ export const useCreatePromptMutation = () => {
         updatedAt: data.updated_at,
         usageCount: data.usage_count,
         versions: data.versions.map((version: any) => ({
-          id: version.id,
+          id: Number(version.id),
           model: version.model,
           text: version.text,
           version: version.version,
@@ -268,7 +266,6 @@ export const useGetMyPrompts = (
 
       const data = await response.json();
 
-      console.log('data', data);
       return data;
     },
     enabled: !!session,
@@ -334,22 +331,9 @@ export const usePromptMutation = (session: Session | null | undefined) => {
       }
       return (await response.json()) as Prompt;
     },
-    onSuccess: (data, variables) => {
-      console.log('PUT mutation success - invalidating queries');
-      console.log('Prompt ID:', variables.prompt.id);
-      console.log('Session token:', session?.authToken);
-      console.log('Query key to invalidate:', [
-        'prompt',
-        variables.prompt.id,
-        session?.authToken,
-      ]);
-
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['my-prompts'] });
-      queryClient.invalidateQueries({
-        queryKey: ['prompts'],
-      });
-
-      // Invalidate the specific prompt query
+      queryClient.invalidateQueries({ queryKey: ['prompts'] });
       queryClient.invalidateQueries({
         queryKey: ['prompt', variables.prompt.id, session?.authToken],
       });

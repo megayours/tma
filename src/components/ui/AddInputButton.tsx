@@ -132,6 +132,12 @@ export function AddInputButton({
       {/* Main menu when no specific content is selected */}
       {selectedContent === null && (
         <div className="flex w-full flex-col gap-2 p-4">
+          <Cell
+            onClick={() => setSelectedContent('nft')}
+            className="bg-red-500 text-white"
+          >
+            NOTHING WORKS HERE
+          </Cell>
           <Cell onClick={handleAddNFT}>NFT</Cell>
           <Divider />
           <Cell onClick={() => setSelectedContent('prompt')}>Prompt</Cell>
@@ -145,7 +151,6 @@ export function AddInputButton({
         <Section>
           <IoArrowBackOutline onClick={handleBackClick} />
           <div className="text-tg-text">
-            Select {selectedContent}
             {selectedContent === 'nft' && (
               <SelectNFT updatePrompt={updatePrompt} prompt={prompt} />
             )}

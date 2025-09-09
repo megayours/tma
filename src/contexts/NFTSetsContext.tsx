@@ -1,4 +1,4 @@
-import React, { createContext, useContext, ReactNode } from 'react';
+import React, { createContext, useContext, type ReactNode } from 'react';
 import { useNFTSets } from '@/hooks/useNFTSets';
 import type { Prompt } from '@/types/prompt';
 

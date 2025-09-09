@@ -1,8 +1,6 @@
 import { Card } from '@telegram-apps/telegram-ui';
 import type { SupportedCollection } from '@/hooks/useCollections';
 import { useGetNFTByCollectionAndTokenId } from '@/hooks/useCollections';
-import { useAddToFavoritesMutation } from '@/hooks/useCollections';
-import { useSession } from '@/auth/SessionProvider';
 
 interface DisplayNFTProps {
   collection: SupportedCollection;
@@ -15,7 +13,6 @@ export function DisplayNFT({
   tokenId,
   className = '',
 }: DisplayNFTProps) {
-  const { session } = useSession();
   const {
     data: nftData,
     isLoading: isNFTLoading,
@@ -25,9 +22,6 @@ export function DisplayNFT({
     collection.address,
     tokenId
   );
-
-  // Move the hook to the top level of the component
-  const addToFavoritesMutation = useAddToFavoritesMutation(collection, tokenId);
 
   if (isNFTLoading) return <div>Loading...</div>;
 

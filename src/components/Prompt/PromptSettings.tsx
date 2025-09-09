@@ -63,15 +63,8 @@ export const PromptSettings = ({
     };
   });
   const [hasChanges, setHasChanges] = useState(false);
-  const [selectedContracts, setSelectedContracts] = useState<Set<string>>(() => {
-    const contractKeys = new Set<string>();
-    if (prompt.contracts) {
-      prompt.contracts.forEach(contract => {
-        contractKeys.add(`${contract.chain}-${contract.address}`);
-      });
-    }
-    return contractKeys;
-  });
+  const [selectedContracts, setSelectedContracts] = useState<Set<string>>(new Set());
+  const [contractsError, setContractsError] = useState<string>('');
   const isSaving = useRef(false);
   const prevIsOpen = useRef(isOpen);
   
@@ -90,16 +83,36 @@ export const PromptSettings = ({
       model: initialModel,
     });
     setHasChanges(false);
+    setContractsError('');
+  }, [prompt]);
+
+  // Initialize selected contracts when supportedCollections loads
+  useEffect(() => {
+    if (!supportedCollections) return;
     
-    // Update selected contracts
     const contractKeys = new Set<string>();
-    if (prompt.contracts) {
+    
+    // If prompt.contracts is empty/undefined, select all supported contracts
+    if (!prompt.contracts || prompt.contracts.length === 0) {
+      supportedCollections.forEach(collection => {
+        contractKeys.add(`${collection.chain}-${collection.address}`);
+      });
+      // Also update the editedPrompt with all contracts
+      const allContracts: Contract[] = supportedCollections.map(collection => ({
+        chain: collection.chain,
+        address: collection.address,
+        name: collection.name,
+      }));
+      setEditedPrompt(prev => ({ ...prev, contracts: allContracts }));
+    } else {
+      // Otherwise, only select the contracts specified in the prompt
       prompt.contracts.forEach(contract => {
         contractKeys.add(`${contract.chain}-${contract.address}`);
       });
     }
+    
     setSelectedContracts(contractKeys);
-  }, [prompt]);
+  }, [supportedCollections, prompt.contracts]);
 
   // Handle auto-save when settings close
   useEffect(() => {
@@ -112,6 +125,13 @@ export const PromptSettings = ({
         
         const autoSave = async () => {
           try {
+            // Validate contracts before saving
+            if (!currentPrompt.contracts || currentPrompt.contracts.length === 0) {
+              setContractsError('At least one contract must be selected');
+              isSaving.current = false;
+              return;
+            }
+            
             const updatedPrompt = await promptMutation.mutateAsync({
               prompt: currentPrompt,
             });
@@ -169,6 +189,11 @@ export const PromptSettings = ({
     
     setEditedPrompt(prev => ({ ...prev, contracts: updatedContracts }));
     setHasChanges(true);
+    
+    // Clear any existing error when user makes changes
+    if (contractsError) {
+      setContractsError('');
+    }
   };
 
   // Handle select all contracts
@@ -191,6 +216,11 @@ export const PromptSettings = ({
     setSelectedContracts(allContractKeys);
     setEditedPrompt(prev => ({ ...prev, contracts: allContracts }));
     setHasChanges(true);
+    
+    // Clear any existing error
+    if (contractsError) {
+      setContractsError('');
+    }
   };
 
   // Handle unselect all contracts
@@ -199,6 +229,7 @@ export const PromptSettings = ({
     setEditedPrompt(prev => ({ ...prev, contracts: [] }));
     setHasChanges(true);
   };
+
 
   // Type options for select
   const typeOptions = [
@@ -324,7 +355,7 @@ export const PromptSettings = ({
           {/* Contracts Section */}
           <Section
             header="Contracts"
-            footer="Select which NFT contracts this prompt should work with."
+            footer={contractsError || "Select which NFT contracts this prompt should work with."}
           >
             {collectionsLoading ? (
               <Cell>Loading contracts...</Cell>

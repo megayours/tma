@@ -1,10 +1,8 @@
-import { useState } from 'react';
 import type { Prompt } from '@/types/prompt';
 import type { Token } from '@/types/response';
 import { IconButton } from '@telegram-apps/telegram-ui';
 import { TopBar } from '@/components/ui/TopBar';
 import { PromptSettings } from './PromptSettings';
-import { InlineButtonsItem } from '@telegram-apps/telegram-ui/dist/components/Blocks/InlineButtons/components/InlineButtonsItem/InlineButtonsItem';
 
 interface PromptBarProps {
   prompt: Prompt;

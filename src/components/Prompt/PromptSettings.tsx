@@ -12,6 +12,7 @@ import {
   IconContainer,
   Checkbox,
   Button,
+  Switch,
 } from '@telegram-apps/telegram-ui';
 import { usePromptMutation } from '@/hooks/usePrompts';
 import { useSession } from '@/auth/SessionProvider';
@@ -49,25 +50,29 @@ export const PromptSettings = ({
   const { session } = useSession();
   const promptMutation = usePromptMutation(session);
   const { models, isLoading: modelsLoading } = useModels();
-  const { data: supportedCollections, isLoading: collectionsLoading } = useGetSupportedCollections();
+  const { data: supportedCollections, isLoading: collectionsLoading } =
+    useGetSupportedCollections();
 
   // Local state for form fields
   const [editedPrompt, setEditedPrompt] = useState<Prompt>(() => {
     // Set the model from version[0] if available, otherwise use prompt.model
     const versionZeroModel = prompt.versions?.[0]?.model;
     const initialModel = versionZeroModel || prompt.model;
-    
+
     return {
       ...prompt,
       model: initialModel,
     };
   });
   const [hasChanges, setHasChanges] = useState(false);
-  const [selectedContracts, setSelectedContracts] = useState<Set<string>>(new Set());
+  const [selectedContracts, setSelectedContracts] = useState<Set<string>>(
+    new Set()
+  );
   const [contractsError, setContractsError] = useState<string>('');
+  const [isPublishing, setIsPublishing] = useState(false);
   const isSaving = useRef(false);
   const prevIsOpen = useRef(isOpen);
-  
+
   // Create a stable reference to the latest values
   const latestValues = useRef({ hasChanges, editedPrompt, onPromptUpdate });
   latestValues.current = { hasChanges, editedPrompt, onPromptUpdate };
@@ -77,7 +82,7 @@ export const PromptSettings = ({
     // Set the model from version[0] if available, otherwise use prompt.model
     const versionZeroModel = prompt.versions?.[0]?.model;
     const initialModel = versionZeroModel || prompt.model;
-    
+
     setEditedPrompt({
       ...prompt,
       model: initialModel,
@@ -89,9 +94,9 @@ export const PromptSettings = ({
   // Initialize selected contracts when supportedCollections loads
   useEffect(() => {
     if (!supportedCollections) return;
-    
+
     const contractKeys = new Set<string>();
-    
+
     // If prompt.contracts is empty/undefined, select all supported contracts
     if (!prompt.contracts || prompt.contracts.length === 0) {
       supportedCollections.forEach(collection => {
@@ -110,7 +115,7 @@ export const PromptSettings = ({
         contractKeys.add(`${contract.chain}-${contract.address}`);
       });
     }
-    
+
     setSelectedContracts(contractKeys);
   }, [supportedCollections, prompt.contracts]);
 
@@ -118,20 +123,27 @@ export const PromptSettings = ({
   useEffect(() => {
     // Only trigger auto-save when isOpen changes from true to false
     if (prevIsOpen.current && !isOpen && !isSaving.current) {
-      const { hasChanges: currentHasChanges, editedPrompt: currentPrompt, onPromptUpdate: currentOnUpdate } = latestValues.current;
-      
+      const {
+        hasChanges: currentHasChanges,
+        editedPrompt: currentPrompt,
+        onPromptUpdate: currentOnUpdate,
+      } = latestValues.current;
+
       if (currentHasChanges && currentPrompt.id) {
         isSaving.current = true;
-        
+
         const autoSave = async () => {
           try {
             // Validate contracts before saving
-            if (!currentPrompt.contracts || currentPrompt.contracts.length === 0) {
+            if (
+              !currentPrompt.contracts ||
+              currentPrompt.contracts.length === 0
+            ) {
               setContractsError('At least one contract must be selected');
               isSaving.current = false;
               return;
             }
-            
+
             const updatedPrompt = await promptMutation.mutateAsync({
               prompt: currentPrompt,
             });
@@ -148,7 +160,7 @@ export const PromptSettings = ({
         autoSave();
       }
     }
-    
+
     // Update the previous isOpen value
     prevIsOpen.current = isOpen;
   }, [isOpen, promptMutation]); // Only depend on isOpen and promptMutation
@@ -159,19 +171,48 @@ export const PromptSettings = ({
     setHasChanges(true);
   };
 
+  // Handle immediate publication toggle
+  const handlePublicationToggle = async (checked: boolean) => {
+    if (!editedPrompt.id) return;
+
+    console.log('Toggle clicked, new value:', checked);
+    setIsPublishing(true);
+    try {
+      const updatedPrompt = await promptMutation.mutateAsync({
+        prompt: {
+          ...editedPrompt,
+          published: checked ? 1 : 0, // Keep timestamp locally, API gets boolean
+        },
+      });
+
+      if (updatedPrompt) {
+        setEditedPrompt(prev => ({ ...prev, published: checked ? 1 : 0 }));
+        onPromptUpdate?.(updatedPrompt);
+      }
+    } catch (error) {
+      console.error('Failed to update publication status:', error);
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
   // Handle contract selection changes
-  const handleContractToggle = (contract: { chain: string; address: string; name: string }) => {
+  const handleContractToggle = (contract: {
+    chain: string;
+    address: string;
+    name: string;
+  }) => {
     const contractKey = `${contract.chain}-${contract.address}`;
     const newSelectedContracts = new Set(selectedContracts);
-    
+
     if (newSelectedContracts.has(contractKey)) {
       newSelectedContracts.delete(contractKey);
     } else {
       newSelectedContracts.add(contractKey);
     }
-    
+
     setSelectedContracts(newSelectedContracts);
-    
+
     // Update the edited prompt with the new contracts list
     const updatedContracts: Contract[] = [];
     if (supportedCollections) {
@@ -186,10 +227,10 @@ export const PromptSettings = ({
         }
       });
     }
-    
+
     setEditedPrompt(prev => ({ ...prev, contracts: updatedContracts }));
     setHasChanges(true);
-    
+
     // Clear any existing error when user makes changes
     if (contractsError) {
       setContractsError('');
@@ -199,10 +240,10 @@ export const PromptSettings = ({
   // Handle select all contracts
   const handleSelectAllContracts = () => {
     if (!supportedCollections) return;
-    
+
     const allContractKeys = new Set<string>();
     const allContracts: Contract[] = [];
-    
+
     supportedCollections.forEach(collection => {
       const key = `${collection.chain}-${collection.address}`;
       allContractKeys.add(key);
@@ -212,11 +253,11 @@ export const PromptSettings = ({
         name: collection.name,
       });
     });
-    
+
     setSelectedContracts(allContractKeys);
     setEditedPrompt(prev => ({ ...prev, contracts: allContracts }));
     setHasChanges(true);
-    
+
     // Clear any existing error
     if (contractsError) {
       setContractsError('');
@@ -229,7 +270,6 @@ export const PromptSettings = ({
     setEditedPrompt(prev => ({ ...prev, contracts: [] }));
     setHasChanges(true);
   };
-
 
   // Type options for select
   const typeOptions = [
@@ -274,6 +314,52 @@ export const PromptSettings = ({
               onChange={e => updateField('description', e.target.value)}
               rows={3}
             />
+          </Section>
+
+          {/* Publication Status Section */}
+          <Section
+            header="Publication Status"
+            footer="Control whether this prompt is published and available for use."
+          >
+            <Cell
+              before={
+                <IconContainer>
+                  <IoInformationCircleOutline />
+                </IconContainer>
+              }
+              after={
+                <div className="flex items-center gap-2">
+                  {isPublishing ? (
+                    <span className="text-tg-hint text-sm font-medium">
+                      Updating...
+                    </span>
+                  ) : (
+                    <span
+                      className={`text-sm font-medium ${editedPrompt.published ? 'text-green-500' : 'text-tg-hint'}`}
+                    >
+                      {editedPrompt.published ? 'Published' : 'Draft'}
+                    </span>
+                  )}
+                  <Switch
+                    checked={!!editedPrompt.published}
+                    disabled={isPublishing}
+                    onChange={e => handlePublicationToggle(e.target.checked)}
+                  />
+                </div>
+              }
+              className={`border-l-4 ${editedPrompt.published ? 'border-l-green-500 bg-green-50/10' : 'border-l-orange-500 bg-orange-50/10'}`}
+            >
+              <div className="flex flex-col">
+                <span className="font-semibold">
+                  Publication Status {prompt.published}
+                </span>
+                <span className="text-tg-hint text-sm">
+                  {editedPrompt.published
+                    ? `Published on ${new Date(editedPrompt.published * 1000).toLocaleDateString()}`
+                    : 'This prompt is not yet published'}
+                </span>
+              </div>
+            </Cell>
           </Section>
 
           {/* Content Configuration Section */}
@@ -355,7 +441,10 @@ export const PromptSettings = ({
           {/* Contracts Section */}
           <Section
             header="Contracts"
-            footer={contractsError || "Select which NFT contracts this prompt should work with."}
+            footer={
+              contractsError ||
+              'Select which NFT contracts this prompt should work with.'
+            }
           >
             {collectionsLoading ? (
               <Cell>Loading contracts...</Cell>
@@ -380,7 +469,7 @@ export const PromptSettings = ({
                   </div>
                 )}
                 {supportedCollections && supportedCollections.length > 0 ? (
-                  supportedCollections.map((contract) => {
+                  supportedCollections.map(contract => {
                     const contractKey = `${contract.chain}-${contract.address}`;
                     const isSelected = selectedContracts.has(contractKey);
                     return (
@@ -392,7 +481,7 @@ export const PromptSettings = ({
                               src={contract.image}
                               alt={contract.name}
                               className="mr-3 h-8 w-8 rounded-full"
-                              onError={(e) => {
+                              onError={e => {
                                 const img = e.target as HTMLImageElement;
                                 img.src = '/nfts/not-available.png';
                               }}
@@ -413,7 +502,8 @@ export const PromptSettings = ({
                         <div>
                           <div className="font-medium">{contract.name}</div>
                           <div className="text-sm text-gray-500">
-                            {contract.chain} • {contract.address.slice(0, 6)}...{contract.address.slice(-4)}
+                            {contract.chain} • {contract.address.slice(0, 6)}...
+                            {contract.address.slice(-4)}
                           </div>
                         </div>
                       </Cell>

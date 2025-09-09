@@ -301,6 +301,12 @@ export const usePromptMutation = (session: Session | null | undefined) => {
   return useMutation({
     mutationFn: async ({ prompt }: { prompt: Prompt }) => {
       if (!session) return;
+      console.log(
+        'Sending published value:',
+        prompt.published,
+        'as boolean:',
+        prompt.published! > 0 ? true : false
+      );
       const response = await fetch(
         `${import.meta.env.VITE_PUBLIC_API_URL}/prompts/${prompt.id}`,
         {
@@ -319,6 +325,7 @@ export const usePromptMutation = (session: Session | null | undefined) => {
             max_tokens: prompt.maxTokens,
             min_tokens: prompt.minTokens,
             model: prompt.model,
+            published: prompt.published! > 0 ? true : false,
           }),
         }
       );

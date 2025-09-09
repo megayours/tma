@@ -52,7 +52,7 @@ export const InputSelector = ({
   }, []);
 
   return (
-    <div className="flex flex-row items-center gap-1 rounded-full bg-blue-500 p-4">
+    <div className="bg-tg-bg flex flex-row items-center gap-1 rounded-full p-3">
       {/* Render NFT items from the nftSet */}
       {nftSet.map((token, index) => (
         <NFTItem

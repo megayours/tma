@@ -45,13 +45,13 @@ export const NFTItem = ({
       )}
       <div
         key={index}
-        className="bg-tg-bg relative -ml-2 flex flex-row items-center gap-2 rounded-full px-2 select-none"
+        className="iteems-center bg-tg-secondary-bg relative flex flex-row gap-2 rounded-full p-2 select-none"
         {...longPressBind()}
         onContextMenu={e => e.preventDefault()}
       >
         {/* Show NFT label when in modification mode */}
         {isModifyingNFTs && (
-          <h1 className="text-tg-text text-sm select-none">NFT {index + 1}</h1>
+          <h1 className="text-tg-text text-xs select-none">NFT {index + 1}</h1>
         )}
 
         {/* NFT avatar */}

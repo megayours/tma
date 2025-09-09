@@ -49,7 +49,29 @@ export const useNFTSets = (prompt: Prompt | null) => {
     if (savedSets) {
       try {
         const parsedSets = JSON.parse(savedSets);
-        setNftSets(parsedSets);
+
+        // Validate and adjust sets to respect current min/max token constraints
+        const validatedSets = parsedSets.map((set: Token[]) => {
+          if (!favorites || !prompt?.minTokens) return set;
+
+          const currentLength = set.length;
+          const minTokens = prompt.minTokens;
+          const maxTokens = prompt.maxTokens || minTokens;
+
+          // If set is too small, expand it to meet minTokens requirement
+          if (currentLength < minTokens) {
+            return createNFTSet(favorites, minTokens);
+          }
+
+          // If set is too large, trim it to respect maxTokens constraint
+          if (maxTokens && currentLength > maxTokens) {
+            return set.slice(0, maxTokens);
+          }
+
+          return set;
+        });
+
+        setNftSets(validatedSets);
         return;
       } catch (error) {
         console.error('Error parsing saved NFT sets:', error);
@@ -61,7 +83,7 @@ export const useNFTSets = (prompt: Prompt | null) => {
       const initialSet = createNFTSet(favorites, prompt.minTokens);
       setNftSets([initialSet]);
     }
-  }, [prompt?.id, prompt?.minTokens, favorites]);
+  }, [prompt?.id, prompt?.minTokens, prompt?.maxTokens, favorites]);
 
   // Save NFT sets to localStorage whenever they actually change
   useEffect(() => {

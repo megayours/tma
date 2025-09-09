@@ -117,7 +117,7 @@ const PromptEditorContent = ({
       {/* Bottom toolbar */}
       <div className="bg-tg-secondary-bg border-tg-hint/20 safe-area-inset-bottom fixed right-0 bottom-0 left-0 z-30 border-t">
         <div className="flex h-full flex-col pb-4">
-          <div className="h-10">
+          <div className="h-15">
             <InputsEditor prompt={prompt} />
           </div>
           <Divider />

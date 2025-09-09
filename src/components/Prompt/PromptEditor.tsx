@@ -9,8 +9,9 @@ import { InputsEditor } from './InputsEditor';
 import { usePromptPreviewGeneration } from '@/hooks/usePromptPreviewGeneration';
 import { useSession } from '@/auth/SessionProvider';
 import { ContentPreviews } from './ContentPreview';
+import { NFTSetsProvider } from '@/contexts/NFTSetsContext';
 
-export const PromptEditor = ({
+const PromptEditorContent = ({
   prompt: initialPrompt,
 }: {
   prompt: Prompt | null;
@@ -68,14 +69,29 @@ export const PromptEditor = ({
     return 'h-35'; // Max height when focused
   };
 
-  const handleGenerate = () => {
-    const contentId = generatePromptPreview(
-      promptText,
-      prompt!,
-      hasChanges,
-      setSelectedVersion
-    );
-    console.log('Content ID:', contentId);
+  const handleGenerate = async () => {
+    if (!prompt) {
+      console.error('No prompt available');
+      return;
+    }
+
+    try {
+      const results = await generatePromptPreview(
+        promptText,
+        prompt,
+        hasChanges,
+        setSelectedVersion
+      );
+
+      console.log('All generations completed:', results);
+
+      // Handle results as needed
+      results.forEach(({ setIndex, result }) => {
+        console.log(`Content ID for set ${setIndex}:`, result.contentId);
+      });
+    } catch (error) {
+      console.error('Error during generation:', error);
+    }
   };
 
   if (!prompt) return <div>Loading...</div>;
@@ -145,5 +161,25 @@ export const PromptEditor = ({
         </div>
       </div>
     </div>
+  );
+};
+
+export const PromptEditor = ({
+  prompt: initialPrompt,
+  selectedNFTs,
+  setSelectedNFTs,
+}: {
+  prompt: Prompt | null;
+  selectedNFTs: Token[];
+  setSelectedNFTs: (nfts: Token[]) => void;
+}) => {
+  return (
+    <NFTSetsProvider prompt={initialPrompt}>
+      <PromptEditorContent
+        prompt={initialPrompt}
+        selectedNFTs={selectedNFTs}
+        setSelectedNFTs={setSelectedNFTs}
+      />
+    </NFTSetsProvider>
   );
 };

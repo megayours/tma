@@ -31,7 +31,7 @@ export const NFTCloud = ({
   const { data: collections } = useGetCollectionsWithPrompt(prompt);
   const [selectedCollection, setSelectedCollection] =
     useState<SupportedCollection | null>(null);
-  const [selectedTokenId] = useState<string | null>(null);
+  const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null);
   const [selectionMode, setSelectionMode] = useState<
     'favorites' | 'collections'
   >('favorites');
@@ -50,11 +50,8 @@ export const NFTCloud = ({
     setSelectedCollection(null);
   };
 
-  const handleTokenSelect = (tokenId: string) => {
-    const newToken = {
-      contract: selectedCollection! as SupportedCollection,
-      id: tokenId,
-    };
+  const handleTokenSelect = (token: Token) => {
+    const newToken = token;
     updateNFTInSet(setIndex, nftIndex, newToken);
   };
 
@@ -146,14 +143,15 @@ export const NFTCloud = ({
           <SelectTokenId
             collection={selectedCollection}
             onBack={handleBack}
-            onTokenSelect={handleTokenSelect}
+            onTokenSelect={setSelectedTokenId}
           />
 
-          <div className="h-[336px]">
+          <div className="h-[356px]">
             {selectedCollection && selectedTokenId && (
               <DisplayNFT
                 collection={selectedCollection}
                 tokenId={selectedTokenId}
+                onClick={handleTokenSelect}
               />
             )}
             {selectedCollection && !selectedTokenId && (

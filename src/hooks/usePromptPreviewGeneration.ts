@@ -3,6 +3,7 @@ import type { Prompt } from '@/types/prompt';
 import type { Session } from '@/auth/useAuth';
 import { usePromptMutation } from './usePrompts';
 import { usePreviewContentMutation } from './useContents';
+import { useNFTSetsContext } from '@/contexts/NFTSetsContext';
 
 interface UsePromptGenerationOptions {
   session: Session | null | undefined;
@@ -17,7 +18,9 @@ interface UsePromptGenerationReturn {
     prompt: Prompt,
     hasChanges?: boolean,
     setSelectedVersion?: any
-  ) => Promise<{ contentId: number }>;
+  ) => Promise<
+    Array<{ setIndex: number; nftSet: any[]; result: { contentId: number } }>
+  >;
   reset: () => void;
 }
 
@@ -27,6 +30,7 @@ export function usePromptPreviewGeneration(
   const [isGenerating, setIsGenerating] = useState(false);
   const { onSuccess, onError } = options;
   const { session } = options;
+  const { nftSets } = useNFTSetsContext();
   const { mutateAsync: updatePrompt } = usePromptMutation(session);
   const { mutateAsync: previewContent } = usePreviewContentMutation(session);
 
@@ -41,7 +45,8 @@ export function usePromptPreviewGeneration(
         'Generating prompt preview...',
         promptText,
         prompt,
-        hasChanges
+        hasChanges,
+        nftSets
       );
       if (!session) {
         throw new Error('No session available');
@@ -51,10 +56,14 @@ export function usePromptPreviewGeneration(
         throw new Error('Invalid prompt text or already generating');
       }
 
+      if (!nftSets || !nftSets.length) {
+        throw new Error('No NFT sets available');
+      }
+
       setIsGenerating(true);
 
       try {
-        // Check if the prompt has been modified
+        // Check if the prompt has been modified - only do this once
         if (hasChanges) {
           try {
             const newPrompt = await updatePrompt({
@@ -75,35 +84,55 @@ export function usePromptPreviewGeneration(
           }
         }
 
-        console.log('Generating content for:', promptText);
+        console.log('Generating content for all NFT sets:', nftSets);
 
-        const result = await previewContent({
-          promptId: prompt.id!,
-          contentIds: [],
-          tokens: [
-            {
-              contract: {
-                chain: 'abstract',
-                address: '0x516dc288e26b34557f68ea1c1ff13576eff8a168',
-                name: 'Abstract',
-              },
-              id: '220',
+        // Create promises for each NFT set
+        const generationPromises = nftSets.map(async (nftSet, index) => {
+          console.log(`Generating for NFT set ${index}:`, nftSet);
+
+          // Convert NFT set to tokens format expected by generatePromptPreview
+          const tokens = nftSet.map(token => ({
+            contract: {
+              chain: token.contract.chain,
+              address: token.contract.address,
+              name: token.contract.name,
             },
-          ],
+            id: token.id,
+          }));
+
+          // Call previewContent for this NFT set
+          const result = await previewContent({
+            promptId: prompt.id!,
+            contentIds: [],
+            tokens: tokens,
+          });
+
+          if (!result) {
+            throw new Error(
+              `Failed to generate content preview for set ${index}`
+            );
+          }
+
+          return {
+            setIndex: index,
+            nftSet,
+            result,
+          };
         });
 
-        if (!result) {
-          throw new Error('Failed to generate content preview');
-        }
+        // Wait for all generations to complete
+        const results = await Promise.all(generationPromises);
+
+        console.log('All generations completed:', results);
 
         // Call success callback if provided
         onSuccess?.({
           promptText,
           generated: true,
-          contentId: result.contentId,
+          results,
         });
 
-        return result;
+        return results;
       } catch (error) {
         console.error('Generation failed:', error);
         // Call error callback if provided
@@ -113,7 +142,15 @@ export function usePromptPreviewGeneration(
         setIsGenerating(false);
       }
     },
-    [session, isGenerating, updatePrompt, previewContent, onSuccess, onError]
+    [
+      session,
+      isGenerating,
+      updatePrompt,
+      previewContent,
+      onSuccess,
+      onError,
+      nftSets,
+    ]
   );
 
   const reset = useCallback(() => {

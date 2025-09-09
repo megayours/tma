@@ -1,17 +1,20 @@
-import { Card } from '@telegram-apps/telegram-ui';
+import { Button, Card } from '@telegram-apps/telegram-ui';
 import type { SupportedCollection } from '@/hooks/useCollections';
 import { useGetNFTByCollectionAndTokenId } from '@/hooks/useCollections';
+import type { Token } from '../../types/response';
 
 interface DisplayNFTProps {
   collection: SupportedCollection;
   tokenId: string;
   className?: string;
+  onClick: (token: Token) => void;
 }
 
 export function DisplayNFT({
   collection,
   tokenId,
   className = '',
+  onClick,
 }: DisplayNFTProps) {
   const {
     data: nftData,
@@ -49,11 +52,14 @@ export function DisplayNFT({
         </div>
       )}
 
-      {nftData?.name && (
-        <div className="text-tg-text text-center text-lg font-medium">
-          {nftData.name}
-        </div>
-      )}
+      <Button
+        size="l"
+        onClick={() => onClick(nftData!)}
+        disabled={!nftData}
+        mode="filled"
+      >
+        Select
+      </Button>
     </div>
   );
 }

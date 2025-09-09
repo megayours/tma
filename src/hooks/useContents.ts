@@ -157,15 +157,31 @@ export const usePreviewContentMutation = (
 export const useGetPreviewContent = (
   session: Session | null | undefined,
   promptId: number | null,
-  _promptVersion: PromptVersion | null
+  _promptVersion: PromptVersion | null,
+  pagination?: { page: number; size: number }
 ) => {
+  const paginationParams = pagination || { page: 1, size: 10 };
+
   return useQuery({
-    queryKey: ['preview-content', promptId],
+    queryKey: [
+      'preview-content',
+      promptId,
+      paginationParams.page,
+      paginationParams.size,
+    ],
     queryFn: async () => {
       if (!session || !promptId) return;
+
+      // Build query parameters
+      const queryParams = new URLSearchParams({
+        page: paginationParams.page.toString(),
+        size: paginationParams.size.toString(),
+        sort_by: 'created_at',
+        sort_order: 'desc',
+      });
+
       const response = await fetch(
-        `${import.meta.env.VITE_PUBLIC_API_URL}/prompts/${promptId}/previews?`,
-        // prompt_version=${promptVersion?.id.toString()}`,
+        `${import.meta.env.VITE_PUBLIC_API_URL}/prompts/${promptId}/previews?${queryParams.toString()}`,
         {
           method: 'GET',
           headers: {

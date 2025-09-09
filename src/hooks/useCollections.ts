@@ -19,7 +19,7 @@ export function useGetSupportedCollections() {
     queryFn: async () => {
       if (!session) return;
       const response = await fetch(
-        `${import.meta.env.VITE_PUBLIC_API_URL}/tokens/used-collections`,
+        `${import.meta.env.VITE_PUBLIC_API_URL}/tokens/extended-collections`,
         {
           method: 'GET',
           headers: {
@@ -34,6 +34,7 @@ export function useGetSupportedCollections() {
       }
 
       const data = await response.json();
+      console.log('data', data);
       return data as SupportedCollection[];
     },
   });
@@ -56,11 +57,29 @@ export function useGetCollectionsWithPrompt(prompt?: {
   } = useGetSupportedCollections();
 
   const collections = React.useMemo(() => {
+    // Create a lookup map for supported collections (chain + address -> collection)
+    const supportedCollectionsMap = new Map(
+      supportedCollections?.map(collection => [
+        `${collection.chain}:${collection.address}`,
+        collection,
+      ]) || []
+    );
+
     const promptCollections =
-      prompt?.contracts?.map(contract => ({
-        ...contract,
-        image: contract.image || '/nfts/not-available.png',
-      })) || [];
+      prompt?.contracts?.map(contract => {
+        // Fast O(1) lookup instead of O(n) find
+        const matchingSupportedCollection = supportedCollectionsMap.get(
+          `${contract.chain}:${contract.address}`
+        );
+
+        return {
+          ...contract,
+          image:
+            matchingSupportedCollection?.image ||
+            contract.image ||
+            '/nfts/not-available.png',
+        };
+      }) || [];
 
     // If there are prompt contracts, return only those
     // Otherwise, return supported collections

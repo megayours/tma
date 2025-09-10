@@ -16,7 +16,7 @@ export interface PromptWithContent extends Prompt {
 
 export interface Content {
   id: string;
-  type: 'image' | 'video' | 'sticker';
+  type: 'image' | 'video' | 'sticker' | 'animated_sticker';
   video?: string;
   gif?: string;
   image?: string;

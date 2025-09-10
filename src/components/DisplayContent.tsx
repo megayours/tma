@@ -27,7 +27,12 @@ export const DisplayContent = ({
             <img src={content.gif} alt={content.id} className={baseClasses} />
           );
         }
-        if (content.type === 'sticker' && content.gif) {
+        if (content.type === 'sticker' && content.image) {
+          return (
+            <img src={content.image} alt={content.id} className={baseClasses} />
+          );
+        }
+        if (content.type === 'animated_sticker' && content.gif) {
           return (
             <img src={content.gif} alt={content.id} className={baseClasses} />
           );

@@ -335,7 +335,17 @@ export const usePromptMutation = (session: Session | null | undefined) => {
       queryClient.invalidateQueries({ queryKey: ['my-prompts'] });
       queryClient.invalidateQueries({ queryKey: ['prompts'] });
       queryClient.invalidateQueries({
-        queryKey: ['prompt', variables.prompt.id, session?.authToken],
+        queryKey: ['prompts'],
+      });
+
+      // Invalidate the specific prompt query using pattern matching
+      queryClient.invalidateQueries({
+        predicate: query => {
+          const match =
+            query.queryKey[0] === 'prompt' &&
+            query.queryKey[1] === variables.prompt.id?.toString();
+          return match;
+        },
       });
     },
   });

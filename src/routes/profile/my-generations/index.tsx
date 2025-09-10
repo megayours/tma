@@ -1,9 +1,229 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router';
+import { useState } from 'react';
+import { useMyRecentGenerations } from '@/hooks/useContents';
+import { useSession } from '@/auth/SessionProvider';
+import { Button, Section } from '@telegram-apps/telegram-ui';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  Badge,
+  Alert,
+  AlertDescription,
+} from '@/components/ui';
+import type { MyRecentGenerationsRequest } from '@/types/requests';
 
 export const Route = createFileRoute('/profile/my-generations/')({
   component: RouteComponent,
-})
+});
 
 function RouteComponent() {
-  return <div>Hello "/profile/my-generations/"!</div>
+  const { session } = useSession();
+  const [contentType, setContentType] = useState<
+    'all' | 'images' | 'videos' | 'stickers' | 'animated_stickers'
+  >('all');
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const params: MyRecentGenerationsRequest = {
+    type: contentType,
+    pagination: {
+      page: currentPage,
+      size: 20,
+    },
+    days: '30',
+  };
+
+  const { data, isLoading, error } = useMyRecentGenerations(params, session);
+
+  if (isLoading) {
+    return (
+      <Section>
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-gray-900"></div>
+            <p className="mt-2">Loading your generations...</p>
+          </div>
+        </div>
+      </Section>
+    );
+  }
+
+  if (error) {
+    return (
+      <Section>
+        <Card>
+          <CardContent className="py-12">
+            <Alert>
+              <AlertDescription className="text-center">
+                <div className="mb-4 text-6xl">⚠️</div>
+                <h3 className="text-tg-text mb-2 text-lg font-medium">
+                  Failed to load your generations
+                </h3>
+                <p className="text-tg-hint">{error.message}</p>
+                <Button
+                  mode="bezeled"
+                  size="m"
+                  className="mt-4"
+                  onClick={() => window.location.reload()}
+                >
+                  Try Again
+                </Button>
+              </AlertDescription>
+            </Alert>
+          </CardContent>
+        </Card>
+      </Section>
+    );
+  }
+
+  if (!data?.data || data.data.length === 0) {
+    return (
+      <Section>
+        <Card>
+          <CardContent className="py-12">
+            <Alert>
+              <AlertDescription className="text-center">
+                <div className="mb-4 text-6xl">🎨</div>
+                <h3 className="text-tg-text mb-2 text-lg font-medium">
+                  No generations yet
+                </h3>
+                <p className="text-tg-hint">
+                  Start creating content to see your generations here
+                </p>
+              </AlertDescription>
+            </Alert>
+          </CardContent>
+        </Card>
+      </Section>
+    );
+  }
+
+  const handleTypeChange = (type: typeof contentType) => {
+    setContentType(type);
+    setCurrentPage(1);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  return (
+    <Section>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-tg-text">My Recent Generations</CardTitle>
+          <p className="text-tg-hint text-sm">
+            {data.data.length} generation{data.data.length !== 1 ? 's' : ''} in
+            the last 30 days
+          </p>
+        </CardHeader>
+        <CardContent>
+          {/* Filter buttons */}
+          <div className="mb-6 flex flex-wrap gap-2">
+            {(
+              [
+                'all',
+                'images',
+                'videos',
+                'stickers',
+                'animated_stickers',
+              ] as const
+            ).map(type => (
+              <Button
+                key={type}
+                mode={contentType === type ? 'filled' : 'bezeled'}
+                size="s"
+                onClick={() => handleTypeChange(type)}
+              >
+                {type === 'all'
+                  ? 'All'
+                  : type.charAt(0).toUpperCase() + type.slice(1)}
+              </Button>
+            ))}
+          </div>
+
+          {/* Content grid */}
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+            {data.data.map(generation => (
+              <div
+                key={generation.id}
+                className="flex flex-col gap-2 rounded-lg border p-3"
+              >
+                <div className="relative">
+                  {generation.type === 'animated_sticker' ||
+                  generation.type === 'video' ? (
+                    <video
+                      src={generation.url}
+                      className="h-24 w-full rounded object-cover"
+                      muted
+                      loop
+                      playsInline
+                      autoPlay
+                    />
+                  ) : (
+                    <img
+                      src={generation.url}
+                      alt={generation.prompt?.name || 'Generated content'}
+                      className="h-24 w-full rounded object-cover"
+                      loading="lazy"
+                    />
+                  )}
+                  <div className="absolute top-2 left-2">
+                    <Badge variant="success" size="sm">
+                      {generation.type}
+                    </Badge>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <h3 className="text-tg-text truncate text-sm font-medium">
+                    {generation.prompt?.name || 'Untitled'}
+                  </h3>
+                  <p className="text-tg-hint truncate text-xs">
+                    {generation.creator_name || 'Anonymous'}
+                  </p>
+                  <p className="text-tg-hint text-xs">
+                    {new Date(
+                      generation.created_at * 1000
+                    ).toLocaleDateString()}
+                  </p>
+                  {generation.tokens && generation.tokens.length > 0 && (
+                    <p className="text-tg-hint text-xs">
+                      {generation.tokens.length} token
+                      {generation.tokens.length !== 1 ? 's' : ''}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Pagination */}
+          {data.pagination && data.pagination.totalPages > 1 && (
+            <div className="mt-6 flex justify-center gap-2">
+              <Button
+                mode="bezeled"
+                size="s"
+                disabled={currentPage === 1}
+                onClick={() => handlePageChange(currentPage - 1)}
+              >
+                Previous
+              </Button>
+              <span className="text-tg-text flex items-center px-3 text-sm">
+                Page {currentPage} of {data.pagination.totalPages}
+              </span>
+              <Button
+                mode="bezeled"
+                size="s"
+                disabled={currentPage === data.pagination.totalPages}
+                onClick={() => handlePageChange(currentPage + 1)}
+              >
+                Next
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </Section>
+  );
 }

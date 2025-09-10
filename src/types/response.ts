@@ -50,16 +50,41 @@ export const PromptsResponseSchema = z.object({
 });
 export type PromptsResponse = z.infer<typeof PromptsResponseSchema>;
 
-// Token schema
-export const TokenSchema = z.object({
-  contract: ContractSchema,
-  id: z.string(),
-  name: z.string().optional(),
-  image: z.string().optional(),
-  description: z.string().optional(),
-  attributes: z.any().optional(),
-  owner: z.string().optional(),
-});
+// Token schema - handles both formats (contract/collection, id/token_id)
+export const TokenSchema = z
+  .object({
+    // Handle both token_id and id
+    token_id: z.string().optional(),
+    id: z.string().optional(),
+    name: z.string().optional(),
+    image: z.string().optional(),
+    description: z.string().optional(),
+    attributes: z.any().optional(),
+    owner: z.string().optional(),
+    // Handle both contract and collection formats
+    contract: ContractSchema.optional(),
+    collection: z
+      .object({
+        id: z.number(),
+        name: z.string(),
+        chain: z.string(),
+        contract_address: z.string(),
+      })
+      .optional(),
+  })
+  .transform(data => ({
+    id: data.id || data.token_id || '',
+    name: data.name,
+    image: data.image,
+    description: data.description,
+    attributes: data.attributes,
+    owner: data.owner,
+    contract: data.contract || {
+      chain: data.collection!.chain,
+      address: data.collection!.contract_address,
+      name: data.collection!.name,
+    },
+  }));
 export type Token = z.infer<typeof TokenSchema>;
 
 // Content status enum
@@ -120,6 +145,32 @@ export const ContentListResponseSchema = z.object({
   pagination: PaginationResponseSchema,
 });
 export type ContentListResponse = z.infer<typeof ContentListResponseSchema>;
+
+// Generation content schema for my-recent-generations endpoint
+export const GenerationContentSchema = z.object({
+  id: z.string(),
+  type: z.enum(['image', 'video', 'sticker', 'animated_sticker', 'gif']),
+  path: z.string(),
+  url: z.string(),
+  preview_url: z.string().nullable(),
+  watermarked_url: z.string().nullable(),
+  created_at: z.number(),
+  revealed_at: z.number().nullable(),
+  creator_id: z.string(),
+  creator_name: z.string().nullable(),
+  prompt: PromptSchema.nullable(),
+  tokens: z.array(TokenSchema).optional(),
+});
+export type GenerationContent = z.infer<typeof GenerationContentSchema>;
+
+// My recent generations response schema
+export const MyRecentGenerationsResponseSchema = z.object({
+  data: z.array(GenerationContentSchema),
+  pagination: PaginationResponseSchema,
+});
+export type MyRecentGenerationsResponse = z.infer<
+  typeof MyRecentGenerationsResponseSchema
+>;
 
 // Export the Content type from content.ts
 export type { Content } from './content';

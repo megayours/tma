@@ -4,6 +4,7 @@ import type { Session } from '@/auth/useAuth';
 import { usePromptMutation } from './usePrompts';
 import { usePreviewContentMutation } from './useContents';
 import { useNFTSetsContext } from '@/contexts/NFTSetsContext';
+import type { Token } from '@/types/response';
 
 interface UsePromptGenerationOptions {
   session: Session | null | undefined;
@@ -93,7 +94,7 @@ export function usePromptPreviewGeneration(
           const result = await previewContent({
             promptId: prompt.id!,
             contentIds: [],
-            tokens: tokens,
+            tokens: tokens as Token[],
           });
 
           if (!result) {

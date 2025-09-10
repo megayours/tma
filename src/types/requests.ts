@@ -63,3 +63,10 @@ export const ContentRequestSchema = z.object({
   pagination: PaginationSchema.optional(),
 });
 export type ContentRequest = z.infer<typeof ContentRequestSchema>;
+
+export const MyRecentGenerationsRequestSchema = z.object({
+  type: z.enum(['all', 'images', 'videos', 'stickers', 'animated_stickers']).default('all'),
+  pagination: PaginationSchema.optional(),
+  days: z.string().default('30'),
+});
+export type MyRecentGenerationsRequest = z.infer<typeof MyRecentGenerationsRequestSchema>;

@@ -75,7 +75,7 @@ export function ShowContent({ prompt }: ShowContentProps) {
               if (!selectedFavorite || !session) return;
 
               // Map prompt type to API type
-              let apiType: 'image' | 'video' | 'sticker';
+              let apiType: 'image' | 'video' | 'sticker' | 'animated_sticker';
               switch (prompt.type) {
                 case 'images':
                   apiType = 'image';
@@ -84,8 +84,10 @@ export function ShowContent({ prompt }: ShowContentProps) {
                   apiType = 'video';
                   break;
                 case 'stickers':
-                case 'animated_stickers':
                   apiType = 'sticker';
+                  break;
+                case 'animated_stickers':
+                  apiType = 'animated_sticker';
                   break;
                 default:
                   console.error('Unsupported prompt type:', prompt.type);

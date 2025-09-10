@@ -1,6 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ContentFiltersSchema, type ContentFilters } from '../types/requests';
-import { safeParse } from '@/utils/validation';
+import {
+  ContentFiltersSchema,
+  type ContentFilters,
+  MyRecentGenerationsRequestSchema,
+  type MyRecentGenerationsRequest,
+} from '../types/requests';
+import { safeParse, getValidationErrors } from '@/utils/validation';
 import {
   type Content,
   type ContentListResponse,
@@ -8,10 +13,13 @@ import {
   type RawContentResponse,
   type Token,
   RawContentListResponseSchema,
+  MyRecentGenerationsResponseSchema,
+  type MyRecentGenerationsResponse,
 } from '../types/response';
 import type { Session } from '@/auth/useAuth';
 import type { PromptVersion } from '@/types/prompt';
 import type { Favorite } from './useFavorites';
+import type { Contract } from '../types/contract';
 
 // Helper function to map raw content to expected format
 const mapRawContentToContent = (rawContent: RawContentResponse) => ({
@@ -136,7 +144,8 @@ export const usePreviewContentMutation = (
               contract: {
                 chain: token.contract.chain,
                 address: token.contract.address,
-              },
+                name: token.contract.name,
+              } as Contract,
               id: token.id,
             })),
           }),
@@ -226,7 +235,7 @@ export const useGenerateContentMutation = (
       overrideExisting = false,
     }: {
       promptId: string;
-      type: 'image' | 'video' | 'sticker';
+      type: 'image' | 'video' | 'sticker' | 'animated_sticker';
       selectedFavorite: Favorite | null;
       inputs?: any[];
       contentIds?: string[];
@@ -235,7 +244,7 @@ export const useGenerateContentMutation = (
       if (!session) {
         throw new Error('Session required');
       }
-      
+
       if (!selectedFavorite) {
         throw new Error('Selected favorite required');
       }
@@ -243,8 +252,8 @@ export const useGenerateContentMutation = (
       const requestBody = {
         prompt_id: promptId,
         type,
-        inputs,
-        content_ids: contentIds,
+        inputs: inputs.length > 0 ? inputs : undefined,
+        content_ids: contentIds.length > 0 ? contentIds : undefined,
         override_existing: overrideExisting,
         token: {
           chain: selectedFavorite.token.contract.chain,
@@ -280,5 +289,79 @@ export const useGenerateContentMutation = (
       queryClient.invalidateQueries({ queryKey: ['content'] });
       queryClient.invalidateQueries({ queryKey: ['preview-content'] });
     },
+  });
+};
+
+export const useMyRecentGenerations = (
+  params: MyRecentGenerationsRequest,
+  session: Session | null | undefined
+) => {
+  return useQuery({
+    queryKey: ['my-recent-generations', params],
+    queryFn: async (): Promise<MyRecentGenerationsResponse> => {
+      const validatedParams = safeParse(
+        MyRecentGenerationsRequestSchema,
+        params
+      );
+      if (!validatedParams) {
+        throw new Error('Invalid parameters');
+      }
+
+      try {
+        // Build parameters object - convert pagination to individual params
+        const apiParams = {
+          type: validatedParams.type,
+          page: validatedParams.pagination?.page?.toString() || '1',
+          size: validatedParams.pagination?.size?.toString() || '20',
+          days: validatedParams.days,
+        };
+
+        // Build query string from parameters
+        const queryParams = new URLSearchParams();
+        Object.entries(apiParams).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            queryParams.append(key, String(value));
+          }
+        });
+
+        const queryString = queryParams.toString();
+        const url = `${import.meta.env.VITE_PUBLIC_API_URL}/discovery/generations/my-recent${queryString ? `?${queryString}` : ''}`;
+
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(session?.authToken && { Authorization: session.authToken }),
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const rawData: MyRecentGenerationsResponse = await response.json();
+
+        // Validate raw response data
+        const validatedRawData = safeParse(
+          MyRecentGenerationsResponseSchema,
+          rawData
+        );
+        if (!validatedRawData) {
+          const errors = getValidationErrors(
+            MyRecentGenerationsResponseSchema,
+            rawData
+          );
+          console.error('Schema validation failed:', errors);
+          console.error('Raw data:', rawData);
+          throw new Error(`Invalid response data: ${errors}`);
+        }
+
+        return validatedRawData;
+      } catch (error) {
+        console.error('ERROR', error);
+        throw error;
+      }
+    },
+    enabled: !!session,
   });
 };

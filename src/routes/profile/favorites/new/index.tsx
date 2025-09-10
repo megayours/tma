@@ -145,11 +145,11 @@ function RouteComponent() {
         <Card className="flex flex-col items-center justify-center gap-2 p-2">
           <img
             src={nftData?.image}
-            alt={nftData?.contract.name}
+            alt={nftData?.contract?.name || 'NFT'}
             className="mx-auto h-64 w-64 rounded-lg object-cover"
           />
           <div className="text-tg-text text-center text-sm font-bold">
-            {nftData?.contract.name} #{tokenId}
+            {nftData?.contract?.name || 'Unknown Collection'} #{tokenId}
           </div>
         </Card>
         <CriticalButton

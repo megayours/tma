@@ -365,3 +365,61 @@ export const useMyRecentGenerations = (
     enabled: !!session,
   });
 };
+
+export const useUnrevealedGenerations = (
+  session: Session | null | undefined
+) => {
+  const params: MyRecentGenerationsRequest = {
+    type: 'all',
+    pagination: {
+      page: 1,
+      size: 100, // Get a larger set to find unrevealed items
+    },
+    days: '30',
+  };
+
+  const { data } = useMyRecentGenerations(params, session);
+
+  // Filter unrevealed generations (revealed_at is null)
+  const unrevealedGenerations = data?.data?.filter(
+    generation => generation.revealed_at === null
+  ) || [];
+
+  const unrevealedCount = unrevealedGenerations.length;
+
+  return { unrevealedGenerations, unrevealedCount };
+};
+
+export const useRevealContent = (session: Session | null | undefined) => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (contentId: string) => {
+      if (!session) {
+        throw new Error('Session required');
+      }
+
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/content/${contentId}/reveal`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: session.authToken,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data;
+    },
+    onSuccess: () => {
+      // Invalidate my-recent-generations queries to refresh the data
+      queryClient.invalidateQueries({ queryKey: ['my-recent-generations'] });
+    },
+  });
+};

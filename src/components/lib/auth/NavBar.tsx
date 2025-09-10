@@ -1,6 +1,7 @@
 import { useAuthContext } from '@/auth/AuthProvider';
 import { ProfileNavBar } from './ProfileNavBar';
 import { CreatePostButton } from '@/components/ui/CreatePostButton';
+import { useUnrevealedGenerations } from '@/hooks/useContents';
 
 import { useLocation, useNavigate } from '@tanstack/react-router';
 import { ProtectedRoute } from '@/auth/ProtectedRoute';
@@ -11,6 +12,7 @@ export function NavBar() {
     useAuthContext();
   const location = useLocation();
   const navigate = useNavigate();
+  const { unrevealedCount } = useUnrevealedGenerations(session);
 
   const handleNavClick = (targetPath: string) => {
     console.log('NavBar button clicked!');
@@ -92,9 +94,14 @@ export function NavBar() {
           <CreatePostButton />
           <button
             onClick={() => handleNavClick('/profile/my-generations')}
-            className={`tg-link px-2 py-1 hover:opacity-80 ${location.pathname === '/private' ? 'font-bold' : ''}`}
+            className={`tg-link relative px-2 py-1 hover:opacity-80 ${location.pathname === '/profile/my-generations' ? 'font-bold' : ''}`}
           >
-            My Generations
+            Yours
+            {unrevealedCount > 0 && (
+              <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white">
+                {unrevealedCount > 99 ? '99+' : unrevealedCount}
+              </span>
+            )}
           </button>
           {isAuthenticated && session && <ProfileNavBar logout={logout} />}
         </div>

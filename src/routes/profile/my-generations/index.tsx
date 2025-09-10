@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
-import { useMyRecentGenerations } from '@/hooks/useContents';
+import { useMyRecentGenerations, useRevealContent } from '@/hooks/useContents';
 import { useSession } from '@/auth/SessionProvider';
 import { Button, Section } from '@telegram-apps/telegram-ui';
 import {
@@ -24,6 +24,7 @@ function RouteComponent() {
     'all' | 'images' | 'videos' | 'stickers' | 'animated_stickers'
   >('all');
   const [currentPage, setCurrentPage] = useState(1);
+  const [revealingIds, setRevealingIds] = useState<Set<string>>(new Set());
 
   const params: MyRecentGenerationsRequest = {
     type: contentType,
@@ -35,6 +36,7 @@ function RouteComponent() {
   };
 
   const { data, isLoading, error } = useMyRecentGenerations(params, session);
+  const revealMutation = useRevealContent(session);
 
   if (isLoading) {
     return (
@@ -108,6 +110,23 @@ function RouteComponent() {
     setCurrentPage(page);
   };
 
+  const handleRevealContent = async (contentId: string) => {
+    if (revealingIds.has(contentId)) return; // Already revealing
+    
+    try {
+      setRevealingIds(prev => new Set(prev).add(contentId));
+      await revealMutation.mutateAsync(contentId);
+    } catch (error) {
+      console.error('Failed to reveal content:', error);
+    } finally {
+      setRevealingIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(contentId);
+        return newSet;
+      });
+    }
+  };
+
   return (
     <Section>
       <Card>
@@ -151,8 +170,29 @@ function RouteComponent() {
                 className="flex flex-col gap-2 rounded-lg border p-3"
               >
                 <div className="relative">
-                  {generation.type === 'animated_sticker' ||
-                  generation.type === 'video' ? (
+                  {generation.revealed_at === null ? (
+                    // Unrevealed content - show clickable placeholder
+                    <button
+                      onClick={() => handleRevealContent(generation.id)}
+                      disabled={revealingIds.has(generation.id)}
+                      className="flex h-24 w-full items-center justify-center rounded bg-gray-200 text-gray-500 transition-colors hover:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <div className="text-center">
+                        {revealingIds.has(generation.id) ? (
+                          <>
+                            <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-gray-500 border-t-transparent"></div>
+                            <div className="mt-1 text-xs">Revealing...</div>
+                          </>
+                        ) : (
+                          <>
+                            <div className="text-2xl">🔒</div>
+                            <div className="text-xs">Click to Reveal</div>
+                          </>
+                        )}
+                      </div>
+                    </button>
+                  ) : generation.type === 'animated_sticker' ||
+                    generation.type === 'video' ? (
                     <video
                       src={generation.url}
                       className="h-24 w-full rounded object-cover"

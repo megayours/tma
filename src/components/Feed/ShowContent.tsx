@@ -7,7 +7,6 @@ import { LatestVideo } from '@/components/lib/LatestContent/LatestVideos';
 import { LatestSticker } from '@/components/lib/LatestContent/LatestStickers';
 import { LatestAnimatedSticker } from '@/components/lib/LatestContent/LatestAnimatedStickers';
 import type { PromptWithContent } from '@/types/content';
-import { DisplayNFT } from '../NFT/DisplayNFT';
 
 // Array of background GIF files
 const backgroundGifs = [
@@ -30,7 +29,7 @@ interface ShowContentProps {
   isLoading: boolean;
 }
 
-export function ShowContent({ prompt, isLoading }: ShowContentProps) {
+export function ShowContent({ prompt }: ShowContentProps) {
   const { session } = useSession();
   const { selectedFavorite, isLoadingSelected } = useGetFavorites(session);
   const generateContent = useGenerateContentMutation(session);

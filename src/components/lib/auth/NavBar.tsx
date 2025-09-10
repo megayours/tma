@@ -2,7 +2,7 @@ import { useAuthContext } from '@/auth/AuthProvider';
 import { ProfileNavBar } from './ProfileNavBar';
 import { CreatePostButton } from '@/components/ui/CreatePostButton';
 
-import { Link, useLocation, useNavigate } from '@tanstack/react-router';
+import { useLocation, useNavigate } from '@tanstack/react-router';
 import { ProtectedRoute } from '@/auth/ProtectedRoute';
 import { Button } from '@telegram-apps/telegram-ui';
 

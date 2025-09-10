@@ -1,6 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
-import { useMyRecentGenerations, useRevealContent } from '@/hooks/useContents';
+import {
+  useMyRecentGenerations,
+  useRevealContent,
+  useUnrevealedGenerations,
+  useRevealAllContent,
+} from '@/hooks/useContents';
 import { useSession } from '@/auth/SessionProvider';
 import { Button, Section } from '@telegram-apps/telegram-ui';
 import {
@@ -37,6 +42,8 @@ function RouteComponent() {
 
   const { data, isLoading, error } = useMyRecentGenerations(params, session);
   const revealMutation = useRevealContent(session);
+  const { unrevealedGenerations } = useUnrevealedGenerations(session);
+  const revealAllMutation = useRevealAllContent(session);
 
   if (isLoading) {
     return (
@@ -112,7 +119,7 @@ function RouteComponent() {
 
   const handleRevealContent = async (contentId: string) => {
     if (revealingIds.has(contentId)) return; // Already revealing
-    
+
     try {
       setRevealingIds(prev => new Set(prev).add(contentId));
       await revealMutation.mutateAsync(contentId);
@@ -124,6 +131,18 @@ function RouteComponent() {
         newSet.delete(contentId);
         return newSet;
       });
+    }
+  };
+
+  const handleRevealAll = async () => {
+    if (unrevealedGenerations.length === 0 || revealAllMutation.isPending)
+      return;
+
+    try {
+      const contentIds = unrevealedGenerations.map(generation => generation.id);
+      await revealAllMutation.mutateAsync(contentIds);
+    } catch (error) {
+      console.error('Failed to reveal all content:', error);
     }
   };
 
@@ -161,6 +180,27 @@ function RouteComponent() {
               </Button>
             ))}
           </div>
+
+          {/* Reveal All button */}
+          {unrevealedGenerations.length > 0 && (
+            <div className="mb-4">
+              <Button
+                mode="filled"
+                size="m"
+                onClick={handleRevealAll}
+                disabled={revealAllMutation.isPending}
+              >
+                {revealAllMutation.isPending ? (
+                  <>
+                    <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                    Revealing All...
+                  </>
+                ) : (
+                  `Reveal All (${unrevealedGenerations.length})`
+                )}
+              </Button>
+            </div>
+          )}
 
           {/* Content grid */}
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">

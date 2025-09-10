@@ -1,83 +1,16 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useState, useEffect, useRef } from 'react';
 import { useGetRecommendedPrompts } from '@/hooks/usePrompts';
-import { LatestImage } from '@/components/lib/LatestContent/LatestImages';
-import { LatestVideo } from '@/components/lib/LatestContent/LatestVideos';
-import { LatestSticker } from '@/components/lib/LatestContent/LatestStickers';
-import { LatestAnimatedSticker } from '@/components/lib/LatestContent/LatestAnimatedStickers';
 import type { PromptWithContent } from '@/types/content';
+import { ShowContent } from '@/components/Feed/ShowContent';
 
 // Debug toggle - set to false to disable all debug functionality
 const DEBUG_MODE = false;
-
-// Array of background GIF files
-const backgroundGifs = [
-  '/backgrounds/doodle-heart.gif',
-  '/backgrounds/doodle-muscle.gif',
-  '/backgrounds/doodle-skate.gif',
-  '/backgrounds/doodle-star.gif',
-  '/backgrounds/doodle-stars.gif',
-  '/backgrounds/doodle-sticker.gif',
-];
-
-// Function that randomly returns one GIF from the array
-const getRandomBackgroundGif = (): string => {
-  const randomIndex = Math.floor(Math.random() * backgroundGifs.length);
-  return backgroundGifs[randomIndex];
-};
 
 export const Route = createFileRoute('/feed/')({
   component: Feed,
 });
 
-function ShowContent({
-  prompt,
-}: {
-  prompt: PromptWithContent;
-  isLoading: boolean;
-}) {
-  // if (isLoading) {
-  //   return (
-  //     <div className="flex h-full items-center justify-center">
-  //       <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-gray-900"></div>
-  //     </div>
-  //   );
-  // }
-
-  if (!prompt) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <div>No content found</div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="relative h-full w-full">
-      <div className="absolute top-5 left-5 z-10">
-        <h1>{prompt.name}</h1>
-        <p>{prompt.ownerName}</p>
-      </div>
-      <div className="h-full w-full">
-        {prompt.type === 'images' && (
-          <LatestImage prompt={prompt} bg={getRandomBackgroundGif()} />
-        )}
-        {prompt.type === 'videos' && (
-          <LatestVideo prompt={prompt} bg={getRandomBackgroundGif()} />
-        )}
-        {prompt.type === 'stickers' && (
-          <LatestSticker prompt={prompt} bg={getRandomBackgroundGif()} />
-        )}
-        {prompt.type === 'animated_stickers' && (
-          <LatestAnimatedSticker
-            prompt={prompt}
-            bg={getRandomBackgroundGif()}
-          />
-        )}
-      </div>
-    </div>
-  );
-}
 
 export function Feed() {
   const [allPrompts, setAllPrompts] = useState<PromptWithContent[]>([]);

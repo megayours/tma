@@ -17,13 +17,13 @@ export function NavBar() {
     console.log('Target path:', targetPath);
     console.log('Current pathname:', location.pathname);
     console.log('Paths match:', location.pathname === targetPath);
-    
+
     if (location.pathname === targetPath) {
       console.log('Scrolling to top...');
-      
+
       // Try to scroll the correct container in order of specificity
       const scrollOptions = { top: 0, behavior: 'smooth' as ScrollBehavior };
-      
+
       // 1. Try feed scroller first (most specific)
       const scroller = document.querySelector('.scroller');
       if (scroller) {
@@ -31,7 +31,7 @@ export function NavBar() {
         scroller.scrollTo(scrollOptions);
         return;
       }
-      
+
       // 2. Try main element (general app container)
       const main = document.querySelector('main');
       if (main) {
@@ -39,7 +39,7 @@ export function NavBar() {
         main.scrollTo(scrollOptions);
         return;
       }
-      
+
       // 3. Fallback to window (for pages without custom scroll)
       console.log('Scrolling window (fallback)');
       window.scrollTo(scrollOptions);
@@ -91,10 +91,10 @@ export function NavBar() {
           </button>
           <CreatePostButton />
           <button
-            onClick={() => handleNavClick('/private')}
+            onClick={() => handleNavClick('/profile/my-generations')}
             className={`tg-link px-2 py-1 hover:opacity-80 ${location.pathname === '/private' ? 'font-bold' : ''}`}
           >
-            Private
+            My Generations
           </button>
           {isAuthenticated && session && <ProfileNavBar logout={logout} />}
         </div>

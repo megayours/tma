@@ -11,6 +11,7 @@ import {
 } from '../types/response';
 import type { Session } from '@/auth/useAuth';
 import type { PromptVersion } from '@/types/prompt';
+import type { Favorite } from './useFavorites';
 
 // Helper function to map raw content to expected format
 const mapRawContentToContent = (rawContent: RawContentResponse) => ({
@@ -208,5 +209,76 @@ export const useGetPreviewContent = (
       return hasProcessingContent ? 2000 : false;
     },
     refetchIntervalInBackground: true, // Continue polling even when tab is not active
+  });
+};
+
+export const useGenerateContentMutation = (
+  session: Session | null | undefined
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      promptId,
+      type,
+      selectedFavorite,
+      inputs = [],
+      contentIds = [],
+      overrideExisting = false,
+    }: {
+      promptId: string;
+      type: 'image' | 'video' | 'sticker';
+      selectedFavorite: Favorite | null;
+      inputs?: any[];
+      contentIds?: string[];
+      overrideExisting?: boolean;
+    }) => {
+      if (!session) {
+        throw new Error('Session required');
+      }
+      
+      if (!selectedFavorite) {
+        throw new Error('Selected favorite required');
+      }
+
+      const requestBody = {
+        prompt_id: promptId,
+        type,
+        inputs,
+        content_ids: contentIds,
+        override_existing: overrideExisting,
+        token: {
+          chain: selectedFavorite.token.contract.chain,
+          contract_address: selectedFavorite.token.contract.address,
+          token_id: selectedFavorite.token.id,
+        },
+      };
+
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/content/generate`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: session.authToken,
+          },
+          body: JSON.stringify(requestBody),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.message || `HTTP error! status: ${response.status}`
+        );
+      }
+
+      const data = await response.json();
+      return data;
+    },
+    onSuccess: () => {
+      // Invalidate relevant queries after successful generation
+      queryClient.invalidateQueries({ queryKey: ['content'] });
+      queryClient.invalidateQueries({ queryKey: ['preview-content'] });
+    },
   });
 };

@@ -11,6 +11,8 @@ import { AppRoot } from '@telegram-apps/telegram-ui';
 import { NavBar } from '@/components/lib/auth/NavBar';
 import { useTelegramTheme } from '@/auth/useTelegram';
 import { ToastProvider } from '@/components/ui';
+import { SelectedNFTsProvider } from '@/contexts/SelectedNFTsContext';
+import { useSession } from '@/auth/SessionProvider';
 
 function TelegramAppHandler() {
   const location = useLocation();
@@ -62,36 +64,48 @@ function TelegramAppHandler() {
   return null;
 }
 
+function AppContent() {
+  const location = useLocation();
+  const { isAuthenticated } = useSession();
+  const shouldHideNavBar = location.pathname.startsWith('/profile/prompt/edit');
+
+  const content = (
+    <>
+      <TelegramAppHandler />
+      <AppRoot>
+        <div className="bg-tg-bg h-screen overflow-hidden">
+          <main
+            className={`bg-tg-bg h-full overflow-y-auto ${shouldHideNavBar ? '' : 'pb-16'}`}
+          >
+            <Outlet />
+          </main>
+          {!shouldHideNavBar && (
+            <div className="fixed right-0 bottom-0 left-0 z-10 flex h-16 items-center">
+              <NavBar />
+            </div>
+          )}
+          {/* <TanStackRouterDevtools /> */}
+          {/* <ReactQueryDevtools initialIsOpen={false} /> */}
+        </div>
+      </AppRoot>
+    </>
+  );
+
+  // Only wrap with SelectedNFTsProvider if user is authenticated
+  if (isAuthenticated) {
+    return <SelectedNFTsProvider>{content}</SelectedNFTsProvider>;
+  }
+
+  return content;
+}
+
 export const Route = createRootRoute({
   component: () => {
-    const location = useLocation();
-    const shouldHideNavBar = location.pathname.startsWith(
-      '/profile/prompt/edit'
-    );
-
     return (
       <ToastProvider>
         {/* <ConsoleLogDevtools initialIsOpen={true} onReady={handleConsoleReady} /> */}
         {/* {consoleReady && ( */}
-        <>
-          <TelegramAppHandler />
-          <AppRoot>
-            <div className="bg-tg-bg h-screen overflow-hidden">
-              <main
-                className={`bg-tg-bg h-full overflow-y-auto ${shouldHideNavBar ? '' : 'pb-16'}`}
-              >
-                <Outlet />
-              </main>
-              {!shouldHideNavBar && (
-                <div className="fixed right-0 bottom-0 left-0 z-10 flex h-16 items-center">
-                  <NavBar />
-                </div>
-              )}
-              {/* <TanStackRouterDevtools /> */}
-              {/* <ReactQueryDevtools initialIsOpen={false} /> */}
-            </div>
-          </AppRoot>
-        </>
+        <AppContent />
         {/* )} */}
       </ToastProvider>
     );

@@ -19,6 +19,7 @@ import { Route as Demo3IndexRouteImport } from './routes/demo3/index'
 import { Route as Demo2IndexRouteImport } from './routes/demo2/index'
 import { Route as AuthRefreshRouteImport } from './routes/auth/refresh'
 import { Route as ProfilePromptIndexRouteImport } from './routes/profile/prompt/index'
+import { Route as ProfileMyGenerationsIndexRouteImport } from './routes/profile/my-generations/index'
 import { Route as ProfileFavoritesIndexRouteImport } from './routes/profile/favorites/index'
 import { Route as PostCreateIndexRouteImport } from './routes/post/create/index'
 import { Route as PostPostIdIndexRouteImport } from './routes/post/$postId/index'
@@ -82,6 +83,12 @@ const ProfilePromptIndexRoute = ProfilePromptIndexRouteImport.update({
   path: '/profile/prompt/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProfileMyGenerationsIndexRoute =
+  ProfileMyGenerationsIndexRouteImport.update({
+    id: '/profile/my-generations/',
+    path: '/profile/my-generations/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ProfileFavoritesIndexRoute = ProfileFavoritesIndexRouteImport.update({
   id: '/profile/favorites/',
   path: '/profile/favorites/',
@@ -162,6 +169,7 @@ export interface FileRoutesByFullPath {
   '/post/$postId': typeof PostPostIdIndexRoute
   '/post/create': typeof PostCreateIndexRoute
   '/profile/favorites': typeof ProfileFavoritesIndexRoute
+  '/profile/my-generations': typeof ProfileMyGenerationsIndexRoute
   '/profile/prompt': typeof ProfilePromptIndexRoute
   '/profile/prompt/edit/$promptId': typeof ProfilePromptEditPromptIdRouteRouteWithChildren
   '/post/create/image': typeof PostCreateImageIndexRoute
@@ -186,6 +194,7 @@ export interface FileRoutesByTo {
   '/post/$postId': typeof PostPostIdIndexRoute
   '/post/create': typeof PostCreateIndexRoute
   '/profile/favorites': typeof ProfileFavoritesIndexRoute
+  '/profile/my-generations': typeof ProfileMyGenerationsIndexRoute
   '/profile/prompt': typeof ProfilePromptIndexRoute
   '/post/create/image': typeof PostCreateImageIndexRoute
   '/post/create/sticker': typeof PostCreateStickerIndexRoute
@@ -210,6 +219,7 @@ export interface FileRoutesById {
   '/post/$postId/': typeof PostPostIdIndexRoute
   '/post/create/': typeof PostCreateIndexRoute
   '/profile/favorites/': typeof ProfileFavoritesIndexRoute
+  '/profile/my-generations/': typeof ProfileMyGenerationsIndexRoute
   '/profile/prompt/': typeof ProfilePromptIndexRoute
   '/profile/prompt/edit/$promptId': typeof ProfilePromptEditPromptIdRouteRouteWithChildren
   '/post/create/image/': typeof PostCreateImageIndexRoute
@@ -236,6 +246,7 @@ export interface FileRouteTypes {
     | '/post/$postId'
     | '/post/create'
     | '/profile/favorites'
+    | '/profile/my-generations'
     | '/profile/prompt'
     | '/profile/prompt/edit/$promptId'
     | '/post/create/image'
@@ -260,6 +271,7 @@ export interface FileRouteTypes {
     | '/post/$postId'
     | '/post/create'
     | '/profile/favorites'
+    | '/profile/my-generations'
     | '/profile/prompt'
     | '/post/create/image'
     | '/post/create/sticker'
@@ -283,6 +295,7 @@ export interface FileRouteTypes {
     | '/post/$postId/'
     | '/post/create/'
     | '/profile/favorites/'
+    | '/profile/my-generations/'
     | '/profile/prompt/'
     | '/profile/prompt/edit/$promptId'
     | '/post/create/image/'
@@ -308,6 +321,7 @@ export interface RootRouteChildren {
   PostPostIdIndexRoute: typeof PostPostIdIndexRoute
   PostCreateIndexRoute: typeof PostCreateIndexRoute
   ProfileFavoritesIndexRoute: typeof ProfileFavoritesIndexRoute
+  ProfileMyGenerationsIndexRoute: typeof ProfileMyGenerationsIndexRoute
   ProfilePromptIndexRoute: typeof ProfilePromptIndexRoute
   PostCreateImageIndexRoute: typeof PostCreateImageIndexRoute
   PostCreateStickerIndexRoute: typeof PostCreateStickerIndexRoute
@@ -386,6 +400,13 @@ declare module '@tanstack/react-router' {
       path: '/profile/prompt'
       fullPath: '/profile/prompt'
       preLoaderRoute: typeof ProfilePromptIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile/my-generations/': {
+      id: '/profile/my-generations/'
+      path: '/profile/my-generations'
+      fullPath: '/profile/my-generations'
+      preLoaderRoute: typeof ProfileMyGenerationsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/profile/favorites/': {
@@ -519,6 +540,7 @@ const rootRouteChildren: RootRouteChildren = {
   PostPostIdIndexRoute: PostPostIdIndexRoute,
   PostCreateIndexRoute: PostCreateIndexRoute,
   ProfileFavoritesIndexRoute: ProfileFavoritesIndexRoute,
+  ProfileMyGenerationsIndexRoute: ProfileMyGenerationsIndexRoute,
   ProfilePromptIndexRoute: ProfilePromptIndexRoute,
   PostCreateImageIndexRoute: PostCreateImageIndexRoute,
   PostCreateStickerIndexRoute: PostCreateStickerIndexRoute,

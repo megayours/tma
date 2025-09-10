@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
 import type { Session } from '@/auth/useAuth';
 import type { Token } from '../types/response';
+import { getCachedFavorite, setCachedFavorite } from '@/utils/favoriteCache';
 
 export type Favorite = {
   token: Token;
@@ -9,6 +11,9 @@ export type Favorite = {
 };
 
 export function useGetFavorites(session: Session | null) {
+  const [selectedFavorite, setSelectedFavoriteState] = useState<Favorite | null>(null);
+  const [isLoadingSelected, setIsLoadingSelected] = useState(true);
+
   const { data, isLoading } = useQuery({
     queryKey: ['favorites', session?.id],
     queryFn: async (): Promise<Favorite[]> => {
@@ -38,7 +43,44 @@ export function useGetFavorites(session: Session | null) {
     enabled: !!session?.id && !!session?.authToken,
   });
 
-  return { favorites: data, isLoadingFavorites: isLoading };
+  // Initialize selected favorite from cache or default to first
+  useEffect(() => {
+    if (!session?.id || !data) {
+      setIsLoadingSelected(false);
+      return;
+    }
+
+    const cachedFavorite = getCachedFavorite(session.id);
+    
+    if (cachedFavorite && data.some(fav => fav.token.id === cachedFavorite.token.id)) {
+      // Use cached favorite if it still exists in the list
+      setSelectedFavoriteState(cachedFavorite);
+    } else if (data.length > 0) {
+      // Default to first favorite if no cached or cached doesn't exist
+      const firstFavorite = data[0];
+      setSelectedFavoriteState(firstFavorite);
+      setCachedFavorite(session.id, firstFavorite);
+    } else {
+      setSelectedFavoriteState(null);
+    }
+    
+    setIsLoadingSelected(false);
+  }, [data, session?.id]);
+
+  const setSelectedFavorite = (favorite: Favorite) => {
+    if (!session?.id) return;
+    
+    setSelectedFavoriteState(favorite);
+    setCachedFavorite(session.id, favorite);
+  };
+
+  return { 
+    favorites: data, 
+    isLoadingFavorites: isLoading,
+    selectedFavorite,
+    setSelectedFavorite,
+    isLoadingSelected
+  };
 }
 
 export function useRemoveFromFavorites(session?: Session) {

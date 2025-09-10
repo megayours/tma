@@ -10,7 +10,7 @@ export function ProfileNavBar({ logout: _logout }: { logout: () => void }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const { session } = useSession();
-  const { favorites, isLoadingFavorites } = useGetFavorites(session!);
+  const { favorites, isLoadingFavorites, selectedFavorite, setSelectedFavorite, isLoadingSelected } = useGetFavorites(session!);
   const { removeFromFavorites, isRemoving, removingTokenId } =
     useRemoveFromFavorites(session!);
 
@@ -25,14 +25,14 @@ export function ProfileNavBar({ logout: _logout }: { logout: () => void }) {
         onClick={toggleDropdown}
         className="flex items-center space-x-2 rounded-full bg-gray-100 focus:ring-2 focus:ring-blue-500 focus:outline-none"
       >
-        {favorites && favorites.length > 0 && favorites[0] && (
+        {selectedFavorite && (
           <img
-            src={favorites[0].token.image || ''}
+            src={selectedFavorite.token.image || ''}
             alt="Avatar"
             className="border-tg-link h-8 w-8 rounded-full border-2"
           />
         )}
-        {isLoadingFavorites && <div className="h-8 w-8 rounded-full" />}
+        {(isLoadingFavorites || isLoadingSelected) && <div className="h-8 w-8 rounded-full" />}
       </button>
 
       {/* Dropdown Menu */}
@@ -50,10 +50,18 @@ export function ProfileNavBar({ logout: _logout }: { logout: () => void }) {
                       size={48}
                       src={`${favorite.token.image || '/nfts/ape.jpg'}`}
                       alt="Favorite"
-                      className={`h-72 w-72 rounded-full transition-all duration-200 ${
+                      onClick={() => {
+                        setSelectedFavorite(favorite);
+                        setIsDropdownOpen(false);
+                      }}
+                      className={`h-72 w-72 rounded-full transition-all duration-200 cursor-pointer ${
                         isRemoving && removingTokenId === favorite.token.id
                           ? 'opacity-50 grayscale'
                           : ''
+                      } ${
+                        selectedFavorite?.token.id === favorite.token.id
+                          ? 'ring-4 ring-blue-500 ring-opacity-50'
+                          : 'hover:ring-2 hover:ring-gray-300'
                       }`}
                     />
                     {/* Remove button - always visible for touch */}

@@ -2,13 +2,52 @@ import { useAuthContext } from '@/auth/AuthProvider';
 import { ProfileNavBar } from './ProfileNavBar';
 import { CreatePostButton } from '@/components/ui/CreatePostButton';
 
-import { Link } from '@tanstack/react-router';
+import { Link, useLocation, useNavigate } from '@tanstack/react-router';
 import { ProtectedRoute } from '@/auth/ProtectedRoute';
 import { Button } from '@telegram-apps/telegram-ui';
 
 export function NavBar() {
   const { logout, isAuthenticated, isAuthenticating, session } =
     useAuthContext();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleNavClick = (targetPath: string) => {
+    console.log('NavBar button clicked!');
+    console.log('Target path:', targetPath);
+    console.log('Current pathname:', location.pathname);
+    console.log('Paths match:', location.pathname === targetPath);
+    
+    if (location.pathname === targetPath) {
+      console.log('Scrolling to top...');
+      
+      // Try to scroll the correct container in order of specificity
+      const scrollOptions = { top: 0, behavior: 'smooth' as ScrollBehavior };
+      
+      // 1. Try feed scroller first (most specific)
+      const scroller = document.querySelector('.scroller');
+      if (scroller) {
+        console.log('Scrolling .scroller element');
+        scroller.scrollTo(scrollOptions);
+        return;
+      }
+      
+      // 2. Try main element (general app container)
+      const main = document.querySelector('main');
+      if (main) {
+        console.log('Scrolling main element');
+        main.scrollTo(scrollOptions);
+        return;
+      }
+      
+      // 3. Fallback to window (for pages without custom scroll)
+      console.log('Scrolling window (fallback)');
+      window.scrollTo(scrollOptions);
+    } else {
+      console.log('Navigating to:', targetPath);
+      navigate({ to: targetPath });
+    }
+  };
 
   if (!isAuthenticated) {
     return (
@@ -38,25 +77,25 @@ export function NavBar() {
       ></Section> */}
       <ProtectedRoute>
         <div className="bg-tg-bg text-tg-text flex h-full w-full items-center justify-around px-4 py-4 pb-6">
-          <Link
-            to="/"
-            className="tg-link px-2 py-1 hover:opacity-80 [&.active]:font-bold"
+          <button
+            onClick={() => handleNavClick('/')}
+            className={`tg-link px-2 py-1 hover:opacity-80 ${location.pathname === '/' ? 'font-bold' : ''}`}
           >
             Feed
-          </Link>
-          <Link
-            to="/about"
-            className="tg-link px-2 py-1 hover:opacity-80 [&.active]:font-bold"
+          </button>
+          <button
+            onClick={() => handleNavClick('/about')}
+            className={`tg-link px-2 py-1 hover:opacity-80 ${location.pathname === '/about' ? 'font-bold' : ''}`}
           >
             About
-          </Link>
+          </button>
           <CreatePostButton />
-          <Link
-            to="/private"
-            className="tg-link px-2 py-1 hover:opacity-80 [&.active]:font-bold"
+          <button
+            onClick={() => handleNavClick('/private')}
+            className={`tg-link px-2 py-1 hover:opacity-80 ${location.pathname === '/private' ? 'font-bold' : ''}`}
           >
             Private
-          </Link>
+          </button>
           {isAuthenticated && session && <ProfileNavBar logout={logout} />}
         </div>
       </ProtectedRoute>

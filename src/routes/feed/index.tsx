@@ -8,7 +8,7 @@ import { LatestAnimatedSticker } from '@/components/lib/LatestContent/LatestAnim
 import type { PromptWithContent } from '@/types/content';
 
 // Debug toggle - set to false to disable all debug functionality
-const DEBUG_MODE = true;
+const DEBUG_MODE = false;
 
 // Array of background GIF files
 const backgroundGifs = [

@@ -45,7 +45,7 @@ export const NFTItem = ({
       )}
       <div
         key={index}
-        className="iteems-center bg-tg-secondary-bg relative flex flex-row gap-2 rounded-full p-2 select-none"
+        className="bg-tg-secondary-bg relative flex h-8 flex-row items-center gap-2 rounded-full p-2 select-none"
         {...longPressBind()}
         onContextMenu={e => e.preventDefault()}
       >

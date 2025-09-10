@@ -13,8 +13,7 @@ export const InputsEditor = ({ prompt }: { prompt: Prompt }) => {
 
   return (
     <div
-      className="flex h-full flex-row items-center px-4"
-      style={{ justifyContent: 'flex-end' }}
+      className="flex h-full flex-row flex-nowrap items-center overflow-x-auto px-4 scrollbar-hide min-w-0 gap-2"
       onClick={() =>
         !isModifyingInputsEditor &&
         setIsModifyingInputsEditor(!isModifyingInputsEditor)

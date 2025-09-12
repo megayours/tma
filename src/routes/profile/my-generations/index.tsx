@@ -7,7 +7,11 @@ import {
   useRevealAllContent,
 } from '@/hooks/useContents';
 import { useSession } from '@/auth/SessionProvider';
-import { Button, Section } from '@telegram-apps/telegram-ui';
+import {
+  Button,
+  Section,
+  Card as TelegramCard,
+} from '@telegram-apps/telegram-ui';
 import {
   Card,
   CardHeader,
@@ -203,24 +207,26 @@ function RouteComponent() {
           )}
 
           {/* Content grid */}
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
             {data.data.map(generation => (
-              <div
+              <TelegramCard
                 key={generation.id}
-                className="flex flex-col gap-2 rounded-lg border p-3"
+                className="flex flex-col gap-2 p-2"
               >
                 <div className="relative">
                   {generation.revealed_at === null ? (
                     // Unrevealed content - show clickable placeholder
-                    <button
+                    <Button
+                      mode="bezeled"
+                      size="s"
                       onClick={() => handleRevealContent(generation.id)}
                       disabled={revealingIds.has(generation.id)}
-                      className="flex h-24 w-full items-center justify-center rounded bg-gray-200 text-gray-500 transition-colors hover:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="flex h-24 w-full items-center justify-center"
                     >
                       <div className="text-center">
                         {revealingIds.has(generation.id) ? (
                           <>
-                            <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-gray-500 border-t-transparent"></div>
+                            <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
                             <div className="mt-1 text-xs">Revealing...</div>
                           </>
                         ) : (
@@ -230,17 +236,7 @@ function RouteComponent() {
                           </>
                         )}
                       </div>
-                    </button>
-                  ) : generation.type === 'animated_sticker' ||
-                    generation.type === 'video' ? (
-                    <video
-                      src={generation.url}
-                      className="h-24 w-full rounded object-cover"
-                      muted
-                      loop
-                      playsInline
-                      autoPlay
-                    />
+                    </Button>
                   ) : (
                     <img
                       src={generation.url}
@@ -274,7 +270,7 @@ function RouteComponent() {
                     </p>
                   )}
                 </div>
-              </div>
+              </TelegramCard>
             ))}
           </div>
 

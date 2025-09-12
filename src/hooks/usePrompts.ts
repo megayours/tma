@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { Pagination } from '@/types/requests';
+import type { Filter, Pagination } from '@/types/requests';
 import { type RawPromptsResponse, type RawPrompt } from '@/types/response';
 import { apiGet } from '@/lib/api';
 import type { PromptWithContent } from '@/types/content';
@@ -172,6 +172,65 @@ export const useGetPrompt = (promptId: string, session: Session | null) => {
       return prompt;
     },
     enabled: !!session,
+  });
+};
+
+export const useGetPrompts = ({
+  promptFilters,
+  session,
+  pagination,
+  filters,
+}: {
+  session: Session | null;
+  pagination: Pagination;
+  promptFilters: {
+    type: 'images' | 'videos' | 'stickers' | 'animated_stickers' | 'all';
+  };
+  filters: Filter;
+}) => {
+  const queryKey = [
+    'prompts',
+    session?.authToken,
+    promptFilters,
+    filters,
+    pagination,
+  ];
+
+  return useQuery({
+    queryKey,
+    queryFn: async () => {
+      if (!session) return;
+      if (!pagination.page || !pagination.size) return;
+
+      const params = new URLSearchParams();
+      params.set('type', promptFilters.type || 'all');
+      params.set('page', pagination.page.toString());
+      params.set('size', pagination.size.toString());
+
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/prompts?${params.toString()}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: session.authToken,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error('Prompt not found');
+        }
+        throw new Error(`Failed to fetch prompt: ${response.status}`);
+      }
+
+      const data = await response.json();
+      // rename data as prompts
+      data.prompts = data.data;
+      return data as { prompts: Prompt[]; pagination: Pagination };
+    },
+    enabled: !!session && !!pagination.page && !!pagination.size,
   });
 };
 

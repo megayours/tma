@@ -5,7 +5,7 @@ export const PromptTypeSchema = z
   .optional();
 export type PromptType = z.infer<typeof PromptTypeSchema>;
 
-export const ContentTypeSchema = z.enum(['image', 'video', 'sticker']);
+export const ContentTypeSchema = z.enum(['image', 'video', 'sticker', 'animated_sticker']);
 export type ContentType = z.infer<typeof ContentTypeSchema>;
 
 export const ContentSortBySchema = z.enum(['created_at']);

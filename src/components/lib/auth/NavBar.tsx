@@ -86,10 +86,10 @@ export function NavBar() {
             Feed
           </button>
           <button
-            onClick={() => handleNavClick('/about')}
+            onClick={() => handleNavClick('/stickers')}
             className={`tg-link px-2 py-1 hover:opacity-80 ${location.pathname === '/about' ? 'font-bold' : ''}`}
           >
-            About
+            Stickers
           </button>
           <CreatePostButton />
           <button

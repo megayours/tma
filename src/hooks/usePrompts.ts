@@ -2,8 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Pagination } from '@/types/requests';
-import { type RawPromptsResponse, type RawPrompt } from '@/types/response';
-import { apiGet } from '@/lib/api';
+import { type RawPrompt } from '@/types/response';
 import type { PromptWithContent } from '@/types/content';
 import type { Session } from '@/auth/useAuth';
 import type { Prompt } from '@/types/prompt';
@@ -65,23 +64,34 @@ export const useGetRecommendedPrompts = ({
     enabled,
     queryFn: async () => {
       try {
-        const response = await apiGet<RawPromptsResponse>(
-          `${import.meta.env.VITE_PUBLIC_API_URL}/discovery/prompts/recommended`,
+        const params = new URLSearchParams({
+          type,
+          exclude_used: excludeUsed.toString(),
+          page: (pagination.page || 1).toString(),
+          size: (pagination.size || 10).toString(),
+        });
+
+        const response = await fetch(
+          `${import.meta.env.VITE_PUBLIC_API_URL}/discovery/prompts/recommended?${params}`,
           {
-            type,
-            exclude_used: excludeUsed,
-            page: pagination.page,
-            size: pagination.size,
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
           }
         );
 
-        if (!response || !response.data) {
-          console.error('Invalid response format:', response);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (!data || !data.data) {
+          console.error('Invalid response format:', data);
           throw new Error('Invalid response format: missing data');
         }
 
-        const mappedPrompts: PromptWithContent[] = response.data.map(
-          rawPrompt => {
+        const mappedPrompts: PromptWithContent[] = data.data.map(
+          (rawPrompt: any) => {
             const mapped = mapRawPromptToPromptWithContent(rawPrompt);
             return mapped;
           }
@@ -89,7 +99,7 @@ export const useGetRecommendedPrompts = ({
 
         const result = {
           prompts: mappedPrompts,
-          pagination: response.pagination || {
+          pagination: data.pagination || {
             page: 1,
             size: 10,
             total: 0,
@@ -102,6 +112,96 @@ export const useGetRecommendedPrompts = ({
         console.error('Failed to fetch recommended prompts:', err);
         throw new Error(
           `Failed to load recommendations: ${err instanceof Error ? err.message : 'Unknown error'}`
+        );
+      }
+    },
+  });
+
+  return {
+    data: {
+      prompts: data?.prompts || [],
+      pagination: data?.pagination || null,
+    },
+    isLoading,
+    error,
+    refetch,
+  };
+};
+
+export const useGetPrompts = ({
+  type = 'all',
+  pagination,
+  sortBy = 'created_at',
+  sortOrder = 'desc',
+  enabled = true,
+}: {
+  type?:
+    | 'images'
+    | 'videos'
+    | 'gifs'
+    | 'stickers'
+    | 'animated_stickers'
+    | 'all';
+  pagination: Pagination;
+  sortBy?: 'created_at' | 'updated_at' | 'usage_count' | 'published_at';
+  sortOrder?: 'asc' | 'desc';
+  enabled?: boolean;
+}) => {
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ['prompts', type, pagination, sortBy, sortOrder],
+    enabled,
+    queryFn: async () => {
+      if (!pagination.page || !pagination.size) {
+        throw new Error('Pagination {page and size} is required');
+      }
+      try {
+        const params = new URLSearchParams({
+          type,
+          sort_by: sortBy,
+          sort_order: sortOrder,
+          page: (pagination.page || 1).toString(),
+          size: (pagination.size || 10).toString(),
+        });
+
+        const response = await fetch(
+          `${import.meta.env.VITE_PUBLIC_API_URL}/prompts?${params}`,
+          {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (!data || !data.data) {
+          console.error('Invalid response format:', data);
+          throw new Error('Invalid response format: missing data');
+        }
+
+        const mappedPrompts: PromptWithContent[] = data.data.map((rawPrompt: any) => {
+          const mapped = mapRawPromptToPromptWithContent(rawPrompt);
+          return mapped;
+        });
+
+        const result = {
+          prompts: mappedPrompts,
+          pagination: data.pagination || {
+            page: 1,
+            size: 10,
+            total: 0,
+            totalPages: 0,
+          },
+        };
+
+        return result;
+      } catch (err) {
+        console.error('Failed to fetch prompts:', err);
+        throw new Error(
+          `Failed to load prompts: ${err instanceof Error ? err.message : 'Unknown error'}`
         );
       }
     },
@@ -266,6 +366,7 @@ export const useGetMyPrompts = (
 
       const data = await response.json();
 
+      console.log('MY STICKERS DATA', data);
       return data;
     },
     enabled: !!session,

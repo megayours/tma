@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query';
-import { apiGet } from '@/lib/api';
 import type { Pagination, Filter } from '@/types/requests';
 import type { Token, PaginationResponse } from '../types/response';
 import type { Image, ImageStatus } from '../types/image';
@@ -19,18 +18,29 @@ export function useGetLatestImages(params: LatestImagesParams) {
       pagination: PaginationResponse;
     }> => {
       try {
-        const response = await apiGet<any>(
-          `${import.meta.env.VITE_PUBLIC_API_URL}/images/statuses`,
+        const queryParams = new URLSearchParams({
+          prompt_id: params.promptId,
+          ...(params.filters?.sortBy && { sort_by: params.filters.sortBy }),
+          ...(params.filters?.sortOrder && { sort_order: params.filters.sortOrder }),
+          ...(params.pagination?.page && { page: params.pagination.page.toString() }),
+          ...(params.pagination?.size && { size: params.pagination.size.toString() }),
+        });
+
+        const response = await fetch(
+          `${import.meta.env.VITE_PUBLIC_API_URL}/images/statuses?${queryParams}`,
           {
-            prompt_id: params.promptId,
-            sort_by: params.filters?.sortBy,
-            sort_order: params.filters?.sortOrder,
-            page: params.pagination?.page,
-            size: params.pagination?.size,
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
           }
         );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
         return {
-          images: response.data.map((image: any) => ({
+          images: data.data.map((image: any) => ({
             id: image.id,
             creatorId: image.creator_id,
             promptId: image.prompt_id,
@@ -57,22 +67,32 @@ export function useGetImage(imageId: string) {
     queryKey: ['image', imageId],
     queryFn: async (): Promise<Image> => {
       try {
-        const response = await apiGet<any>(
-          `${import.meta.env.VITE_PUBLIC_API_URL}/images/data/${imageId}`
+        const response = await fetch(
+          `${import.meta.env.VITE_PUBLIC_API_URL}/images/data/${imageId}`,
+          {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+          }
         );
 
-        if (!response) {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (!data) {
           throw new Error('No data received from API');
         }
 
         const image = {
-          id: response.id,
-          createdAt: response.created_at,
-          creatorId: response.creator_id,
-          image: response.image,
-          prompt: response.prompt as CompactPrompt,
-          token: response.token as Token,
-          tokens: response.tokens as Token[],
+          id: data.id,
+          createdAt: data.created_at,
+          creatorId: data.creator_id,
+          image: data.image,
+          prompt: data.prompt as CompactPrompt,
+          token: data.token as Token,
+          tokens: data.tokens as Token[],
         };
         return image;
       } catch (error) {

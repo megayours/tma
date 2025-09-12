@@ -1,12 +1,13 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
 import {
-  useMyRecentGenerations,
+  useGetContent,
   useRevealContent,
   useUnrevealedGenerations,
   useRevealAllContent,
 } from '@/hooks/useContents';
 import { useSession } from '@/auth/SessionProvider';
+import type { ContentFilters } from '@/types/requests';
 import { Button, Section } from '@telegram-apps/telegram-ui';
 import {
   Card,
@@ -17,7 +18,6 @@ import {
   Alert,
   AlertDescription,
 } from '@/components/ui';
-import type { MyRecentGenerationsRequest } from '@/types/requests';
 
 export const Route = createFileRoute('/profile/my-generations/')({
   component: RouteComponent,
@@ -26,21 +26,25 @@ export const Route = createFileRoute('/profile/my-generations/')({
 function RouteComponent() {
   const { session } = useSession();
   const [contentType, setContentType] = useState<
-    'all' | 'images' | 'videos' | 'stickers' | 'animated_stickers'
-  >('all');
+    'image' | 'video' | 'sticker' | 'animated_sticker' | undefined
+  >(undefined);
   const [currentPage, setCurrentPage] = useState(1);
   const [revealingIds, setRevealingIds] = useState<Set<string>>(new Set());
 
-  const params: MyRecentGenerationsRequest = {
+  const params: ContentFilters = {
     type: contentType,
+    account: session?.id,
+    filters: {
+      sortBy: 'created_at',
+      sortOrder: 'desc',
+    },
     pagination: {
       page: currentPage,
       size: 20,
     },
-    days: '30',
   };
 
-  const { data, isLoading, error } = useMyRecentGenerations(params, session);
+  const { data, isLoading, error } = useGetContent(params, session);
   const revealMutation = useRevealContent(session);
   const { unrevealedGenerations } = useUnrevealedGenerations(session);
   const revealAllMutation = useRevealAllContent(session);
@@ -161,20 +165,20 @@ function RouteComponent() {
           <div className="mb-6 flex flex-wrap gap-2">
             {(
               [
-                'all',
-                'images',
-                'videos',
-                'stickers',
-                'animated_stickers',
+                undefined,
+                'image',
+                'video', 
+                'sticker',
+                'animated_sticker',
               ] as const
             ).map(type => (
               <Button
-                key={type}
+                key={type || 'all'}
                 mode={contentType === type ? 'filled' : 'bezeled'}
                 size="s"
                 onClick={() => handleTypeChange(type)}
               >
-                {type === 'all'
+                {type === undefined
                   ? 'All'
                   : type.charAt(0).toUpperCase() + type.slice(1)}
               </Button>
@@ -233,13 +237,9 @@ function RouteComponent() {
                     </button>
                   ) : generation.type === 'animated_sticker' ||
                     generation.type === 'video' ? (
-                    <video
+                    <img
                       src={generation.url}
                       className="h-24 w-full rounded object-cover"
-                      muted
-                      loop
-                      playsInline
-                      autoPlay
                     />
                   ) : (
                     <img

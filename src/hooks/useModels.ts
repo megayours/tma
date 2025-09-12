@@ -1,17 +1,25 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { apiGet } from '@/lib/api';
-import type { ModelsResponse } from '@/types/models';
 
 export const useModels = () => {
   const { data, isLoading, error } = useQuery({
     queryKey: ['models'],
     queryFn: async () => {
-      const response = await apiGet<ModelsResponse>(
-        `${import.meta.env.VITE_PUBLIC_API_URL}/settings/models`
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/settings/models`,
+        {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+        }
       );
-      return response;
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data;
     },
   });
 

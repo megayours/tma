@@ -11,14 +11,17 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as StickersIndexRouteImport } from './routes/stickers/index'
 import { Route as ProfileIndexRouteImport } from './routes/profile/index'
 import { Route as PrivateIndexRouteImport } from './routes/private/index'
 import { Route as PostIndexRouteImport } from './routes/post/index'
+import { Route as LatestDemoIndexRouteImport } from './routes/latest-demo/index'
 import { Route as FeedIndexRouteImport } from './routes/feed/index'
 import { Route as Demo3IndexRouteImport } from './routes/demo3/index'
 import { Route as Demo2IndexRouteImport } from './routes/demo2/index'
 import { Route as AuthRefreshRouteImport } from './routes/auth/refresh'
 import { Route as ProfilePromptIndexRouteImport } from './routes/profile/prompt/index'
+import { Route as ProfileMyStickersIndexRouteImport } from './routes/profile/my-stickers/index'
 import { Route as ProfileMyGenerationsIndexRouteImport } from './routes/profile/my-generations/index'
 import { Route as ProfileFavoritesIndexRouteImport } from './routes/profile/favorites/index'
 import { Route as PostCreateIndexRouteImport } from './routes/post/create/index'
@@ -43,6 +46,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StickersIndexRoute = StickersIndexRouteImport.update({
+  id: '/stickers/',
+  path: '/stickers/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProfileIndexRoute = ProfileIndexRouteImport.update({
   id: '/profile/',
   path: '/profile/',
@@ -56,6 +64,11 @@ const PrivateIndexRoute = PrivateIndexRouteImport.update({
 const PostIndexRoute = PostIndexRouteImport.update({
   id: '/post/',
   path: '/post/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LatestDemoIndexRoute = LatestDemoIndexRouteImport.update({
+  id: '/latest-demo/',
+  path: '/latest-demo/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FeedIndexRoute = FeedIndexRouteImport.update({
@@ -81,6 +94,11 @@ const AuthRefreshRoute = AuthRefreshRouteImport.update({
 const ProfilePromptIndexRoute = ProfilePromptIndexRouteImport.update({
   id: '/profile/prompt/',
   path: '/profile/prompt/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileMyStickersIndexRoute = ProfileMyStickersIndexRouteImport.update({
+  id: '/profile/my-stickers/',
+  path: '/profile/my-stickers/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProfileMyGenerationsIndexRoute =
@@ -161,15 +179,18 @@ export interface FileRoutesByFullPath {
   '/demo2': typeof Demo2IndexRoute
   '/demo3': typeof Demo3IndexRoute
   '/feed': typeof FeedIndexRoute
+  '/latest-demo': typeof LatestDemoIndexRoute
   '/post': typeof PostIndexRoute
   '/private': typeof PrivateIndexRoute
   '/profile': typeof ProfileIndexRoute
+  '/stickers': typeof StickersIndexRoute
   '/profile/prompt/edit': typeof ProfilePromptEditRouteRouteWithChildren
   '/demo2/item': typeof Demo2ItemIndexRoute
   '/post/$postId': typeof PostPostIdIndexRoute
   '/post/create': typeof PostCreateIndexRoute
   '/profile/favorites': typeof ProfileFavoritesIndexRoute
   '/profile/my-generations': typeof ProfileMyGenerationsIndexRoute
+  '/profile/my-stickers': typeof ProfileMyStickersIndexRoute
   '/profile/prompt': typeof ProfilePromptIndexRoute
   '/profile/prompt/edit/$promptId': typeof ProfilePromptEditPromptIdRouteRouteWithChildren
   '/post/create/image': typeof PostCreateImageIndexRoute
@@ -186,15 +207,18 @@ export interface FileRoutesByTo {
   '/demo2': typeof Demo2IndexRoute
   '/demo3': typeof Demo3IndexRoute
   '/feed': typeof FeedIndexRoute
+  '/latest-demo': typeof LatestDemoIndexRoute
   '/post': typeof PostIndexRoute
   '/private': typeof PrivateIndexRoute
   '/profile': typeof ProfileIndexRoute
+  '/stickers': typeof StickersIndexRoute
   '/profile/prompt/edit': typeof ProfilePromptEditRouteRouteWithChildren
   '/demo2/item': typeof Demo2ItemIndexRoute
   '/post/$postId': typeof PostPostIdIndexRoute
   '/post/create': typeof PostCreateIndexRoute
   '/profile/favorites': typeof ProfileFavoritesIndexRoute
   '/profile/my-generations': typeof ProfileMyGenerationsIndexRoute
+  '/profile/my-stickers': typeof ProfileMyStickersIndexRoute
   '/profile/prompt': typeof ProfilePromptIndexRoute
   '/post/create/image': typeof PostCreateImageIndexRoute
   '/post/create/sticker': typeof PostCreateStickerIndexRoute
@@ -211,15 +235,18 @@ export interface FileRoutesById {
   '/demo2/': typeof Demo2IndexRoute
   '/demo3/': typeof Demo3IndexRoute
   '/feed/': typeof FeedIndexRoute
+  '/latest-demo/': typeof LatestDemoIndexRoute
   '/post/': typeof PostIndexRoute
   '/private/': typeof PrivateIndexRoute
   '/profile/': typeof ProfileIndexRoute
+  '/stickers/': typeof StickersIndexRoute
   '/profile/prompt/edit': typeof ProfilePromptEditRouteRouteWithChildren
   '/demo2/item/': typeof Demo2ItemIndexRoute
   '/post/$postId/': typeof PostPostIdIndexRoute
   '/post/create/': typeof PostCreateIndexRoute
   '/profile/favorites/': typeof ProfileFavoritesIndexRoute
   '/profile/my-generations/': typeof ProfileMyGenerationsIndexRoute
+  '/profile/my-stickers/': typeof ProfileMyStickersIndexRoute
   '/profile/prompt/': typeof ProfilePromptIndexRoute
   '/profile/prompt/edit/$promptId': typeof ProfilePromptEditPromptIdRouteRouteWithChildren
   '/post/create/image/': typeof PostCreateImageIndexRoute
@@ -238,15 +265,18 @@ export interface FileRouteTypes {
     | '/demo2'
     | '/demo3'
     | '/feed'
+    | '/latest-demo'
     | '/post'
     | '/private'
     | '/profile'
+    | '/stickers'
     | '/profile/prompt/edit'
     | '/demo2/item'
     | '/post/$postId'
     | '/post/create'
     | '/profile/favorites'
     | '/profile/my-generations'
+    | '/profile/my-stickers'
     | '/profile/prompt'
     | '/profile/prompt/edit/$promptId'
     | '/post/create/image'
@@ -263,15 +293,18 @@ export interface FileRouteTypes {
     | '/demo2'
     | '/demo3'
     | '/feed'
+    | '/latest-demo'
     | '/post'
     | '/private'
     | '/profile'
+    | '/stickers'
     | '/profile/prompt/edit'
     | '/demo2/item'
     | '/post/$postId'
     | '/post/create'
     | '/profile/favorites'
     | '/profile/my-generations'
+    | '/profile/my-stickers'
     | '/profile/prompt'
     | '/post/create/image'
     | '/post/create/sticker'
@@ -287,15 +320,18 @@ export interface FileRouteTypes {
     | '/demo2/'
     | '/demo3/'
     | '/feed/'
+    | '/latest-demo/'
     | '/post/'
     | '/private/'
     | '/profile/'
+    | '/stickers/'
     | '/profile/prompt/edit'
     | '/demo2/item/'
     | '/post/$postId/'
     | '/post/create/'
     | '/profile/favorites/'
     | '/profile/my-generations/'
+    | '/profile/my-stickers/'
     | '/profile/prompt/'
     | '/profile/prompt/edit/$promptId'
     | '/post/create/image/'
@@ -313,15 +349,18 @@ export interface RootRouteChildren {
   Demo2IndexRoute: typeof Demo2IndexRoute
   Demo3IndexRoute: typeof Demo3IndexRoute
   FeedIndexRoute: typeof FeedIndexRoute
+  LatestDemoIndexRoute: typeof LatestDemoIndexRoute
   PostIndexRoute: typeof PostIndexRoute
   PrivateIndexRoute: typeof PrivateIndexRoute
   ProfileIndexRoute: typeof ProfileIndexRoute
+  StickersIndexRoute: typeof StickersIndexRoute
   ProfilePromptEditRouteRoute: typeof ProfilePromptEditRouteRouteWithChildren
   Demo2ItemIndexRoute: typeof Demo2ItemIndexRoute
   PostPostIdIndexRoute: typeof PostPostIdIndexRoute
   PostCreateIndexRoute: typeof PostCreateIndexRoute
   ProfileFavoritesIndexRoute: typeof ProfileFavoritesIndexRoute
   ProfileMyGenerationsIndexRoute: typeof ProfileMyGenerationsIndexRoute
+  ProfileMyStickersIndexRoute: typeof ProfileMyStickersIndexRoute
   ProfilePromptIndexRoute: typeof ProfilePromptIndexRoute
   PostCreateImageIndexRoute: typeof PostCreateImageIndexRoute
   PostCreateStickerIndexRoute: typeof PostCreateStickerIndexRoute
@@ -346,6 +385,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/stickers/': {
+      id: '/stickers/'
+      path: '/stickers'
+      fullPath: '/stickers'
+      preLoaderRoute: typeof StickersIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/profile/': {
       id: '/profile/'
       path: '/profile'
@@ -365,6 +411,13 @@ declare module '@tanstack/react-router' {
       path: '/post'
       fullPath: '/post'
       preLoaderRoute: typeof PostIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/latest-demo/': {
+      id: '/latest-demo/'
+      path: '/latest-demo'
+      fullPath: '/latest-demo'
+      preLoaderRoute: typeof LatestDemoIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/feed/': {
@@ -400,6 +453,13 @@ declare module '@tanstack/react-router' {
       path: '/profile/prompt'
       fullPath: '/profile/prompt'
       preLoaderRoute: typeof ProfilePromptIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile/my-stickers/': {
+      id: '/profile/my-stickers/'
+      path: '/profile/my-stickers'
+      fullPath: '/profile/my-stickers'
+      preLoaderRoute: typeof ProfileMyStickersIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/profile/my-generations/': {
@@ -532,15 +592,18 @@ const rootRouteChildren: RootRouteChildren = {
   Demo2IndexRoute: Demo2IndexRoute,
   Demo3IndexRoute: Demo3IndexRoute,
   FeedIndexRoute: FeedIndexRoute,
+  LatestDemoIndexRoute: LatestDemoIndexRoute,
   PostIndexRoute: PostIndexRoute,
   PrivateIndexRoute: PrivateIndexRoute,
   ProfileIndexRoute: ProfileIndexRoute,
+  StickersIndexRoute: StickersIndexRoute,
   ProfilePromptEditRouteRoute: ProfilePromptEditRouteRouteWithChildren,
   Demo2ItemIndexRoute: Demo2ItemIndexRoute,
   PostPostIdIndexRoute: PostPostIdIndexRoute,
   PostCreateIndexRoute: PostCreateIndexRoute,
   ProfileFavoritesIndexRoute: ProfileFavoritesIndexRoute,
   ProfileMyGenerationsIndexRoute: ProfileMyGenerationsIndexRoute,
+  ProfileMyStickersIndexRoute: ProfileMyStickersIndexRoute,
   ProfilePromptIndexRoute: ProfilePromptIndexRoute,
   PostCreateImageIndexRoute: PostCreateImageIndexRoute,
   PostCreateStickerIndexRoute: PostCreateStickerIndexRoute,

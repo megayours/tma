@@ -2,10 +2,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   ContentFiltersSchema,
   type ContentFilters,
-  MyRecentGenerationsRequestSchema,
-  type MyRecentGenerationsRequest,
 } from '../types/requests';
-import { safeParse, getValidationErrors } from '@/utils/validation';
+import { safeParse } from '@/utils/validation';
 import {
   type Content,
   type ContentListResponse,
@@ -13,8 +11,6 @@ import {
   type RawContentResponse,
   type Token,
   RawContentListResponseSchema,
-  MyRecentGenerationsResponseSchema,
-  type MyRecentGenerationsResponse,
 } from '../types/response';
 import type { Session } from '@/auth/useAuth';
 import type { PromptVersion } from '@/types/prompt';
@@ -292,97 +288,27 @@ export const useGenerateContentMutation = (
   });
 };
 
-export const useMyRecentGenerations = (
-  params: MyRecentGenerationsRequest,
-  session: Session | null | undefined
-) => {
-  return useQuery({
-    queryKey: ['my-recent-generations', params],
-    queryFn: async (): Promise<MyRecentGenerationsResponse> => {
-      const validatedParams = safeParse(
-        MyRecentGenerationsRequestSchema,
-        params
-      );
-      if (!validatedParams) {
-        throw new Error('Invalid parameters');
-      }
-
-      try {
-        // Build parameters object - convert pagination to individual params
-        const apiParams = {
-          type: validatedParams.type,
-          page: validatedParams.pagination?.page?.toString() || '1',
-          size: validatedParams.pagination?.size?.toString() || '20',
-          days: validatedParams.days,
-        };
-
-        // Build query string from parameters
-        const queryParams = new URLSearchParams();
-        Object.entries(apiParams).forEach(([key, value]) => {
-          if (value !== undefined && value !== null) {
-            queryParams.append(key, String(value));
-          }
-        });
-
-        const queryString = queryParams.toString();
-        const url = `${import.meta.env.VITE_PUBLIC_API_URL}/discovery/generations/my-recent${queryString ? `?${queryString}` : ''}`;
-
-        const response = await fetch(url, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(session?.authToken && { Authorization: session.authToken }),
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const rawData: MyRecentGenerationsResponse = await response.json();
-
-        // Validate raw response data
-        const validatedRawData = safeParse(
-          MyRecentGenerationsResponseSchema,
-          rawData
-        );
-        if (!validatedRawData) {
-          const errors = getValidationErrors(
-            MyRecentGenerationsResponseSchema,
-            rawData
-          );
-          console.error('Schema validation failed:', errors);
-          console.error('Raw data:', rawData);
-          throw new Error(`Invalid response data: ${errors}`);
-        }
-
-        return validatedRawData;
-      } catch (error) {
-        console.error('ERROR', error);
-        throw error;
-      }
-    },
-    enabled: !!session,
-  });
-};
 
 export const useUnrevealedGenerations = (
   session: Session | null | undefined
 ) => {
-  const params: MyRecentGenerationsRequest = {
-    type: 'all',
+  const params: ContentFilters = {
+    account: session?.id,
+    filters: {
+      sortBy: 'created_at',
+      sortOrder: 'desc',
+    },
     pagination: {
       page: 1,
       size: 100, // Get a larger set to find unrevealed items
     },
-    days: '30',
   };
 
-  const { data } = useMyRecentGenerations(params, session);
+  const { data } = useGetContent(params, session);
 
-  // Filter unrevealed generations (revealed_at is null)
+  // Filter unrevealed generations (status is processing)
   const unrevealedGenerations = data?.data?.filter(
-    generation => generation.revealed_at === null
+    generation => generation.status === 'processing'
   ) || [];
 
   const unrevealedCount = unrevealedGenerations.length;
@@ -418,8 +344,8 @@ export const useRevealContent = (session: Session | null | undefined) => {
       return data;
     },
     onSuccess: () => {
-      // Invalidate my-recent-generations queries to refresh the data
-      queryClient.invalidateQueries({ queryKey: ['my-recent-generations'] });
+      // Invalidate content queries to refresh the data
+      queryClient.invalidateQueries({ queryKey: ['content'] });
     },
   });
 };
@@ -456,8 +382,8 @@ export const useRevealAllContent = (session: Session | null | undefined) => {
       return { successful: results.length, total: contentIds.length };
     },
     onSuccess: () => {
-      // Invalidate my-recent-generations queries to refresh the data
-      queryClient.invalidateQueries({ queryKey: ['my-recent-generations'] });
+      // Invalidate content queries to refresh the data
+      queryClient.invalidateQueries({ queryKey: ['content'] });
     },
   });
 };

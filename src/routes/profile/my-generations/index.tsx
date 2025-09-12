@@ -167,7 +167,7 @@ function RouteComponent() {
               [
                 undefined,
                 'image',
-                'video', 
+                'video',
                 'sticker',
                 'animated_sticker',
               ] as const

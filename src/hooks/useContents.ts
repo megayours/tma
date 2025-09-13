@@ -381,9 +381,8 @@ export const useUnrevealedGenerations = (
   const { data } = useMyRecentGenerations(params, session);
 
   // Filter unrevealed generations (revealed_at is null)
-  const unrevealedGenerations = data?.data?.filter(
-    generation => generation.revealed_at === null
-  ) || [];
+  const unrevealedGenerations =
+    data?.data?.filter(generation => generation.revealed_at === null) || [];
 
   const unrevealedCount = unrevealedGenerations.length;
 
@@ -392,7 +391,7 @@ export const useUnrevealedGenerations = (
 
 export const useRevealContent = (session: Session | null | undefined) => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (contentId: string) => {
       if (!session) {
@@ -426,7 +425,7 @@ export const useRevealContent = (session: Session | null | undefined) => {
 
 export const useRevealAllContent = (session: Session | null | undefined) => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (contentIds: string[]) => {
       if (!session) {
@@ -446,7 +445,9 @@ export const useRevealAllContent = (session: Session | null | undefined) => {
           }
         ).then(response => {
           if (!response.ok) {
-            throw new Error(`Failed to reveal content ${contentId}: ${response.status}`);
+            throw new Error(
+              `Failed to reveal content ${contentId}: ${response.status}`
+            );
           }
           return response.json();
         })

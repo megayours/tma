@@ -73,3 +73,11 @@ export type { TopBarProps } from './TopBar';
 // Toast
 export { ToastProvider, useToast, Toast, ToastContainer } from './toast';
 export type { ToastType, ToastContextType } from './toast';
+
+// StickerPromptCard
+export { StickerPromptCard } from './StickerPromptCard';
+export type { StickerPromptCardProps } from './StickerPromptCard';
+
+// StickerCollectionBar
+export { StickerCollectionBar } from './StickerCollectionPortal';
+export type { StickerCollectionBarProps } from './StickerCollectionPortal';

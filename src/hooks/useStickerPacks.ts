@@ -1,0 +1,131 @@
+import { useQuery } from '@tanstack/react-query';
+import { z } from 'zod';
+import { safeParse, getValidationErrors } from '@/utils/validation';
+// We'll define our own pagination schema since the API returns total as string
+import type { Pagination } from '../types/requests';
+import type { Session } from '@/auth/useAuth';
+
+// Custom pagination schema for sticker packs (handles string total)
+const StickerPackPaginationSchema = z.object({
+  page: z.number(),
+  size: z.number(),
+  total: z.union([z.string(), z.number()]).transform(val => typeof val === 'string' ? parseInt(val, 10) : val),
+  totalPages: z.number(),
+});
+
+// Sticker pack type enum
+const StickerPackTypeSchema = z.enum(['stickers', 'animated_stickers']);
+type StickerPackType = z.infer<typeof StickerPackTypeSchema>;
+
+// Preview item for sticker pack
+const StickerPackPreviewItemSchema = z.object({
+  content_id: z.string(),
+  preview_url: z.string(),
+  sort_order: z.number(),
+});
+type StickerPackPreviewItem = z.infer<typeof StickerPackPreviewItemSchema>;
+
+// User execution status
+const StickerPackUserExecutionSchema = z.object({
+  execution_id: z.string(),
+  status: z.enum(['processing', 'completed', 'failed']),
+  effect_style: z.string(),
+  completed_prompts: z.number(),
+  total_prompts: z.number(),
+  progress_percentage: z.number(),
+});
+type StickerPackUserExecution = z.infer<typeof StickerPackUserExecutionSchema>;
+
+// Main sticker pack (StickerBundles as requested)
+const StickerBundlesSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  description: z.string().nullable(),
+  type: StickerPackTypeSchema,
+  is_active: z.boolean(),
+  created_by_admin_id: z.string(),
+  created_at: z.number(),
+  updated_at: z.number(),
+  item_count: z.union([z.string(), z.number()]).transform(val => typeof val === 'string' ? parseInt(val, 10) : val),
+  preview_items: z.array(StickerPackPreviewItemSchema),
+  user_execution: StickerPackUserExecutionSchema.nullable().optional(),
+});
+export type StickerBundles = z.infer<typeof StickerBundlesSchema>;
+
+// Response type
+const StickerPacksResponseSchema = z.object({
+  data: z.array(StickerBundlesSchema),
+  pagination: StickerPackPaginationSchema,
+});
+type StickerPacksResponse = z.infer<typeof StickerPacksResponseSchema>;
+
+// Hook parameters
+interface UseStickerPacksParams {
+  pagination?: Pagination;
+  type?: StickerPackType;
+}
+
+export const useStickerPacks = (
+  params: UseStickerPacksParams,
+  session: Session | null | undefined
+) => {
+  const { pagination, type } = params;
+  
+  // Extract page and size with null checking
+  const page = pagination?.page || 1;
+  const size = pagination?.size || 10;
+
+  return useQuery({
+    queryKey: ['sticker-packs', type, page, size],
+    queryFn: async (): Promise<StickerPacksResponse> => {
+      try {
+        // Build query parameters
+        const queryParams = new URLSearchParams({
+          page: page.toString(),
+          size: size.toString(),
+        });
+
+        // Add type parameter if provided
+        if (type) {
+          queryParams.append('type', type);
+        }
+
+        const queryString = queryParams.toString();
+        const url = `${import.meta.env.VITE_PUBLIC_API_URL}/sticker-pack${queryString ? `?${queryString}` : ''}`;
+
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(session?.authToken && { Authorization: session.authToken }),
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const rawData = await response.json();
+
+        // Validate response data
+        const validatedData = safeParse(StickerPacksResponseSchema, rawData);
+        if (!validatedData) {
+          const errors = getValidationErrors(StickerPacksResponseSchema, rawData);
+          console.error('Response validation failed for sticker packs:', rawData);
+          console.error('Validation errors:', errors);
+          console.error('Expected schema:', StickerPacksResponseSchema);
+          throw new Error(`Invalid response data format - failed to parse sticker packs response: ${errors}`);
+        }
+
+        return validatedData;
+      } catch (error) {
+        console.error('ERROR fetching sticker packs:', error);
+        throw error;
+      }
+    },
+    enabled: !!session,
+  });
+};
+
+// Export types for external use
+export type { StickerPackType, StickerPackPreviewItem, StickerPackUserExecution };

@@ -15,6 +15,7 @@ interface NFTCloudProps {
   nftIndex: number;
   prompt: Prompt;
   onClose: () => void;
+  isCompulsory: boolean;
 }
 
 /**
@@ -27,6 +28,7 @@ export const NFTCloud = ({
   setIndex,
   nftIndex,
   onClose,
+  isCompulsory,
 }: NFTCloudProps) => {
   const { data: collections } = useGetCollectionsWithPrompt(prompt);
   const [selectedCollection, setSelectedCollection] =
@@ -35,7 +37,7 @@ export const NFTCloud = ({
   const [selectionMode, setSelectionMode] = useState<
     'favorites' | 'collections'
   >('favorites');
-  const { updateNFTInSet } = useNFTSetsContext();
+  const { updateCompulsoryNFTInSet, updateOptionalNFTInSet } = useNFTSetsContext();
 
   const handleCollectionSelect = (collection: SupportedCollection) => {
     // Remove focus from any active textarea to prevent keyboard from opening
@@ -51,13 +53,21 @@ export const NFTCloud = ({
 
   const handleTokenSelect = (token: Token) => {
     const newToken = token;
-    updateNFTInSet(setIndex, nftIndex, newToken);
+    if (isCompulsory) {
+      updateCompulsoryNFTInSet(setIndex, nftIndex, newToken);
+    } else {
+      updateOptionalNFTInSet(setIndex, nftIndex, newToken);
+    }
   };
 
   const handleSelectFavorite = (favorite: { token: Token }) => {
     const newToken = favorite.token;
 
-    updateNFTInSet(setIndex, nftIndex, newToken);
+    if (isCompulsory) {
+      updateCompulsoryNFTInSet(setIndex, nftIndex, newToken);
+    } else {
+      updateOptionalNFTInSet(setIndex, nftIndex, newToken);
+    }
     onClose(); // Close the cloud
   };
 

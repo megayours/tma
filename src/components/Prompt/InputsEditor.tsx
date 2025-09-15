@@ -9,7 +9,7 @@ export const InputsEditor = ({ prompt }: { prompt: Prompt }) => {
   const [isModifyingInputsEditor, setIsModifyingInputsEditor] = useState(false);
 
   // Use the NFT sets from the context
-  const { nftSets, addNFTSet, canAddSet } = useNFTSetsContext();
+  const { compulsoryNFTs, optionalNFTs, addNFTSet, canAddSet } = useNFTSetsContext();
 
   return (
     <div
@@ -19,10 +19,11 @@ export const InputsEditor = ({ prompt }: { prompt: Prompt }) => {
         setIsModifyingInputsEditor(!isModifyingInputsEditor)
       }
     >
-      {nftSets.map((nftSet, index) => (
+      {compulsoryNFTs.map((compulsorySet, index) => (
         <InputSelector
           key={index}
-          nftSet={nftSet}
+          compulsoryNFTs={compulsorySet}
+          optionalNFTs={optionalNFTs[index] || []}
           isOpen={true}
           prompt={prompt}
           setIndex={index}

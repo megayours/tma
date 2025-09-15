@@ -3,14 +3,19 @@ import { useNFTSets } from '@/hooks/useNFTSets';
 import type { Prompt } from '@/types/prompt';
 
 interface NFTSetsContextType {
-  nftSets: any[][];
-  setNftSets: (sets: any[][]) => void;
+  compulsoryNFTs: any[][];
+  optionalNFTs: any[][];
+  setCompulsoryNFTs: (sets: any[][]) => void;
+  setOptionalNFTs: (sets: any[][]) => void;
   addNFTSet: () => void;
   removeNFTSet: (index: number) => void;
-  updateNFTSet: (index: number, newSet: any[]) => void;
-  updateNFTInSet: (setIndex: number, nftIndex: number, newToken: any) => void;
+  updateCompulsoryNFTInSet: (setIndex: number, nftIndex: number, newToken: any) => void;
+  updateOptionalNFTInSet: (setIndex: number, nftIndex: number, newToken: any) => void;
+  addOptionalNFT: (setIndex: number, newToken: any) => void;
+  removeOptionalNFT: (setIndex: number, nftIndex: number) => void;
   canAddSet: boolean;
   canRemoveSet: boolean;
+  maxOptionalTokens: number;
 }
 
 const NFTSetsContext = createContext<NFTSetsContextType | undefined>(undefined);

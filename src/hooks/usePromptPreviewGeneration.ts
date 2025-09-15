@@ -31,7 +31,7 @@ export function usePromptPreviewGeneration(
   const [isGenerating, setIsGenerating] = useState(false);
   const { onSuccess, onError } = options;
   const { session } = options;
-  const { nftSets } = useNFTSetsContext();
+  const { compulsoryNFTs, optionalNFTs } = useNFTSetsContext();
   const { mutateAsync: updatePrompt } = usePromptMutation(session);
   const { mutateAsync: previewContent } = usePreviewContentMutation(session);
 
@@ -50,7 +50,7 @@ export function usePromptPreviewGeneration(
         throw new Error('Invalid prompt text or already generating');
       }
 
-      if (!nftSets || !nftSets.length) {
+      if (!compulsoryNFTs || !compulsoryNFTs.length) {
         throw new Error('No NFT sets available');
       }
 
@@ -78,10 +78,14 @@ export function usePromptPreviewGeneration(
           }
         }
 
-        // Create promises for each NFT set
-        const generationPromises = nftSets.map(async (nftSet, index) => {
-          // Convert NFT set to tokens format expected by generatePromptPreview
-          const tokens = nftSet.map(token => ({
+        // Create promises for each NFT set (combining compulsory and optional NFTs)
+        const generationPromises = compulsoryNFTs.map(async (compulsorySet, index) => {
+          const optionalSet = optionalNFTs[index] || [];
+          // Combine compulsory and optional NFTs for this set
+          const combinedSet = [...compulsorySet, ...optionalSet];
+
+          // Convert combined NFT set to tokens format expected by generatePromptPreview
+          const tokens = combinedSet.map(token => ({
             contract: {
               chain: token.contract.chain,
               address: token.contract.address,
@@ -105,7 +109,7 @@ export function usePromptPreviewGeneration(
 
           return {
             setIndex: index,
-            nftSet,
+            nftSet: combinedSet,
             result,
           };
         });
@@ -137,7 +141,8 @@ export function usePromptPreviewGeneration(
       previewContent,
       onSuccess,
       onError,
-      nftSets,
+      compulsoryNFTs,
+      optionalNFTs,
     ]
   );
 

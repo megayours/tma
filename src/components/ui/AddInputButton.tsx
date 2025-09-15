@@ -203,8 +203,10 @@ export function AddInputButton({
 
       {/* Specific content selection screens */}
       {selectedContent !== null && (
-        <Section>
-          <IoArrowBackOutline onClick={handleBackClick} />
+        <div>
+          <button onClick={handleBackClick} className="mb-2">
+            <IoArrowBackOutline />
+          </button>
           <div className="text-tg-text">
             {selectedContent === 'nft' && (
               <SelectNFT prompt={prompt} onClose={handleCloseModal} />
@@ -212,7 +214,7 @@ export function AddInputButton({
             {selectedContent === 'prompt' && <SelectPrompt prompt={prompt} />}
             {selectedContent === 'image' && <SelectImage prompt={prompt} />}
           </div>
-        </Section>
+        </div>
       )}
     </div>
   );

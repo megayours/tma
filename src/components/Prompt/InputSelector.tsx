@@ -8,16 +8,18 @@ import { Button } from '@telegram-apps/telegram-ui';
 
 /**
  * InputSelector component
- * Renders a single NFT set with all its tokens
+ * Renders a single NFT set with compulsory and optional tokens
  */
 export const InputSelector = ({
-  nftSet,
+  compulsoryNFTs,
+  optionalNFTs,
   isOpen,
   prompt,
   onCloudClose,
   setIndex,
 }: {
-  nftSet: Token[];
+  compulsoryNFTs: Token[];
+  optionalNFTs: Token[];
   isOpen: boolean;
   prompt: Prompt;
   onCloudClose: () => void;
@@ -44,7 +46,10 @@ export const InputSelector = ({
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Element;
-      if (!target.closest('[data-cloud-index]') || target.closest('[data-cloud-index^="add-"]')) {
+      if (
+        !target.closest('[data-cloud-index]') ||
+        target.closest('[data-cloud-index^="add-"]')
+      ) {
         setLongPressedIndex(null);
       }
     };
@@ -55,10 +60,10 @@ export const InputSelector = ({
 
   return (
     <div className="bg-tg-bg flex h-12 flex-shrink-0 flex-row items-center gap-1 rounded-full p-3">
-      {/* Render NFT items from the nftSet */}
-      {nftSet.map((token, index) => (
+      {/* Render compulsory NFT items */}
+      {compulsoryNFTs.map((token, index) => (
         <NFTItem
-          key={index}
+          key={`compulsory-${index}`}
           token={token}
           index={index}
           isModifyingNFTs={isOpen}
@@ -67,9 +72,27 @@ export const InputSelector = ({
           prompt={prompt}
           onCloudClose={handleCloudClose}
           setIndex={setIndex}
+          isCompulsory={true}
         />
       ))}
-      {/* Add Element Component */}
+
+      {/* Render optional NFT items */}
+      {optionalNFTs.map((token, index) => (
+        <NFTItem
+          key={`optional-${index}`}
+          token={token}
+          index={index}
+          isModifyingNFTs={isOpen}
+          longPressedIndex={longPressedIndex}
+          onLongPress={handleLongPress}
+          prompt={prompt}
+          onCloudClose={handleCloudClose}
+          setIndex={setIndex}
+          isCompulsory={false}
+        />
+      ))}
+
+      {/* Add Element Component for optional NFTs */}
       <AddElement prompt={prompt} setIndex={setIndex} />
       {/* Vertical separator between + and x buttons */}
       <div className="bg-tg-section-separator mx-1 h-4 w-px flex-shrink-0"></div>

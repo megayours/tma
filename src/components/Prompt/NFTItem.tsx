@@ -17,6 +17,7 @@ export const NFTItem = ({
   prompt,
   onCloudClose,
   setIndex,
+  isCompulsory,
 }: {
   token: Token;
   index: number;
@@ -26,6 +27,7 @@ export const NFTItem = ({
   prompt: Prompt;
   onCloudClose: () => void;
   setIndex: number;
+  isCompulsory: boolean;
 }) => {
   const longPressBind = useLongPress(() => onLongPress(index), {
     threshold: 500, // 500ms threshold for long press
@@ -41,6 +43,7 @@ export const NFTItem = ({
           nftIndex={index}
           prompt={prompt}
           onClose={onCloudClose}
+          isCompulsory={isCompulsory}
         />
       )}
       <div
@@ -51,7 +54,9 @@ export const NFTItem = ({
       >
         {/* Show NFT label when in modification mode */}
         {isModifyingNFTs && (
-          <h1 className="text-tg-text text-xs select-none">NFT {index + 1}</h1>
+          <h1 className="text-tg-text text-xs select-none">
+            {isCompulsory ? `NFT ${index + 1}` : `Optional ${index + 1}`}
+          </h1>
         )}
 
         {/* NFT avatar */}

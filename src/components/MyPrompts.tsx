@@ -1,12 +1,12 @@
 import {
   useDeletePromptMutation,
   useGetMyPrompts,
-} from '../../hooks/usePrompts';
+} from '@/hooks/usePrompts';
 import { useEffect, useState } from 'react';
-import { Pagination } from '../../components/ui/Pagination';
+import { Pagination } from '@/components/ui';
 import type { Pagination as PaginationType } from '@/types/pagination';
 import { useSession } from '@/auth/SessionProvider';
-import type { Prompt } from '../../types/prompt';
+import type { Prompt } from '@/types/prompt';
 import { Button, Card } from '@telegram-apps/telegram-ui';
 import { useNavigate } from '@tanstack/react-router';
 import { IoTrashBinOutline } from 'react-icons/io5';
@@ -98,7 +98,7 @@ export default function MyPrompts() {
       <div className="flex justify-center">
         <Pagination
           page={pagination.page}
-          setPage={page => setPagination({ ...pagination, page })}
+          setPage={(page: number) => setPagination({ ...pagination, page })}
           totalPages={totalPages}
         />
       </div>

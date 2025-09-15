@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useSession } from '@/auth/SessionProvider';
-import { useCreatePromptMutation } from '../../hooks/usePrompts';
+import { useCreatePromptMutation } from '@/hooks/usePrompts';
 import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator';
 
 export function CreatePromptButton() {

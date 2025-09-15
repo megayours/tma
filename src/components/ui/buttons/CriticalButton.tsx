@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { cn } from '../../utils/cn';
+import { cn } from '@/utils/cn';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 
 export type CriticalButtonState = 'normal' | 'loading' | 'success';

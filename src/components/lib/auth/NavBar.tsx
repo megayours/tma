@@ -1,6 +1,6 @@
 import { useAuthContext } from '@/auth/AuthProvider';
 import { ProfileNavBar } from './ProfileNavBar';
-import { CreatePromptButton } from '@/components/ui/CreatePromptButton';
+import { CreatePromptButton } from '@/components/ui';
 import { useUnrevealedGenerations } from '@/hooks/useContents';
 
 import { useLocation, useNavigate } from '@tanstack/react-router';

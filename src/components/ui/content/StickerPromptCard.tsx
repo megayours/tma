@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from './Card';
+import { Card, CardContent, CardHeader, CardTitle } from '../layout/Card';
 import type { Prompt } from '@/types/prompt';
 
 interface StickerPromptCardProps {

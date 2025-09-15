@@ -1,82 +1,143 @@
 import { Button, Cell, Divider, Section } from '@telegram-apps/telegram-ui';
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { IoArrowBackOutline } from 'react-icons/io5';
 import type { Prompt } from '../../types/prompt';
+import { usePromptMutation } from '../../hooks/usePrompts';
+import { useSession } from '@/auth/SessionProvider';
 
 export const SelectNFT = ({
   prompt,
-  updatePrompt,
+  onClose,
 }: {
   prompt: Prompt;
-  updatePrompt: ((updates: Partial<Prompt>) => void) | null;
+  onClose: () => void;
 }) => {
-  const inputRef = useRef<HTMLInputElement>(null);
+  const { session } = useSession();
+  const { mutateAsync: updatePrompt, isPending } = usePromptMutation(session);
+  const [step, setStep] = useState<'choice' | 'completed'>('choice');
 
-  // Focus on input when component mounts
-  useEffect(() => {
-    if (inputRef.current) {
-      // Small delay to ensure the component is rendered
-      setTimeout(() => {
-        inputRef.current?.focus();
-      }, 100);
-    }
-  }, []);
-
-  const handleNFTSelect = () => {
-    if (updatePrompt) {
-      updatePrompt({
+  const handleMandatoryAsset = async () => {
+    try {
+      const updatedPrompt = {
+        ...prompt,
         maxTokens: (prompt.maxTokens ?? 0) + 1,
         minTokens: (prompt.minTokens ?? 0) + 1,
-      });
-      // Todo close modal
+      };
+
+      await updatePrompt({ prompt: updatedPrompt });
+      setStep('completed');
+      // Close modal after a short delay to show feedback
+      setTimeout(() => {
+        onClose();
+      }, 500);
+    } catch (error) {
+      console.error('Failed to update prompt:', error);
     }
   };
 
+  const handleOptionalAsset = async () => {
+    try {
+      const updatedPrompt = {
+        ...prompt,
+        maxTokens: (prompt.maxTokens ?? 0) + 1,
+        // Don't increment minTokens for optional assets
+      };
+
+      await updatePrompt({ prompt: updatedPrompt });
+      setStep('completed');
+      // Close modal after a short delay to show feedback
+      setTimeout(() => {
+        onClose();
+      }, 500);
+    } catch (error) {
+      console.error('Failed to update prompt:', error);
+    }
+  };
+
+  if (step === 'completed') {
+    return (
+      <div className="flex flex-col items-center gap-4 p-4">
+        <div className="text-center">
+          <div className="mb-2 text-2xl">✅</div>
+          <div className="text-tg-text font-medium">NFT Asset Added</div>
+          <div className="text-tg-hint text-sm">
+            Min: {prompt.minTokens ?? 0}, Max: {prompt.maxTokens ?? 0}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <>
-      <Button onClick={handleNFTSelect}>
-        PLEASE CLICK ME, I am useless button
-      </Button>
-    </>
+    <div className="flex flex-col gap-4 p-4">
+      <div className="mb-4 text-center">
+        <h3 className="text-tg-text mb-2 text-lg font-medium">Add NFT Asset</h3>
+        <p className="text-tg-hint text-sm">
+          Choose whether this NFT should be required or optional for content
+          generation
+        </p>
+      </div>
+
+      <div className="flex flex-col gap-3">
+        <Button
+          mode="filled"
+          size="l"
+          onClick={handleMandatoryAsset}
+          className="w-full"
+          loading={isPending}
+          disabled={isPending}
+        >
+          <div className="flex flex-col items-center gap-1">
+            <span className="font-medium">Mandatory Asset</span>
+            <span className="text-xs opacity-75">Required for generation</span>
+          </div>
+        </Button>
+
+        <Button
+          mode="bezeled"
+          size="l"
+          onClick={handleOptionalAsset}
+          className="w-full"
+          loading={isPending}
+          disabled={isPending}
+        >
+          <div className="flex flex-col items-center gap-1">
+            <span className="font-medium">Optional Asset</span>
+            <span className="text-xs opacity-75">
+              Can be used but not required
+            </span>
+          </div>
+        </Button>
+      </div>
+
+      <div className="text-tg-hint mt-2 text-center text-xs">
+        Current tokens - Min: {prompt.minTokens ?? 0}, Max:{' '}
+        {prompt.maxTokens ?? 0}
+      </div>
+    </div>
   );
 };
 
-export const SelectPrompt = ({
-  updatePrompt: _updatePrompt,
-}: {
-  updatePrompt: ((updates: Partial<Prompt>) => void) | null;
-  prompt: Prompt;
-}) => {
+export const SelectPrompt = ({ prompt: _prompt }: { prompt: Prompt }) => {
   return <div>Select Prompt</div>;
 };
 
-export const SelectImage = ({
-  updatePrompt: _updatePrompt,
-}: {
-  prompt: Prompt;
-  updatePrompt: ((updates: Partial<Prompt>) => void) | null;
-}) => {
+export const SelectImage = ({ prompt: _prompt }: { prompt: Prompt }) => {
   return <div>Select Image</div>;
 };
 
 export function AddInputButton({
-  updatePrompt,
   prompt,
   promptTextareaRef,
 }: {
-  updatePrompt: ((updates: Partial<Prompt>) => void) | null;
   prompt: Prompt;
   promptTextareaRef: React.RefObject<HTMLTextAreaElement | null>;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedContent, setSelectedContent] = useState<string | null>(null);
 
-  const handleAddNFT = () => {
-    updatePrompt?.({
-      maxTokens: (prompt?.maxTokens ?? 0) + 1,
-      minTokens: (prompt?.minTokens ?? 0) + 1,
-    });
+  const handleCloseModal = () => {
     setIsOpen(false);
     setSelectedContent(null);
     // Focus textarea after closing
@@ -132,13 +193,7 @@ export function AddInputButton({
       {/* Main menu when no specific content is selected */}
       {selectedContent === null && (
         <div className="flex w-full flex-col gap-2 p-4">
-          <Cell
-            onClick={() => setSelectedContent('nft')}
-            className="bg-red-500 text-white"
-          >
-            NOTHING WORKS HERE
-          </Cell>
-          <Cell onClick={handleAddNFT}>NFT</Cell>
+          <Cell onClick={() => setSelectedContent('nft')}>NFT</Cell>
           <Divider />
           <Cell onClick={() => setSelectedContent('prompt')}>Prompt</Cell>
           <Divider />
@@ -152,14 +207,10 @@ export function AddInputButton({
           <IoArrowBackOutline onClick={handleBackClick} />
           <div className="text-tg-text">
             {selectedContent === 'nft' && (
-              <SelectNFT updatePrompt={updatePrompt} prompt={prompt} />
+              <SelectNFT prompt={prompt} onClose={handleCloseModal} />
             )}
-            {selectedContent === 'prompt' && (
-              <SelectPrompt updatePrompt={updatePrompt} prompt={prompt} />
-            )}
-            {selectedContent === 'image' && (
-              <SelectImage prompt={prompt} updatePrompt={updatePrompt} />
-            )}
+            {selectedContent === 'prompt' && <SelectPrompt prompt={prompt} />}
+            {selectedContent === 'image' && <SelectImage prompt={prompt} />}
           </div>
         </Section>
       )}

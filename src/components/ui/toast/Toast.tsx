@@ -10,7 +10,7 @@ import {
   type Toast as ToastType,
   type ToastType as ToastTypeEnum,
 } from './types.js';
-import { Button } from '../Button';
+import { Button } from '../buttons/Button';
 
 interface ToastProps {
   toast: ToastType;

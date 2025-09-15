@@ -1,9 +1,8 @@
 import { useRef, useState, useEffect } from 'react';
-import type { Prompt } from '@/types/prompt';
 import type { Token } from '@/types/response';
 import { Button, Divider } from '@telegram-apps/telegram-ui';
 
-import { AddInputButton } from '../ui/AddInputButton';
+import { AddInputButton } from '@/components/ui';
 import { IoSend } from 'react-icons/io5';
 import { InputsEditor } from './InputsEditor';
 import { usePromptPreviewGeneration } from '@/hooks/usePromptPreviewGeneration';
@@ -55,12 +54,7 @@ const PromptEditorContent = ({
     },
   });
 
-  // Function to track changes (prompt updates will be handled by the mutation)
-  const updatePrompt = (_updates: Partial<Prompt>) => {
-    if (prompt) {
-      setHasChanges(true);
-    }
-  };
+  // Changes are now tracked automatically by the usePromptMutation hook
 
   // Calculate the height class for the textarea
   const getTextareaHeight = () => {
@@ -127,7 +121,6 @@ const PromptEditorContent = ({
           <div className="flex flex-row items-center gap-2 px-2 py-2">
             <div className="flex items-center justify-center">
               <AddInputButton
-                updatePrompt={updatePrompt}
                 prompt={prompt}
                 promptTextareaRef={promptTextareaRef}
               />

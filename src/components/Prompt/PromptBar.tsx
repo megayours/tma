@@ -1,7 +1,7 @@
 import type { Prompt } from '@/types/prompt';
 import type { Token } from '@/types/response';
 import { IconButton } from '@telegram-apps/telegram-ui';
-import { TopBar } from '@/components/ui/TopBar';
+import { TopBar } from '@/components/ui';
 import { PromptSettings } from './PromptSettings';
 
 interface PromptBarProps {

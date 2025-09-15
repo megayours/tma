@@ -1,4 +1,4 @@
-import { Button, Cell, Divider, Section } from '@telegram-apps/telegram-ui';
+import { Button, Cell, Divider } from '@telegram-apps/telegram-ui';
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { IoArrowBackOutline } from 'react-icons/io5';

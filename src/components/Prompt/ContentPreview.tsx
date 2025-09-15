@@ -86,15 +86,17 @@ export const ContentPreviews = ({
     <div className="flex h-full w-full flex-col">
       <div className="relative flex min-h-0 w-full flex-1 items-center justify-center overflow-hidden p-4">
         {selectedContent && (
-          <div className="w-full items-center justify-center">
-            <DisplayContent
-              content={selectedContent}
-              className="h-full w-full overflow-hidden rounded-lg object-contain"
-              showVersion={true}
-            />
+          <div className="flex h-full w-full items-center justify-center">
+            <div className="aspect-square max-h-full max-w-full">
+              <DisplayContent
+                content={selectedContent}
+                className="h-full w-full overflow-hidden rounded-lg object-cover"
+                showVersion={true}
+              />
+            </div>
           </div>
         )}
-        {!selectedContent && <div className="">Unleash your imagination</div>}
+        {!selectedContent && <div className="flex h-full w-full items-center justify-center">Unleash your imagination</div>}
       </div>
       <div>
         {groupedContent.length > 0 && (

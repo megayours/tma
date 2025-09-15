@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { Button, Section, Tooltip, Card } from '@telegram-apps/telegram-ui';
+import { Button, Tooltip, Card } from '@telegram-apps/telegram-ui';
 import { useRef, useState } from 'react';
 import { useStickerPacks } from '@/hooks/useStickerPacks';
 import { useSession } from '@/auth/SessionProvider';

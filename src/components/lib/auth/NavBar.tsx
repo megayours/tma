@@ -89,7 +89,7 @@ export function NavBar() {
             onClick={() => handleNavClick('/sticker-packs')}
             className={`tg-link px-2 py-1 hover:opacity-80 ${location.pathname === '/sticker-packs' ? 'font-bold' : ''}`}
           >
-            Sticker Packs
+            Stickers
           </button>
           <CreatePostButton />
           <button

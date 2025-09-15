@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react';
 import type { Token } from '@/types/response';
 import type { Prompt } from '../../types/prompt';
 import { NFTItem } from './NFTItem';
+import { AddElement } from './AddElement';
 import { useNFTSetsContext } from '@/contexts/NFTSetsContext';
 import { Button } from '@telegram-apps/telegram-ui';
+import { IoIosAddCircleOutline } from 'react-icons/io';
 
 /**
  * InputSelector component
@@ -24,7 +26,7 @@ export const InputSelector = ({
 }) => {
   const [longPressedIndex, setLongPressedIndex] = useState<number | null>(null);
   const { removeNFTSet } = useNFTSetsContext();
-  // Enhanced onCloudClose that resets both states
+  // Enhanced onCloudClose that resets longPressed state
   const handleCloudClose = () => {
     setLongPressedIndex(null);
     onCloudClose();
@@ -39,11 +41,11 @@ export const InputSelector = ({
     setLongPressedIndex(index);
   };
 
-  // Handle click outside to close cloud tooltip
+  // Handle click outside to close NFT cloud tooltip
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Element;
-      if (!target.closest('[data-cloud-index]')) {
+      if (!target.closest('[data-cloud-index]') || target.closest('[data-cloud-index^="add-"]')) {
         setLongPressedIndex(null);
       }
     };
@@ -68,6 +70,10 @@ export const InputSelector = ({
           setIndex={setIndex}
         />
       ))}
+      {/* Add Element Component */}
+      <AddElement prompt={prompt} setIndex={setIndex} />
+      {/* Vertical separator between + and x buttons */}
+      <div className="bg-tg-section-separator mx-1 h-4 w-px flex-shrink-0"></div>
       {/* Small x button to remove the nft set */}
       <Button
         mode="plain"

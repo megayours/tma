@@ -5,7 +5,6 @@ import { NFTItem } from './NFTItem';
 import { AddElement } from './AddElement';
 import { useNFTSetsContext } from '@/contexts/NFTSetsContext';
 import { Button } from '@telegram-apps/telegram-ui';
-import { IoIosAddCircleOutline } from 'react-icons/io';
 
 /**
  * InputSelector component

@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useSession } from '@/auth/SessionProvider';
 import { useCreatePromptMutation } from '../../hooks/usePrompts';
+import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator';
 
-export function CreatePostButton() {
+export function CreatePromptButton() {
   const { session } = useSession();
   const { mutateAsync: createPrompt } = useCreatePromptMutation();
 
@@ -18,7 +19,11 @@ export function CreatePostButton() {
       const prompt = await createPrompt({
         session,
         type,
-        name: 'New Post ' + new Date().getTime().toString(),
+        name: `${session?.username || 'User'} ${uniqueNamesGenerator({
+          dictionaries: [adjectives, animals],
+          separator: ' ',
+          style: 'capital'
+        })}`,
       });
       if (prompt) {
         navigate({
@@ -35,7 +40,7 @@ export function CreatePostButton() {
       <button
         onClick={() => setShowOptions(!showOptions)}
         className="bg-tg-button text-tg-button-text hover:bg-tg-button/80 relative flex h-8 w-8 items-center justify-center rounded-lg shadow-sm transition-all duration-200 hover:scale-110 active:scale-95"
-        aria-label="Create new post"
+        aria-label="Create new prompt"
       >
         <svg
           width="20"

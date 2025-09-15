@@ -1,6 +1,6 @@
 import { useAuthContext } from '@/auth/AuthProvider';
 import { ProfileNavBar } from './ProfileNavBar';
-import { CreatePostButton } from '@/components/ui/CreatePostButton';
+import { CreatePromptButton } from '@/components/ui/CreatePromptButton';
 import { useUnrevealedGenerations } from '@/hooks/useContents';
 
 import { useLocation, useNavigate } from '@tanstack/react-router';
@@ -91,7 +91,7 @@ export function NavBar() {
           >
             Stickers
           </button>
-          <CreatePostButton />
+          <CreatePromptButton />
           <button
             onClick={() => handleNavClick('/profile/my-generations')}
             className={`tg-link relative px-2 py-1 hover:opacity-80 ${location.pathname === '/profile/my-generations' ? 'font-bold' : ''}`}

@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router';
 import { ProtectedRoute } from '../../auth/ProtectedRoute';
 import { Section } from '@telegram-apps/telegram-ui';
-import MyPrompts from './MyPrompts';
+import MyPrompts from '@/components/MyPrompts';
 
 export const Route = createFileRoute('/profile/')({
   component: ProfileLayout,

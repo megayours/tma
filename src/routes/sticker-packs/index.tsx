@@ -5,6 +5,8 @@ import { useStickerPacks } from '@/hooks/useStickerPacks';
 import { useSession } from '@/auth/SessionProvider';
 import { StickerPackItem } from '@/components/StickerPack/StickerPackItem';
 import { PurchaseButton } from '@/components/StickerPack/PurchaseButton';
+import { useGetFavorites } from '@/hooks/useFavorites';
+import { useSelectedNFTs } from '@/contexts/SelectedNFTsContext';
 
 export const Route = createFileRoute('/sticker-packs/')({
   component: RouteComponent,
@@ -14,6 +16,8 @@ function RouteComponent() {
   const { session } = useSession();
   const buttonRef = useRef<HTMLElement>(null!);
   const [showTooltip, setShowTooltip] = useState(false);
+  const { selectedFavorite } = useSelectedNFTs();
+  const { isLoadingSelected } = useGetFavorites(session);
 
   const { data: stickerPacks } = useStickerPacks(
     {
@@ -28,7 +32,7 @@ function RouteComponent() {
   console.log('STICKER PACKS', stickerPacks);
   return (
     <div>
-      <div className="flex flex-row gap-2">
+      <div className="flex flex-row gap-2 items-center">
         <h1>Sticker Packs</h1>
 
         <div
@@ -47,6 +51,33 @@ function RouteComponent() {
         </div>
         {showTooltip && <Tooltip targetRef={buttonRef}>Soon</Tooltip>}
       </div>
+
+      {/* Selected NFT Display */}
+      {selectedFavorite && !isLoadingSelected && (
+        <div className="flex items-center gap-3 p-3 mb-4 bg-tg-secondary-bg rounded-lg">
+          <img
+            src={selectedFavorite.token.image || ''}
+            alt="Selected NFT"
+            className="h-10 w-10 rounded-full object-cover border-2 border-tg-link"
+          />
+          <div className="flex flex-col">
+            <span className="text-tg-text text-sm font-medium">
+              Using for sticker generation:
+            </span>
+            <span className="text-tg-hint text-xs">
+              {selectedFavorite.token.name || `Token #${selectedFavorite.token.id}`}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {(!selectedFavorite && !isLoadingSelected) && (
+        <div className="flex items-center gap-3 p-3 mb-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <div className="text-yellow-600 text-sm">
+            ⚠️ No NFT selected. Select an NFT from the profile menu to personalize your sticker packs.
+          </div>
+        </div>
+      )}
 
       {/* All Sticker Packs with Details */}
       <div className="flex flex-col space-y-6 overflow-x-auto">

@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import type { Session } from '@/auth/useAuth';
 import type { Token } from '../types/response';
 import { getCachedFavorite, setCachedFavorite } from '@/utils/favoriteCache';
+import { useSelectedNFTs } from '@/contexts/SelectedNFTsContext';
 
 export type Favorite = {
   token: Token;
@@ -11,7 +12,7 @@ export type Favorite = {
 };
 
 export function useGetFavorites(session: Session | null) {
-  const [selectedFavorite, setSelectedFavoriteState] = useState<Favorite | null>(null);
+  const { selectedFavorite, setSelectedFavorite: setSelectedFavoriteGlobal } = useSelectedNFTs();
   const [isLoadingSelected, setIsLoadingSelected] = useState(true);
 
   const { data, isLoading } = useQuery({
@@ -51,31 +52,31 @@ export function useGetFavorites(session: Session | null) {
     }
 
     const cachedFavorite = getCachedFavorite(session.id);
-    
+
     if (cachedFavorite && data.some(fav => fav.token.id === cachedFavorite.token.id)) {
       // Use cached favorite if it still exists in the list
-      setSelectedFavoriteState(cachedFavorite);
+      setSelectedFavoriteGlobal(cachedFavorite);
     } else if (data.length > 0) {
       // Default to first favorite if no cached or cached doesn't exist
       const firstFavorite = data[0];
-      setSelectedFavoriteState(firstFavorite);
+      setSelectedFavoriteGlobal(firstFavorite);
       setCachedFavorite(session.id, firstFavorite);
     } else {
-      setSelectedFavoriteState(null);
+      setSelectedFavoriteGlobal(null);
     }
-    
+
     setIsLoadingSelected(false);
-  }, [data, session?.id]);
+  }, [data, session?.id, setSelectedFavoriteGlobal]);
 
   const setSelectedFavorite = (favorite: Favorite) => {
     if (!session?.id) return;
-    
-    setSelectedFavoriteState(favorite);
+
+    setSelectedFavoriteGlobal(favorite);
     setCachedFavorite(session.id, favorite);
   };
 
-  return { 
-    favorites: data, 
+  return {
+    favorites: data,
     isLoadingFavorites: isLoading,
     selectedFavorite,
     setSelectedFavorite,

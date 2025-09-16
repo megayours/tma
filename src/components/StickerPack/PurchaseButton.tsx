@@ -3,7 +3,7 @@ import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { FaTimes, FaPalette } from 'react-icons/fa';
 import { usePurchase } from '@/hooks/usePurchase';
 import { useSession } from '@/auth/SessionProvider';
-import { useGetFavorites } from '@/hooks/useFavorites';
+import { useSelectedNFTs } from '@/contexts/SelectedNFTsContext';
 
 interface PurchaseButtonProps {
   stickerPackId: number;
@@ -15,7 +15,7 @@ export function PurchaseButton({
   price = '$9.99',
 }: PurchaseButtonProps) {
   const { session } = useSession();
-  const { selectedFavorite, isLoadingSelected } = useGetFavorites(session);
+  const { selectedFavorite } = useSelectedNFTs();
 
   const { purchaseStickerPack, isPending, state } = usePurchase(session, {
     onSuccess: data => {
@@ -49,7 +49,7 @@ export function PurchaseButton({
       >
         <span className="flex items-center gap-2 text-white">
           {/* Always show NFT thumbnail when available (in all states) */}
-          {selectedFavorite && !isLoadingSelected && (
+          {selectedFavorite && (
             <img
               src={selectedFavorite.token.image || ''}
               alt="Selected NFT"

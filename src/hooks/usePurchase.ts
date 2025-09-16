@@ -28,14 +28,18 @@ export const usePurchase = (
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async ({ stickerPackId, token }: { stickerPackId: number; token?: Token }): Promise<ExecuteResponse> => {
+    mutationFn: async ({
+      stickerPackId,
+      token,
+    }: {
+      stickerPackId: number;
+      token?: Token;
+    }): Promise<ExecuteResponse> => {
       if (!session?.authToken) {
         throw new Error('Authentication required for purchase');
       }
 
       try {
-        // TODO: Replace with actual billing logic when implemented
-        // For now, use the execute endpoint to simulate purchase flow
         const url = `${import.meta.env.VITE_PUBLIC_API_URL}/sticker-pack/${stickerPackId}/execute`;
 
         const requestBody = {
@@ -45,8 +49,8 @@ export const usePurchase = (
               chain: token.contract.chain,
               contract_address: token.contract.address,
               token_id: token.id,
-            }
-          })
+            },
+          }),
         };
 
         const response = await fetch(url, {
@@ -62,8 +66,8 @@ export const usePurchase = (
           const errorData = await response.json().catch(() => ({}));
           throw new Error(
             errorData.message ||
-            errorData.error ||
-            `Purchase failed with status: ${response.status}`
+              errorData.error ||
+              `Purchase failed with status: ${response.status}`
           );
         }
 
@@ -79,12 +83,19 @@ export const usePurchase = (
         }
 
         return validatedResponse;
+
+        // Return mock response
+        return {
+          execution_id: `debug-${Date.now()}`,
+          status: 'processing' as const,
+          message: 'Debug purchase started successfully',
+        };
       } catch (error) {
         console.error('ERROR processing purchase:', error);
         throw error;
       }
     },
-    onSuccess: (data) => {
+    onSuccess: data => {
       // Invalidate sticker packs queries to refresh purchase status
       queryClient.invalidateQueries({ queryKey: ['sticker-packs'] });
       queryClient.invalidateQueries({ queryKey: ['sticker-pack'] });
@@ -116,10 +127,10 @@ export const usePurchase = (
     state: mutation.isPending
       ? 'processing'
       : mutation.isSuccess
-      ? 'success'
-      : mutation.isError
-      ? 'error'
-      : 'idle' as PurchaseState,
+        ? 'success'
+        : mutation.isError
+          ? 'error'
+          : ('idle' as PurchaseState),
 
     // Reset function
     reset: mutation.reset,

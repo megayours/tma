@@ -1,8 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { Button, Tooltip, Card } from '@telegram-apps/telegram-ui';
+import { Button, Cell, Tooltip } from '@telegram-apps/telegram-ui';
 import { useRef, useState } from 'react';
 import { useStickerPacks } from '@/hooks/useStickerPacks';
 import { useSession } from '@/auth/SessionProvider';
+import { StickerPackItem } from '@/components/StickerPack/StickerPackItem';
 
 export const Route = createFileRoute('/sticker-packs/')({
   component: RouteComponent,
@@ -12,6 +13,7 @@ function RouteComponent() {
   const { session } = useSession();
   const buttonRef = useRef<HTMLElement>(null!);
   const [showTooltip, setShowTooltip] = useState(false);
+
   const { data: stickerPacks } = useStickerPacks(
     {
       pagination: {
@@ -21,6 +23,7 @@ function RouteComponent() {
     },
     session
   );
+
   console.log('STICKER PACKS', stickerPacks);
   return (
     <div>
@@ -43,14 +46,46 @@ function RouteComponent() {
         </div>
         {showTooltip && <Tooltip targetRef={buttonRef}>Soon</Tooltip>}
       </div>
-      <div className="flex flex-col gap-2">
+
+      {/* All Sticker Packs with Details */}
+      <div className="flex flex-col space-y-6 overflow-x-auto">
         {stickerPacks &&
           stickerPacks.data.length > 0 &&
           stickerPacks.data.map(stickerPack => (
-            <Card key={stickerPack.id} type="plain">
-              {stickerPack.name}
-            </Card>
+            <div key={stickerPack.id} className="flex flex-col space-y-2">
+              <Cell
+                subtitle={stickerPack.description}
+                description={`${stickerPack.item_count} stickers`}
+                after={
+                  <Button
+                    mode="filled"
+                    size="s"
+                    className="min-w-20 rounded-full bg-blue-500 px-4 py-2 font-semibold text-white hover:bg-blue-600"
+                    onClick={() =>
+                      console.log('PURCAsed sticker pack: ', stickerPack)
+                    }
+                  >
+                    <span className="text-white">$9.99</span>
+                  </Button>
+                }
+              ></Cell>
+              <StickerPackItem
+                stickerPack={stickerPack}
+                onPurchase={stickerPack => {
+                  console.log(`Purchase sticker pack: ${stickerPack.name}`);
+                }}
+              />
+            </div>
           ))}
+
+        {stickerPacks && stickerPacks.data.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <p className="text-tg-hint text-lg">No sticker packs available</p>
+            <p className="text-tg-hint mt-1 text-sm">
+              Check back later for new packs!
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

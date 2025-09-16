@@ -127,5 +127,122 @@ export const useStickerPacks = (
   });
 };
 
+// Single sticker pack item schema (based on actual API response)
+const StickerPackItemContentSchema = z.object({
+  id: z.string(),
+  status: z.enum(['processing', 'completed', 'error']),
+  type: z.enum(['image', 'video', 'gif', 'sticker', 'animated_sticker']),
+  variant: z.enum([
+    'original',
+    'watermarked',
+    'preview',
+    'uploaded',
+    'processed',
+    'animation_static',
+    'animated_sticker_webm',
+    'animated_sticker_gif'
+  ]),
+  created_at: z.number(),
+  creator_id: z.string(),
+  prompt_id: z.number().nullable(),
+  // These fields are not present in the actual API response, making them optional
+  error: z.string().optional(),
+  token: z.object({
+    contract: z.object({
+      chain: z.string().max(32),
+      address: z.string().max(64),
+      name: z.string().max(32),
+    }),
+    id: z.string(),
+  }).optional(),
+  tokens: z.array(z.object({
+    contract: z.object({
+      chain: z.string().max(32),
+      address: z.string().max(64),
+      name: z.string().max(32),
+    }),
+    id: z.string(),
+  })).optional(),
+});
+
+const StickerPackItemSchema = z.object({
+  id: z.number(),
+  bundle_id: z.number(),
+  prompt_collection_id: z.number(),
+  sort_order: z.number(),
+  created_at: z.number(),
+  content: StickerPackItemContentSchema.optional(),
+  preview_url: z.string(),
+  prompt: z.object({
+    id: z.number(),
+    version: z.number().optional(),
+    text: z.string().optional(),
+    model: z.string().optional(),
+    created_at: z.number().optional(),
+  }).optional(),
+});
+
+// Single sticker pack schema (detailed)
+const StickerPackDetailSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  description: z.string().nullable(),
+  type: StickerPackTypeSchema,
+  is_active: z.boolean(),
+  created_by_admin_id: z.string(),
+  created_at: z.number(),
+  updated_at: z.number(),
+  items: z.array(StickerPackItemSchema),
+  item_count: z.number(),
+});
+
+export type StickerPackItem = z.infer<typeof StickerPackItemSchema>;
+export type StickerPackDetail = z.infer<typeof StickerPackDetailSchema>;
+
+// Hook to fetch a single sticker pack
+export const useStickerPack = (
+  id: number | string,
+  session: Session | null | undefined
+) => {
+  return useQuery({
+    queryKey: ['sticker-pack', id],
+    queryFn: async (): Promise<StickerPackDetail> => {
+      try {
+        const url = `${import.meta.env.VITE_PUBLIC_API_URL}/sticker-pack/${id}`;
+
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(session?.authToken && { Authorization: session.authToken }),
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const rawData = await response.json();
+
+        // Validate response data
+        const validatedData = safeParse(StickerPackDetailSchema, rawData);
+        if (!validatedData) {
+          const errors = getValidationErrors(StickerPackDetailSchema, rawData);
+          console.error('Response validation failed for sticker pack:', rawData);
+          console.error('Validation errors:', errors);
+          console.error('Expected schema:', StickerPackDetailSchema);
+          throw new Error(`Invalid response data format - failed to parse sticker pack response: ${errors}`);
+        }
+
+        return validatedData;
+      } catch (error) {
+        console.error('ERROR fetching sticker pack:', error);
+        throw error;
+      }
+    },
+    enabled: !!session && !!id,
+  });
+};
+
 // Export types for external use
 export type { StickerPackType, StickerPackPreviewItem, StickerPackUserExecution };

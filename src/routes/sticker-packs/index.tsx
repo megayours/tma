@@ -4,6 +4,7 @@ import { useRef, useState } from 'react';
 import { useStickerPacks } from '@/hooks/useStickerPacks';
 import { useSession } from '@/auth/SessionProvider';
 import { StickerPackItem } from '@/components/StickerPack/StickerPackItem';
+import { PurchaseButton } from '@/components/StickerPack/PurchaseButton';
 
 export const Route = createFileRoute('/sticker-packs/')({
   component: RouteComponent,
@@ -56,18 +57,7 @@ function RouteComponent() {
               <Cell
                 subtitle={stickerPack.description}
                 description={`${stickerPack.item_count} stickers`}
-                after={
-                  <Button
-                    mode="filled"
-                    size="s"
-                    className="min-w-20 rounded-full bg-blue-500 px-4 py-2 font-semibold text-white hover:bg-blue-600"
-                    onClick={() =>
-                      console.log('PURCAsed sticker pack: ', stickerPack)
-                    }
-                  >
-                    <span className="text-white">$9.99</span>
-                  </Button>
-                }
+                after={<PurchaseButton stickerPackId={stickerPack.id} />}
               ></Cell>
               <StickerPackItem
                 stickerPack={stickerPack}

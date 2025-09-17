@@ -9,7 +9,6 @@ import { LatestSticker } from '@/components/lib/LatestContent/LatestStickers';
 import { LatestAnimatedSticker } from '@/components/lib/LatestContent/LatestAnimatedStickers';
 import type { PromptWithContent } from '@/types/content';
 import type { Token } from '@/types/response';
-import { useSelectedNFTs } from '@/contexts/SelectedNFTsContext';
 import { TokenSelectionCloud } from './TokenSelectionCloud';
 
 // Array of background GIF files
@@ -43,7 +42,9 @@ export function ShowContent({ prompt }: ShowContentProps) {
   const needsTokenSelection = () => {
     if (!prompt.minTokens && !prompt.maxTokens) return false;
     const requiredTokens = prompt.minTokens || 0;
-    const optionalTokens = prompt.maxTokens ? prompt.maxTokens - requiredTokens : 0;
+    const optionalTokens = prompt.maxTokens
+      ? prompt.maxTokens - requiredTokens
+      : 0;
     return requiredTokens > 1 || optionalTokens > 0;
   };
 
@@ -71,11 +72,13 @@ export function ShowContent({ prompt }: ShowContentProps) {
     }
 
     // Convert selectedFavorite to inputs array format
-    const inputs = [{
-      chain: selectedFavorite.token.contract.chain,
-      contract_address: selectedFavorite.token.contract.address,
-      token_id: selectedFavorite.token.id,
-    }];
+    const inputs = [
+      {
+        chain: selectedFavorite.token.contract.chain,
+        contract_address: selectedFavorite.token.contract.address,
+        token_id: selectedFavorite.token.id,
+      },
+    ];
 
     generateContent.mutate({
       promptId: prompt.id.toString(),
@@ -191,20 +194,23 @@ export function ShowContent({ prompt }: ShowContentProps) {
                     alt={selectedFavorite.token.contract.name}
                   />
                 </div>
-                {!generateContent.isPending && !isLoadingSelected && prompt.minTokens && (
-                  <div className="flex items-center gap-1">
-                    {prompt.minTokens > 1 && (
-                      <span className="rounded-full bg-blue-500 px-2 py-1 text-xs font-medium text-white">
-                        +{prompt.minTokens - 1}
-                      </span>
-                    )}
-                    {prompt.maxTokens && prompt.maxTokens > prompt.minTokens && (
-                      <span className="rounded-full bg-gray-400 px-2 py-1 text-xs font-medium text-white opacity-70">
-                        +{prompt.maxTokens - prompt.minTokens} opt
-                      </span>
-                    )}
-                  </div>
-                )}
+                {!generateContent.isPending &&
+                  !isLoadingSelected &&
+                  prompt.minTokens && (
+                    <div className="flex items-center gap-1">
+                      {prompt.minTokens > 1 && (
+                        <span className="rounded-full bg-blue-500 px-2 py-1 text-xs font-medium text-white">
+                          +{prompt.minTokens - 1}
+                        </span>
+                      )}
+                      {prompt.maxTokens &&
+                        prompt.maxTokens > prompt.minTokens && (
+                          <span className="rounded-full bg-gray-400 px-2 py-1 text-xs font-medium text-white opacity-70">
+                            +{prompt.maxTokens - prompt.minTokens} opt
+                          </span>
+                        )}
+                    </div>
+                  )}
               </div>
             </div>
           </Button>
@@ -227,7 +233,9 @@ export function ShowContent({ prompt }: ShowContentProps) {
         <TokenSelectionCloud
           selectedFavorite={selectedFavorite}
           requiredTokens={prompt.minTokens || 1}
-          optionalTokens={prompt.maxTokens ? prompt.maxTokens - (prompt.minTokens || 1) : 0}
+          optionalTokens={
+            prompt.maxTokens ? prompt.maxTokens - (prompt.minTokens || 1) : 0
+          }
           onClose={() => setShowTokenSelection(false)}
           onGenerate={handleTokenGenerate}
           prompt={{

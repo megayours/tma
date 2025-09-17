@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Button } from '@telegram-apps/telegram-ui';
 import { useGetFavorites } from '@/hooks/useFavorites';
 import { useSession } from '@/auth/SessionProvider';
@@ -7,7 +8,9 @@ import { LatestVideo } from '@/components/lib/LatestContent/LatestVideos';
 import { LatestSticker } from '@/components/lib/LatestContent/LatestStickers';
 import { LatestAnimatedSticker } from '@/components/lib/LatestContent/LatestAnimatedStickers';
 import type { PromptWithContent } from '@/types/content';
+import type { Token } from '@/types/response';
 import { useSelectedNFTs } from '@/contexts/SelectedNFTsContext';
+import { TokenSelectionCloud } from './TokenSelectionCloud';
 
 // Array of background GIF files
 const backgroundGifs = [
@@ -34,6 +37,91 @@ export function ShowContent({ prompt }: ShowContentProps) {
   const { session } = useSession();
   const { selectedFavorite, isLoadingSelected } = useGetFavorites(session);
   const generateContent = useGenerateContentMutation(session);
+  const [showTokenSelection, setShowTokenSelection] = useState(false);
+
+  // Determine if we need token selection
+  const needsTokenSelection = () => {
+    if (!prompt.minTokens && !prompt.maxTokens) return false;
+    const requiredTokens = prompt.minTokens || 0;
+    const optionalTokens = prompt.maxTokens ? prompt.maxTokens - requiredTokens : 0;
+    return requiredTokens > 1 || optionalTokens > 0;
+  };
+
+  const handleDirectGenerate = () => {
+    if (!selectedFavorite || !session) return;
+
+    // Map prompt type to API type
+    let apiType: 'image' | 'video' | 'sticker' | 'animated_sticker';
+    switch (prompt.type) {
+      case 'images':
+        apiType = 'image';
+        break;
+      case 'videos':
+        apiType = 'video';
+        break;
+      case 'stickers':
+        apiType = 'sticker';
+        break;
+      case 'animated_stickers':
+        apiType = 'animated_sticker';
+        break;
+      default:
+        console.error('Unsupported prompt type:', prompt.type);
+        return;
+    }
+
+    // Convert selectedFavorite to inputs array format
+    const inputs = [{
+      chain: selectedFavorite.token.contract.chain,
+      contract_address: selectedFavorite.token.contract.address,
+      token_id: selectedFavorite.token.id,
+    }];
+
+    generateContent.mutate({
+      promptId: prompt.id.toString(),
+      type: apiType,
+      inputs: inputs,
+    });
+  };
+
+  const handleTokenGenerate = (tokens: Token[]) => {
+    if (!session || tokens.length === 0) return;
+
+    // Map prompt type to API type
+    let apiType: 'image' | 'video' | 'sticker' | 'animated_sticker';
+    switch (prompt.type) {
+      case 'images':
+        apiType = 'image';
+        break;
+      case 'videos':
+        apiType = 'video';
+        break;
+      case 'stickers':
+        apiType = 'sticker';
+        break;
+      case 'animated_stickers':
+        apiType = 'animated_sticker';
+        break;
+      default:
+        console.error('Unsupported prompt type:', prompt.type);
+        return;
+    }
+
+    // Convert all tokens to inputs array format
+    const inputs = tokens.map(token => ({
+      chain: token.contract.chain,
+      contract_address: token.contract.address,
+      token_id: token.id,
+    }));
+
+    generateContent.mutate({
+      promptId: prompt.id.toString(),
+      type: apiType,
+      inputs: inputs,
+    });
+
+    setShowTokenSelection(false);
+  };
 
   if (!prompt) {
     return (
@@ -75,32 +163,11 @@ export function ShowContent({ prompt }: ShowContentProps) {
             onClick={() => {
               if (!selectedFavorite || !session) return;
 
-              // Map prompt type to API type
-              let apiType: 'image' | 'video' | 'sticker' | 'animated_sticker';
-              switch (prompt.type) {
-                case 'images':
-                  apiType = 'image';
-                  break;
-                case 'videos':
-                  apiType = 'video';
-                  break;
-                case 'stickers':
-                  apiType = 'sticker';
-                  break;
-                case 'animated_stickers':
-                  apiType = 'animated_sticker';
-                  break;
-                default:
-                  console.error('Unsupported prompt type:', prompt.type);
-                  return;
+              if (needsTokenSelection()) {
+                setShowTokenSelection(true);
+              } else {
+                handleDirectGenerate();
               }
-
-              generateContent.mutate({
-                promptId: prompt.id.toString(),
-                type: apiType,
-                selectedFavorite,
-                inputs: [], // Empty for now
-              });
             }}
             disabled={isLoadingSelected || generateContent.isPending}
             mode="filled"
@@ -126,9 +193,11 @@ export function ShowContent({ prompt }: ShowContentProps) {
                 </div>
                 {!generateContent.isPending && !isLoadingSelected && prompt.minTokens && (
                   <div className="flex items-center gap-1">
-                    <span className="rounded-full bg-blue-500 px-2 py-1 text-xs font-medium text-white">
-                      +{prompt.minTokens}
-                    </span>
+                    {prompt.minTokens > 1 && (
+                      <span className="rounded-full bg-blue-500 px-2 py-1 text-xs font-medium text-white">
+                        +{prompt.minTokens - 1}
+                      </span>
+                    )}
                     {prompt.maxTokens && prompt.maxTokens > prompt.minTokens && (
                       <span className="rounded-full bg-gray-400 px-2 py-1 text-xs font-medium text-white opacity-70">
                         +{prompt.maxTokens - prompt.minTokens} opt
@@ -151,6 +220,33 @@ export function ShowContent({ prompt }: ShowContentProps) {
             </div>
           )}
         </div>
+      )}
+
+      {/* Token Selection Cloud */}
+      {showTokenSelection && selectedFavorite && prompt.minTokens && (
+        <TokenSelectionCloud
+          selectedFavorite={selectedFavorite}
+          requiredTokens={prompt.minTokens || 1}
+          optionalTokens={prompt.maxTokens ? prompt.maxTokens - (prompt.minTokens || 1) : 0}
+          onClose={() => setShowTokenSelection(false)}
+          onGenerate={handleTokenGenerate}
+          prompt={{
+            id: prompt.id,
+            name: prompt.name,
+            description: prompt.description,
+            type: prompt.type,
+            createdAt: prompt.createdAt,
+            updatedAt: prompt.updatedAt,
+            published: prompt.published,
+            lastUsed: prompt.lastUsed,
+            usageCount: prompt.usageCount,
+            contracts: prompt.contracts || [],
+            versions: prompt.versions,
+            additionalContentIds: prompt.additionalContentIds || [],
+            minTokens: prompt.minTokens,
+            maxTokens: prompt.maxTokens,
+          }}
+        />
       )}
     </div>
   );

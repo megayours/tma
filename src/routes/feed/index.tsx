@@ -423,6 +423,9 @@ export function Feed() {
           </section>
         )}
       </article>
+
+      {/* Portal container for TokenSelectionCloud */}
+      <div id="token-selection-container"></div>
     </>
   );
 }

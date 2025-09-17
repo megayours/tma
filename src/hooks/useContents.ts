@@ -18,7 +18,6 @@ import {
 } from '../types/response';
 import type { Session } from '@/auth/useAuth';
 import type { PromptVersion } from '@/types/prompt';
-import type { Favorite } from './useFavorites';
 import type { Contract } from '../types/contract';
 
 // Helper function to map raw content to expected format
@@ -229,15 +228,13 @@ export const useGenerateContentMutation = (
     mutationFn: async ({
       promptId,
       type,
-      selectedFavorite,
       inputs = [],
       contentIds = [],
       overrideExisting = false,
     }: {
       promptId: string;
       type: 'image' | 'video' | 'sticker' | 'animated_sticker';
-      selectedFavorite: Favorite | null;
-      inputs?: any[];
+      inputs: any[];
       contentIds?: string[];
       overrideExisting?: boolean;
     }) => {
@@ -245,21 +242,16 @@ export const useGenerateContentMutation = (
         throw new Error('Session required');
       }
 
-      if (!selectedFavorite) {
-        throw new Error('Selected favorite required');
+      if (!inputs || inputs.length === 0) {
+        throw new Error('At least one token input required');
       }
 
       const requestBody = {
         prompt_id: promptId,
         type,
-        inputs: inputs.length > 0 ? inputs : undefined,
+        inputs: inputs,
         content_ids: contentIds.length > 0 ? contentIds : undefined,
         override_existing: overrideExisting,
-        token: {
-          chain: selectedFavorite.token.contract.chain,
-          contract_address: selectedFavorite.token.contract.address,
-          token_id: selectedFavorite.token.id,
-        },
       };
 
       const response = await fetch(

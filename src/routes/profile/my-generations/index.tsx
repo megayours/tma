@@ -1,11 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
 import {
-  useMyRecentGenerations,
   useRevealContent,
   useUnrevealedGenerations,
   useRevealAllContent,
 } from '@/hooks/useContents';
+import { useMyGenerationsParallel } from '@/hooks/useMyGenerationsParallel';
 import { useSession } from '@/auth/SessionProvider';
 import {
   Button,
@@ -21,7 +21,6 @@ import {
   Alert,
   AlertDescription,
 } from '@/components/ui';
-import type { MyRecentGenerationsRequest } from '@/types/requests';
 
 export const Route = createFileRoute('/profile/my-generations/')({
   component: RouteComponent,
@@ -30,21 +29,29 @@ export const Route = createFileRoute('/profile/my-generations/')({
 function RouteComponent() {
   const { session } = useSession();
   const [contentType, setContentType] = useState<
-    'all' | 'images' | 'videos' | 'stickers' | 'animated_stickers'
+    'all' | 'sticker_packs' | 'images' | 'videos' | 'stickers' | 'animated_stickers'
   >('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [revealingIds, setRevealingIds] = useState<Set<string>>(new Set());
 
-  const params: MyRecentGenerationsRequest = {
-    type: contentType,
-    pagination: {
-      page: currentPage,
-      size: 20,
+  const {
+    getDataForType,
+    isInitialLoading,
+    error
+  } = useMyGenerationsParallel(
+    {
+      pagination: {
+        page: currentPage,
+        size: 20,
+      },
+      days: '30',
     },
-    days: '30',
-  };
+    session
+  );
 
-  const { data, isLoading, error } = useMyRecentGenerations(params, session);
+  // Get data for current selected tab
+  const data = getDataForType(contentType);
+  const isLoading = isInitialLoading;
   const revealMutation = useRevealContent(session);
   const { unrevealedGenerations } = useUnrevealedGenerations(session);
   const revealAllMutation = useRevealAllContent(session);
@@ -161,28 +168,30 @@ function RouteComponent() {
           </p>
         </CardHeader>
         <CardContent>
-          {/* Filter buttons */}
-          <div className="mb-6 flex flex-wrap gap-2">
-            {(
-              [
-                'all',
-                'images',
-                'videos',
-                'stickers',
-                'animated_stickers',
-              ] as const
-            ).map(type => (
-              <Button
-                key={type}
-                mode={contentType === type ? 'filled' : 'bezeled'}
-                size="s"
-                onClick={() => handleTypeChange(type)}
-              >
-                {type === 'all'
-                  ? 'All'
-                  : type.charAt(0).toUpperCase() + type.slice(1)}
-              </Button>
-            ))}
+          {/* Filter tabs */}
+          <div className="mb-6">
+            <div className="flex flex-wrap gap-1 p-1 bg-tg-secondary-bg rounded-lg">
+              {[
+                { key: 'all', label: 'All' },
+                { key: 'sticker_packs', label: 'Sticker Packs' },
+                { key: 'images', label: 'Images' },
+                { key: 'videos', label: 'Videos' },
+                { key: 'stickers', label: 'Stickers' },
+                { key: 'animated_stickers', label: 'Animated Stickers' }
+              ].map(({ key, label }) => (
+                <button
+                  key={key}
+                  onClick={() => handleTypeChange(key as typeof contentType)}
+                  className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                    contentType === key
+                      ? 'bg-tg-button text-tg-button-text'
+                      : 'text-tg-text hover:text-tg-accent-text hover:bg-tg-secondary-bg/50'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Reveal All button */}
@@ -207,7 +216,7 @@ function RouteComponent() {
           )}
 
           {/* Content grid */}
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
             {data.data.map(generation => (
               <TelegramCard
                 key={generation.id}
@@ -221,7 +230,7 @@ function RouteComponent() {
                       size="s"
                       onClick={() => handleRevealContent(generation.id)}
                       disabled={revealingIds.has(generation.id)}
-                      className="flex h-24 w-full items-center justify-center"
+                      className="flex h-48 w-full items-center justify-center"
                     >
                       <div className="text-center">
                         {revealingIds.has(generation.id) ? (
@@ -238,12 +247,14 @@ function RouteComponent() {
                       </div>
                     </Button>
                   ) : (
-                    <img
-                      src={generation.url}
-                      alt={generation.prompt?.name || 'Generated content'}
-                      className="h-24 w-full rounded object-cover"
-                      loading="lazy"
-                    />
+                    <div className="bg-tg-secondary-bg relative w-full h-48 rounded overflow-hidden">
+                      <img
+                        src={generation.url}
+                        alt={generation.prompt?.name || 'Generated content'}
+                        className="w-full h-full object-contain"
+                        loading="lazy"
+                      />
+                    </div>
                   )}
                   <div className="absolute top-2 left-2">
                     <Badge variant="success" size="sm">

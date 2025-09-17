@@ -35,6 +35,8 @@ export const RawPromptSchema = z.object({
   gifs: z.array(z.string()).optional(),
   versions: z.any().optional(),
   lastestContentUrl: z.string().optional(),
+  min_tokens: z.number().optional(),
+  max_tokens: z.number().optional(),
 });
 export type RawPrompt = z.infer<typeof RawPromptSchema>;
 

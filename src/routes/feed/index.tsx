@@ -1,8 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useState, useEffect, useRef } from 'react';
-import { useGetRecommendedPrompts } from '@/hooks/usePrompts';
+import { useGetRecommendedPromptsWithDetails } from '@/hooks/usePrompts';
 import type { PromptWithContent } from '@/types/content';
 import { ShowContent } from '@/components/Feed/ShowContent';
+import { useSession } from '@/auth/SessionProvider';
 
 // Debug toggle - set to false to disable all debug functionality
 const DEBUG_MODE = false;
@@ -13,6 +14,7 @@ export const Route = createFileRoute('/feed/')({
 
 
 export function Feed() {
+  const { session } = useSession();
   const [allPrompts, setAllPrompts] = useState<PromptWithContent[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMorePages, setHasMorePages] = useState(true);
@@ -36,6 +38,7 @@ export function Feed() {
       page: 1,
       size: 10,
     },
+    session,
   };
 
   if (DEBUG_MODE) {
@@ -59,7 +62,7 @@ export function Feed() {
     data: initialData,
     isLoading: isInitialLoading,
     error,
-  } = useGetRecommendedPrompts(initialQueryParams);
+  } = useGetRecommendedPromptsWithDetails(initialQueryParams);
 
   // Handle initial data
   useEffect(() => {
@@ -138,8 +141,8 @@ export function Feed() {
       }
 
       if (rawData && rawData.data && rawData.data.length > 0) {
-        // Map the raw data to the expected format
-        const mappedPrompts: PromptWithContent[] = rawData.data.map(
+        // Map the raw data to the expected format and fetch details for each prompt
+        const basePrompts: PromptWithContent[] = rawData.data.map(
           (rawPrompt: any): PromptWithContent => ({
             id: rawPrompt.id,
             name: rawPrompt.name ?? 'Untitled',
@@ -158,6 +161,8 @@ export function Feed() {
             publishedAt: rawPrompt.published_at ?? 0,
             generationCount: rawPrompt.generation_count ?? 0,
             latestContentUrl: rawPrompt.latest_content_url,
+            minTokens: rawPrompt.min_tokens,
+            maxTokens: rawPrompt.max_tokens,
             // Add other required fields with defaults
             additionalContentIds: [],
             lastUsed: 0,
@@ -172,6 +177,43 @@ export function Feed() {
             contentId: undefined,
           })
         );
+
+        // Fetch detailed data for each prompt if session exists
+        let mappedPrompts = basePrompts;
+        if (session) {
+          const detailPromises = basePrompts.map(async (prompt) => {
+            try {
+              const detailResponse = await fetch(
+                `${import.meta.env.VITE_PUBLIC_API_URL}/prompts/${prompt.id}`,
+                {
+                  method: 'GET',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: session.authToken,
+                  },
+                }
+              );
+
+              if (!detailResponse.ok) {
+                console.warn(`Failed to fetch details for prompt ${prompt.id}`);
+                return prompt;
+              }
+
+              const detailData = await detailResponse.json();
+              return {
+                ...prompt,
+                minTokens: detailData.min_tokens,
+                maxTokens: detailData.max_tokens,
+                contracts: detailData.contracts || [],
+              };
+            } catch (error) {
+              console.warn(`Error fetching details for prompt ${prompt.id}:`, error);
+              return prompt;
+            }
+          });
+
+          mappedPrompts = await Promise.all(detailPromises);
+        }
 
         setAllPrompts(prev => {
           if (DEBUG_MODE) {

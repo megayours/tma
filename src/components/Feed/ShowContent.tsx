@@ -7,6 +7,7 @@ import { LatestVideo } from '@/components/lib/LatestContent/LatestVideos';
 import { LatestSticker } from '@/components/lib/LatestContent/LatestStickers';
 import { LatestAnimatedSticker } from '@/components/lib/LatestContent/LatestAnimatedStickers';
 import type { PromptWithContent } from '@/types/content';
+import { useSelectedNFTs } from '@/contexts/SelectedNFTsContext';
 
 // Array of background GIF files
 const backgroundGifs = [
@@ -107,16 +108,34 @@ export function ShowContent({ prompt }: ShowContentProps) {
             stretched
           >
             <div className="flex flex-row items-center justify-between gap-2">
-              {generateContent.isPending
-                ? 'Generating...'
-                : isLoadingSelected
-                  ? 'Loading...'
-                  : `Make it Yours with `}
-              <div className="h-6 w-6 overflow-hidden rounded-full">
-                <img
-                  src={selectedFavorite.token.image}
-                  alt={selectedFavorite.token.contract.name}
-                />
+              <div className="flex flex-col">
+                <div>
+                  {generateContent.isPending
+                    ? 'Generating...'
+                    : isLoadingSelected
+                      ? 'Loading...'
+                      : `Make it Yours with `}
+                </div>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="h-6 w-6 overflow-hidden rounded-full">
+                  <img
+                    src={selectedFavorite.token.image}
+                    alt={selectedFavorite.token.contract.name}
+                  />
+                </div>
+                {!generateContent.isPending && !isLoadingSelected && prompt.minTokens && (
+                  <div className="flex items-center gap-1">
+                    <span className="rounded-full bg-blue-500 px-2 py-1 text-xs font-medium text-white">
+                      +{prompt.minTokens}
+                    </span>
+                    {prompt.maxTokens && prompt.maxTokens > prompt.minTokens && (
+                      <span className="rounded-full bg-gray-400 px-2 py-1 text-xs font-medium text-white opacity-70">
+                        +{prompt.maxTokens - prompt.minTokens} opt
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </Button>

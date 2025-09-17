@@ -47,6 +47,8 @@ const mapRawPromptToPromptWithContent = (
   publishedAt: rawPrompt.published_at ?? 0,
   generationCount: rawPrompt.generation_count ?? 0,
   latestContentUrl: rawPrompt.latest_content_url ?? undefined,
+  minTokens: rawPrompt.min_tokens,
+  maxTokens: rawPrompt.max_tokens,
 });
 
 export const useGetRecommendedPrompts = ({
@@ -173,6 +175,84 @@ export const useGetPrompt = (promptId: string, session: Session | null) => {
     },
     enabled: !!session,
   });
+};
+
+// Hook to get detailed prompt data (min/max tokens, contracts) for recommended prompts
+export const useGetRecommendedPromptsWithDetails = ({
+  type = 'all',
+  excludeUsed = true,
+  pagination,
+  enabled = true,
+  session,
+}: {
+  type: 'images' | 'videos' | 'gifs' | 'stickers' | 'animated_stickers' | 'all';
+  excludeUsed: boolean;
+  pagination: Pagination;
+  enabled?: boolean;
+  session: Session | null;
+}) => {
+  // First get the recommended prompts
+  const recommendedQuery = useGetRecommendedPrompts({
+    type,
+    excludeUsed,
+    pagination,
+    enabled,
+  });
+
+  // Get detailed data for each prompt
+  const promptQueries = useQuery({
+    queryKey: ['recommended-prompts-details', recommendedQuery.data?.prompts?.map(p => p.id), session?.authToken],
+    queryFn: async () => {
+      if (!session || !recommendedQuery.data?.prompts?.length) return [];
+
+      const detailPromises = recommendedQuery.data.prompts.map(async (prompt) => {
+        try {
+          const response = await fetch(
+            `${import.meta.env.VITE_PUBLIC_API_URL}/prompts/${prompt.id}`,
+            {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: session.authToken,
+              },
+            }
+          );
+
+          if (!response.ok) {
+            console.warn(`Failed to fetch details for prompt ${prompt.id}`);
+            return { ...prompt, minTokens: undefined, maxTokens: undefined, contracts: [] };
+          }
+
+          const data = await response.json();
+          return {
+            ...prompt,
+            minTokens: data.min_tokens,
+            maxTokens: data.max_tokens,
+            contracts: data.contracts || [],
+          };
+        } catch (error) {
+          console.warn(`Error fetching details for prompt ${prompt.id}:`, error);
+          return { ...prompt, minTokens: undefined, maxTokens: undefined, contracts: [] };
+        }
+      });
+
+      return Promise.all(detailPromises);
+    },
+    enabled: !!session && !!recommendedQuery.data?.prompts?.length && enabled,
+  });
+
+  return {
+    data: {
+      prompts: promptQueries.data || [],
+      pagination: recommendedQuery.data?.pagination || null,
+    },
+    isLoading: recommendedQuery.isLoading || promptQueries.isLoading,
+    error: recommendedQuery.error || promptQueries.error,
+    refetch: () => {
+      recommendedQuery.refetch();
+      promptQueries.refetch();
+    },
+  };
 };
 
 export const useGetPrompts = ({

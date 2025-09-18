@@ -11,6 +11,7 @@ import {
   Button,
   Section,
   Card as TelegramCard,
+  Cell,
 } from '@telegram-apps/telegram-ui';
 import {
   Card,
@@ -21,6 +22,8 @@ import {
   Alert,
   AlertDescription,
 } from '@/components/ui';
+import { StickerPackItem } from '@/components/StickerPack/StickerPackItem';
+import { PurchaseButton } from '@/components/StickerPack/PurchaseButton';
 
 export const Route = createFileRoute('/profile/my-generations/')({
   component: RouteComponent,
@@ -215,75 +218,177 @@ function RouteComponent() {
             </div>
           )}
 
-          {/* Content grid */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-            {data.data.map(generation => (
-              <TelegramCard
-                key={generation.id}
-                className="flex flex-col gap-2 p-2"
-              >
-                <div className="relative">
-                  {generation.revealed_at === null ? (
-                    // Unrevealed content - show clickable placeholder
-                    <Button
-                      mode="bezeled"
-                      size="s"
-                      onClick={() => handleRevealContent(generation.id)}
-                      disabled={revealingIds.has(generation.id)}
-                      className="flex h-48 w-full items-center justify-center"
-                    >
-                      <div className="text-center">
-                        {revealingIds.has(generation.id) ? (
-                          <>
-                            <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
-                            <div className="mt-1 text-xs">Revealing...</div>
-                          </>
-                        ) : (
-                          <>
-                            <div className="text-2xl">🔒</div>
-                            <div className="text-xs">Click to Reveal</div>
-                          </>
+          {/* Content rendering - different styles based on content type */}
+          {contentType === 'sticker_packs' ? (
+            // Sticker packs: one item per row using Cell and StickerPackItem
+            <div className="flex flex-col space-y-6">
+              {data.data.map(generation => (
+                <div key={generation.id} className="flex flex-col space-y-2">
+                  <Cell
+                    subtitle={generation.prompt?.description || 'Sticker pack execution'}
+                    description={`Status: ${generation.revealed_at ? 'Completed' : 'Processing'}`}
+                    after={
+                      (generation as any).stickerPackData?.telegramPackUrl && (
+                        <Button
+                          mode="bezeled"
+                          size="s"
+                          onClick={() => window.open((generation as any).stickerPackData.telegramPackUrl, '_blank')}
+                        >
+                          View Pack
+                        </Button>
+                      )
+                    }
+                  >
+                    {generation.prompt?.name || 'Sticker Pack'}
+                  </Cell>
+
+                  {/* Sticker Pack Images */}
+                  {generation.prompt?.images && generation.prompt.images.length > 0 && (
+                    <div className="p-4 bg-tg-secondary-bg rounded-lg">
+                      <div className="mb-3 flex items-center gap-2">
+                        <span className="text-tg-text text-sm font-medium">
+                          {(generation as any).stickerPackData?.isShowingGenerated
+                            ? 'Generated Stickers'
+                            : 'Preview Templates'
+                          }
+                        </span>
+                        {(generation as any).stickerPackData?.isShowingGenerated && (
+                          <Badge variant="success" size="sm">
+                            Personalized
+                          </Badge>
                         )}
                       </div>
-                    </Button>
-                  ) : (
-                    <div className="bg-tg-secondary-bg relative w-full h-48 rounded overflow-hidden">
-                      <img
-                        src={generation.url}
-                        alt={generation.prompt?.name || 'Generated content'}
-                        className="w-full h-full object-contain"
-                        loading="lazy"
-                      />
+                      <div className="grid grid-cols-4 gap-2">
+                        {generation.prompt.images.slice(0, 8).map((imageUrl, index) => (
+                          <div key={index} className="relative w-full h-16 bg-white rounded overflow-hidden">
+                            <img
+                              src={imageUrl}
+                              alt={
+                                (generation as any).stickerPackData?.isShowingGenerated
+                                  ? `Generated Sticker ${index + 1}`
+                                  : `Preview Template ${index + 1}`
+                              }
+                              className="w-full h-full object-contain"
+                              loading="lazy"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                      {generation.prompt.images.length > 8 && (
+                        <div className="mt-2 text-tg-hint text-xs text-center">
+                          +{generation.prompt.images.length - 8} more {
+                            (generation as any).stickerPackData?.isShowingGenerated
+                              ? 'generated stickers'
+                              : 'preview templates'
+                          }
+                        </div>
+                      )}
                     </div>
                   )}
-                  <div className="absolute top-2 left-2">
-                    <Badge variant="success" size="sm">
-                      {generation.type}
-                    </Badge>
+
+                  {/* Execution Info */}
+                  <div className="p-4 bg-tg-secondary-bg rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Badge variant="success" size="sm">
+                        {generation.type}
+                      </Badge>
+                      {generation.tokens && generation.tokens.length > 0 && (
+                        <span className="text-tg-hint text-xs">
+                          Using: {generation.tokens[0].name}
+                        </span>
+                      )}
+                      {(generation as any).stickerPackData?.progressPercentage !== undefined && (
+                        <span className="text-tg-hint text-xs">
+                          Progress: {(generation as any).stickerPackData.progressPercentage}%
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-4 text-tg-hint text-xs">
+                      <span>
+                        Created: {new Date(generation.created_at * 1000).toLocaleDateString()}
+                      </span>
+                      {(generation as any).stickerPackData && (
+                        <span>
+                          {(generation as any).stickerPackData.completedPrompts}/
+                          {(generation as any).stickerPackData.totalPrompts} stickers
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
-                <div className="flex flex-col gap-1">
-                  <h3 className="text-tg-text truncate text-sm font-medium">
-                    {generation.prompt?.name || 'Untitled'}
-                  </h3>
-                  <p className="text-tg-hint truncate text-xs">
-                    {generation.creator_name || 'Anonymous'}
-                  </p>
-                  <p className="text-tg-hint text-xs">
-                    {new Date(
-                      generation.created_at * 1000
-                    ).toLocaleDateString()}
-                  </p>
-                  {generation.tokens && generation.tokens.length > 0 && (
-                    <p className="text-tg-hint text-xs">
-                      {generation.tokens.length} token
-                      {generation.tokens.length !== 1 ? 's' : ''}
+              ))}
+            </div>
+          ) : (
+            // Regular content: grid layout
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
+              {data.data.map(generation => (
+                <TelegramCard
+                  key={generation.id}
+                  className="flex flex-col gap-2 p-2"
+                >
+                  <div className="relative">
+                    {generation.revealed_at === null ? (
+                      // Unrevealed content - show clickable placeholder
+                      <Button
+                        mode="bezeled"
+                        size="s"
+                        onClick={() => handleRevealContent(generation.id)}
+                        disabled={revealingIds.has(generation.id)}
+                        className="flex h-full min-h-48 w-full items-center justify-center"
+                      >
+                        <div className="text-center">
+                          {revealingIds.has(generation.id) ? (
+                            <>
+                              <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
+                              <div className="mt-1 text-xs">Revealing...</div>
+                            </>
+                          ) : (
+                            <>
+                              <div className="text-2xl">🔒</div>
+                              <div className="text-xs">Click to Reveal</div>
+                            </>
+                          )}
+                        </div>
+                      </Button>
+                    ) : (
+                      <div className="bg-tg-secondary-bg relative w-full h-48 rounded overflow-hidden">
+                        <img
+                          src={generation.url}
+                          alt={generation.prompt?.name || 'Generated content'}
+                          className="w-full h-full object-contain"
+                          loading="lazy"
+                        />
+                      </div>
+                    )}
+                    <div className="absolute top-2 left-2">
+                      <Badge variant="success" size="sm">
+                        {generation.type}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <h3 className="text-tg-text truncate text-sm font-medium">
+                      {generation.prompt?.name || 'Untitled'}
+                    </h3>
+                    <p className="text-tg-hint truncate text-xs">
+                      {generation.creator_name || 'Anonymous'}
                     </p>
-                  )}
-                </div>
-              </TelegramCard>
-            ))}
-          </div>
+                    <p className="text-tg-hint text-xs">
+                      {new Date(
+                        generation.created_at * 1000
+                      ).toLocaleDateString()}
+                    </p>
+                    {generation.tokens && generation.tokens.length > 0 && (
+                      <p className="text-tg-hint text-xs">
+                        {generation.tokens.length} token
+                        {generation.tokens.length !== 1 ? 's' : ''}
+                      </p>
+                    )}
+                  </div>
+                </TelegramCard>
+              ))}
+            </div>
+          )}
 
           {/* Pagination */}
           {data.pagination && data.pagination.totalPages > 1 && (

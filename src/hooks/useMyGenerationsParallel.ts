@@ -17,12 +17,12 @@ const transformStickerPackExecutions = (executions: StickerPackExecution[]): Gen
     // Extract generated content URLs (actual personalized stickers)
     const generatedUrls = execution.items
       .map(item => item.generated_content_url)
-      .filter(Boolean);
+      .filter((url): url is string => Boolean(url));
 
     // Extract preview URLs as fallback (templates)
     const previewUrls = execution.items
       .map(item => item.bundle_item.preview_url)
-      .filter(Boolean);
+      .filter((url): url is string => Boolean(url));
 
     // Use generated stickers when available, fallback to previews
     const displayUrls = generatedUrls.length > 0 ? generatedUrls : previewUrls;
@@ -44,9 +44,9 @@ const transformStickerPackExecutions = (executions: StickerPackExecution[]): Gen
         name: execution.bundle.name,
         // Add other prompt fields with defaults
         description: execution.bundle.description || '',
-        image: displayUrls[0] || null, // Use first display URL as prompt image
+        image: displayUrls[0] || undefined, // Use first display URL as prompt image
         type: execution.bundle.type,
-        published: true,
+        published: 1,
         lastUsed: 0,
         createdAt: execution.bundle.created_at,
         updatedAt: execution.bundle.updated_at,

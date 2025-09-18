@@ -22,8 +22,6 @@ import {
   Alert,
   AlertDescription,
 } from '@/components/ui';
-import { StickerPackItem } from '@/components/StickerPack/StickerPackItem';
-import { PurchaseButton } from '@/components/StickerPack/PurchaseButton';
 
 export const Route = createFileRoute('/profile/my-generations/')({
   component: RouteComponent,
@@ -32,16 +30,17 @@ export const Route = createFileRoute('/profile/my-generations/')({
 function RouteComponent() {
   const { session } = useSession();
   const [contentType, setContentType] = useState<
-    'all' | 'sticker_packs' | 'images' | 'videos' | 'stickers' | 'animated_stickers'
+    | 'all'
+    | 'sticker_packs'
+    | 'images'
+    | 'videos'
+    | 'stickers'
+    | 'animated_stickers'
   >('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [revealingIds, setRevealingIds] = useState<Set<string>>(new Set());
 
-  const {
-    getDataForType,
-    isInitialLoading,
-    error
-  } = useMyGenerationsParallel(
+  const { getDataForType, isInitialLoading, error } = useMyGenerationsParallel(
     {
       pagination: {
         page: currentPage,
@@ -173,19 +172,19 @@ function RouteComponent() {
         <CardContent>
           {/* Filter tabs */}
           <div className="mb-6">
-            <div className="flex flex-wrap gap-1 p-1 bg-tg-secondary-bg rounded-lg">
+            <div className="bg-tg-secondary-bg flex flex-wrap gap-1 rounded-lg p-1">
               {[
                 { key: 'all', label: 'All' },
                 { key: 'sticker_packs', label: 'Sticker Packs' },
                 { key: 'images', label: 'Images' },
                 { key: 'videos', label: 'Videos' },
                 { key: 'stickers', label: 'Stickers' },
-                { key: 'animated_stickers', label: 'Animated Stickers' }
+                { key: 'animated_stickers', label: 'Animated Stickers' },
               ].map(({ key, label }) => (
                 <button
                   key={key}
                   onClick={() => handleTypeChange(key as typeof contentType)}
-                  className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                  className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                     contentType === key
                       ? 'bg-tg-button text-tg-button-text'
                       : 'text-tg-text hover:text-tg-accent-text hover:bg-tg-secondary-bg/50'
@@ -225,14 +224,22 @@ function RouteComponent() {
               {data.data.map(generation => (
                 <div key={generation.id} className="flex flex-col space-y-2">
                   <Cell
-                    subtitle={generation.prompt?.description || 'Sticker pack execution'}
+                    subtitle={
+                      generation.prompt?.description || 'Sticker pack execution'
+                    }
                     description={`Status: ${generation.revealed_at ? 'Completed' : 'Processing'}`}
                     after={
                       (generation as any).stickerPackData?.telegramPackUrl && (
                         <Button
                           mode="bezeled"
                           size="s"
-                          onClick={() => window.open((generation as any).stickerPackData.telegramPackUrl, '_blank')}
+                          onClick={() =>
+                            window.open(
+                              (generation as any).stickerPackData
+                                .telegramPackUrl,
+                              '_blank'
+                            )
+                          }
                         >
                           View Pack
                         </Button>
@@ -243,52 +250,60 @@ function RouteComponent() {
                   </Cell>
 
                   {/* Sticker Pack Images */}
-                  {generation.prompt?.images && generation.prompt.images.length > 0 && (
-                    <div className="p-4 bg-tg-secondary-bg rounded-lg">
-                      <div className="mb-3 flex items-center gap-2">
-                        <span className="text-tg-text text-sm font-medium">
-                          {(generation as any).stickerPackData?.isShowingGenerated
-                            ? 'Generated Stickers'
-                            : 'Preview Templates'
-                          }
-                        </span>
-                        {(generation as any).stickerPackData?.isShowingGenerated && (
-                          <Badge variant="success" size="sm">
-                            Personalized
-                          </Badge>
+                  {generation.prompt?.images &&
+                    generation.prompt.images.length > 0 && (
+                      <div className="bg-tg-secondary-bg rounded-lg p-4">
+                        <div className="mb-3 flex items-center gap-2">
+                          <span className="text-tg-text text-sm font-medium">
+                            {(generation as any).stickerPackData
+                              ?.isShowingGenerated
+                              ? 'Generated Stickers'
+                              : 'Preview Templates'}
+                          </span>
+                          {(generation as any).stickerPackData
+                            ?.isShowingGenerated && (
+                            <Badge variant="success" size="sm">
+                              Personalized
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="grid grid-cols-4 gap-2">
+                          {generation.prompt.images
+                            .slice(0, 8)
+                            .map((imageUrl, index) => (
+                              <div
+                                key={index}
+                                className="relative h-16 w-full overflow-hidden rounded bg-white"
+                              >
+                                <img
+                                  src={imageUrl}
+                                  alt={
+                                    (generation as any).stickerPackData
+                                      ?.isShowingGenerated
+                                      ? `Generated Sticker ${index + 1}`
+                                      : `Preview Template ${index + 1}`
+                                  }
+                                  className="h-full w-full object-contain"
+                                  loading="lazy"
+                                />
+                              </div>
+                            ))}
+                        </div>
+                        {generation.prompt.images.length > 8 && (
+                          <div className="text-tg-hint mt-2 text-center text-xs">
+                            +{generation.prompt.images.length - 8} more{' '}
+                            {(generation as any).stickerPackData
+                              ?.isShowingGenerated
+                              ? 'generated stickers'
+                              : 'preview templates'}
+                          </div>
                         )}
                       </div>
-                      <div className="grid grid-cols-4 gap-2">
-                        {generation.prompt.images.slice(0, 8).map((imageUrl, index) => (
-                          <div key={index} className="relative w-full h-16 bg-white rounded overflow-hidden">
-                            <img
-                              src={imageUrl}
-                              alt={
-                                (generation as any).stickerPackData?.isShowingGenerated
-                                  ? `Generated Sticker ${index + 1}`
-                                  : `Preview Template ${index + 1}`
-                              }
-                              className="w-full h-full object-contain"
-                              loading="lazy"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                      {generation.prompt.images.length > 8 && (
-                        <div className="mt-2 text-tg-hint text-xs text-center">
-                          +{generation.prompt.images.length - 8} more {
-                            (generation as any).stickerPackData?.isShowingGenerated
-                              ? 'generated stickers'
-                              : 'preview templates'
-                          }
-                        </div>
-                      )}
-                    </div>
-                  )}
+                    )}
 
                   {/* Execution Info */}
-                  <div className="p-4 bg-tg-secondary-bg rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
+                  <div className="bg-tg-secondary-bg rounded-lg p-4">
+                    <div className="mb-2 flex items-center gap-2">
                       <Badge variant="success" size="sm">
                         {generation.type}
                       </Badge>
@@ -297,20 +312,30 @@ function RouteComponent() {
                           Using: {generation.tokens[0].name}
                         </span>
                       )}
-                      {(generation as any).stickerPackData?.progressPercentage !== undefined && (
+                      {(generation as any).stickerPackData
+                        ?.progressPercentage !== undefined && (
                         <span className="text-tg-hint text-xs">
-                          Progress: {(generation as any).stickerPackData.progressPercentage}%
+                          Progress:{' '}
+                          {
+                            (generation as any).stickerPackData
+                              .progressPercentage
+                          }
+                          %
                         </span>
                       )}
                     </div>
-                    <div className="flex items-center gap-4 text-tg-hint text-xs">
+                    <div className="text-tg-hint flex items-center gap-4 text-xs">
                       <span>
-                        Created: {new Date(generation.created_at * 1000).toLocaleDateString()}
+                        Created:{' '}
+                        {new Date(
+                          generation.created_at * 1000
+                        ).toLocaleDateString()}
                       </span>
                       {(generation as any).stickerPackData && (
                         <span>
-                          {(generation as any).stickerPackData.completedPrompts}/
-                          {(generation as any).stickerPackData.totalPrompts} stickers
+                          {(generation as any).stickerPackData.completedPrompts}
+                          /{(generation as any).stickerPackData.totalPrompts}{' '}
+                          stickers
                         </span>
                       )}
                     </div>
@@ -351,11 +376,11 @@ function RouteComponent() {
                         </div>
                       </Button>
                     ) : (
-                      <div className="bg-tg-secondary-bg relative w-full h-48 rounded overflow-hidden">
+                      <div className="bg-tg-secondary-bg relative h-48 w-full overflow-hidden rounded">
                         <img
                           src={generation.url}
                           alt={generation.prompt?.name || 'Generated content'}
-                          className="w-full h-full object-contain"
+                          className="h-full w-full object-contain"
                           loading="lazy"
                         />
                       </div>

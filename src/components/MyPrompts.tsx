@@ -18,14 +18,14 @@ export const RenderPreview = ({ prompt }: { prompt: Prompt }) => {
   console.log(data);
   return (
     <div
-      className={`flex h-50 flex-row gap-2 ${data?.content.length === 0 ? '' : 'overflow-x-scroll'}`}
+      className={`flex h-48 flex-row gap-2 ${data?.content.length === 0 ? '' : 'scrollbar-hide overflow-x-scroll'}`}
     >
       {data?.content.map(content => (
         <div key={content.id} className="flex-shrink-0">
           <img
             src={content.image || content.gif || '/public/gifs/loadings.gif'}
             alt={content.id}
-            className="block h-50 w-auto object-contain"
+            className="block h-48 w-auto object-contain"
           />
         </div>
       ))}

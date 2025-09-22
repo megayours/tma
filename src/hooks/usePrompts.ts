@@ -459,8 +459,8 @@ export const useDeletePromptMutation = (
       }
       return response.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['my-prompts'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['my-prompts'] });
       options?.onSuccess?.();
     },
     onError: (error: Error) => {

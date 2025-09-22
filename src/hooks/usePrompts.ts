@@ -201,11 +201,15 @@ export const useGetRecommendedPromptsWithDetails = ({
 
   // Get detailed data for each prompt
   const promptQueries = useQuery({
-    queryKey: ['recommended-prompts-details', recommendedQuery.data?.prompts?.map(p => p.id), session?.authToken],
+    queryKey: [
+      'recommended-prompts-details',
+      recommendedQuery.data?.prompts?.map(p => p.id),
+      session?.authToken,
+    ],
     queryFn: async () => {
       if (!session || !recommendedQuery.data?.prompts?.length) return [];
 
-      const detailPromises = recommendedQuery.data.prompts.map(async (prompt) => {
+      const detailPromises = recommendedQuery.data.prompts.map(async prompt => {
         try {
           const response = await fetch(
             `${import.meta.env.VITE_PUBLIC_API_URL}/prompts/${prompt.id}`,
@@ -220,7 +224,12 @@ export const useGetRecommendedPromptsWithDetails = ({
 
           if (!response.ok) {
             console.warn(`Failed to fetch details for prompt ${prompt.id}`);
-            return { ...prompt, minTokens: undefined, maxTokens: undefined, contracts: [] };
+            return {
+              ...prompt,
+              minTokens: undefined,
+              maxTokens: undefined,
+              contracts: [],
+            };
           }
 
           const data = await response.json();
@@ -231,8 +240,16 @@ export const useGetRecommendedPromptsWithDetails = ({
             contracts: data.contracts || [],
           };
         } catch (error) {
-          console.warn(`Error fetching details for prompt ${prompt.id}:`, error);
-          return { ...prompt, minTokens: undefined, maxTokens: undefined, contracts: [] };
+          console.warn(
+            `Error fetching details for prompt ${prompt.id}:`,
+            error
+          );
+          return {
+            ...prompt,
+            minTokens: undefined,
+            maxTokens: undefined,
+            contracts: [],
+          };
         }
       });
 
@@ -377,6 +394,7 @@ export const useCreatePromptMutation = () => {
 export const useGetMyPrompts = (
   session: Session,
   pagination: Pagination,
+  _filtering: Filter,
   type?: 'images' | 'videos' | 'stickers' | 'animated_stickers'
 ) => {
   return useQuery({
@@ -387,6 +405,8 @@ export const useGetMyPrompts = (
         account: session.id,
         page: pagination.page?.toString() ?? '1',
         size: pagination.size?.toString() ?? '10',
+        sort_by: 'created_at',
+        sort_order: 'desc',
         ...(type && { type }),
       });
       const response = await fetch(
@@ -411,7 +431,14 @@ export const useGetMyPrompts = (
   });
 };
 
-export const useDeletePromptMutation = (session: Session) => {
+export const useDeletePromptMutation = (
+  session: Session,
+  options?: {
+    onSuccess?: () => void;
+    onError?: (error: Error) => void;
+    onSettled?: () => void;
+  }
+) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ promptId }: { promptId: number }) => {
@@ -426,6 +453,7 @@ export const useDeletePromptMutation = (session: Session) => {
           },
         }
       );
+
       if (!response.ok) {
         throw new Error('Failed to delete prompt');
       }
@@ -433,6 +461,13 @@ export const useDeletePromptMutation = (session: Session) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['my-prompts'] });
+      options?.onSuccess?.();
+    },
+    onError: (error: Error) => {
+      options?.onError?.(error);
+    },
+    onSettled: () => {
+      options?.onSettled?.();
     },
   });
 };
@@ -441,7 +476,9 @@ export const usePromptMutation = (session: Session | null | undefined) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ prompt }: { prompt: Prompt }) => {
-      if (!session) return;
+      if (!session) {
+        throw new Error('No session available');
+      }
 
       const response = await fetch(
         `${import.meta.env.VITE_PUBLIC_API_URL}/prompts/${prompt.id}`,
@@ -465,9 +502,14 @@ export const usePromptMutation = (session: Session | null | undefined) => {
           }),
         }
       );
+
       if (!response.ok) {
-        throw new Error('Failed to update prompt');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.message || `Failed to update prompt: ${response.status}`
+        );
       }
+
       return (await response.json()) as Prompt;
     },
     onSuccess: (_data, variables) => {

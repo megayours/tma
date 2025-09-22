@@ -10,7 +10,7 @@ import { useSession } from '@/auth/SessionProvider';
 import { ContentPreviews } from './ContentPreview';
 import { NFTSetsProvider } from '@/contexts/NFTSetsContext';
 import { useToast } from '@/components/ui/toast';
-import { useGetPrompt } from '@/hooks/usePrompts';
+import { useGetPrompt, usePromptMutation } from '@/hooks/usePrompts';
 
 const PromptEditorContent = ({
   promptId,
@@ -27,6 +27,9 @@ const PromptEditorContent = ({
 
   // Use React Query to get the prompt data
   const { data: prompt, isLoading, error } = useGetPrompt(promptId, session);
+
+  // Prompt mutation for saving changes
+  const promptMutation = usePromptMutation(session);
 
   const [promptText, setPromptText] = useState('');
 
@@ -46,11 +49,20 @@ const PromptEditorContent = ({
     onSuccess: result => {
       if (result.generated) {
         setHasChanges(false);
+        addToast({
+          type: 'success',
+          title: 'Success',
+          message: 'Prompt updated and preview generated successfully!',
+        });
       }
     },
     onError: error => {
       console.error('Generation failed:', error);
-      // Handle error here
+      addToast({
+        type: 'error',
+        title: 'Error',
+        message: error.message || 'Failed to generate preview. Please try again.',
+      });
     },
   });
 
@@ -78,12 +90,8 @@ const PromptEditorContent = ({
         setSelectedVersion
       );
     } catch (error) {
+      // Error handling is now done in the usePromptPreviewGeneration hook
       console.error('Error during generation:', error);
-      addToast({
-        type: 'error',
-        title: 'Generation Error',
-        message: 'An error occurred during generation. Please try again.',
-      });
     }
   };
 
@@ -137,7 +145,7 @@ const PromptEditorContent = ({
                 }}
                 onFocus={() => setIsTextareaFocused(true)}
                 onBlur={() => setIsTextareaFocused(false)}
-                disabled={isGenerating}
+                disabled={isGenerating || promptMutation.isPending}
               />
             </div>
             <div className="flex flex-col items-center justify-start gap-2">
@@ -145,8 +153,8 @@ const PromptEditorContent = ({
                 mode="filled"
                 size="m"
                 onClick={handleGenerate}
-                disabled={isGenerating || !promptText.trim()}
-                loading={isGenerating}
+                disabled={isGenerating || promptMutation.isPending || !promptText.trim()}
+                loading={isGenerating || promptMutation.isPending}
               >
                 <IoSend className="text-tg-button-text" />
               </Button>

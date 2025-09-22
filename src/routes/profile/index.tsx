@@ -1,6 +1,5 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router';
 import { ProtectedRoute } from '../../auth/ProtectedRoute';
-import { Section } from '@telegram-apps/telegram-ui';
 import MyPrompts from '@/components/MyPrompts';
 
 export const Route = createFileRoute('/profile/')({
@@ -10,22 +9,16 @@ export const Route = createFileRoute('/profile/')({
 function ProfileLayout() {
   return (
     <ProtectedRoute>
-      <div className="profile-layout">
-        {/* Optional: Add profile-specific navigation here */}
-        <nav className="profile-nav mb-4">
-          <h1 className="mb-4 text-2xl font-bold">Profile</h1>
-          {/* You can add navigation links here if needed */}
-        </nav>
-
+      <div className="profile-layout h-screen">
         {/* This renders the index content when at /profile */}
-        <main className="profile-content">
-          <Section>
-            <h1>Your prompts</h1>
+        <main className="h-screen">
+          <div className="flex flex-col gap-2">
+            <h1 className="text-tg-text text-2xl font-bold">Your prompts</h1>
             <MyPrompts />
-          </Section>
+          </div>
 
           {/* This renders child routes under /profile */}
-          <Outlet />
+          {/* <Outlet /> */}
         </main>
       </div>
     </ProtectedRoute>

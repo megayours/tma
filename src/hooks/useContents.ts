@@ -165,7 +165,6 @@ export const usePreviewContentMutation = (
 export const useGetPreviewContent = (
   session: Session | null | undefined,
   promptId: number | null,
-  _promptVersion: PromptVersion | null,
   pagination?: { page: number; size: number }
 ) => {
   const paginationParams = pagination || { page: 1, size: 10 };

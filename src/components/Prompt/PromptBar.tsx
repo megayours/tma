@@ -3,6 +3,8 @@ import type { Token } from '@/types/response';
 import { IconButton } from '@telegram-apps/telegram-ui';
 import { TopBar } from '@/components/ui';
 import { PromptSettings } from './PromptSettings';
+import { usePromptMutation } from '@/hooks/usePrompts';
+import { useSession } from '@/auth/SessionProvider';
 
 interface PromptBarProps {
   prompt: Prompt;
@@ -40,6 +42,9 @@ export const PromptBar = ({
   settingsOpen,
   setSettingsOpen,
 }: PromptBarProps) => {
+  const { session } = useSession();
+  const promptMutation = usePromptMutation(session);
+
   const toggleSettings = () => {
     if (settingsOpen) {
       // Closing settings - let PromptSettings handle auto-save
@@ -48,6 +53,14 @@ export const PromptBar = ({
       // Opening settings
       setSettingsOpen(true);
     }
+  };
+
+  // Determine button text and state
+  const getButtonText = () => {
+    if (promptMutation.isPending) {
+      return 'Saving...';
+    }
+    return settingsOpen ? 'Save' : 'Edit';
   };
 
   return (
@@ -60,8 +73,12 @@ export const PromptBar = ({
             size="s"
             className="text-tg-hint hover:text-tg-text flex h-12 items-center justify-center"
             onClick={toggleSettings}
+            disabled={promptMutation.isPending}
           >
-            {settingsOpen ? 'Save' : 'Edit'}
+            {promptMutation.isPending && (
+              <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
+            )}
+            {getButtonText()}
           </IconButton>
         </div>
       }
@@ -72,6 +89,7 @@ export const PromptBar = ({
           prompt={prompt}
           selectedNFTs={selectedNFTs}
           isOpen={settingsOpen}
+          promptMutation={promptMutation}
         />
       </div>
     </TopBar>

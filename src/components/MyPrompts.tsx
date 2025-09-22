@@ -1,7 +1,4 @@
-import {
-  useDeletePromptMutation,
-  useGetMyPrompts,
-} from '@/hooks/usePrompts';
+import { useDeletePromptMutation, useGetMyPrompts } from '@/hooks/usePrompts';
 import { useEffect, useState } from 'react';
 import { Pagination } from '@/components/ui';
 import type { Pagination as PaginationType } from '@/types/pagination';
@@ -10,6 +7,36 @@ import type { Prompt } from '@/types/prompt';
 import { Button, Card } from '@telegram-apps/telegram-ui';
 import { useNavigate } from '@tanstack/react-router';
 import { IoTrashBinOutline } from 'react-icons/io5';
+import { useGetPreviewContent } from '../hooks/useContents';
+
+export const RenderPreview = ({ prompt }: { prompt: Prompt }) => {
+  const { session } = useSession();
+  const { data } = useGetPreviewContent(session, prompt.id, {
+    page: 1,
+    size: 8,
+  });
+  console.log(data);
+  return (
+    <div
+      className={`flex h-50 flex-row gap-2 ${data?.content.length === 0 ? '' : 'overflow-x-scroll'}`}
+    >
+      {data?.content.map(content => (
+        <div key={content.id} className="flex-shrink-0">
+          <img
+            src={content.image || content.gif || '/public/gifs/loadings.gif'}
+            alt={content.id}
+            className="block h-50 w-auto object-contain"
+          />
+        </div>
+      ))}
+      {data?.content.length === 0 && (
+        <div className="flex h-full w-full items-center justify-center">
+          No content
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default function MyPrompts() {
   const navigate = useNavigate();
@@ -21,8 +48,16 @@ export default function MyPrompts() {
   const [totalPages, setTotalPages] = useState(1);
   const [deletingPromptId, setDeletingPromptId] = useState<number | null>(null);
 
-  const { data } = useGetMyPrompts(session!, pagination);
-  const { mutateAsync: deletePrompt } = useDeletePromptMutation(session!);
+  const { data } = useGetMyPrompts(session!, pagination, {
+    sortBy: 'created_at',
+    sortOrder: 'desc',
+  });
+  const { mutateAsync: deletePrompt } = useDeletePromptMutation(session!, {
+    onSettled: () => {
+      // Clear the deleting state after mutation settles (success or error) and query refetch completes
+      setDeletingPromptId(null);
+    },
+  });
 
   useEffect(() => {
     if (data?.pagination.totalPages !== totalPages) {
@@ -34,10 +69,10 @@ export default function MyPrompts() {
     setDeletingPromptId(promptId);
     try {
       await deletePrompt({ promptId });
+      // Don't clear deletingPromptId here - let mutation onSettled callback handle it after refetch
     } catch (error) {
       console.error('Failed to delete prompt:', error);
-    } finally {
-      setDeletingPromptId(null);
+      // Error case is handled by mutation onError callback, onSettled will still clear the state
     }
   };
 
@@ -47,7 +82,6 @@ export default function MyPrompts() {
 
   return (
     <div>
-      <div>My Prompts</div>
       {data && (
         <div className="flex flex-col gap-2">
           {data?.data.map((prompt: Prompt) => (
@@ -60,13 +94,11 @@ export default function MyPrompts() {
                   params: { promptId: prompt.id?.toString() ?? '' },
                 });
               }}
+              className={deletingPromptId === prompt.id ? 'opacity-50' : ''}
             >
               <Card.Chip readOnly>{prompt.type}</Card.Chip>
-              <img
-                alt={prompt.name}
-                src={prompt.image ?? '/gifs/loadings.gif'}
-                className="block h-30 w-full object-cover"
-              />
+              <RenderPreview prompt={prompt} />
+
               <Card.Cell
                 readOnly
                 subtitle={prompt.type}

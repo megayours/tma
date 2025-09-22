@@ -23,7 +23,7 @@ export const ContentPreviews = ({
     data: { content, pagination: paginationData } = {
       content: [],
     },
-  } = useGetPreviewContent(session, prompt.id, selectedVersion, {
+  } = useGetPreviewContent(session, prompt.id, {
     page,
     size: 10,
   });
@@ -96,7 +96,11 @@ export const ContentPreviews = ({
             </div>
           </div>
         )}
-        {!selectedContent && <div className="flex h-full w-full items-center justify-center">Unleash your imagination</div>}
+        {!selectedContent && (
+          <div className="flex h-full w-full items-center justify-center">
+            Unleash your imagination
+          </div>
+        )}
       </div>
       <div>
         {groupedContent.length > 0 && (

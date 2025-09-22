@@ -74,7 +74,7 @@ export function usePromptPreviewGeneration(
             }
           } catch (error) {
             console.error('Failed to update prompt:', error);
-            throw error;
+            throw new Error(`Failed to save prompt changes: ${error instanceof Error ? error.message : 'Unknown error'}`);
           }
         }
 

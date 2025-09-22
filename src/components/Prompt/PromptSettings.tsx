@@ -14,8 +14,7 @@ import {
   Button,
   Switch,
 } from '@telegram-apps/telegram-ui';
-import { usePromptMutation } from '@/hooks/usePrompts';
-import { useSession } from '@/auth/SessionProvider';
+import type { UseMutationResult } from '@tanstack/react-query';
 import { useModels } from '@/hooks/useModels';
 import { useGetSupportedCollections } from '@/hooks/useCollections';
 import {
@@ -30,6 +29,7 @@ interface PromptSettingsProps {
   prompt: Prompt;
   selectedNFTs: Token[];
   isOpen: boolean;
+  promptMutation: UseMutationResult<Prompt, Error, { prompt: Prompt }, unknown>;
 }
 
 /**
@@ -44,9 +44,8 @@ export const PromptSettings = ({
   prompt,
   selectedNFTs,
   isOpen,
+  promptMutation,
 }: PromptSettingsProps) => {
-  const { session } = useSession();
-  const promptMutation = usePromptMutation(session);
   const { models, isLoading: modelsLoading } = useModels();
   const { data: supportedCollections, isLoading: collectionsLoading } =
     useGetSupportedCollections();
@@ -68,7 +67,6 @@ export const PromptSettings = ({
   );
   const [contractsError, setContractsError] = useState<string>('');
   const [isPublishing, setIsPublishing] = useState(false);
-  const isSaving = useRef(false);
   const prevIsOpen = useRef(isOpen);
 
   // Create a stable reference to the latest values
@@ -120,13 +118,11 @@ export const PromptSettings = ({
   // Handle auto-save when settings close
   useEffect(() => {
     // Only trigger auto-save when isOpen changes from true to false
-    if (prevIsOpen.current && !isOpen && !isSaving.current) {
+    if (prevIsOpen.current && !isOpen && !promptMutation.isPending) {
       const { hasChanges: currentHasChanges, editedPrompt: currentPrompt } =
         latestValues.current;
 
       if (currentHasChanges && currentPrompt.id) {
-        isSaving.current = true;
-
         const autoSave = async () => {
           try {
             // Validate contracts before saving
@@ -135,7 +131,6 @@ export const PromptSettings = ({
               currentPrompt.contracts.length === 0
             ) {
               setContractsError('At least one contract must be selected');
-              isSaving.current = false;
               return;
             }
 
@@ -148,8 +143,6 @@ export const PromptSettings = ({
             }
           } catch (error) {
             console.error('Failed to auto-save prompt:', error);
-          } finally {
-            isSaving.current = false;
           }
         };
         autoSave();

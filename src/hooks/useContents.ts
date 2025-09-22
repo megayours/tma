@@ -17,7 +17,6 @@ import {
   type MyRecentGenerationsResponse,
 } from '../types/response';
 import type { Session } from '@/auth/useAuth';
-import type { PromptVersion } from '@/types/prompt';
 import type { Contract } from '../types/contract';
 
 // Helper function to map raw content to expected format

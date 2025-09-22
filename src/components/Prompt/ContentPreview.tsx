@@ -7,7 +7,6 @@ import { DisplayContent } from '../DisplayContent';
 
 export const ContentPreviews = ({
   prompt,
-  selectedVersion,
 }: {
   prompt: Prompt;
   selectedVersion: PromptVersion;

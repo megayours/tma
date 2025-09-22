@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router';
 import { ProtectedRoute } from '../../auth/ProtectedRoute';
 import MyPrompts from '@/components/MyPrompts';
 

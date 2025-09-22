@@ -127,7 +127,7 @@ export default function MyPrompts() {
           ))}
         </div>
       )}
-      <div className="flex justify-center">
+      <div className="mb-16 flex justify-center">
         <Pagination
           page={pagination.page}
           setPage={(page: number) => setPagination({ ...pagination, page })}

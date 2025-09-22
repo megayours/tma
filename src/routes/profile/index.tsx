@@ -11,7 +11,7 @@ function ProfileLayout() {
     <ProtectedRoute>
       <div className="profile-layout h-screen">
         {/* This renders the index content when at /profile */}
-        <main className="h-screen">
+        <main className="h-full pb-16">
           <div className="flex flex-col gap-2">
             <h1 className="text-tg-text text-2xl font-bold">Your prompts</h1>
             <MyPrompts />

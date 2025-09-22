@@ -90,8 +90,9 @@ export default function MyPrompts() {
               type="plain"
               onClick={() => {
                 navigate({
-                  to: '/profile/prompt/edit/$promptId',
-                  params: { promptId: prompt.id?.toString() ?? '' },
+                  // TODO, change to Feed kind of view
+                  // to: '/profile/prompt/edit/$promptId',
+                  // params: { promptId: prompt.id?.toString() ?? '' },
                 });
               }}
               className={deletingPromptId === prompt.id ? 'opacity-50' : ''}
@@ -106,10 +107,10 @@ export default function MyPrompts() {
               >
                 <div className="flex w-full flex-row items-center justify-between">
                   <h1 className="flex-1 text-sm font-bold">{prompt.name}</h1>
-                  <div className="absolute top-1/2 right-0 -translate-y-1/2">
+                  <div className="absolute top-1/2 right-0 flex -translate-y-1/2 flex-row gap-2">
                     <Button
                       before={<IoTrashBinOutline />}
-                      mode="filled"
+                      mode="plain"
                       size="s"
                       onClick={event => {
                         // stop propagation to the card
@@ -118,8 +119,19 @@ export default function MyPrompts() {
                       }}
                       loading={deletingPromptId === prompt.id}
                     >
-                      <span className="text-tg-button-text">Delete</span>
+                      <span className="">Delete</span>
                     </Button>
+                    <Button
+                      before={'Modify'}
+                      mode="filled"
+                      size="s"
+                      onClick={() => {
+                        navigate({
+                          to: '/profile/prompt/edit/$promptId',
+                          params: { promptId: prompt.id?.toString() ?? '' },
+                        });
+                      }}
+                    ></Button>
                   </div>
                 </div>
               </Card.Cell>

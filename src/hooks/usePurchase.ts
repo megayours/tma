@@ -30,10 +30,12 @@ export const usePurchase = (
   const mutation = useMutation({
     mutationFn: async ({
       stickerPackId,
-      token,
+      tokens,
+      effectStyle = 'basic',
     }: {
       stickerPackId: number;
-      token?: Token;
+      tokens?: Token[];
+      effectStyle?: 'basic' | 'gold' | 'legendary';
     }): Promise<ExecuteResponse> => {
       if (!session?.authToken) {
         throw new Error('Authentication required for purchase');
@@ -43,14 +45,15 @@ export const usePurchase = (
         const url = `${import.meta.env.VITE_PUBLIC_API_URL}/sticker-pack/${stickerPackId}/execute`;
 
         const requestBody = {
-          effect_style: 'basic', // Accepted values: basic, gold, legendary
-          ...(token && {
-            token: {
-              chain: token.contract.chain,
-              contract_address: token.contract.address,
-              token_id: token.id,
-            },
-          }),
+          effect_style: effectStyle, // Accepted values: basic, gold, legendary
+          ...(tokens &&
+            tokens.length > 0 && {
+              tokens: tokens.map(token => ({
+                chain: token.contract.chain,
+                contract_address: token.contract.address,
+                token_id: token.id,
+              })),
+            }),
         };
 
         const response = await fetch(url, {
@@ -83,13 +86,6 @@ export const usePurchase = (
         }
 
         return validatedResponse;
-
-        // Return mock response
-        return {
-          execution_id: `debug-${Date.now()}`,
-          status: 'processing' as const,
-          message: 'Debug purchase started successfully',
-        };
       } catch (error) {
         console.error('ERROR processing purchase:', error);
         throw error;
@@ -108,8 +104,12 @@ export const usePurchase = (
     },
   });
 
-  const purchaseStickerPack = (stickerPackId: number, token?: Token) => {
-    return mutation.mutate({ stickerPackId, token });
+  const purchaseStickerPack = (
+    stickerPackId: number,
+    tokens?: Token[],
+    effectStyle: 'basic' | 'gold' | 'legendary' = 'basic'
+  ) => {
+    return mutation.mutate({ stickerPackId, tokens, effectStyle });
   };
 
   return {

@@ -27,7 +27,7 @@ export function PurchaseButton({
   });
 
   const handlePurchase = () => {
-    purchaseStickerPack(stickerPackId, selectedFavorite?.token);
+    purchaseStickerPack(stickerPackId, [selectedFavorite!.token]);
   };
 
   return (

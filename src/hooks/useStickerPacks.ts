@@ -25,6 +25,25 @@ const StickerPackPreviewItemSchema = z.object({
 });
 type StickerPackPreviewItem = z.infer<typeof StickerPackPreviewItemSchema>;
 
+// Pricing tier schema
+const PricingTierSchema = z.object({
+  amount_cents: z.number().nullable(),
+  formatted_price: z.string().nullable(),
+  stripe_price_id: z.string().nullable(),
+  supply: z.number().optional(),
+  sold_supply: z.number().optional(),
+});
+
+// Pricing schema
+const PricingSchema = z.object({
+  basic: PricingTierSchema,
+  gold: PricingTierSchema,
+  legendary: PricingTierSchema,
+});
+
+type PricingTier = z.infer<typeof PricingTierSchema>;
+type Pricing = z.infer<typeof PricingSchema>;
+
 // User execution status
 const StickerPackUserExecutionSchema = z.object({
   execution_id: z.string(),
@@ -47,6 +66,9 @@ const StickerBundlesSchema = z.object({
   created_at: z.number(),
   updated_at: z.number(),
   item_count: z.union([z.string(), z.number()]).transform(val => typeof val === 'string' ? parseInt(val, 10) : val),
+  min_tokens_required: z.number(),
+  max_tokens_required: z.number(),
+  pricing: PricingSchema,
   preview_items: z.array(StickerPackPreviewItemSchema),
   user_execution: StickerPackUserExecutionSchema.nullable().optional(),
 });
@@ -66,11 +88,10 @@ interface UseStickerPacksParams {
 }
 
 export const useStickerPacks = (
-  params: UseStickerPacksParams,
-  session: Session | null | undefined
+  params: UseStickerPacksParams
 ) => {
   const { pagination, type } = params;
-  
+
   // Extract page and size with null checking
   const page = pagination?.page || 1;
   const size = pagination?.size || 10;
@@ -97,7 +118,6 @@ export const useStickerPacks = (
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-            ...(session?.authToken && { Authorization: session.authToken }),
           },
         });
 
@@ -123,7 +143,6 @@ export const useStickerPacks = (
         throw error;
       }
     },
-    enabled: !!session,
   });
 };
 
@@ -192,8 +211,13 @@ const StickerPackDetailSchema = z.object({
   created_by_admin_id: z.string(),
   created_at: z.number(),
   updated_at: z.number(),
+  min_tokens_required: z.number(),
+  max_tokens_required: z.number(),
+  pricing: PricingSchema,
   items: z.array(StickerPackItemSchema),
   item_count: z.number(),
+  preview_items: z.array(StickerPackPreviewItemSchema).optional(),
+  user_execution: StickerPackUserExecutionSchema.nullable().optional(),
 });
 
 export type StickerPackItem = z.infer<typeof StickerPackItemSchema>;
@@ -202,7 +226,7 @@ export type StickerPackDetail = z.infer<typeof StickerPackDetailSchema>;
 // Hook to fetch a single sticker pack
 export const useStickerPack = (
   id: number | string,
-  session: Session | null | undefined
+  session?: Session | null | undefined
 ) => {
   return useQuery({
     queryKey: ['sticker-pack', id],
@@ -240,9 +264,9 @@ export const useStickerPack = (
         throw error;
       }
     },
-    enabled: !!session && !!id,
+    enabled: !!id,
   });
 };
 
 // Export types for external use
-export type { StickerPackType, StickerPackPreviewItem, StickerPackUserExecution };
+export type { StickerPackType, StickerPackPreviewItem, StickerPackUserExecution, PricingTier, Pricing };

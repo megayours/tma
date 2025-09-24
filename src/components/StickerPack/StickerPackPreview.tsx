@@ -19,7 +19,7 @@ export const StickerPackPreview = ({
   }
 
   return (
-    <div className="flex flex-row gap-2 overflow-x-auto pb-2">
+    <div className="scrollbar-hide flex flex-row gap-2 overflow-x-auto overflow-y-hidden pb-2">
       {previewItems.map((item, index) => (
         <div
           key={`${item.id}-${item.bundle_id}-${index}`}

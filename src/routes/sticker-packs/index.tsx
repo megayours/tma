@@ -1,5 +1,5 @@
-import { createFileRoute } from '@tanstack/react-router';
-import { Button, Cell, Tooltip } from '@telegram-apps/telegram-ui';
+import { createFileRoute, Link } from '@tanstack/react-router';
+import { Badge, Button, Cell, Tooltip } from '@telegram-apps/telegram-ui';
 import { useRef, useState } from 'react';
 import { useStickerPacks } from '@/hooks/useStickerPacks';
 import { useSession } from '@/auth/SessionProvider';
@@ -19,20 +19,17 @@ function RouteComponent() {
   const { selectedFavorite } = useSelectedNFTs();
   const { isLoadingSelected } = useGetFavorites(session);
 
-  const { data: stickerPacks } = useStickerPacks(
-    {
-      pagination: {
-        page: 1,
-        size: 10,
-      },
+  const { data: stickerPacks } = useStickerPacks({
+    pagination: {
+      page: 1,
+      size: 10,
     },
-    session
-  );
+  });
 
   console.log('STICKER PACKS', stickerPacks);
   return (
     <div>
-      <div className="flex flex-row gap-2 items-center">
+      <div className="flex flex-row items-center gap-2">
         <h1>Sticker Packs</h1>
 
         <div
@@ -54,42 +51,67 @@ function RouteComponent() {
 
       {/* Selected NFT Display */}
       {selectedFavorite && !isLoadingSelected && (
-        <div className="flex items-center gap-3 p-3 mb-4 bg-tg-secondary-bg rounded-lg">
+        <div className="bg-tg-secondary-bg mb-4 flex items-center gap-3 rounded-lg p-3">
           <img
             src={selectedFavorite.token.image || ''}
             alt="Selected NFT"
-            className="h-10 w-10 rounded-full object-cover border-2 border-tg-link"
+            className="border-tg-link h-10 w-10 rounded-full border-2 object-cover"
           />
           <div className="flex flex-col">
             <span className="text-tg-text text-sm font-medium">
               Using for sticker generation:
             </span>
             <span className="text-tg-hint text-xs">
-              {selectedFavorite.token.name || `Token #${selectedFavorite.token.id}`}
+              {selectedFavorite.token.name ||
+                `Token #${selectedFavorite.token.id}`}
             </span>
           </div>
         </div>
       )}
 
-      {(!selectedFavorite && !isLoadingSelected) && (
-        <div className="flex items-center gap-3 p-3 mb-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <div className="text-yellow-600 text-sm">
-            ⚠️ No NFT selected. Select an NFT from the profile menu to personalize your sticker packs.
+      {!selectedFavorite && !isLoadingSelected && (
+        <div className="mb-4 flex items-center gap-3 rounded-lg border border-yellow-200 bg-yellow-50 p-3">
+          <div className="text-sm text-yellow-600">
+            ⚠️ No NFT selected. Select an NFT from the profile menu to
+            personalize your sticker packs.
           </div>
         </div>
       )}
 
       {/* All Sticker Packs with Details */}
-      <div className="flex flex-col space-y-6 overflow-x-auto">
+      <div className="flex flex-col space-y-6 overflow-x-auto pl-2">
         {stickerPacks &&
           stickerPacks.data.length > 0 &&
           stickerPacks.data.map(stickerPack => (
-            <div key={stickerPack.id} className="flex flex-col space-y-2">
-              <Cell
-                subtitle={stickerPack.description}
-                description={`${stickerPack.item_count} stickers`}
-                after={<PurchaseButton stickerPackId={stickerPack.id} />}
-              ></Cell>
+            <div
+              key={stickerPack.id}
+              className="border-tg-section-separator flex flex-col space-y-2 rounded-tl-lg rounded-bl-lg border-2 border-r-0 p-2 pr-0"
+            >
+              <Link
+                to="/sticker-packs/$stickerPackId"
+                params={{ stickerPackId: stickerPack.id.toString() }}
+                className="block"
+              >
+                <Cell
+                  {...(stickerPack.description && {
+                    titleBadge: (
+                      <Badge type="number" large={false} mode="secondary">
+                        {stickerPack.min_tokens_required === stickerPack.max_tokens_required
+                          ? `${stickerPack.min_tokens_required} token${stickerPack.min_tokens_required !== 1 ? 's' : ''}`
+                          : `${stickerPack.min_tokens_required}-${stickerPack.max_tokens_required} tokens`}
+                      </Badge>
+                    ),
+                  })}
+                  description={`${stickerPack.item_count} stickers`}
+                  after={
+                    <div onClick={(e) => e.preventDefault()}>
+                      <PurchaseButton stickerPackId={stickerPack.id} />
+                    </div>
+                  }
+                >
+                  {stickerPack.name}
+                </Cell>
+              </Link>
               <StickerPackItem
                 stickerPack={stickerPack}
                 onPurchase={stickerPack => {

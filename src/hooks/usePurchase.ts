@@ -7,14 +7,20 @@ import type { Token } from '@/types/response';
 // Execute response schema (from sticker-pack/{id}/execute)
 const ExecuteResponseSchema = z.object({
   execution_id: z.string(),
-  status: z.enum(['processing', 'completed', 'failed']),
+  status: z.enum(['processing', 'completed', 'failed', 'pending_payment']),
   message: z.string(),
+  checkout: z.optional(
+    z.object({
+      client_secret: z.string(),
+      publishable_key: z.string(),
+    })
+  ),
 });
 
 export type ExecuteResponse = z.infer<typeof ExecuteResponseSchema>;
 
 // Purchase states
-export type PurchaseState = 'idle' | 'processing' | 'success' | 'error';
+export type PurchaseState = 'idle' | 'processing' | 'success' | 'error' | 'pending_payment';
 
 interface UsePurchaseOptions {
   onSuccess?: (data: ExecuteResponse) => void;
@@ -127,7 +133,11 @@ export const usePurchase = (
     state: mutation.isPending
       ? 'processing'
       : mutation.isSuccess
-        ? 'success'
+        ? mutation.data?.status === 'pending_payment'
+          ? 'pending_payment'
+          : mutation.data?.status === 'processing'
+            ? 'success'
+            : 'success'
         : mutation.isError
           ? 'error'
           : ('idle' as PurchaseState),

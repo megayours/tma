@@ -40,7 +40,7 @@ export const TokenSlot = ({ type, token, index, onClick, size = 'medium' }: Toke
 
   const getLabel = () => {
     if (type === 'favorite') return null;
-    if (type === 'required') return index !== undefined ? `${index + 1}` : '1';
+    if (type === 'required') return null; // Remove numbering for required tokens
     if (type === 'optional') return index !== undefined ? `+${index + 1}` : '+1';
     return null;
   };
@@ -89,12 +89,10 @@ export const TokenSlot = ({ type, token, index, onClick, size = 'medium' }: Toke
         </div>
       )}
 
-      {/* Token name if available */}
-      {token && (
-        <div className="max-w-[80px] truncate text-xs text-tg-text">
-          {token.name || `#${token.id}`}
-        </div>
-      )}
+      {/* Token name if available - always reserve space for alignment */}
+      <div className="max-w-[80px] truncate text-xs text-tg-text min-h-[1.125rem]">
+        {token ? (token.name || `#${token.id}`) : ''}
+      </div>
     </div>
   );
 };

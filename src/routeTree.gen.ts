@@ -27,6 +27,8 @@ import { Route as ProfileFavoritesIndexRouteImport } from './routes/profile/favo
 import { Route as PostCreateIndexRouteImport } from './routes/post/create/index'
 import { Route as PostPostIdIndexRouteImport } from './routes/post/$postId/index'
 import { Route as Demo2ItemIndexRouteImport } from './routes/demo2/item/index'
+import { Route as StickerPacksStickerPackIdSuccessRouteImport } from './routes/sticker-packs/$stickerPackId/success'
+import { Route as StickerPacksStickerPackIdCheckoutRouteImport } from './routes/sticker-packs/$stickerPackId/checkout'
 import { Route as ProfilePromptEditRouteRouteImport } from './routes/profile/prompt/edit/route'
 import { Route as ProfileMyStickerPacksNewIndexRouteImport } from './routes/profile/my-sticker-packs/new/index'
 import { Route as ProfileFavoritesNewIndexRouteImport } from './routes/profile/favorites/new/index'
@@ -130,6 +132,18 @@ const Demo2ItemIndexRoute = Demo2ItemIndexRouteImport.update({
   path: '/demo2/item/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StickerPacksStickerPackIdSuccessRoute =
+  StickerPacksStickerPackIdSuccessRouteImport.update({
+    id: '/sticker-packs/$stickerPackId/success',
+    path: '/sticker-packs/$stickerPackId/success',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const StickerPacksStickerPackIdCheckoutRoute =
+  StickerPacksStickerPackIdCheckoutRouteImport.update({
+    id: '/sticker-packs/$stickerPackId/checkout',
+    path: '/sticker-packs/$stickerPackId/checkout',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ProfilePromptEditRouteRoute = ProfilePromptEditRouteRouteImport.update({
   id: '/profile/prompt/edit',
   path: '/profile/prompt/edit',
@@ -193,6 +207,8 @@ export interface FileRoutesByFullPath {
   '/profile': typeof ProfileIndexRoute
   '/sticker-packs': typeof StickerPacksIndexRoute
   '/profile/prompt/edit': typeof ProfilePromptEditRouteRouteWithChildren
+  '/sticker-packs/$stickerPackId/checkout': typeof StickerPacksStickerPackIdCheckoutRoute
+  '/sticker-packs/$stickerPackId/success': typeof StickerPacksStickerPackIdSuccessRoute
   '/demo2/item': typeof Demo2ItemIndexRoute
   '/post/$postId': typeof PostPostIdIndexRoute
   '/post/create': typeof PostCreateIndexRoute
@@ -222,6 +238,8 @@ export interface FileRoutesByTo {
   '/profile': typeof ProfileIndexRoute
   '/sticker-packs': typeof StickerPacksIndexRoute
   '/profile/prompt/edit': typeof ProfilePromptEditRouteRouteWithChildren
+  '/sticker-packs/$stickerPackId/checkout': typeof StickerPacksStickerPackIdCheckoutRoute
+  '/sticker-packs/$stickerPackId/success': typeof StickerPacksStickerPackIdSuccessRoute
   '/demo2/item': typeof Demo2ItemIndexRoute
   '/post/$postId': typeof PostPostIdIndexRoute
   '/post/create': typeof PostCreateIndexRoute
@@ -251,6 +269,8 @@ export interface FileRoutesById {
   '/profile/': typeof ProfileIndexRoute
   '/sticker-packs/': typeof StickerPacksIndexRoute
   '/profile/prompt/edit': typeof ProfilePromptEditRouteRouteWithChildren
+  '/sticker-packs/$stickerPackId/checkout': typeof StickerPacksStickerPackIdCheckoutRoute
+  '/sticker-packs/$stickerPackId/success': typeof StickerPacksStickerPackIdSuccessRoute
   '/demo2/item/': typeof Demo2ItemIndexRoute
   '/post/$postId/': typeof PostPostIdIndexRoute
   '/post/create/': typeof PostCreateIndexRoute
@@ -282,6 +302,8 @@ export interface FileRouteTypes {
     | '/profile'
     | '/sticker-packs'
     | '/profile/prompt/edit'
+    | '/sticker-packs/$stickerPackId/checkout'
+    | '/sticker-packs/$stickerPackId/success'
     | '/demo2/item'
     | '/post/$postId'
     | '/post/create'
@@ -311,6 +333,8 @@ export interface FileRouteTypes {
     | '/profile'
     | '/sticker-packs'
     | '/profile/prompt/edit'
+    | '/sticker-packs/$stickerPackId/checkout'
+    | '/sticker-packs/$stickerPackId/success'
     | '/demo2/item'
     | '/post/$postId'
     | '/post/create'
@@ -339,6 +363,8 @@ export interface FileRouteTypes {
     | '/profile/'
     | '/sticker-packs/'
     | '/profile/prompt/edit'
+    | '/sticker-packs/$stickerPackId/checkout'
+    | '/sticker-packs/$stickerPackId/success'
     | '/demo2/item/'
     | '/post/$postId/'
     | '/post/create/'
@@ -369,6 +395,8 @@ export interface RootRouteChildren {
   ProfileIndexRoute: typeof ProfileIndexRoute
   StickerPacksIndexRoute: typeof StickerPacksIndexRoute
   ProfilePromptEditRouteRoute: typeof ProfilePromptEditRouteRouteWithChildren
+  StickerPacksStickerPackIdCheckoutRoute: typeof StickerPacksStickerPackIdCheckoutRoute
+  StickerPacksStickerPackIdSuccessRoute: typeof StickerPacksStickerPackIdSuccessRoute
   Demo2ItemIndexRoute: typeof Demo2ItemIndexRoute
   PostPostIdIndexRoute: typeof PostPostIdIndexRoute
   PostCreateIndexRoute: typeof PostCreateIndexRoute
@@ -513,6 +541,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Demo2ItemIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sticker-packs/$stickerPackId/success': {
+      id: '/sticker-packs/$stickerPackId/success'
+      path: '/sticker-packs/$stickerPackId/success'
+      fullPath: '/sticker-packs/$stickerPackId/success'
+      preLoaderRoute: typeof StickerPacksStickerPackIdSuccessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sticker-packs/$stickerPackId/checkout': {
+      id: '/sticker-packs/$stickerPackId/checkout'
+      path: '/sticker-packs/$stickerPackId/checkout'
+      fullPath: '/sticker-packs/$stickerPackId/checkout'
+      preLoaderRoute: typeof StickerPacksStickerPackIdCheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/profile/prompt/edit': {
       id: '/profile/prompt/edit'
       path: '/profile/prompt/edit'
@@ -620,6 +662,9 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileIndexRoute: ProfileIndexRoute,
   StickerPacksIndexRoute: StickerPacksIndexRoute,
   ProfilePromptEditRouteRoute: ProfilePromptEditRouteRouteWithChildren,
+  StickerPacksStickerPackIdCheckoutRoute:
+    StickerPacksStickerPackIdCheckoutRoute,
+  StickerPacksStickerPackIdSuccessRoute: StickerPacksStickerPackIdSuccessRoute,
   Demo2ItemIndexRoute: Demo2ItemIndexRoute,
   PostPostIdIndexRoute: PostPostIdIndexRoute,
   PostCreateIndexRoute: PostCreateIndexRoute,

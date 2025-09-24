@@ -1,23 +1,34 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Button } from '@telegram-apps/telegram-ui';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+import { useExecutionStatus } from '@/hooks/useExecutionStatus';
 import { useStickerPack } from '@/hooks/useStickerPacks';
 import { useSession } from '@/auth/SessionProvider';
 import { usePurchase } from '@/hooks/usePurchase';
 import { useSelectedNFTs } from '@/contexts/SelectedNFTsContext';
 import { StickerCollectionHeader } from '@/components/StickerPack/StickerCollectionHeader';
 import { TierSelector } from '@/components/StickerPack/TierSelector';
-import { InlineTokenSelection } from '@/components/Feed/InlineTokenSelection';
+import { NFTSelectionOnly } from '@/components/Feed/NFTSelectionOnly';
 import type { Token } from '@/types/response';
 
+interface StickerPackSearch {
+  executionId?: string;
+}
+
 export const Route = createFileRoute('/sticker-packs/$stickerPackId/')({
+  validateSearch: (search): StickerPackSearch => ({
+    executionId: search.executionId as string,
+  }),
   component: RouteComponent,
 });
 
 function RouteComponent() {
   const { stickerPackId } = Route.useParams();
+  const { executionId: urlExecutionId } = Route.useSearch();
+  const navigate = useNavigate();
   const { session } = useSession();
-  const { selectedNFTs, selectedFavorite } = useSelectedNFTs();
+  const { selectedFavorite } = useSelectedNFTs();
   const {
     data: stickerPack,
     isLoading,
@@ -29,20 +40,60 @@ function RouteComponent() {
   >('basic');
   const [selectedTokensForGeneration, setSelectedTokensForGeneration] =
     useState<Token[]>([]);
+  const [executionId, setExecutionId] = useState<string | null>(urlExecutionId || null);
 
-  const { purchaseStickerPack, isPending, state } = usePurchase(session, {
+  const {
+    purchaseStickerPack,
+    isPending,
+    state,
+  } = usePurchase(session, {
     onSuccess: data => {
       console.log('Purchase successful:', data);
+
+      // If payment is required, navigate to checkout page
+      if (data.status === 'pending_payment' && data.checkout) {
+        navigate({
+          to: '/sticker-packs/$stickerPackId/checkout',
+          params: { stickerPackId },
+          search: {
+            executionId: data.execution_id,
+            clientSecret: data.checkout.client_secret,
+            publishableKey: data.checkout.publishable_key,
+            selectedTier,
+            selectedTokens: encodeURIComponent(JSON.stringify(selectedTokensForGeneration)),
+          },
+        });
+      } else {
+        // Free tier or direct processing
+        setExecutionId(data.execution_id);
+      }
     },
     onError: error => {
       console.error('Purchase failed:', error);
     },
   });
 
-  // Handle token selection from inline component
-  const handleTokenGenerate = (tokens: Token[]) => {
+  // Use execution status hook for polling when we have an execution ID
+  const {
+    status: executionStatus,
+    isCompleted,
+    isProcessing,
+    progressPercentage,
+  } = useExecutionStatus({
+    session,
+    executionId,
+    onComplete: status => {
+      console.log('Execution completed:', status);
+    },
+    onError: status => {
+      console.error('Execution error:', status);
+    },
+  });
+
+  // Handle token selection from NFT selection component
+  const handleTokensChange = useCallback((tokens: Token[]) => {
     setSelectedTokensForGeneration(tokens);
-  };
+  }, []);
 
   const handlePurchase = () => {
     if (
@@ -106,6 +157,16 @@ function RouteComponent() {
 
   return (
     <div className="mx-auto max-w-4xl p-4">
+      {/* Confetti animation for successful generation */}
+      {isCompleted && (
+        <DotLottieReact
+          className="pointer-events-none fixed bottom-0 left-1/2 z-50 h-2/3 w-[150vw] -translate-x-1/2"
+          src="/lotties/confetti-full.lottie"
+          loop={false}
+          autoplay
+        />
+      )}
+
       <div className="mt-6 space-y-6">
         {/* Header Section */}
         <StickerCollectionHeader stickerPack={stickerPack} />
@@ -119,31 +180,14 @@ function RouteComponent() {
         )}
 
         {/* NFT Selection */}
-        <InlineTokenSelection
-          selectedFavorite={
-            selectedFavorite ||
-            (selectedTokensForGeneration.length > 0
-              ? { token: selectedTokensForGeneration[0] }
-              : selectedNFTs && selectedNFTs.length > 0
-                ? { token: selectedNFTs[0] }
-                : {
-                    token: {
-                      contract: { chain: '', address: '', name: '' },
-                      id: '',
-                      name: 'Default',
-                      image: '',
-                      description: '',
-                      attributes: {},
-                      owner: '',
-                    },
-                  })
-          }
+        <NFTSelectionOnly
+          selectedFavorite={selectedFavorite}
           requiredTokens={stickerPack.min_tokens_required}
           optionalTokens={Math.max(
             0,
             stickerPack.max_tokens_required - stickerPack.min_tokens_required
           )}
-          onGenerate={handleTokenGenerate}
+          onTokensChange={handleTokensChange}
           prompt={{
             id: 1,
             name: `Generate stickers for ${stickerPack.name}`,
@@ -163,69 +207,111 @@ function RouteComponent() {
           />
         </div>
 
-        {/* Purchase Button */}
+        {/* Payment/Generation Section */}
         <div className="rounded-lg">
-          <div className="flex flex-col space-y-4">
-            <Button
-              mode="filled"
-              size="l"
-              onClick={handlePurchase}
-              disabled={!canPurchase}
-              className={`w-full font-semibold ${
-                state === 'processing'
-                  ? 'bg-yellow-500 hover:bg-yellow-600'
-                  : state === 'success'
-                    ? 'bg-purple-500 hover:bg-purple-600'
+
+          {/* Show processing progress */}
+          {isProcessing && executionStatus && (
+            <div className="bg-tg-bg border-tg-hint/20 rounded-lg border p-6 text-center">
+              <h3 className="text-tg-text mb-4 text-lg font-semibold">
+                Generating Your Sticker Pack
+              </h3>
+              <div className="bg-tg-secondary-bg mb-4 h-3 overflow-hidden rounded-full">
+                <div
+                  className="h-full bg-blue-500 transition-all duration-300 ease-out"
+                  style={{ width: `${progressPercentage}%` }}
+                />
+              </div>
+              <p className="text-tg-hint text-sm">
+                {executionStatus.completed_prompts} of{' '}
+                {executionStatus.total_prompts} stickers completed
+              </p>
+            </div>
+          )}
+
+          {/* Show completion message */}
+          {isCompleted && executionStatus && (
+            <div className="bg-tg-bg border-tg-hint/20 rounded-lg border p-6 text-center">
+              <h3 className="text-tg-text mb-4 text-xl font-semibold">
+                🎉 Your Sticker Pack is Ready!
+              </h3>
+              <p className="text-tg-hint mb-4 text-sm">
+                All {executionStatus.total_prompts} stickers have been
+                generated.
+              </p>
+              {executionStatus.telegram_pack_url && (
+                <a
+                  href={executionStatus.telegram_pack_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block rounded-lg bg-blue-500 px-4 py-2 font-semibold text-white transition-colors hover:bg-blue-600"
+                >
+                  Add to Telegram
+                </a>
+              )}
+            </div>
+          )}
+
+          {/* Show purchase button for initial state or error state */}
+          {(state === 'idle' || state === 'error') && (
+            <div className="flex flex-col space-y-4">
+              <Button
+                mode="filled"
+                size="l"
+                onClick={handlePurchase}
+                disabled={!canPurchase || isPending}
+                className={`w-full font-semibold ${
+                  isPending
+                    ? 'bg-yellow-500 hover:bg-yellow-600'
                     : state === 'error'
                       ? 'bg-red-500 hover:bg-red-600'
                       : ''
-              }`}
-            >
-              <div className="flex w-full items-center justify-between">
-                <span>
-                  {state === 'processing'
-                    ? 'Processing...'
-                    : state === 'success'
-                      ? 'Generation Started!'
+                }`}
+              >
+                <div className="flex w-full items-center justify-between">
+                  <span className="mr-2">
+                    {isPending
+                      ? 'Processing...'
                       : state === 'error'
                         ? 'Failed - Try Again'
                         : stickerPack.pricing[selectedTier].amount_cents ===
                             null
                           ? `Generate ${selectedTokensForGeneration.length} Sticker${selectedTokensForGeneration.length !== 1 ? 's' : ''}`
                           : `Purchase & Generate`}
-                </span>
-                {state !== 'processing' &&
-                  state !== 'success' &&
-                  state !== 'error' && (
+                  </span>
+                  {!isPending && state !== 'error' && (
                     <span className="font-bold">
                       {stickerPack.pricing[selectedTier].formatted_price ||
                         'Free'}
                     </span>
                   )}
-              </div>
-            </Button>
+                </div>
+              </Button>
+            </div>
+          )}
 
-            {state === 'success' && (
-              <p className="text-tg-hint text-center text-sm">
-                You'll be notified when your stickers are ready!
-              </p>
-            )}
+          {/* Error handling */}
+          {state === 'error' && (
+            <p className="mt-4 text-center text-sm text-red-500">
+              Something went wrong. Please try again.
+            </p>
+          )}
 
-            {!canPurchase && (
-              <p className="text-center text-sm text-red-500">
-                {!selectedTokensForGeneration ||
-                selectedTokensForGeneration.length === 0
-                  ? 'Please select NFTs above'
-                  : selectedTokensForGeneration.length <
-                      (stickerPack?.min_tokens_required || 1)
-                    ? `Need ${(stickerPack?.min_tokens_required || 1) - selectedTokensForGeneration.length} more NFT${(stickerPack?.min_tokens_required || 1) - selectedTokensForGeneration.length !== 1 ? 's' : ''}`
-                    : selectedTokensForGeneration.length >
-                        (stickerPack?.max_tokens_required || 1)
-                      ? `Too many NFTs selected (max ${stickerPack?.max_tokens_required})`
-                      : 'Invalid selection'}
-              </p>
-            )}
-          </div>
+          {/* Validation messages */}
+          {!canPurchase && state === 'idle' && (
+            <p className="mt-4 text-center text-sm text-red-500">
+              {!selectedTokensForGeneration ||
+              selectedTokensForGeneration.length === 0
+                ? 'Please select NFTs above'
+                : selectedTokensForGeneration.length <
+                    (stickerPack?.min_tokens_required || 1)
+                  ? `Need ${(stickerPack?.min_tokens_required || 1) - selectedTokensForGeneration.length} more NFT${(stickerPack?.min_tokens_required || 1) - selectedTokensForGeneration.length !== 1 ? 's' : ''}`
+                  : selectedTokensForGeneration.length >
+                      (stickerPack?.max_tokens_required || 1)
+                    ? `Too many NFTs selected (max ${stickerPack?.max_tokens_required})`
+                    : 'Invalid selection'}
+            </p>
+          )}
         </div>
 
         {/* Preview Grid */}

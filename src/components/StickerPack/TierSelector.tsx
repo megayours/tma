@@ -174,12 +174,24 @@ export function TierSelector({
 
   if (tiers.length === 0) {
     return (
-      <div className="space-y-4">
-        <h2 className="text-lg font-semibold">Select Tier</h2>
-        <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4">
-          <p className="text-sm text-yellow-600">
-            No pricing tiers are currently available for this sticker pack.
-          </p>
+      <div className="space-y-6">
+        <div className="text-center">
+          <h2 className="text-xl font-bold text-gray-900 mb-1">Select Tier</h2>
+          <p className="text-sm text-gray-600">Choose your preferred quality level</p>
+        </div>
+        <div className="grid gap-3 grid-cols-1">
+          <div className="cursor-pointer rounded-xl border-2 p-4 transition-all duration-200 border-slate-300 bg-slate-50 text-slate-900 shadow-sm scale-[1.02] ring-2 ring-offset-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-2 h-2 rounded-full bg-slate-400"></div>
+                <h3 className="font-semibold text-base">Basic</h3>
+                <div className="flex h-4 w-4 items-center justify-center rounded-full bg-current">
+                  <div className="h-2 w-2 rounded-full bg-white"></div>
+                </div>
+              </div>
+              <div className="text-lg font-bold text-slate-800">Free</div>
+            </div>
+          </div>
         </div>
       </div>
     );

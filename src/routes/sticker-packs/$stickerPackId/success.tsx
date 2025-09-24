@@ -2,8 +2,10 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { Button } from '@telegram-apps/telegram-ui';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+import { hapticFeedback } from '@telegram-apps/sdk-react';
 import { useSession } from '@/auth/SessionProvider';
 import { useStickerPack } from '@/hooks/useStickerPacks';
+import { useTelegramTheme } from '@/auth/useTelegram';
 
 interface SuccessSearch {
   executionId?: string;
@@ -21,6 +23,7 @@ function SuccessPage() {
   const { executionId } = Route.useSearch();
   const navigate = useNavigate();
   const { session } = useSession();
+  const { isTelegram } = useTelegramTheme();
   const [showConfetti, setShowConfetti] = useState(true);
 
   const {
@@ -28,13 +31,25 @@ function SuccessPage() {
     isLoading,
   } = useStickerPack(stickerPackId, session);
 
-  // Hide confetti after 3 seconds
+  // Success haptic feedback and hide confetti after 3 seconds
   useEffect(() => {
+    // Trigger success haptic feedback
+    if (isTelegram) {
+      try {
+        if (hapticFeedback && hapticFeedback.notificationOccurred) {
+          hapticFeedback.notificationOccurred('success');
+        }
+      } catch (error) {
+        console.warn('SuccessPage: Haptic feedback not available:', error);
+      }
+    }
+
+    // Hide confetti after 3 seconds
     const timer = setTimeout(() => {
       setShowConfetti(false);
     }, 3000);
     return () => clearTimeout(timer);
-  }, []);
+  }, [isTelegram]);
 
   const handleBackToStickerPack = () => {
     navigate({

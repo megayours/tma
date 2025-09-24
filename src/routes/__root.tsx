@@ -5,7 +5,7 @@ import {
   useRouter,
 } from '@tanstack/react-router';
 import { isTMA } from '@telegram-apps/bridge';
-import { init, backButton, expandViewport } from '@telegram-apps/sdk-react';
+import { init, backButton, expandViewport, requestFullscreen } from '@telegram-apps/sdk-react';
 import { useEffect } from 'react';
 import { AppRoot } from '@telegram-apps/telegram-ui';
 import { NavBar } from '@/components/lib/auth/NavBar';
@@ -28,6 +28,12 @@ function TelegramAppHandler() {
       if (expandViewport.isAvailable()) {
         expandViewport();
         console.log('Telegram Mini App expanded to full screen');
+      }
+
+      // Request fullscreen mode for immersive experience
+      if (requestFullscreen && requestFullscreen.isAvailable()) {
+        requestFullscreen();
+        console.log('Telegram Mini App requested fullscreen mode');
       }
 
       if (!backButton.isMounted()) {

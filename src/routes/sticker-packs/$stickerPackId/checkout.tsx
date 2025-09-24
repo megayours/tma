@@ -1,9 +1,11 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { Button } from '@telegram-apps/telegram-ui';
+import { hapticFeedback } from '@telegram-apps/sdk-react';
 import { StripeCheckout } from '@/components/StripeCheckout';
 import { useSession } from '@/auth/SessionProvider';
 import { useStickerPack } from '@/hooks/useStickerPacks';
+import { useTelegramTheme } from '@/auth/useTelegram';
 import type { Token } from '@/types/response';
 
 interface CheckoutSearch {
@@ -30,6 +32,7 @@ function CheckoutPage() {
   const { executionId, clientSecret, publishableKey, selectedTier, selectedTokens } = Route.useSearch();
   const navigate = useNavigate();
   const { session } = useSession();
+  const { isTelegram } = useTelegramTheme();
   const [parsedTokens, setParsedTokens] = useState<Token[]>([]);
 
   const {
@@ -61,6 +64,18 @@ function CheckoutPage() {
 
   const handlePaymentComplete = () => {
     console.log('Checkout: Payment completed, redirecting to success page');
+
+    // Trigger payment success haptic feedback
+    if (isTelegram) {
+      try {
+        if (hapticFeedback && hapticFeedback.notificationOccurred) {
+          hapticFeedback.notificationOccurred('success');
+        }
+      } catch (error) {
+        console.warn('Checkout: Haptic feedback not available:', error);
+      }
+    }
+
     // Navigate to success page
     navigate({
       to: '/sticker-packs/$stickerPackId/success',

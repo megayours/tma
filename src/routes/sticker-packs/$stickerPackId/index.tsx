@@ -1,5 +1,4 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { Button } from '@telegram-apps/telegram-ui';
 import { useState, useCallback } from 'react';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import { useExecutionStatus } from '@/hooks/useExecutionStatus';
@@ -10,6 +9,7 @@ import { useSelectedNFTs } from '@/contexts/SelectedNFTsContext';
 import { StickerCollectionHeader } from '@/components/StickerPack/StickerCollectionHeader';
 import { TierSelector } from '@/components/StickerPack/TierSelector';
 import { NFTSelectionOnly } from '@/components/Feed/NFTSelectionOnly';
+import { PurchaseButton } from '@/components/PurchaseButton';
 import type { Token } from '@/types/response';
 
 interface StickerPackSearch {
@@ -255,11 +255,24 @@ function RouteComponent() {
           {/* Show purchase button for initial state or error state */}
           {(state === 'idle' || state === 'error') && (
             <div className="flex flex-col space-y-4">
-              <Button
-                mode="filled"
-                size="l"
+              <PurchaseButton
+                text={
+                  isPending
+                    ? 'Processing...'
+                    : state === 'error'
+                      ? 'Failed - Try Again'
+                      : stickerPack.pricing[selectedTier].amount_cents === null
+                        ? `Generate ${selectedTokensForGeneration.length} Sticker${selectedTokensForGeneration.length !== 1 ? 's' : ''}`
+                        : 'Purchase & Generate'
+                }
+                price={
+                  !isPending && state !== 'error'
+                    ? stickerPack.pricing[selectedTier].formatted_price || 'Free'
+                    : undefined
+                }
                 onClick={handlePurchase}
                 disabled={!canPurchase || isPending}
+                loading={isPending}
                 className={`w-full font-semibold ${
                   isPending
                     ? 'bg-yellow-500 hover:bg-yellow-600'
@@ -267,26 +280,9 @@ function RouteComponent() {
                       ? 'bg-red-500 hover:bg-red-600'
                       : ''
                 }`}
-              >
-                <div className="flex w-full items-center justify-between">
-                  <span className="mr-2">
-                    {isPending
-                      ? 'Processing...'
-                      : state === 'error'
-                        ? 'Failed - Try Again'
-                        : stickerPack.pricing[selectedTier].amount_cents ===
-                            null
-                          ? `Generate ${selectedTokensForGeneration.length} Sticker${selectedTokensForGeneration.length !== 1 ? 's' : ''}`
-                          : `Purchase & Generate`}
-                  </span>
-                  {!isPending && state !== 'error' && (
-                    <span className="font-bold">
-                      {stickerPack.pricing[selectedTier].formatted_price ||
-                        'Free'}
-                    </span>
-                  )}
-                </div>
-              </Button>
+                mode="filled"
+                size="l"
+              />
             </div>
           )}
 

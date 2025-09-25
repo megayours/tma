@@ -79,7 +79,7 @@ function RouteComponent() {
       )}
 
       {/* All Sticker Packs with Details */}
-      <div className="flex flex-col space-y-6 overflow-x-auto pl-2">
+      <div className="flex flex-col space-y-6 overflow-x-auto pb-20 pl-2">
         {stickerPacks &&
           stickerPacks.data.length > 0 &&
           stickerPacks.data.map(stickerPack => (
@@ -96,7 +96,8 @@ function RouteComponent() {
                   {...(stickerPack.description && {
                     titleBadge: (
                       <Badge type="number" large={false} mode="secondary">
-                        {stickerPack.min_tokens_required === stickerPack.max_tokens_required
+                        {stickerPack.min_tokens_required ===
+                        stickerPack.max_tokens_required
                           ? `${stickerPack.min_tokens_required} token${stickerPack.min_tokens_required !== 1 ? 's' : ''}`
                           : `${stickerPack.min_tokens_required}-${stickerPack.max_tokens_required} tokens`}
                       </Badge>
@@ -104,7 +105,7 @@ function RouteComponent() {
                   })}
                   description={`${stickerPack.item_count} stickers`}
                   after={
-                    <div onClick={(e) => e.preventDefault()}>
+                    <div onClick={e => e.preventDefault()}>
                       <PurchaseButton stickerPackId={stickerPack.id} />
                     </div>
                   }

@@ -26,9 +26,7 @@ export const Route = createFileRoute('/sticker-packs/$stickerPackId/')({
 });
 
 function RouteComponent() {
-  return (
-    <StickerPackContent />
-  );
+  return <StickerPackContent />;
 }
 
 function StickerPackContent() {
@@ -49,13 +47,11 @@ function StickerPackContent() {
   >('basic');
   const [selectedTokensForGeneration, setSelectedTokensForGeneration] =
     useState<Token[]>([]);
-  const [executionId, setExecutionId] = useState<string | null>(urlExecutionId || null);
+  const [executionId, setExecutionId] = useState<string | null>(
+    urlExecutionId || null
+  );
 
-  const {
-    purchaseStickerPack,
-    isPending,
-    state,
-  } = usePurchase(session, {
+  const { purchaseStickerPack, isPending, state } = usePurchase(session, {
     onSuccess: data => {
       console.log('Purchase successful:', data);
 
@@ -69,7 +65,9 @@ function StickerPackContent() {
             clientSecret: data.checkout.client_secret,
             publishableKey: data.checkout.publishable_key,
             selectedTier,
-            selectedTokens: encodeURIComponent(JSON.stringify(selectedTokensForGeneration)),
+            selectedTokens: encodeURIComponent(
+              JSON.stringify(selectedTokensForGeneration)
+            ),
           },
         });
       } else {
@@ -137,6 +135,7 @@ function StickerPackContent() {
     selectedTokensForGeneration.length <=
       (stickerPack?.max_tokens_required || 1) &&
     !isPending;
+
 
   if (isLoading) {
     return (
@@ -216,9 +215,9 @@ function StickerPackContent() {
           />
         </div>
 
+
         {/* Payment/Generation Section */}
         <div className="rounded-lg">
-
           {/* Show processing progress */}
           {isProcessing && executionStatus && (
             <div className="bg-tg-bg border-tg-hint/20 rounded-lg border p-6 text-center">
@@ -268,7 +267,7 @@ function StickerPackContent() {
               <TelegramMainButton
                 text={
                   isPending
-                    ? 'Processing...'
+                    ? '⏳ Processing...'
                     : state === 'error'
                       ? 'Failed - Try Again'
                       : stickerPack.pricing[selectedTier].amount_cents === null
@@ -279,7 +278,9 @@ function StickerPackContent() {
                 disabled={!canPurchase}
                 loading={isPending}
                 visible={true}
-                hasShineEffect={stickerPack.pricing[selectedTier].amount_cents !== null}
+                hasShineEffect={
+                  stickerPack.pricing[selectedTier].amount_cents !== null
+                }
               />
 
               {/* Fallback Purchase Button for non-Telegram */}
@@ -288,16 +289,18 @@ function StickerPackContent() {
                   <PurchaseButton
                     text={
                       isPending
-                        ? 'Processing...'
+                        ? '⏳ Processing...'
                         : state === 'error'
                           ? 'Failed - Try Again'
-                          : stickerPack.pricing[selectedTier].amount_cents === null
+                          : stickerPack.pricing[selectedTier].amount_cents ===
+                              null
                             ? `Generate ${selectedTokensForGeneration.length} Sticker${selectedTokensForGeneration.length !== 1 ? 's' : ''}`
                             : 'Purchase & Generate'
                     }
                     price={
                       !isPending && state !== 'error'
-                        ? stickerPack.pricing[selectedTier].formatted_price || 'Free'
+                        ? stickerPack.pricing[selectedTier].formatted_price ||
+                          'Free'
                         : undefined
                     }
                     onClick={handlePurchase}

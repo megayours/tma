@@ -21,6 +21,7 @@ import { Route as Demo3IndexRouteImport } from './routes/demo3/index'
 import { Route as Demo2IndexRouteImport } from './routes/demo2/index'
 import { Route as AuthRefreshRouteImport } from './routes/auth/refresh'
 import { Route as StickerPacksStickerPackIdIndexRouteImport } from './routes/sticker-packs/$stickerPackId/index'
+import { Route as ProfilePurchasesIndexRouteImport } from './routes/profile/purchases/index'
 import { Route as ProfilePromptIndexRouteImport } from './routes/profile/prompt/index'
 import { Route as ProfileMyStickerPacksIndexRouteImport } from './routes/profile/my-sticker-packs/index'
 import { Route as ProfileMyGenerationsIndexRouteImport } from './routes/profile/my-generations/index'
@@ -101,6 +102,11 @@ const StickerPacksStickerPackIdIndexRoute =
     path: '/$stickerPackId/',
     getParentRoute: () => StickerPacksRoute,
   } as any)
+const ProfilePurchasesIndexRoute = ProfilePurchasesIndexRouteImport.update({
+  id: '/profile/purchases/',
+  path: '/profile/purchases/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProfilePromptIndexRoute = ProfilePromptIndexRouteImport.update({
   id: '/profile/prompt/',
   path: '/profile/prompt/',
@@ -223,6 +229,7 @@ export interface FileRoutesByFullPath {
   '/profile/my-generations': typeof ProfileMyGenerationsIndexRoute
   '/profile/my-sticker-packs': typeof ProfileMyStickerPacksIndexRoute
   '/profile/prompt': typeof ProfilePromptIndexRoute
+  '/profile/purchases': typeof ProfilePurchasesIndexRoute
   '/sticker-packs/$stickerPackId': typeof StickerPacksStickerPackIdIndexRoute
   '/profile/prompt/edit/$promptId': typeof ProfilePromptEditPromptIdRouteRouteWithChildren
   '/post/create/image': typeof PostCreateImageIndexRoute
@@ -254,6 +261,7 @@ export interface FileRoutesByTo {
   '/profile/my-generations': typeof ProfileMyGenerationsIndexRoute
   '/profile/my-sticker-packs': typeof ProfileMyStickerPacksIndexRoute
   '/profile/prompt': typeof ProfilePromptIndexRoute
+  '/profile/purchases': typeof ProfilePurchasesIndexRoute
   '/sticker-packs/$stickerPackId': typeof StickerPacksStickerPackIdIndexRoute
   '/post/create/image': typeof PostCreateImageIndexRoute
   '/post/create/sticker': typeof PostCreateStickerIndexRoute
@@ -286,6 +294,7 @@ export interface FileRoutesById {
   '/profile/my-generations/': typeof ProfileMyGenerationsIndexRoute
   '/profile/my-sticker-packs/': typeof ProfileMyStickerPacksIndexRoute
   '/profile/prompt/': typeof ProfilePromptIndexRoute
+  '/profile/purchases/': typeof ProfilePurchasesIndexRoute
   '/sticker-packs/$stickerPackId/': typeof StickerPacksStickerPackIdIndexRoute
   '/profile/prompt/edit/$promptId': typeof ProfilePromptEditPromptIdRouteRouteWithChildren
   '/post/create/image/': typeof PostCreateImageIndexRoute
@@ -320,6 +329,7 @@ export interface FileRouteTypes {
     | '/profile/my-generations'
     | '/profile/my-sticker-packs'
     | '/profile/prompt'
+    | '/profile/purchases'
     | '/sticker-packs/$stickerPackId'
     | '/profile/prompt/edit/$promptId'
     | '/post/create/image'
@@ -351,6 +361,7 @@ export interface FileRouteTypes {
     | '/profile/my-generations'
     | '/profile/my-sticker-packs'
     | '/profile/prompt'
+    | '/profile/purchases'
     | '/sticker-packs/$stickerPackId'
     | '/post/create/image'
     | '/post/create/sticker'
@@ -382,6 +393,7 @@ export interface FileRouteTypes {
     | '/profile/my-generations/'
     | '/profile/my-sticker-packs/'
     | '/profile/prompt/'
+    | '/profile/purchases/'
     | '/sticker-packs/$stickerPackId/'
     | '/profile/prompt/edit/$promptId'
     | '/post/create/image/'
@@ -412,6 +424,7 @@ export interface RootRouteChildren {
   ProfileMyGenerationsIndexRoute: typeof ProfileMyGenerationsIndexRoute
   ProfileMyStickerPacksIndexRoute: typeof ProfileMyStickerPacksIndexRoute
   ProfilePromptIndexRoute: typeof ProfilePromptIndexRoute
+  ProfilePurchasesIndexRoute: typeof ProfilePurchasesIndexRoute
   PostCreateImageIndexRoute: typeof PostCreateImageIndexRoute
   PostCreateStickerIndexRoute: typeof PostCreateStickerIndexRoute
   PostCreateVideoIndexRoute: typeof PostCreateVideoIndexRoute
@@ -505,6 +518,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/sticker-packs/$stickerPackId'
       preLoaderRoute: typeof StickerPacksStickerPackIdIndexRouteImport
       parentRoute: typeof StickerPacksRoute
+    }
+    '/profile/purchases/': {
+      id: '/profile/purchases/'
+      path: '/profile/purchases'
+      fullPath: '/profile/purchases'
+      preLoaderRoute: typeof ProfilePurchasesIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/profile/prompt/': {
       id: '/profile/prompt/'
@@ -702,6 +722,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileMyGenerationsIndexRoute: ProfileMyGenerationsIndexRoute,
   ProfileMyStickerPacksIndexRoute: ProfileMyStickerPacksIndexRoute,
   ProfilePromptIndexRoute: ProfilePromptIndexRoute,
+  ProfilePurchasesIndexRoute: ProfilePurchasesIndexRoute,
   PostCreateImageIndexRoute: PostCreateImageIndexRoute,
   PostCreateStickerIndexRoute: PostCreateStickerIndexRoute,
   PostCreateVideoIndexRoute: PostCreateVideoIndexRoute,

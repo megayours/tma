@@ -34,6 +34,29 @@ function TelegramAppHandler() {
     if (isTMA()) {
       init();
 
+      // Add global error handler for Telegram SDK validation errors
+      const originalConsoleError = console.error;
+      console.error = (...args) => {
+        // Suppress known Telegram SDK validation errors that don't affect functionality
+        const firstArg = args[0];
+        const message = firstArg?.message || firstArg?.toString?.() || '';
+        const fullMessage = args.join(' ');
+
+        // Check for viewport_changed ValiError
+        if (
+          (message.includes('viewport_changed') || fullMessage.includes('viewport_changed')) &&
+          (message.includes('Invalid type: Expected Object but received null') ||
+           fullMessage.includes('Invalid type: Expected Object but received null') ||
+           firstArg?.name === 'ValiError')
+        ) {
+          // Silently ignore this known Telegram app bug
+          return;
+        }
+
+        // Log all other errors normally
+        originalConsoleError(...args);
+      };
+
       // Mount viewport first if not already mounted
       if (viewport.mount.isAvailable() && !viewport.isMounted()) {
         setIsViewportMounting(true);
@@ -108,6 +131,11 @@ function TelegramAppHandler() {
       if (pathname === '/') {
         backButton.hide();
       }
+
+      // Cleanup function to restore original console.error
+      return () => {
+        console.error = originalConsoleError;
+      };
     }
   }, [pathname, router]);
 

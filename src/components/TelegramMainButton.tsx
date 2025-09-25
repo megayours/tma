@@ -25,6 +25,14 @@ export const TelegramMainButton: React.FC<TelegramMainButtonProps> = ({
 }) => {
   const { isTelegram } = useTelegramTheme();
   const clickHandlerRef = useRef<(() => void) | null>(null);
+  const disabledRef = useRef(disabled);
+  const loadingRef = useRef(loading);
+
+  // Update refs when props change
+  useEffect(() => {
+    disabledRef.current = disabled;
+    loadingRef.current = loading;
+  }, [disabled, loading]);
 
   // Only render in Telegram environment
   if (!isTelegram) {
@@ -39,7 +47,6 @@ export const TelegramMainButton: React.FC<TelegramMainButtonProps> = ({
     if (mainButton.mount.isAvailable()) {
       try {
         mainButton.mount();
-        console.log('TelegramMainButton: Main button mounted');
       } catch (error) {
         console.error('TelegramMainButton: Error mounting main button:', error);
         return;
@@ -50,7 +57,7 @@ export const TelegramMainButton: React.FC<TelegramMainButtonProps> = ({
     if (mainButton.onClick.isAvailable()) {
       clickHandlerRef.current = onClick;
       const offClick = mainButton.onClick(() => {
-        if (clickHandlerRef.current && !disabled && !loading) {
+        if (clickHandlerRef.current && !disabledRef.current && !loadingRef.current) {
           clickHandlerRef.current();
         }
       });
@@ -61,7 +68,6 @@ export const TelegramMainButton: React.FC<TelegramMainButtonProps> = ({
         if (mainButton.unmount) {
           try {
             mainButton.unmount();
-            console.log('TelegramMainButton: Main button unmounted');
           } catch (error) {
             console.error('TelegramMainButton: Error unmounting main button:', error);
           }
@@ -97,7 +103,6 @@ export const TelegramMainButton: React.FC<TelegramMainButtonProps> = ({
       }
 
       mainButton.setParams(params);
-      console.log('TelegramMainButton: Updated params:', params);
     } catch (error) {
       console.error('TelegramMainButton: Error updating params:', error);
     }

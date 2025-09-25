@@ -38,3 +38,16 @@ export function useSelectedNFTs() {
   }
   return context;
 }
+
+export function useSelectedNFTsSafe() {
+  const context = useContext(SelectedNFTsContext);
+  if (context === undefined) {
+    return {
+      selectedNFTs: [],
+      setSelectedNFTs: () => {},
+      selectedFavorite: null,
+      setSelectedFavorite: () => {},
+    };
+  }
+  return context;
+}

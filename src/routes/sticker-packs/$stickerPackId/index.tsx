@@ -10,6 +10,8 @@ import { StickerCollectionHeader } from '@/components/StickerPack/StickerCollect
 import { TierSelector } from '@/components/StickerPack/TierSelector';
 import { NFTSelectionOnly } from '@/components/Feed/NFTSelectionOnly';
 import { PurchaseButton } from '@/components/PurchaseButton';
+import { TelegramMainButton } from '@/components/TelegramMainButton';
+import { useTelegramTheme } from '@/auth/useTelegram';
 import type { Token } from '@/types/response';
 
 interface StickerPackSearch {
@@ -24,10 +26,17 @@ export const Route = createFileRoute('/sticker-packs/$stickerPackId/')({
 });
 
 function RouteComponent() {
+  return (
+    <StickerPackContent />
+  );
+}
+
+function StickerPackContent() {
   const { stickerPackId } = Route.useParams();
   const { executionId: urlExecutionId } = Route.useSearch();
   const navigate = useNavigate();
   const { session } = useSession();
+  const { isTelegram } = useTelegramTheme();
   const { selectedFavorite } = useSelectedNFTs();
   const {
     data: stickerPack,
@@ -254,8 +263,9 @@ function RouteComponent() {
 
           {/* Show purchase button for initial state or error state */}
           {(state === 'idle' || state === 'error') && (
-            <div className="flex flex-col space-y-4">
-              <PurchaseButton
+            <>
+              {/* Telegram Main Button */}
+              <TelegramMainButton
                 text={
                   isPending
                     ? 'Processing...'
@@ -263,27 +273,49 @@ function RouteComponent() {
                       ? 'Failed - Try Again'
                       : stickerPack.pricing[selectedTier].amount_cents === null
                         ? `Generate ${selectedTokensForGeneration.length} Sticker${selectedTokensForGeneration.length !== 1 ? 's' : ''}`
-                        : 'Purchase & Generate'
-                }
-                price={
-                  !isPending && state !== 'error'
-                    ? stickerPack.pricing[selectedTier].formatted_price || 'Free'
-                    : undefined
+                        : `Purchase & Generate ${stickerPack.pricing[selectedTier].formatted_price || ''}`
                 }
                 onClick={handlePurchase}
-                disabled={!canPurchase || isPending}
+                disabled={!canPurchase}
                 loading={isPending}
-                className={`w-full font-semibold ${
-                  isPending
-                    ? 'bg-yellow-500 hover:bg-yellow-600'
-                    : state === 'error'
-                      ? 'bg-red-500 hover:bg-red-600'
-                      : ''
-                }`}
-                mode="filled"
-                size="l"
+                visible={true}
+                hasShineEffect={stickerPack.pricing[selectedTier].amount_cents !== null}
               />
-            </div>
+
+              {/* Fallback Purchase Button for non-Telegram */}
+              {!isTelegram && (
+                <div className="flex flex-col space-y-4">
+                  <PurchaseButton
+                    text={
+                      isPending
+                        ? 'Processing...'
+                        : state === 'error'
+                          ? 'Failed - Try Again'
+                          : stickerPack.pricing[selectedTier].amount_cents === null
+                            ? `Generate ${selectedTokensForGeneration.length} Sticker${selectedTokensForGeneration.length !== 1 ? 's' : ''}`
+                            : 'Purchase & Generate'
+                    }
+                    price={
+                      !isPending && state !== 'error'
+                        ? stickerPack.pricing[selectedTier].formatted_price || 'Free'
+                        : undefined
+                    }
+                    onClick={handlePurchase}
+                    disabled={!canPurchase || isPending}
+                    loading={isPending}
+                    className={`w-full font-semibold ${
+                      isPending
+                        ? 'bg-yellow-500 hover:bg-yellow-600'
+                        : state === 'error'
+                          ? 'bg-red-500 hover:bg-red-600'
+                          : ''
+                    }`}
+                    mode="filled"
+                    size="l"
+                  />
+                </div>
+              )}
+            </>
           )}
 
           {/* Error handling */}

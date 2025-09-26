@@ -21,6 +21,7 @@ import { ToastProvider } from '@/components/ui';
 import { SelectedNFTsProvider } from '@/contexts/SelectedNFTsContext';
 import { useSession } from '@/auth/SessionProvider';
 import { FavoriteRedirectHandler } from '@/components/FavoriteRedirectHandler';
+import { AddToHomeScreenButton } from '@/components/AddToHomeScreenButton';
 
 function TelegramAppHandler() {
   const location = useLocation();
@@ -44,10 +45,15 @@ function TelegramAppHandler() {
 
         // Check for viewport_changed ValiError
         if (
-          (message.includes('viewport_changed') || fullMessage.includes('viewport_changed')) &&
-          (message.includes('Invalid type: Expected Object but received null') ||
-           fullMessage.includes('Invalid type: Expected Object but received null') ||
-           firstArg?.name === 'ValiError')
+          (message.includes('viewport_changed') ||
+            fullMessage.includes('viewport_changed')) &&
+          (message.includes(
+            'Invalid type: Expected Object but received null'
+          ) ||
+            fullMessage.includes(
+              'Invalid type: Expected Object but received null'
+            ) ||
+            firstArg?.name === 'ValiError')
         ) {
           // Silently ignore this known Telegram app bug
           return;
@@ -173,22 +179,24 @@ function AppContent() {
     <>
       <TelegramAppHandler />
       <AppRoot>
-        <div
-          className={`bg-tg-bg h-screen ${isViewportMounted ? 'pt-24' : ''}`}
-        >
-          <main
-            className={`bg-tg-bg h-full ${shouldHideNavBar ? '' : 'mb-20'}`}
-          >
-            <Outlet />
-          </main>
-          {!shouldHideNavBar && (
-            <div className="fixed right-0 bottom-0 left-0 z-10 flex h-16 items-center">
-              <NavBar />
+        {isViewportMounted && (
+          <div className="h-24 w-full">
+            <div className={`flex h-full items-end justify-center`}>
+              <AddToHomeScreenButton />
             </div>
-          )}
-          {/* <TanStackRouterDevtools /> */}
-          {/* <ReactQueryDevtools initialIsOpen={false} /> */}
-        </div>
+          </div>
+        )}
+
+        <main className={`bg-tg-bg h-full ${shouldHideNavBar ? '' : 'mb-20'}`}>
+          <Outlet />
+        </main>
+        {!shouldHideNavBar && (
+          <div className="fixed right-0 bottom-0 left-0 z-10 flex h-16 items-center">
+            <NavBar />
+          </div>
+        )}
+        {/* <TanStackRouterDevtools /> */}
+        {/* <ReactQueryDevtools initialIsOpen={false} /> */}
       </AppRoot>
     </>
   );

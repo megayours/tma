@@ -1,20 +1,9 @@
-import { createFileRoute } from '@tanstack/react-router';
-import { Feed } from './feed';
-// import { ThemeDemo } from '../components/ThemeDemo';
-// import { ThemeUsageExamples } from '../components/ThemeUsageExamples';
-// import { TelegramThemeStatus } from '../components/TelegramThemeStatus';
-// import { TelegramThemeDemo } from '../components/TelegramThemeDemo';
-// import { TelegramUIComponentsDemo } from '../components/TelegramUIComponentsDemo';
-// import { ExampleApp } from '../components/ExampleApp';
+import { createFileRoute, redirect } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/')({
-  component: Index,
+  beforeLoad: () => {
+    throw redirect({
+      to: '/sticker-packs',
+    });
+  },
 });
-
-function Index() {
-  return (
-    <div className="bg-tg-bg text-tg-text">
-      <Feed />
-    </div>
-  );
-}

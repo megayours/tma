@@ -80,14 +80,14 @@ export function NavBar() {
       <ProtectedRoute>
         <div className="bg-tg-bg text-tg-text flex h-full w-full items-center justify-around px-4 py-4 pb-6">
           <button
-            onClick={() => handleNavClick('/')}
-            className={`tg-link px-2 py-1 hover:opacity-80 ${location.pathname === '/' ? 'font-bold' : ''}`}
+            onClick={() => handleNavClick('/feed')}
+            className={`tg-link px-2 py-1 hover:opacity-80 ${location.pathname === '/feed' ? 'font-bold' : ''}`}
           >
             Feed
           </button>
           <button
-            onClick={() => handleNavClick('/sticker-packs')}
-            className={`tg-link px-2 py-1 hover:opacity-80 ${location.pathname === '/sticker-packs' ? 'font-bold' : ''}`}
+            onClick={() => handleNavClick('/')}
+            className={`tg-link px-2 py-1 hover:opacity-80 ${location.pathname === '/' ? 'font-bold' : ''}`}
           >
             Stickers
           </button>

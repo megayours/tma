@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { z } from 'zod';
 import { safeParse } from '@/utils/validation';
 import type { Session } from '@/auth/useAuth';
@@ -58,6 +58,10 @@ export const useExecutionStatus = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
+  // Use refs to store latest callback values
+  const callbacksRef = useRef({ onStatusChange, onComplete, onError });
+  callbacksRef.current = { onStatusChange, onComplete, onError };
+
   const fetchStatus = useCallback(async () => {
     if (!executionId || !session?.authToken) {
       return;
@@ -86,13 +90,13 @@ export const useExecutionStatus = ({
 
       setStatus(validatedStatus);
       setError(null);
-      onStatusChange?.(validatedStatus);
+      callbacksRef.current.onStatusChange?.(validatedStatus);
 
       // Handle completion or error
       if (validatedStatus.status === 'completed') {
-        onComplete?.(validatedStatus);
+        callbacksRef.current.onComplete?.(validatedStatus);
       } else if (validatedStatus.status === 'error') {
-        onError?.(validatedStatus);
+        callbacksRef.current.onError?.(validatedStatus);
       }
 
       return validatedStatus;
@@ -102,7 +106,7 @@ export const useExecutionStatus = ({
       console.error('Failed to fetch execution status:', errorObj);
       throw errorObj;
     }
-  }, [executionId, session?.authToken, onStatusChange, onComplete, onError]);
+  }, [executionId, session?.authToken]);
 
   useEffect(() => {
     if (!executionId || !session?.authToken) {
@@ -119,22 +123,8 @@ export const useExecutionStatus = ({
       fetchStatus().catch(console.error);
     }, pollingInterval);
 
-    // Stop polling if execution is completed, errored, or cancelled
-    if (
-      status?.status &&
-      ['completed', 'error', 'cancelled'].includes(status.status)
-    ) {
-      clearInterval(interval);
-    }
-
     return () => clearInterval(interval);
-  }, [
-    executionId,
-    session?.authToken,
-    pollingInterval,
-    fetchStatus,
-    status?.status,
-  ]);
+  }, [executionId, session?.authToken, pollingInterval]);
 
   // Stop polling when status reaches final state
   useEffect(() => {

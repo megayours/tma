@@ -1,6 +1,5 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useState, useCallback } from 'react';
-import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+import { useState, useCallback, useEffect } from 'react';
 import { useExecutionStatus } from '@/hooks/useExecutionStatus';
 import { useStickerPack } from '@/hooks/useStickerPacks';
 import { useSession } from '@/auth/SessionProvider';
@@ -12,6 +11,7 @@ import { NFTSelectionOnly } from '@/components/Feed/NFTSelectionOnly';
 import { PurchaseButton } from '@/components/StickerPack/PurchaseButton';
 import { TelegramMainButton } from '@/components/TelegramMainButton';
 import { useTelegramTheme } from '@/auth/useTelegram';
+import { StickerPackAnimationProvider, useStickerPackAnimationContext } from '@/contexts/StickerPackAnimationContext';
 import type { Token } from '@/types/response';
 
 interface StickerPackSearch {
@@ -26,7 +26,11 @@ export const Route = createFileRoute('/sticker-packs/$stickerPackId/')({
 });
 
 function RouteComponent() {
-  return <StickerPackContent />;
+  return (
+    <StickerPackAnimationProvider>
+      <StickerPackContent />
+    </StickerPackAnimationProvider>
+  );
 }
 
 function StickerPackContent() {
@@ -36,6 +40,7 @@ function StickerPackContent() {
   const { session } = useSession();
   const { isTelegram } = useTelegramTheme();
   const { selectedFavorite } = useSelectedNFTs();
+  const { triggerAnimation } = useStickerPackAnimationContext();
   const {
     data: stickerPack,
     isLoading,
@@ -51,9 +56,12 @@ function StickerPackContent() {
     urlExecutionId || null
   );
 
-  const { purchaseStickerPack, isPending, state } = usePurchase(session, {
+  const { purchaseStickerPack, isPending, state, data } = usePurchase(session, {
     onSuccess: data => {
-      console.log('Purchase successful:', data);
+      // Trigger animation for successful purchases
+      if (data.status === 'processing' || data.status === 'completed') {
+        triggerAnimation(data.status);
+      }
 
       // If payment is required, navigate to checkout page
       if (data.status === 'pending_payment' && data.checkout) {
@@ -89,8 +97,9 @@ function StickerPackContent() {
   } = useExecutionStatus({
     session,
     executionId,
+    pollingInterval: 5000, // Poll every 5 seconds
     onComplete: status => {
-      console.log('Execution completed:', status);
+      triggerAnimation('completed');
     },
     onError: status => {
       console.error('Execution error:', status);
@@ -101,6 +110,14 @@ function StickerPackContent() {
   const handleTokensChange = useCallback((tokens: Token[]) => {
     setSelectedTokensForGeneration(tokens);
   }, []);
+
+  // Trigger animation when processing starts
+  useEffect(() => {
+    if (isProcessing) {
+      triggerAnimation('processing');
+    }
+  }, [isProcessing, triggerAnimation]);
+
 
   const handlePurchase = () => {
     if (
@@ -164,16 +181,6 @@ function StickerPackContent() {
 
   return (
     <div className="mx-auto max-w-4xl p-4">
-      {/* Confetti animation for successful generation */}
-      {isCompleted && (
-        <DotLottieReact
-          className="pointer-events-none fixed bottom-0 left-1/2 z-50 h-2/3 w-[150vw] -translate-x-1/2"
-          src="/lotties/confetti-full.lottie"
-          loop={false}
-          autoplay
-        />
-      )}
-
       <div className="space-y-2">
         {/* Header Section */}
         <StickerCollectionHeader stickerPack={stickerPack} />

@@ -4,6 +4,7 @@ import { FaTimes, FaPalette } from 'react-icons/fa';
 import { usePurchase } from '@/hooks/usePurchase';
 import { useSession } from '@/auth/SessionProvider';
 import { useSelectedNFTs } from '@/contexts/SelectedNFTsContext';
+import { useStickerPackAnimationContext } from '@/contexts/StickerPackAnimationContext';
 
 interface PurchaseButtonProps {
   stickerPackId: number;
@@ -16,10 +17,16 @@ export function PurchaseButton({
 }: PurchaseButtonProps) {
   const { session } = useSession();
   const { selectedFavorite } = useSelectedNFTs();
+  const { triggerAnimation } = useStickerPackAnimationContext();
 
   const { purchaseStickerPack, isPending, state } = usePurchase(session, {
     onSuccess: data => {
       console.log('Purchase successful:', data);
+
+      // Trigger animation for successful purchases
+      if (data.status === 'processing' || data.status === 'completed') {
+        triggerAnimation(data.status);
+      }
     },
     onError: error => {
       console.error('Purchase failed:', error);
@@ -27,7 +34,7 @@ export function PurchaseButton({
   });
 
   const handlePurchase = () => {
-    purchaseStickerPack(stickerPackId, selectedFavorite?.token);
+    purchaseStickerPack(stickerPackId, [selectedFavorite!.token]);
   };
 
   return (

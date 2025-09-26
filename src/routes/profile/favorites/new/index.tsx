@@ -25,6 +25,8 @@ function RouteComponent() {
   >(undefined);
   const [searchToken, setSearchToken] = useState<string>('# ');
 
+  console.log('SUPPORTED COLLECTIONS', supportedCollections);
+
   const selectedCollections = () => {
     return (
       <Section className="flex flex-col gap-4 p-4">

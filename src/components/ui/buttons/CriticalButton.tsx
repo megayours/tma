@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { cn } from '@/utils/cn';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+import { hapticFeedback } from '@telegram-apps/sdk-react';
 
 export type CriticalButtonState = 'normal' | 'loading' | 'success';
 
@@ -46,6 +47,24 @@ export function CriticalButton({
   useEffect(() => {
     onStateChange?.(state);
   }, [state, onStateChange]);
+
+  // Trigger haptic feedback when reaching success state
+  useEffect(() => {
+    if (state === 'success') {
+      try {
+        if (
+          hapticFeedback &&
+          hapticFeedback.impactOccurred &&
+          hapticFeedback.impactOccurred.isAvailable()
+        ) {
+          hapticFeedback.notificationOccurred('success');
+          console.log('CriticalButton: Success haptic feedback triggered');
+        }
+      } catch (error) {
+        console.warn('CriticalButton: Haptic feedback not available:', error);
+      }
+    }
+  }, [state]);
 
   const getCurrentContent = (): CriticalButtonContent => {
     switch (state) {

@@ -12,7 +12,6 @@ export const Route = createFileRoute('/feed/')({
   component: Feed,
 });
 
-
 export function Feed() {
   const { session } = useSession();
   const [allPrompts, setAllPrompts] = useState<PromptWithContent[]>([]);
@@ -181,7 +180,7 @@ export function Feed() {
         // Fetch detailed data for each prompt if session exists
         let mappedPrompts = basePrompts;
         if (session) {
-          const detailPromises = basePrompts.map(async (prompt) => {
+          const detailPromises = basePrompts.map(async prompt => {
             try {
               const detailResponse = await fetch(
                 `${import.meta.env.VITE_PUBLIC_API_URL}/prompts/${prompt.id}`,
@@ -207,7 +206,10 @@ export function Feed() {
                 contracts: detailData.contracts || [],
               };
             } catch (error) {
-              console.warn(`Error fetching details for prompt ${prompt.id}:`, error);
+              console.warn(
+                `Error fetching details for prompt ${prompt.id}:`,
+                error
+              );
               return prompt;
             }
           });
@@ -321,7 +323,7 @@ export function Feed() {
   if (error && allPrompts.length === 0) {
     return (
       <div className="flex h-full items-center justify-center">
-        <div className="p-6 text-center">
+        <div className="text-center">
           <div className="mb-2 text-xl text-red-500">⚠️</div>
           <h2 className="mb-2 text-lg font-semibold">
             Failed to load recommendations
@@ -343,6 +345,7 @@ export function Feed() {
       <style>{`
         .scroller {
           overflow-y: auto;
+          scrollbar-width: none;
           scroll-snap-type: y mandatory;
           height: 100vh;
         }
@@ -352,7 +355,7 @@ export function Feed() {
           height: 100vh;
         }
       `}</style>
-      <article className="scroller h-full">
+      <article className="scroller h-full overflow-y-auto">
         {/* Debug panel */}
         {DEBUG_MODE && (
           <div className="bg-opacity-50 fixed top-4 right-4 z-50 rounded bg-black p-2 text-xs text-white">
@@ -385,7 +388,10 @@ export function Feed() {
         )}
 
         {allPrompts.map((prompt: PromptWithContent, index: number) => (
-          <section key={prompt.id} className="flex snap-start flex-col">
+          <section
+            key={prompt.id}
+            className="flex snap-start flex-col overflow-y-auto"
+          >
             <ShowContent prompt={prompt} isLoading={isInitialLoading} />
 
             {/* Place trigger element at the 5th-to-last item */}

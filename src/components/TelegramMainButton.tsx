@@ -65,11 +65,12 @@ export const TelegramMainButton: React.FC<TelegramMainButtonProps> = ({
       // Cleanup function
       return () => {
         offClick();
-        if (mainButton.unmount) {
+        if (mainButton.setParams && mainButton.setParams.isAvailable()) {
           try {
-            mainButton.unmount();
+            mainButton.setParams({ isVisible: false });
+            console.log('TelegramMainButton: Hidden from main useEffect');
           } catch (error) {
-            console.error('TelegramMainButton: Error unmounting main button:', error);
+            console.error('TelegramMainButton: Error hiding main button:', error);
           }
         }
       };
@@ -91,6 +92,7 @@ export const TelegramMainButton: React.FC<TelegramMainButtonProps> = ({
         isEnabled: !disabled && !loading,
         isVisible: visible,
         isLoaderVisible: loading,
+        isProgressVisible: loading,
         hasShineEffect,
       };
 
@@ -107,6 +109,21 @@ export const TelegramMainButton: React.FC<TelegramMainButtonProps> = ({
       console.error('TelegramMainButton: Error updating params:', error);
     }
   }, [isTelegram, text, disabled, loading, visible, backgroundColor, textColor, hasShineEffect]);
+
+  // Dedicated cleanup useEffect to ensure button is hidden on component unmount
+  useEffect(() => {
+    return () => {
+      // Always try to hide the button when component unmounts
+      if (isTelegram && mainButton.setParams && mainButton.setParams.isAvailable()) {
+        try {
+          mainButton.setParams({ isVisible: false });
+          console.log('TelegramMainButton: Hidden on component cleanup');
+        } catch (error) {
+          console.error('TelegramMainButton: Error during cleanup:', error);
+        }
+      }
+    };
+  }, []); // Empty dependency array - only runs on mount/unmount
 
   // Component renders nothing (main button is handled by Telegram)
   return null;

@@ -9,7 +9,7 @@ import { useSelectedNFTs } from '@/contexts/SelectedNFTsContext';
 import { StickerCollectionHeader } from '@/components/StickerPack/StickerCollectionHeader';
 import { TierSelector } from '@/components/StickerPack/TierSelector';
 import { NFTSelectionOnly } from '@/components/Feed/NFTSelectionOnly';
-import { PurchaseButton } from '@/components/PurchaseButton';
+import { PurchaseButton } from '@/components/StickerPack/PurchaseButton';
 import { TelegramMainButton } from '@/components/TelegramMainButton';
 import { useTelegramTheme } from '@/auth/useTelegram';
 import type { Token } from '@/types/response';
@@ -136,7 +136,6 @@ function StickerPackContent() {
       (stickerPack?.max_tokens_required || 1) &&
     !isPending;
 
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -175,49 +174,55 @@ function StickerPackContent() {
         />
       )}
 
-      <div className="mt-6 space-y-6">
+      <div className="space-y-2">
         {/* Header Section */}
         <StickerCollectionHeader stickerPack={stickerPack} />
 
-        {/* Description Section */}
-        {stickerPack.description && (
-          <div className="bg-tg-secondary-bg rounded-lg p-4">
-            <h2 className="mb-2 text-base font-semibold">Launch Details</h2>
-            <p className="text-tg-text text-sm">{stickerPack.description}</p>
+        <div className="flex flex-col gap-4">
+          {/* Description Section */}
+          {stickerPack.description && (
+            <div className="bg-tg-secondary-bg flex-1 rounded-lg p-2">
+              <h2 className="text-base font-semibold">Launch Details</h2>
+              <p className="text-tg-text text-sm">{stickerPack.description}</p>
+            </div>
+          )}
+
+          {/* NFT Selection */}
+          <div className="flex-1">
+            <NFTSelectionOnly
+              selectedFavorite={selectedFavorite}
+              requiredTokens={stickerPack.min_tokens_required}
+              optionalTokens={Math.max(
+                0,
+                stickerPack.max_tokens_required -
+                  stickerPack.min_tokens_required
+              )}
+              onTokensChange={handleTokensChange}
+              prompt={{
+                id: 1,
+                name: `Generate stickers for ${stickerPack.name}`,
+                prompt: `Generate stickers for ${stickerPack.name}`,
+                createdAt: Date.now(),
+                version: 1,
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Tier Selection */}
+        {stickerPack.pricing['basic'].amount_cents !== null && (
+          <div className="rounded-lg p-2">
+            <TierSelector
+              stickerPackId={stickerPackId}
+              selectedTier={selectedTier}
+              onTierSelect={setSelectedTier}
+              disabled={isPending}
+            />
           </div>
         )}
 
-        {/* NFT Selection */}
-        <NFTSelectionOnly
-          selectedFavorite={selectedFavorite}
-          requiredTokens={stickerPack.min_tokens_required}
-          optionalTokens={Math.max(
-            0,
-            stickerPack.max_tokens_required - stickerPack.min_tokens_required
-          )}
-          onTokensChange={handleTokensChange}
-          prompt={{
-            id: 1,
-            name: `Generate stickers for ${stickerPack.name}`,
-            prompt: `Generate stickers for ${stickerPack.name}`,
-            createdAt: Date.now(),
-            version: 1,
-          }}
-        />
-
-        {/* Tier Selection */}
-        <div className="rounded-lg p-2">
-          <TierSelector
-            stickerPackId={stickerPackId}
-            selectedTier={selectedTier}
-            onTierSelect={setSelectedTier}
-            disabled={isPending}
-          />
-        </div>
-
-
         {/* Payment/Generation Section */}
-        <div className="rounded-lg">
+        <div className="rounded-lg p-2">
           {/* Show processing progress */}
           {isProcessing && executionStatus && (
             <div className="bg-tg-bg border-tg-hint/20 rounded-lg border p-6 text-center">
@@ -260,14 +265,14 @@ function StickerPackContent() {
             </div>
           )}
 
-          {/* Show purchase button for initial state or error state */}
-          {(state === 'idle' || state === 'error') && (
+          {/* Show purchase button for initial state, error state, or when pending */}
+          {(state === 'idle' || state === 'error' || isPending) && (
             <>
               {/* Telegram Main Button */}
               <TelegramMainButton
                 text={
                   isPending
-                    ? '⏳ Processing...'
+                    ? 'Processing...'
                     : state === 'error'
                       ? 'Failed - Try Again'
                       : stickerPack.pricing[selectedTier].amount_cents === null
@@ -287,34 +292,13 @@ function StickerPackContent() {
               {!isTelegram && (
                 <div className="flex flex-col space-y-4">
                   <PurchaseButton
-                    text={
-                      isPending
-                        ? '⏳ Processing...'
-                        : state === 'error'
-                          ? 'Failed - Try Again'
-                          : stickerPack.pricing[selectedTier].amount_cents ===
-                              null
-                            ? `Generate ${selectedTokensForGeneration.length} Sticker${selectedTokensForGeneration.length !== 1 ? 's' : ''}`
-                            : 'Purchase & Generate'
-                    }
+                    stickerPackId={parseInt(stickerPackId)}
                     price={
                       !isPending && state !== 'error'
                         ? stickerPack.pricing[selectedTier].formatted_price ||
                           'Free'
                         : undefined
                     }
-                    onClick={handlePurchase}
-                    disabled={!canPurchase || isPending}
-                    loading={isPending}
-                    className={`w-full font-semibold ${
-                      isPending
-                        ? 'bg-yellow-500 hover:bg-yellow-600'
-                        : state === 'error'
-                          ? 'bg-red-500 hover:bg-red-600'
-                          : ''
-                    }`}
-                    mode="filled"
-                    size="l"
                   />
                 </div>
               )}

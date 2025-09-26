@@ -104,11 +104,6 @@ function RouteComponent() {
                     ),
                   })}
                   description={`${stickerPack.item_count} stickers`}
-                  after={
-                    <div onClick={e => e.preventDefault()}>
-                      <PurchaseButton stickerPackId={stickerPack.id} />
-                    </div>
-                  }
                 >
                   {stickerPack.name}
                 </Cell>

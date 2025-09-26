@@ -1,12 +1,11 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Button } from '@telegram-apps/telegram-ui';
 import { hapticFeedback } from '@telegram-apps/sdk-react';
 import { StripeCheckout } from '@/components/StripeCheckout';
 import { useSession } from '@/auth/SessionProvider';
 import { useStickerPack } from '@/hooks/useStickerPacks';
 import { useTelegramTheme } from '@/auth/useTelegram';
-import type { Token } from '@/types/response';
 
 interface CheckoutSearch {
   executionId?: string;
@@ -39,7 +38,6 @@ function CheckoutPage() {
   const navigate = useNavigate();
   const { session } = useSession();
   const { isTelegram } = useTelegramTheme();
-  const [parsedTokens, setParsedTokens] = useState<Token[]>([]);
 
   const {
     data: stickerPack,
@@ -65,7 +63,6 @@ function CheckoutPage() {
       try {
         const tokens = JSON.parse(decodeURIComponent(selectedTokens));
         console.log('Checkout: Parsed tokens:', tokens.length, 'tokens');
-        setParsedTokens(tokens);
       } catch (err) {
         console.error('Checkout: Failed to parse selected tokens:', err);
       }
@@ -146,8 +143,6 @@ function CheckoutPage() {
       </div>
     );
   }
-
-  const tierInfo = stickerPack.pricing[selectedTier || 'basic'];
 
   return (
     <div className="mx-auto max-w-4xl p-4">

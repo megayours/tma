@@ -11,7 +11,10 @@ import { NFTSelectionOnly } from '@/components/Feed/NFTSelectionOnly';
 import { PurchaseButton } from '@/components/StickerPack/PurchaseButton';
 import { TelegramMainButton } from '@/components/TelegramMainButton';
 import { useTelegramTheme } from '@/auth/useTelegram';
-import { StickerPackAnimationProvider, useStickerPackAnimationContext } from '@/contexts/StickerPackAnimationContext';
+import {
+  StickerPackAnimationProvider,
+  useStickerPackAnimationContext,
+} from '@/contexts/StickerPackAnimationContext';
 import type { Token } from '@/types/response';
 
 interface StickerPackSearch {
@@ -39,7 +42,11 @@ interface StickerPreviewItemProps {
   index: number;
 }
 
-function StickerPreviewItem({ item, stickerPackName, index }: StickerPreviewItemProps) {
+function StickerPreviewItem({
+  item,
+  stickerPackName,
+  index,
+}: StickerPreviewItemProps) {
   const [imageLoading, setImageLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
 
@@ -53,11 +60,11 @@ function StickerPreviewItem({ item, stickerPackName, index }: StickerPreviewItem
   };
 
   return (
-    <div className="bg-tg-hint/10 aspect-square overflow-hidden rounded-lg relative">
+    <div className="bg-tg-hint/10 relative aspect-square overflow-hidden rounded-lg">
       {item.preview_url && !imageError ? (
         <>
           {imageLoading && (
-            <div className="absolute inset-0 bg-gray-300 animate-pulse rounded-lg" />
+            <div className="absolute inset-0 animate-pulse rounded-lg bg-gray-300" />
           )}
           <img
             src={item.preview_url}
@@ -100,7 +107,7 @@ function StickerPackContent() {
     urlExecutionId || null
   );
 
-  const { purchaseStickerPack, isPending, state, data } = usePurchase(session, {
+  const { purchaseStickerPack, isPending, state } = usePurchase(session, {
     onSuccess: data => {
       // Trigger animation for successful purchases
       if (data.status === 'processing' || data.status === 'completed') {
@@ -142,7 +149,7 @@ function StickerPackContent() {
     session,
     executionId,
     pollingInterval: 5000, // Poll every 5 seconds
-    onComplete: status => {
+    onComplete: _ => {
       triggerAnimation('completed');
     },
     onError: status => {
@@ -161,7 +168,6 @@ function StickerPackContent() {
       triggerAnimation('processing');
     }
   }, [isProcessing, triggerAnimation]);
-
 
   const handlePurchase = () => {
     if (
@@ -381,29 +387,28 @@ function StickerPackContent() {
         </div>
 
         {/* Preview Grid */}
-        {(stickerPack?.preview_items && stickerPack.preview_items.length > 0) || isLoading ? (
+        {(stickerPack?.preview_items && stickerPack.preview_items.length > 0) ||
+        isLoading ? (
           <div className="bg-tg-secondary-bg rounded-lg p-6">
             <h2 className="mb-4 text-lg font-semibold">Preview Stickers</h2>
             <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-              {isLoading ? (
-                // Show loading placeholders when sticker pack is loading
-                Array.from({ length: 4 }).map((_, index) => (
-                  <div
-                    key={`loading-${index}`}
-                    className="bg-gray-300 aspect-square rounded-lg animate-pulse"
-                  />
-                ))
-              ) : (
-                // Show actual preview items
-                stickerPack.preview_items.map((item, index) => (
-                  <StickerPreviewItem
-                    key={`${item.content_id}-${index}`}
-                    item={item}
-                    stickerPackName={stickerPack.name}
-                    index={index}
-                  />
-                ))
-              )}
+              {isLoading
+                ? // Show loading placeholders when sticker pack is loading
+                  Array.from({ length: 4 }).map((_, index) => (
+                    <div
+                      key={`loading-${index}`}
+                      className="aspect-square animate-pulse rounded-lg bg-gray-300"
+                    />
+                  ))
+                : // Show actual preview items
+                  stickerPack.preview_items?.map((item, index) => (
+                    <StickerPreviewItem
+                      key={`${item.content_id}-${index}`}
+                      item={item}
+                      stickerPackName={stickerPack.name}
+                      index={index}
+                    />
+                  ))}
             </div>
           </div>
         ) : null}

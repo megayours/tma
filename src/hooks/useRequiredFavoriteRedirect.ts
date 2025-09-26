@@ -13,7 +13,8 @@ export function useRequiredFavoriteRedirect() {
   const navigate = useNavigate();
   const { isAuthenticated, session, isAuthenticating } = useSession();
 
-  const { favorites, selectedFavorite, isLoadingFavorites, isLoadingSelected } = useGetFavorites(session);
+  const { favorites, selectedFavorite, isLoadingFavorites, isLoadingSelected } =
+    useGetFavorites(session);
 
   const hasRedirected = useRef(false);
 
@@ -41,12 +42,14 @@ export function useRequiredFavoriteRedirect() {
 
     // Check if user needs to be redirected to create favorites
     const needsRedirect =
-      (!selectedFavorite && (!favorites || favorites.length === 0));
+      !selectedFavorite && (!favorites || favorites.length === 0);
 
     if (needsRedirect) {
       hasRedirected.current = true;
-      console.log('Redirecting user to create favorites - no selectedFavorite or favorites found');
-      navigate({ to: '/profile/favorites/new/' });
+      console.log(
+        'Redirecting user to create favorites - no selectedFavorite or favorites found'
+      );
+      navigate({ to: '/profile/favorites/new' });
     }
   }, [
     isAuthenticated,

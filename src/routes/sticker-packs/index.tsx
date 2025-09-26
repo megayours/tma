@@ -1,23 +1,16 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { Badge, Button, Cell, Tooltip } from '@telegram-apps/telegram-ui';
+import { Badge, Cell, Tooltip } from '@telegram-apps/telegram-ui';
 import { useRef, useState } from 'react';
 import { useStickerPacks } from '@/hooks/useStickerPacks';
-import { useSession } from '@/auth/SessionProvider';
 import { StickerPackItem } from '@/components/StickerPack/StickerPackItem';
-import { PurchaseButton } from '@/components/StickerPack/PurchaseButton';
-import { useGetFavorites } from '@/hooks/useFavorites';
-import { useSelectedNFTs } from '@/contexts/SelectedNFTsContext';
 
 export const Route = createFileRoute('/sticker-packs/')({
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  const { session } = useSession();
   const buttonRef = useRef<HTMLElement>(null!);
   const [showTooltip, setShowTooltip] = useState(false);
-  const { selectedFavorite } = useSelectedNFTs();
-  const { isLoadingSelected } = useGetFavorites(session);
 
   const { data: stickerPacks } = useStickerPacks({
     pagination: {

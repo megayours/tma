@@ -28,7 +28,7 @@ function RouteComponent() {
 
   console.log('STICKER PACKS', stickerPacks);
   return (
-    <div>
+    <div className="flex flex-col gap-2 p-2">
       <div className="flex flex-row items-center gap-2">
         <h1>Sticker Packs</h1>
 
@@ -36,7 +36,7 @@ function RouteComponent() {
           onMouseEnter={() => setShowTooltip(true)}
           onMouseLeave={() => setShowTooltip(false)}
         >
-          <Button
+          {/* <Button
             ref={buttonRef}
             mode="filled"
             size="l"
@@ -44,13 +44,12 @@ function RouteComponent() {
             className="text-tg-text"
           >
             +
-          </Button>
+          </Button> */}
         </div>
         {showTooltip && <Tooltip targetRef={buttonRef}>Soon</Tooltip>}
       </div>
 
-      {/* Selected NFT Display */}
-      {selectedFavorite && !isLoadingSelected && (
+      {/* {selectedFavorite && !isLoadingSelected && (
         <div className="bg-tg-secondary-bg mb-4 flex items-center gap-3 rounded-lg p-3">
           <img
             src={selectedFavorite.token.image || ''}
@@ -68,7 +67,6 @@ function RouteComponent() {
           </div>
         </div>
       )}
-
       {!selectedFavorite && !isLoadingSelected && (
         <div className="mb-4 flex items-center gap-3 rounded-lg border border-yellow-200 bg-yellow-50 p-3">
           <div className="text-sm text-yellow-600">
@@ -76,10 +74,9 @@ function RouteComponent() {
             personalize your sticker packs.
           </div>
         </div>
-      )}
-
+      )} */}
       {/* All Sticker Packs with Details */}
-      <div className="flex flex-col space-y-6 overflow-x-auto pb-20 pl-2">
+      <div className="flex flex-col space-y-6 overflow-x-auto pb-20">
         {stickerPacks &&
           stickerPacks.data.length > 0 &&
           stickerPacks.data.map(stickerPack => (

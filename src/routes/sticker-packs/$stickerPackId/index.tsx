@@ -33,6 +33,50 @@ function RouteComponent() {
   );
 }
 
+interface StickerPreviewItemProps {
+  item: { content_id: string; preview_url?: string };
+  stickerPackName: string;
+  index: number;
+}
+
+function StickerPreviewItem({ item, stickerPackName, index }: StickerPreviewItemProps) {
+  const [imageLoading, setImageLoading] = useState(true);
+  const [imageError, setImageError] = useState(false);
+
+  const handleImageLoad = () => {
+    setImageLoading(false);
+  };
+
+  const handleImageError = () => {
+    setImageLoading(false);
+    setImageError(true);
+  };
+
+  return (
+    <div className="bg-tg-hint/10 aspect-square overflow-hidden rounded-lg relative">
+      {item.preview_url && !imageError ? (
+        <>
+          {imageLoading && (
+            <div className="absolute inset-0 bg-gray-300 animate-pulse rounded-lg" />
+          )}
+          <img
+            src={item.preview_url}
+            alt={`${stickerPackName} preview ${index + 1}`}
+            className="h-full w-full object-cover transition-transform hover:scale-110"
+            loading="lazy"
+            onLoad={handleImageLoad}
+            onError={handleImageError}
+          />
+        </>
+      ) : (
+        <div className="bg-tg-hint/20 flex h-full w-full items-center justify-center">
+          <span className="text-tg-hint text-xs">No preview</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function StickerPackContent() {
   const { stickerPackId } = Route.useParams();
   const { executionId: urlExecutionId } = Route.useSearch();
@@ -337,32 +381,32 @@ function StickerPackContent() {
         </div>
 
         {/* Preview Grid */}
-        {stickerPack.preview_items && stickerPack.preview_items.length > 0 && (
+        {(stickerPack?.preview_items && stickerPack.preview_items.length > 0) || isLoading ? (
           <div className="bg-tg-secondary-bg rounded-lg p-6">
             <h2 className="mb-4 text-lg font-semibold">Preview Stickers</h2>
             <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-              {stickerPack.preview_items.map((item, index) => (
-                <div
-                  key={`${item.content_id}-${index}`}
-                  className="bg-tg-hint/10 aspect-square overflow-hidden rounded-lg"
-                >
-                  {item.preview_url ? (
-                    <img
-                      src={item.preview_url}
-                      alt={`${stickerPack.name} preview ${index + 1}`}
-                      className="h-full w-full object-cover transition-transform hover:scale-110"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="bg-tg-hint/20 flex h-full w-full items-center justify-center">
-                      <span className="text-tg-hint text-xs">No preview</span>
-                    </div>
-                  )}
-                </div>
-              ))}
+              {isLoading ? (
+                // Show loading placeholders when sticker pack is loading
+                Array.from({ length: 4 }).map((_, index) => (
+                  <div
+                    key={`loading-${index}`}
+                    className="bg-gray-300 aspect-square rounded-lg animate-pulse"
+                  />
+                ))
+              ) : (
+                // Show actual preview items
+                stickerPack.preview_items.map((item, index) => (
+                  <StickerPreviewItem
+                    key={`${item.content_id}-${index}`}
+                    item={item}
+                    stickerPackName={stickerPack.name}
+                    index={index}
+                  />
+                ))
+              )}
             </div>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );

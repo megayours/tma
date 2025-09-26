@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router';
-import { Badge, Cell, Tooltip } from '@telegram-apps/telegram-ui';
+import { Badge, Button, Cell, Tooltip } from '@telegram-apps/telegram-ui';
 import { useRef, useState } from 'react';
 import { useStickerPacks } from '@/hooks/useStickerPacks';
 import { StickerPackItem } from '@/components/StickerPack/StickerPackItem';
@@ -65,6 +65,15 @@ export function StickerPacksList() {
                     ),
                   })}
                   description={`${stickerPack.item_count} stickers`}
+                  after={
+                    <Button mode="filled" size="s">
+                      <span className="text-tg-button-text">
+                        {stickerPack.pricing.basic.formatted_price
+                          ? stickerPack.pricing.basic.formatted_price
+                          : 'Free'}
+                      </span>
+                    </Button>
+                  }
                 >
                   {stickerPack.name}
                 </Cell>

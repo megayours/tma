@@ -187,7 +187,7 @@ function AppContent() {
           </div>
         )}
 
-        <main className={`bg-tg-bg h-full ${shouldHideNavBar ? '' : 'mb-20'}`}>
+        <main className={`bg-tg-bg h-full`}>
           <Outlet />
         </main>
         {!shouldHideNavBar && (

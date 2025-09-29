@@ -4,6 +4,7 @@ import { useGetRecommendedPromptsWithDetails } from '@/hooks/usePrompts';
 import type { PromptWithContent } from '@/types/content';
 import { ShowContent } from '@/components/Feed/ShowContent';
 import { useSession } from '@/auth/SessionProvider';
+import { viewport } from '@telegram-apps/sdk';
 
 // Debug toggle - set to false to disable all debug functionality
 const DEBUG_MODE = false;
@@ -19,6 +20,7 @@ export function Feed() {
   const [hasMorePages, setHasMorePages] = useState(true);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const triggerRef = useRef<HTMLDivElement>(null);
+  const isViewportMounted = viewport.isMounted();
 
   if (DEBUG_MODE) {
     console.log('Feed render:', {
@@ -355,7 +357,7 @@ export function Feed() {
           height: 100vh;
         }
       `}</style>
-      <article className="scroller h-full overflow-y-auto">
+      <article className={`scroller h-full overflow-y-auto`}>
         {/* Debug panel */}
         {DEBUG_MODE && (
           <div className="bg-opacity-50 fixed top-4 right-4 z-50 rounded bg-black p-2 text-xs text-white">
@@ -390,7 +392,7 @@ export function Feed() {
         {allPrompts.map((prompt: PromptWithContent, index: number) => (
           <section
             key={prompt.id}
-            className="flex snap-start flex-col overflow-y-auto"
+            className={`flex snap-start flex-col overflow-y-auto ${isViewportMounted ? 'pb-36' : 'pb-16'}`}
           >
             <ShowContent prompt={prompt} isLoading={isInitialLoading} />
 

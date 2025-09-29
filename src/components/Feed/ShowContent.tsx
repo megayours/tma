@@ -135,7 +135,7 @@ export function ShowContent({ prompt }: ShowContentProps) {
   }
 
   return (
-    <div className="flex h-screen w-full flex-col pb-16">
+    <div className="flex h-screen w-full flex-col">
       <div className="h-25 p-4">
         <h1>{prompt.name}</h1>
         <p>{prompt.ownerName}</p>

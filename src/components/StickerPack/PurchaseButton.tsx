@@ -5,6 +5,7 @@ import { usePurchase } from '@/hooks/usePurchase';
 import { useSession } from '@/auth/SessionProvider';
 import { useSelectedNFTs } from '@/contexts/SelectedNFTsContext';
 import { useStickerPackAnimationContext } from '@/contexts/StickerPackAnimationContext';
+import { redirectToTelegramBot } from '@/utils/telegramRedirect';
 
 interface PurchaseButtonProps {
   stickerPackId: number;
@@ -25,7 +26,10 @@ export function PurchaseButton({
 
       // Trigger animation for successful purchases
       if (data.status === 'processing' || data.status === 'completed') {
-        triggerAnimation(data.status);
+        triggerAnimation(data.status, data.status === 'completed' ? () => {
+          // Redirect to Telegram bot after animation completes
+          redirectToTelegramBot();
+        } : undefined);
       }
     },
     onError: error => {

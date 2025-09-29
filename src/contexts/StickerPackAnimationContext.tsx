@@ -4,7 +4,7 @@ import { useStickerPackAnimation } from '@/hooks/useStickerPackAnimation';
 import { ConfettiAnimation } from '@/components/StickerPack/ConfettiAnimation';
 
 interface StickerPackAnimationContextType {
-  triggerAnimation: (status: 'processing' | 'completed') => void;
+  triggerAnimation: (status: 'processing' | 'completed', onComplete?: () => void) => void;
 }
 
 const StickerPackAnimationContext = createContext<

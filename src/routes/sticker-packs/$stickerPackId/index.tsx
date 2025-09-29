@@ -15,6 +15,7 @@ import {
   StickerPackAnimationProvider,
   useStickerPackAnimationContext,
 } from '@/contexts/StickerPackAnimationContext';
+import { redirectToTelegramBot } from '@/utils/telegramRedirect';
 import type { Token } from '@/types/response';
 
 interface StickerPackSearch {
@@ -111,7 +112,10 @@ function StickerPackContent() {
     onSuccess: data => {
       // Trigger animation for successful purchases
       if (data.status === 'processing' || data.status === 'completed') {
-        triggerAnimation(data.status);
+        triggerAnimation(data.status, data.status === 'completed' ? () => {
+          // Redirect to Telegram bot after animation completes
+          redirectToTelegramBot();
+        } : undefined);
       }
 
       // If payment is required, navigate to checkout page
@@ -150,7 +154,10 @@ function StickerPackContent() {
     executionId,
     pollingInterval: 5000, // Poll every 5 seconds
     onComplete: _ => {
-      triggerAnimation('completed');
+      triggerAnimation('completed', () => {
+        // Redirect to Telegram bot after animation completes
+        redirectToTelegramBot();
+      });
     },
     onError: status => {
       console.error('Execution error:', status);

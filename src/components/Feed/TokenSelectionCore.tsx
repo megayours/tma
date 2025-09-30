@@ -215,7 +215,7 @@ export const TokenSelectionCore = ({
         )}
 
         {/* Generate Button */}
-        <div className={`border-tg-section-separator ${showHeader ? 'absolute inset-x-0 bottom-0 z-10' : 'mt-6'} border-t bg-tg-bg`}>
+        <div className="border-tg-section-separator mt-6 border-t bg-tg-bg">
           <div className="flex w-full justify-center p-4">
             <Button
               mode="filled"

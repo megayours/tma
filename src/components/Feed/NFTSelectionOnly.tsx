@@ -106,7 +106,7 @@ export const NFTSelectionOnly = ({
 
   return (
     <div
-      className={`bg-tg-bg border-tg-hint/20 rounded-lg border shadow-lg ${className}`}
+      className={`bg-tg-bg border-tg-hint/20 rounded-lg border shadow-lg ${className} overflow-y-scroll`}
       onClick={handleCloudClick}
     >
       {/* Header */}
@@ -132,7 +132,7 @@ export const NFTSelectionOnly = ({
             <div className="text-tg-text mb-3 text-center text-sm font-medium">
               Required NFTs
             </div>
-            <div className="flex flex-wrap justify-center items-center gap-4">
+            <div className="flex flex-wrap items-center justify-center gap-4">
               {Array.from({ length: requiredTokens }, (_, index) => (
                 <TokenSlot
                   key={`required-${index}`}

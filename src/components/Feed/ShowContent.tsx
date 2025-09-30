@@ -135,98 +135,104 @@ export function ShowContent({ prompt }: ShowContentProps) {
   }
 
   return (
-    <div className="flex h-screen w-full flex-col">
-      <div className="h-25 p-4">
-        <h1>{prompt.name}</h1>
-        <p>{prompt.ownerName}</p>
-      </div>
-      <div className="w-full flex-1 overflow-hidden">
-        <div className="h-full w-full">
-          {prompt.type === 'images' && (
-            <LatestImage prompt={prompt} bg={getRandomBackgroundGif()} />
-          )}
-          {prompt.type === 'videos' && (
-            <LatestVideo prompt={prompt} bg={getRandomBackgroundGif()} />
-          )}
-          {prompt.type === 'stickers' && (
-            <LatestSticker prompt={prompt} bg={getRandomBackgroundGif()} />
-          )}
-          {prompt.type === 'animated_stickers' && (
-            <LatestAnimatedSticker
-              prompt={prompt}
-              bg={getRandomBackgroundGif()}
-            />
-          )}
+    <div className="flex h-screen max-h-screen w-full flex-col pb-40">
+      <div className="z-0 w-full flex-1 overflow-hidden">
+        <div className="z-10 mb-4 h-25 p-4">
+          <h1>{prompt.name}</h1>
+          <p>{prompt.ownerName}</p>
         </div>
-      </div>
-      {/* Only show button if user is authenticated and has selected favorite */}
-      {session && selectedFavorite && (
-        <div className="h-20 p-4">
-          <Button
-            onClick={() => {
-              if (!selectedFavorite || !session) return;
+        <div
+          className="flex w-full flex-col"
+          style={{ height: 'calc(100vh - 18.25rem)' }}
+        >
+          <div className="mb-4 h-full overflow-hidden">
+            {prompt.type === 'images' && (
+              <LatestImage prompt={prompt} bg={getRandomBackgroundGif()} />
+            )}
+            {prompt.type === 'videos' && (
+              <LatestVideo prompt={prompt} bg={getRandomBackgroundGif()} />
+            )}
+            {prompt.type === 'stickers' && (
+              <LatestSticker prompt={prompt} bg={getRandomBackgroundGif()} />
+            )}
+            {prompt.type === 'animated_stickers' && (
+              <LatestAnimatedSticker
+                prompt={prompt}
+                bg={getRandomBackgroundGif()}
+              />
+            )}
+          </div>
 
-              if (needsTokenSelection()) {
-                setShowTokenSelection(true);
-              } else {
-                handleDirectGenerate();
-              }
-            }}
-            disabled={isLoadingSelected || generateContent.isPending}
-            mode="filled"
-            size="l"
-            stretched
-          >
-            <div className="flex flex-row items-center justify-between gap-2">
-              <div className="flex flex-col">
-                <div>
-                  {generateContent.isPending
-                    ? 'Generating...'
-                    : isLoadingSelected
-                      ? 'Loading...'
-                      : `Make it Yours with `}
-                </div>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="h-6 w-6 overflow-hidden rounded-full">
-                  <img
-                    src={selectedFavorite.token.image}
-                    alt={selectedFavorite.token.contract.name}
-                  />
-                </div>
-                {!generateContent.isPending &&
-                  !isLoadingSelected &&
-                  prompt.minTokens && (
-                    <div className="flex items-center gap-1">
-                      {prompt.minTokens > 1 && (
-                        <span className="rounded-full bg-blue-500 px-2 py-1 text-xs font-medium text-white">
-                          +{prompt.minTokens - 1}
-                        </span>
-                      )}
-                      {prompt.maxTokens &&
-                        prompt.maxTokens > prompt.minTokens && (
-                          <span className="rounded-full bg-gray-400 px-2 py-1 text-xs font-medium text-white opacity-70">
-                            +{prompt.maxTokens - prompt.minTokens} opt
-                          </span>
-                        )}
+          {session && selectedFavorite && (
+            <div className="z-30 h-20 p-4">
+              <Button
+                onClick={() => {
+                  if (!selectedFavorite || !session) return;
+
+                  if (needsTokenSelection()) {
+                    setShowTokenSelection(true);
+                  } else {
+                    handleDirectGenerate();
+                  }
+                }}
+                disabled={isLoadingSelected || generateContent.isPending}
+                mode="filled"
+                size="l"
+                stretched
+              >
+                <div className="flex flex-row items-center justify-between gap-2">
+                  <div className="flex flex-col">
+                    <div>
+                      {generateContent.isPending
+                        ? 'Generating...'
+                        : isLoadingSelected
+                          ? 'Loading...'
+                          : `Make it Yours with `}
                     </div>
-                  )}
-              </div>
-            </div>
-          </Button>
-          {generateContent.isError && (
-            <div className="mt-2 text-sm text-red-500">
-              Error:{' '}
-              {generateContent.error?.message || 'Failed to generate content'}
-            </div>
-          )}
-          {generateContent.isSuccess && (
-            <div className="mt-2 text-sm text-green-500">
-              Content generated successfully!
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div className="h-6 w-6 overflow-hidden rounded-full">
+                      <img
+                        src={selectedFavorite.token.image}
+                        alt={selectedFavorite.token.contract.name}
+                      />
+                    </div>
+                    {!generateContent.isPending &&
+                      !isLoadingSelected &&
+                      prompt.minTokens && (
+                        <div className="flex items-center gap-1">
+                          {prompt.minTokens > 1 && (
+                            <span className="rounded-full bg-blue-500 px-2 py-1 text-xs font-medium text-white">
+                              +{prompt.minTokens - 1}
+                            </span>
+                          )}
+                          {prompt.maxTokens &&
+                            prompt.maxTokens > prompt.minTokens && (
+                              <span className="rounded-full bg-gray-400 px-2 py-1 text-xs font-medium text-white opacity-70">
+                                +{prompt.maxTokens - prompt.minTokens} opt
+                              </span>
+                            )}
+                        </div>
+                      )}
+                  </div>
+                </div>
+              </Button>
+              {generateContent.isError && (
+                <div className="mt-2 text-sm text-red-500">
+                  Error:{' '}
+                  {generateContent.error?.message ||
+                    'Failed to generate content'}
+                </div>
+              )}
+              {generateContent.isSuccess && (
+                <div className="mt-2 text-sm text-green-500">
+                  Content generated successfully!
+                </div>
+              )}
             </div>
           )}
         </div>
-      )}
+      </div>
 
       {/* Token Selection Cloud */}
       {showTokenSelection && selectedFavorite && prompt.minTokens && (

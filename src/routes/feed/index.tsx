@@ -350,49 +350,20 @@ export function Feed() {
           scrollbar-width: none;
           scroll-snap-type: y mandatory;
           height: 100vh;
+          max-height: 100vh;
         }
 
         .scroller section {
           scroll-snap-align: start;
-          height: 100vh;
+          height: calc(100vh-2em);
+          max-height: calc(100vh - 5em);
         }
       `}</style>
-      <article className={`scroller h-full overflow-y-auto`}>
-        {/* Debug panel */}
-        {DEBUG_MODE && (
-          <div className="bg-opacity-50 fixed top-4 right-4 z-50 rounded bg-black p-2 text-xs text-white">
-            <div>Page: {currentPage}</div>
-            <div>Items: {allPrompts.length}</div>
-            <div>
-              Loading: {isFetchingMore || isInitialLoading ? 'Yes' : 'No'}
-            </div>
-            <div>HasMore: {hasMorePages ? 'Yes' : 'No'}</div>
-            <button
-              onClick={loadNextPage}
-              className="mt-1 rounded bg-blue-500 px-2 py-1 text-xs"
-              disabled={isFetchingMore || !hasMorePages || isInitialLoading}
-            >
-              Load Next
-            </button>
-            <button
-              onClick={() => {
-                if (DEBUG_MODE) {
-                  console.log('Direct fetch test button clicked');
-                }
-                fetchNextPage();
-              }}
-              className="mt-1 rounded bg-green-500 px-2 py-1 text-xs"
-              disabled={isFetchingMore || isInitialLoading}
-            >
-              Test Fetch
-            </button>
-          </div>
-        )}
-
+      <article className={`scroller h-screen max-h-screen overflow-y-hidden`}>
         {allPrompts.map((prompt: PromptWithContent, index: number) => (
           <section
             key={prompt.id}
-            className={`flex snap-start flex-col overflow-y-auto ${isViewportMounted ? 'pb-36' : 'pb-16'}`}
+            className={`flex snap-start flex-col overflow-y-hidden pb-20`}
           >
             <ShowContent prompt={prompt} isLoading={isInitialLoading} />
 

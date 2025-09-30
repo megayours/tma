@@ -29,7 +29,7 @@ export const TokenSelectionCore = ({
   prompt,
   showHeader = false,
   onClose,
-  className = "",
+  className = '',
 }: TokenSelectionCoreProps) => {
   // Initialize with selectedFavorite as the first required token
   const [selectedTokens, setSelectedTokens] = useState<(Token | null)[]>(() => {
@@ -38,9 +38,12 @@ export const TokenSelectionCore = ({
     return tokens;
   });
   const [activeSlotIndex, setActiveSlotIndex] = useState<number | null>(null);
-  const [selectedCollection, setSelectedCollection] = useState<SupportedCollection | null>(null);
+  const [selectedCollection, setSelectedCollection] =
+    useState<SupportedCollection | null>(null);
   const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null);
-  const [selectionMode, setSelectionMode] = useState<'favorites' | 'collections'>('favorites');
+  const [selectionMode, setSelectionMode] = useState<
+    'favorites' | 'collections'
+  >('favorites');
 
   const { data: collections } = useGetCollectionsWithPrompt(prompt);
 
@@ -87,7 +90,9 @@ export const TokenSelectionCore = ({
 
   const isGenerationEnabled = () => {
     // Check if all required tokens are filled (first requiredTokens slots)
-    return selectedTokens.slice(0, requiredTokens).every(token => token !== null);
+    return selectedTokens
+      .slice(0, requiredTokens)
+      .every(token => token !== null);
   };
 
   const handleCloudClick = (e: React.MouseEvent) => {
@@ -95,7 +100,10 @@ export const TokenSelectionCore = ({
   };
 
   return (
-    <div className={`bg-tg-bg border-tg-hint/20 rounded-lg border shadow-lg ${className}`} onClick={handleCloudClick}>
+    <div
+      className={`bg-tg-bg border-tg-hint/20 rounded-lg border shadow-lg ${className}`}
+      onClick={handleCloudClick}
+    >
       {/* Header */}
       {showHeader && (
         <div className="border-tg-section-separator flex items-center justify-between border-b p-4">
@@ -116,18 +124,18 @@ export const TokenSelectionCore = ({
         {/* Required Tokens */}
         {requiredTokens > 0 && (
           <div className="mb-6">
-            <div className="mb-3 text-center text-sm font-medium text-tg-text">
+            <div className="text-tg-text mb-3 text-center text-sm font-medium">
               Required NFTs
             </div>
             <div className="flex flex-wrap justify-center gap-4">
               {Array.from({ length: requiredTokens }, (_, index) => (
                 <TokenSlot
                   key={`required-${index}`}
-                  type={index === 0 ? "favorite" : "required"}
+                  type={index === 0 ? 'favorite' : 'required'}
                   token={selectedTokens[index]}
                   index={index === 0 ? undefined : index}
                   onClick={() => handleSlotClick(index)}
-                  size={index === 0 ? "large" : "medium"}
+                  size={index === 0 ? 'large' : 'medium'}
                 />
               ))}
             </div>
@@ -137,7 +145,7 @@ export const TokenSelectionCore = ({
         {/* Optional Tokens */}
         {optionalTokens > 0 && (
           <div className="mb-6">
-            <div className="mb-3 text-center text-sm font-medium text-tg-text">
+            <div className="text-tg-text mb-3 text-center text-sm font-medium">
               Optional NFTs
             </div>
             <div className="flex flex-wrap justify-center gap-4">
@@ -169,7 +177,9 @@ export const TokenSelectionCore = ({
                     Favorites
                   </Button>
                   <Button
-                    mode={selectionMode === 'collections' ? 'filled' : 'outline'}
+                    mode={
+                      selectionMode === 'collections' ? 'filled' : 'outline'
+                    }
                     size="s"
                     onClick={() => setSelectionMode('collections')}
                   >
@@ -189,14 +199,18 @@ export const TokenSelectionCore = ({
                 )}
 
                 <div className="flex justify-center">
-                  <Button mode="outline" size="s" onClick={handleCloseSelection}>
+                  <Button
+                    mode="outline"
+                    size="s"
+                    onClick={handleCloseSelection}
+                  >
                     Cancel
                   </Button>
                 </div>
               </div>
             )}
 
-            {selectedCollection && !selectedTokenId && (
+            {selectedCollection && (
               <SelectTokenId
                 collection={selectedCollection}
                 onTokenSelect={setSelectedTokenId}
@@ -215,7 +229,7 @@ export const TokenSelectionCore = ({
         )}
 
         {/* Generate Button */}
-        <div className="border-tg-section-separator mt-6 border-t bg-tg-bg">
+        <div className="border-tg-section-separator bg-tg-bg mt-6 border-t">
           <div className="flex w-full justify-center p-4">
             <Button
               mode="filled"

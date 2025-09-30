@@ -4,7 +4,6 @@ import { useGetRecommendedPromptsWithDetails } from '@/hooks/usePrompts';
 import type { PromptWithContent } from '@/types/content';
 import { ShowContent } from '@/components/Feed/ShowContent';
 import { useSession } from '@/auth/SessionProvider';
-import { viewport } from '@telegram-apps/sdk';
 
 // Debug toggle - set to false to disable all debug functionality
 const DEBUG_MODE = false;
@@ -20,7 +19,6 @@ export function Feed() {
   const [hasMorePages, setHasMorePages] = useState(true);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const triggerRef = useRef<HTMLDivElement>(null);
-  const isViewportMounted = viewport.isMounted();
 
   if (DEBUG_MODE) {
     console.log('Feed render:', {
@@ -244,14 +242,6 @@ export function Feed() {
     } finally {
       setIsFetchingMore(false);
     }
-  };
-
-  // Load next page function - now uses manual fetch
-  const loadNextPage = () => {
-    if (DEBUG_MODE) {
-      console.log('loadNextPage called - triggering manual fetch');
-    }
-    fetchNextPage();
   };
 
   // Intersection Observer for infinite scroll

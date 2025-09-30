@@ -21,7 +21,7 @@ import { ToastProvider } from '@/components/ui';
 import { SelectedNFTsProvider } from '@/contexts/SelectedNFTsContext';
 import { useSession } from '@/auth/SessionProvider';
 import { FavoriteRedirectHandler } from '@/components/FavoriteRedirectHandler';
-import { AddToHomeScreenButton } from '@/components/AddToHomeScreenButton';
+// import { AddToHomeScreenButton } from '@/components/AddToHomeScreenButton';
 
 function TelegramAppHandler() {
   const location = useLocation();
@@ -182,7 +182,7 @@ function AppContent() {
         {isViewportMounted && (
           <div className="h-24 w-full">
             <div className={`flex h-full items-end justify-center`}>
-              <AddToHomeScreenButton />
+              {/* <AddToHomeScreenButton /> */}
             </div>
           </div>
         )}

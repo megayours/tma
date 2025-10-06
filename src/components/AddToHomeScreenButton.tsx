@@ -23,7 +23,7 @@ export const AddToHomeScreenButton = () => {
   useEffect(() => {
     if (isTelegram && checkHomeScreenStatus.isAvailable()) {
       checkHomeScreenStatus()
-        .then(status => setStatus(status as HomeScreenStatus))
+        .then((status: any) => setStatus(status as HomeScreenStatus))
         .catch(() => setStatus('unknown'));
     }
   }, [isTelegram]);

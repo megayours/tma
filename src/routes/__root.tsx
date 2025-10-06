@@ -76,12 +76,12 @@ function TelegramAppHandler() {
               setIsViewportMounting(false);
               console.log('Viewport mounted successfully');
             })
-            .catch(err => {
+            .catch((err: any) => {
               console.error('Failed to mount viewport:', err);
               setIsViewportMounting(false);
               setIsViewportMounted(false);
             });
-        } catch (err) {
+        } catch (err: any) {
           console.error('Error mounting viewport:', err);
           setIsViewportMounting(false);
           setIsViewportMounted(false);
@@ -97,11 +97,11 @@ function TelegramAppHandler() {
       }
 
       // Mount miniApp if not already mounted
-      if (!miniApp.isMounted() && miniApp.mountSync.isAvailable()) {
+      if (!miniApp.isMounted() && miniApp.mount.isAvailable()) {
         try {
-          miniApp.mountSync();
+          miniApp.mount();
           console.log('Mini App mounted successfully');
-        } catch (err) {
+        } catch (err: any) {
           console.error('Error mounting mini app:', err);
         }
       }

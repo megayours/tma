@@ -71,8 +71,7 @@ jobs:
             echo "WARNING: firebase.json not found"
           fi
 
-      - name: Deploy to Firebase (token)
-        if: ${{ env.DEPLOY_WITH_TOKEN == 'true' }}
+      - name: Deploy to Firebase
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         run: |

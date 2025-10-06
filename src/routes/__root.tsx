@@ -33,6 +33,7 @@ function TelegramAppHandler() {
   const [isViewportMounted, setIsViewportMounted] = useState(false);
   const [isViewportMounting, setIsViewportMounting] = useState(false);
 
+  console.log('GROKKKKKK');
   useEffect(() => {
     if (isTMA()) {
       init();

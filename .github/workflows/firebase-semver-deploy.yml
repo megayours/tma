@@ -48,4 +48,4 @@ jobs:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
           # Optional: if you set "production" alias in .firebaserc, pass --project production
         run: |
-          firebase deploy --non-interactive --project production
+          firebase deploy --non-interactive

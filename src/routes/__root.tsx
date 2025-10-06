@@ -12,6 +12,9 @@ import {
   requestFullscreen,
   viewport,
   miniApp,
+  swipeBehavior,
+  useSignal,
+  isViewportMounting,
 } from '@telegram-apps/sdk-react';
 import { useEffect, useState } from 'react';
 import { AppRoot } from '@telegram-apps/telegram-ui';
@@ -110,6 +113,15 @@ function TelegramAppHandler() {
         console.log('Telegram Mini App header color set to orange');
       }
 
+      // Enable vertical swipe behavior
+      if (!swipeBehavior.isMounted()) {
+        swipeBehavior.mount();
+      }
+      if (swipeBehavior.disableVertical.isAvailable()) {
+        swipeBehavior.disableVertical();
+        console.log('Vertical swipe disabled');
+      }
+
       // Request fullscreen mode for immersive experience (only after viewport is mounted)
       if (
         isViewportMounted &&
@@ -172,14 +184,15 @@ function TelegramAppHandler() {
 function AppContent() {
   const location = useLocation();
   const { isAuthenticated } = useSession();
+  const isViewportMounting = useSignal(viewport.isMounting);
   const shouldHideNavBar = location.pathname.startsWith('/profile/prompt/edit');
-  const isViewportMounted = viewport.isMounted();
-  console.log('isViewportMounted', isViewportMounted);
+  const isViewportMounted = useSignal(viewport.isMounted);
   const content = (
     <>
       <TelegramAppHandler />
       <AppRoot>
-        {isViewportMounted && (
+        {isViewportMounted && !isViewportMounting && (
+          // Optimistically take the space
           <div className="h-24 w-full">
             <div className={`flex h-full items-end justify-center`}>
               {/* <AddToHomeScreenButton /> */}

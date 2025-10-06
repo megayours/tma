@@ -13,6 +13,8 @@ jobs:
     defaults:
       run:
         shell: bash
+        # If your project lives in a subfolder, set it here, e.g.:
+        # working-directory: web
 
     steps:
       - name: Checkout
@@ -48,12 +50,17 @@ jobs:
           rm -f package-lock.json || true
           echo "Installing fresh deps..."
           npm install --legacy-peer-deps
+        continue-on-error: true
 
       - name: Debug npm log if failed
         if: failure()
         run: |
           echo "---- NPM DEBUG LOG ----"
           cat /home/runner/.npm/_logs/*-debug-0.log || true
+
+      - name: Fail if install failed
+        if: failure()
+        run: exit 1
 
       - name: Build (prod)
         env:

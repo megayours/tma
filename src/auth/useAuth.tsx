@@ -89,7 +89,7 @@ export function useAuth() {
 
     try {
       const response = await fetch(
-        'https://yours-fun-api.testnet.megayours.com/v1/auth/validate',
+        `${import.meta.env.VITE_API_URL}/auth/validate`,
         {
           method: 'GET',
           headers: {

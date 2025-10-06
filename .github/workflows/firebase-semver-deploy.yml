@@ -32,6 +32,7 @@ jobs:
       - name: Print secret
         run: |
           echo .env
+          echo ${{ secrets.PRODUCTION_ENV_FILE }}
           cat .env
 
       - name: Install Firebase CLI

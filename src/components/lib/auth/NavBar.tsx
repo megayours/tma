@@ -55,7 +55,7 @@ export function NavBar() {
     return (
       <div className="bg-tg-bg text-tg-text mb-6 flex h-full w-full items-center justify-around p-4">
         <a
-          href={`https://yours-fun-api.testnet.megayours.com/v1/auth/discord/authorize?state=${encodeURIComponent('/')}&redirect_base_url=${encodeURIComponent(window.location.origin)}`}
+          href={`${import.meta.env.VITE_API_URL}/auth/discord/authorize?state=${encodeURIComponent('/')}&redirect_base_url=${encodeURIComponent(window.location.origin)}`}
           className="h-full w-full"
         >
           <Button

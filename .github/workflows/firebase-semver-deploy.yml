@@ -45,12 +45,9 @@ jobs:
 
       - name: Clean & Install deps
         run: |
-          echo "Cleaning old deps..."
           rm -rf node_modules || true
           rm -f package-lock.json || true
-          echo "Installing fresh deps..."
           npm install --legacy-peer-deps
-        continue-on-error: true
 
       - name: Debug npm log if failed
         if: failure()

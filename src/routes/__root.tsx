@@ -9,7 +9,6 @@ import {
   init,
   backButton,
   expandViewport,
-  requestFullscreen,
   viewport,
   miniApp,
   swipeBehavior,
@@ -124,10 +123,10 @@ function TelegramAppHandler() {
       // Request fullscreen mode for immersive experience (only after viewport is mounted)
       if (
         isViewportMounted &&
-        requestFullscreen &&
-        requestFullscreen.isAvailable()
+        viewport.requestFullscreen &&
+        viewport.requestFullscreen.isAvailable()
       ) {
-        requestFullscreen();
+        viewport.requestFullscreen();
         console.log('Telegram Mini App requested fullscreen mode');
       }
 
@@ -159,8 +158,8 @@ function TelegramAppHandler() {
   // Separate useEffect to handle fullscreen request after viewport is mounted
   useEffect(() => {
     if (isTMA() && isViewportMounted && !isViewportMounting) {
-      if (requestFullscreen && requestFullscreen.isAvailable()) {
-        requestFullscreen();
+      if (viewport.requestFullscreen && viewport.requestFullscreen.isAvailable()) {
+        viewport.requestFullscreen();
         console.log('Telegram Mini App requested fullscreen mode');
       }
     }

@@ -300,7 +300,6 @@ export const PromptSettings = ({
               placeholder="Enter prompt description"
               value={editedPrompt.description || ''}
               onChange={e => updateField('description', e.target.value)}
-              rows={3}
             />
           </Section>
 

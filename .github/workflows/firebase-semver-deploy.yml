@@ -41,7 +41,8 @@ jobs:
       # Clean install to avoid Rollup optional-deps bug
       - name: Install deps (clean)
         run: |
-          rm -rf node_modules package-lock.json
+          rm -rf node_modules || true
+          rm -f package-lock.json || true
           npm install
 
       - name: Build (prod)

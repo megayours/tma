@@ -186,15 +186,24 @@ function AppContent() {
   const isViewportMounting = useSignal(viewport.isMounting);
   const shouldHideNavBar = location.pathname.startsWith('/profile/prompt/edit');
   const isViewportMounted = useSignal(viewport.isMounted);
+  const contentSafeAreaInsets = useSignal(viewport.contentSafeAreaInsets);
+  const viewportSafeAreaInsets = useSignal(viewport.safeAreaInsets);
   const content = (
     <>
       <TelegramAppHandler />
       <AppRoot>
         {isViewportMounted && !isViewportMounting && (
           // Optimistically take the space
-          <div className="h-24 w-full">
-            <div className={`flex h-full items-end justify-center`}>
+          <div
+            className="mb-4 w-full"
+            style={{
+              marginTop: viewportSafeAreaInsets.top,
+              height: contentSafeAreaInsets.top,
+            }}
+          >
+            <div className={`flex h-full items-center justify-center`}>
               {/* <AddToHomeScreenButton /> */}
+              <h1 className="text-tg-text text-xl font-bold">Yours.fun</h1>
             </div>
           </div>
         )}
@@ -203,7 +212,14 @@ function AppContent() {
           <Outlet />
         </main>
         {!shouldHideNavBar && (
-          <div className="fixed right-0 bottom-0 left-0 z-10 flex h-16 items-center">
+          <div
+            className="fixed right-0 bottom-0 left-0 z-10 flex h-16 items-center"
+            style={{
+              paddingBottom: `${contentSafeAreaInsets.bottom} px`,
+              paddingLeft: `${contentSafeAreaInsets.left} px`,
+              paddingRight: `${contentSafeAreaInsets.right} px`,
+            }}
+          >
             <NavBar />
           </div>
         )}

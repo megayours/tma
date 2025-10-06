@@ -14,7 +14,6 @@ import {
   miniApp,
   swipeBehavior,
   useSignal,
-  isViewportMounting,
 } from '@telegram-apps/sdk-react';
 import { useEffect, useState } from 'react';
 import { AppRoot } from '@telegram-apps/telegram-ui';

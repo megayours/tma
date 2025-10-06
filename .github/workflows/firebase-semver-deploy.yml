@@ -1,0 +1,52 @@
+name: Deploy to Firebase on semver branch
+
+on:
+  push:
+    branches:
+      - '**' # we filter in the job with a regex
+
+jobs:
+  deploy:
+    # Run only on branches that match v{number}.{number}.{number} (e.g., v1.2.3, v2.0.0-rc1)
+    if: ${{ github.ref_type == 'branch' && startsWith(github.ref_name, 'v') && github.ref_name =~ '^v[0-9]+\\.[0-9]+\\.[0-9]+' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Write .env.production from secret
+        run: |
+          printf "%s" "${PRODUCTION_ENV_FILE}" > .env.production
+          cp .env.production .env
+        env:
+          PRODUCTION_ENV_FILE: ${{ secrets.PRODUCTION_ENV_FILE }}
+
+      - name: Install Firebase CLI
+        run: npm i -g firebase-tools
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Build (prod)
+        env:
+          NODE_ENV: production
+        run: |
+          if [ -f package.json ] && jq -e '.scripts.build' package.json >/dev/null 2>&1; then
+            npm run build
+          else
+            echo "No build script. Skipping."
+          fi
+      - name: Deploy to Firebase (token)
+        if: ${{ env.DEPLOY_WITH_TOKEN == 'true' }}
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          # Optional: if you set "production" alias in .firebaserc, pass --project production
+        run: |
+          firebase deploy --non-interactive --project production

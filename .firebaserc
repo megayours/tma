@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "mini-tma"
+    "default": "mini-tma",
+    "production": "mini-tma"
   }
 }

@@ -46,14 +46,39 @@ jobs:
           NODE_ENV: production
         run: |
           if [ -f package.json ] && jq -e '.scripts.build' package.json >/dev/null 2>&1; then
+            echo "Building project..."
             bun run build
+            echo "Build completed successfully"
+            echo "Build output:"
+            ls -lah dist/
           else
             echo "No build script. Skipping."
           fi
+
+      - name: Check Firebase config
+        run: |
+          echo "Checking Firebase configuration..."
+          if [ -f .firebaserc ]; then
+            echo "Firebase config found:"
+            cat .firebaserc
+          else
+            echo "WARNING: .firebaserc not found"
+          fi
+          if [ -f firebase.json ]; then
+            echo "Firebase hosting config:"
+            cat firebase.json
+          else
+            echo "WARNING: firebase.json not found"
+          fi
+
       - name: Deploy to Firebase (token)
         if: ${{ env.DEPLOY_WITH_TOKEN == 'true' }}
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-          # Optional: if you set "production" alias in .firebaserc, pass --project production
         run: |
-          firebase deploy --non-interactive
+          echo "Starting Firebase deployment..."
+          echo "Firebase CLI version:"
+          firebase --version
+          echo "Deploying to Firebase..."
+          firebase deploy --non-interactive --debug
+          echo "Deployment completed successfully!"

@@ -28,6 +28,12 @@ jobs:
         env:
           PRODUCTION_ENV_FILE: ${{ secrets.PRODUCTION_ENV_FILE }}
 
+      # print the secret
+      - name: Print secret
+        run: |
+          echo .env
+          cat .env
+
       - name: Install Firebase CLI
         run: bun i -g firebase-tools
 

@@ -20,11 +20,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Use Node 20
-        uses: actions/setup-node@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: "20"
-          cache: "npm"
+          bun-version: latest
 
       - name: Strict semver guard
         run: |
@@ -46,8 +45,7 @@ jobs:
       - name: Clean & Install deps
         run: |
           rm -rf node_modules || true
-          rm -f package-lock.json || true
-          npm install --legacy-peer-deps
+          bun install
 
       - name: Debug npm log if failed
         if: failure()
@@ -64,7 +62,7 @@ jobs:
           NODE_ENV: production
         run: |
           if jq -e '.scripts.build' package.json >/dev/null 2>&1; then
-            npm run build
+            bun run build
           else
             echo "No build script. Skipping."
           fi

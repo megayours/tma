@@ -10,6 +10,7 @@ jobs:
     # Run only on branches that match v{number}.{number}.{number} (e.g., v1.2.3, v2.0.0-rc1)
     if: ${{ github.ref_type == 'branch' && startsWith(github.ref_name, 'v') && contains(github.ref_name, '.') }}
     runs-on: ubuntu-latest
+    environment: production
 
     steps:
       - name: Checkout

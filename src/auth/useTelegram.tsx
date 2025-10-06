@@ -1,5 +1,5 @@
 import { isTMA } from '@telegram-apps/bridge';
-import { initData, useLaunchParams } from '@telegram-apps/sdk-react';
+import { initDataRaw, useLaunchParams } from '@telegram-apps/sdk-react';
 import { useEffect, useState, useCallback } from 'react';
 
 export function useTelegramRawInitData():
@@ -11,7 +11,7 @@ export function useTelegramRawInitData():
   | undefined {
   if (isTMA()) {
     return {
-      initData: initData.raw(),
+      initData: initDataRaw(),
       launchParams: useLaunchParams(),
       isTMA: true,
     };

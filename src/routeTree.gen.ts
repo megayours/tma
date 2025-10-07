@@ -16,6 +16,7 @@ import { Route as StickerPacksIndexRouteImport } from './routes/sticker-packs/in
 import { Route as ProfileIndexRouteImport } from './routes/profile/index'
 import { Route as PrivateIndexRouteImport } from './routes/private/index'
 import { Route as PostIndexRouteImport } from './routes/post/index'
+import { Route as LandingIndexRouteImport } from './routes/landing/index'
 import { Route as FeedIndexRouteImport } from './routes/feed/index'
 import { Route as Demo3IndexRouteImport } from './routes/demo3/index'
 import { Route as Demo2IndexRouteImport } from './routes/demo2/index'
@@ -74,6 +75,11 @@ const PrivateIndexRoute = PrivateIndexRouteImport.update({
 const PostIndexRoute = PostIndexRouteImport.update({
   id: '/post/',
   path: '/post/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LandingIndexRoute = LandingIndexRouteImport.update({
+  id: '/landing/',
+  path: '/landing/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FeedIndexRoute = FeedIndexRouteImport.update({
@@ -215,6 +221,7 @@ export interface FileRoutesByFullPath {
   '/demo2': typeof Demo2IndexRoute
   '/demo3': typeof Demo3IndexRoute
   '/feed': typeof FeedIndexRoute
+  '/landing': typeof LandingIndexRoute
   '/post': typeof PostIndexRoute
   '/private': typeof PrivateIndexRoute
   '/profile': typeof ProfileIndexRoute
@@ -247,6 +254,7 @@ export interface FileRoutesByTo {
   '/demo2': typeof Demo2IndexRoute
   '/demo3': typeof Demo3IndexRoute
   '/feed': typeof FeedIndexRoute
+  '/landing': typeof LandingIndexRoute
   '/post': typeof PostIndexRoute
   '/private': typeof PrivateIndexRoute
   '/profile': typeof ProfileIndexRoute
@@ -280,6 +288,7 @@ export interface FileRoutesById {
   '/demo2/': typeof Demo2IndexRoute
   '/demo3/': typeof Demo3IndexRoute
   '/feed/': typeof FeedIndexRoute
+  '/landing/': typeof LandingIndexRoute
   '/post/': typeof PostIndexRoute
   '/private/': typeof PrivateIndexRoute
   '/profile/': typeof ProfileIndexRoute
@@ -315,6 +324,7 @@ export interface FileRouteTypes {
     | '/demo2'
     | '/demo3'
     | '/feed'
+    | '/landing'
     | '/post'
     | '/private'
     | '/profile'
@@ -347,6 +357,7 @@ export interface FileRouteTypes {
     | '/demo2'
     | '/demo3'
     | '/feed'
+    | '/landing'
     | '/post'
     | '/private'
     | '/profile'
@@ -379,6 +390,7 @@ export interface FileRouteTypes {
     | '/demo2/'
     | '/demo3/'
     | '/feed/'
+    | '/landing/'
     | '/post/'
     | '/private/'
     | '/profile/'
@@ -413,6 +425,7 @@ export interface RootRouteChildren {
   Demo2IndexRoute: typeof Demo2IndexRoute
   Demo3IndexRoute: typeof Demo3IndexRoute
   FeedIndexRoute: typeof FeedIndexRoute
+  LandingIndexRoute: typeof LandingIndexRoute
   PostIndexRoute: typeof PostIndexRoute
   PrivateIndexRoute: typeof PrivateIndexRoute
   ProfileIndexRoute: typeof ProfileIndexRoute
@@ -482,6 +495,13 @@ declare module '@tanstack/react-router' {
       path: '/post'
       fullPath: '/post'
       preLoaderRoute: typeof PostIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/landing/': {
+      id: '/landing/'
+      path: '/landing'
+      fullPath: '/landing'
+      preLoaderRoute: typeof LandingIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/feed/': {
@@ -711,6 +731,7 @@ const rootRouteChildren: RootRouteChildren = {
   Demo2IndexRoute: Demo2IndexRoute,
   Demo3IndexRoute: Demo3IndexRoute,
   FeedIndexRoute: FeedIndexRoute,
+  LandingIndexRoute: LandingIndexRoute,
   PostIndexRoute: PostIndexRoute,
   PrivateIndexRoute: PrivateIndexRoute,
   ProfileIndexRoute: ProfileIndexRoute,

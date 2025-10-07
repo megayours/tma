@@ -33,7 +33,6 @@ function TelegramAppHandler() {
   const [isViewportMounted, setIsViewportMounted] = useState(false);
   const [isViewportMounting, setIsViewportMounting] = useState(false);
 
-  console.log('GROKKKKKK');
   useEffect(() => {
     if (isTMA()) {
       init();
@@ -185,7 +184,10 @@ function AppContent() {
   const location = useLocation();
   const { isAuthenticated } = useSession();
   const isViewportMounting = useSignal(viewport.isMounting);
-  const shouldHideNavBar = location.pathname.startsWith('/profile/prompt/edit');
+  const shouldHideNavBar =
+    location.pathname.startsWith('/profile/prompt/edit') ||
+    location.pathname.startsWith('/landing') ||
+    location.pathname.match('/');
   const isViewportMounted = useSignal(viewport.isMounted);
   const contentSafeAreaInsets = useSignal(viewport.contentSafeAreaInsets);
   const viewportSafeAreaInsets = useSignal(viewport.safeAreaInsets);

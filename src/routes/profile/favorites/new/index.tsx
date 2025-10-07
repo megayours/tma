@@ -46,7 +46,7 @@ function RouteComponent() {
               <img
                 src={collection.image}
                 alt={collection.name}
-                className="h-12 w-24 rounded-lg object-cover"
+                className="h-20 w-full rounded-lg object-cover"
               />
               <div className="text-tg-text mt-4 text-center text-xs font-bold break-words">
                 {collection.name}

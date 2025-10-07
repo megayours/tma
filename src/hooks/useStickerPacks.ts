@@ -4,12 +4,15 @@ import { safeParse, getValidationErrors } from '@/utils/validation';
 // We'll define our own pagination schema since the API returns total as string
 import type { Pagination } from '../types/requests';
 import type { Session } from '@/auth/useAuth';
+import type { SupportedCollection } from './useCollections';
 
 // Custom pagination schema for sticker packs (handles string total)
 const StickerPackPaginationSchema = z.object({
   page: z.number(),
   size: z.number(),
-  total: z.union([z.string(), z.number()]).transform(val => typeof val === 'string' ? parseInt(val, 10) : val),
+  total: z
+    .union([z.string(), z.number()])
+    .transform(val => (typeof val === 'string' ? parseInt(val, 10) : val)),
   totalPages: z.number(),
 });
 
@@ -65,7 +68,9 @@ const StickerBundlesSchema = z.object({
   created_by_admin_id: z.string(),
   created_at: z.number(),
   updated_at: z.number(),
-  item_count: z.union([z.string(), z.number()]).transform(val => typeof val === 'string' ? parseInt(val, 10) : val),
+  item_count: z
+    .union([z.string(), z.number()])
+    .transform(val => (typeof val === 'string' ? parseInt(val, 10) : val)),
   min_tokens_required: z.number(),
   max_tokens_required: z.number(),
   pricing: PricingSchema,
@@ -85,12 +90,11 @@ type StickerPacksResponse = z.infer<typeof StickerPacksResponseSchema>;
 interface UseStickerPacksParams {
   pagination?: Pagination;
   type?: StickerPackType;
+  tokenCollections?: SupportedCollection[] | undefined;
 }
 
-export const useStickerPacks = (
-  params: UseStickerPacksParams
-) => {
-  const { pagination, type } = params;
+export const useStickerPacks = (params: UseStickerPacksParams) => {
+  const { pagination, type, tokenCollections } = params;
 
   // Extract page and size with null checking
   const page = pagination?.page || 1;
@@ -105,6 +109,14 @@ export const useStickerPacks = (
           page: page.toString(),
           size: size.toString(),
         });
+
+        // Add token_collections if provided
+        if (tokenCollections && tokenCollections.length > 0) {
+          queryParams.append(
+            'token_collections',
+            tokenCollections.map(collection => collection.id).join(',')
+          );
+        }
 
         // Add type parameter if provided
         if (type) {
@@ -130,11 +142,19 @@ export const useStickerPacks = (
         // Validate response data
         const validatedData = safeParse(StickerPacksResponseSchema, rawData);
         if (!validatedData) {
-          const errors = getValidationErrors(StickerPacksResponseSchema, rawData);
-          console.error('Response validation failed for sticker packs:', rawData);
+          const errors = getValidationErrors(
+            StickerPacksResponseSchema,
+            rawData
+          );
+          console.error(
+            'Response validation failed for sticker packs:',
+            rawData
+          );
           console.error('Validation errors:', errors);
           console.error('Expected schema:', StickerPacksResponseSchema);
-          throw new Error(`Invalid response data format - failed to parse sticker packs response: ${errors}`);
+          throw new Error(
+            `Invalid response data format - failed to parse sticker packs response: ${errors}`
+          );
         }
 
         return validatedData;
@@ -159,29 +179,35 @@ const StickerPackItemContentSchema = z.object({
     'processed',
     'animation_static',
     'animated_sticker_webm',
-    'animated_sticker_gif'
+    'animated_sticker_gif',
   ]),
   created_at: z.number(),
   creator_id: z.string(),
   prompt_id: z.number().nullable(),
   // These fields are not present in the actual API response, making them optional
   error: z.string().optional(),
-  token: z.object({
-    contract: z.object({
-      chain: z.string().max(32),
-      address: z.string().max(64),
-      name: z.string().max(32),
-    }),
-    id: z.string(),
-  }).optional(),
-  tokens: z.array(z.object({
-    contract: z.object({
-      chain: z.string().max(32),
-      address: z.string().max(64),
-      name: z.string().max(32),
-    }),
-    id: z.string(),
-  })).optional(),
+  token: z
+    .object({
+      contract: z.object({
+        chain: z.string().max(32),
+        address: z.string().max(64),
+        name: z.string().max(32),
+      }),
+      id: z.string(),
+    })
+    .optional(),
+  tokens: z
+    .array(
+      z.object({
+        contract: z.object({
+          chain: z.string().max(32),
+          address: z.string().max(64),
+          name: z.string().max(32),
+        }),
+        id: z.string(),
+      })
+    )
+    .optional(),
 });
 
 const StickerPackItemSchema = z.object({
@@ -192,13 +218,15 @@ const StickerPackItemSchema = z.object({
   created_at: z.number(),
   content: StickerPackItemContentSchema.optional(),
   preview_url: z.string(),
-  prompt: z.object({
-    id: z.number(),
-    version: z.number().optional(),
-    text: z.string().optional(),
-    model: z.string().optional(),
-    created_at: z.number().optional(),
-  }).optional(),
+  prompt: z
+    .object({
+      id: z.number(),
+      version: z.number().optional(),
+      text: z.string().optional(),
+      model: z.string().optional(),
+      created_at: z.number().optional(),
+    })
+    .optional(),
 });
 
 // Single sticker pack schema (detailed)
@@ -252,10 +280,15 @@ export const useStickerPack = (
         const validatedData = safeParse(StickerPackDetailSchema, rawData);
         if (!validatedData) {
           const errors = getValidationErrors(StickerPackDetailSchema, rawData);
-          console.error('Response validation failed for sticker pack:', rawData);
+          console.error(
+            'Response validation failed for sticker pack:',
+            rawData
+          );
           console.error('Validation errors:', errors);
           console.error('Expected schema:', StickerPackDetailSchema);
-          throw new Error(`Invalid response data format - failed to parse sticker pack response: ${errors}`);
+          throw new Error(
+            `Invalid response data format - failed to parse sticker pack response: ${errors}`
+          );
         }
 
         return validatedData;
@@ -269,4 +302,10 @@ export const useStickerPack = (
 };
 
 // Export types for external use
-export type { StickerPackType, StickerPackPreviewItem, StickerPackUserExecution, PricingTier, Pricing };
+export type {
+  StickerPackType,
+  StickerPackPreviewItem,
+  StickerPackUserExecution,
+  PricingTier,
+  Pricing,
+};

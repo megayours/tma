@@ -4,12 +4,14 @@ import type { Pagination } from '../types/requests';
 import type { Token } from '../types/response';
 import { useSession } from '@/auth/SessionProvider';
 import type { Session } from '@/auth/useAuth';
+import { useTelegramTheme } from '@/auth/useTelegram';
 
 export type SupportedCollection = {
   address: string;
   chain: string;
   name: string;
   image: string;
+  id?: string;
 };
 
 export function useGetSupportedCollections() {

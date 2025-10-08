@@ -40,11 +40,9 @@ export const Route = createFileRoute('/auth/discord/v1/callback/')({
     }
 
     try {
-      console.log('code', code);
-      console.log('state', state);
       // Call the Discord callback endpoint directly
       const callbackResponse = await fetch(
-        `https://yours-fun-api.testnet.megayours.com/v1/auth/discord/callback?code=${code}&state=${state || ''}`,
+        `${import.meta.env.VITE_API_URL}/auth/discord/callback?code=${code}&state=${state || ''}&redirect_base_url=${encodeURIComponent(window.location.origin)}`,
         {
           method: 'GET',
           headers: {
@@ -53,33 +51,31 @@ export const Route = createFileRoute('/auth/discord/v1/callback/')({
         }
       );
 
-      // console.log('callbackResponse', callbackResponse);
-
       if (!callbackResponse.ok) {
-        console.log('Failed to complete Discord authentication');
         throw new Error('Failed to complete Discord authentication');
       }
 
       const tokenData = await callbackResponse.json();
 
-      console.log('tokenData', tokenData);
       // Store the token in localStorage
       localStorage.setItem('discord_token', tokenData.token);
       localStorage.setItem('auth_provider', 'discord');
 
-      console.log('redirecting to home page');
-
-      // Redirect to the home page with success message
+      // Redirect to a temporary route that will handle auth refresh
       throw redirect({
-        to: state || '/',
+        to: '/auth/refresh',
+        search: {
+          redirectTo: state || '/',
+          provider: 'discord',
+        },
       });
     } catch (error) {
-      console.error('Discord callback error:', error);
-
       // Check if this is a redirect (which is not an error)
       if (isRedirect(error)) {
         throw error; // Re-throw redirects as they're not errors
       }
+
+      console.error('Discord callback error:', error);
 
       // Only handle actual errors
       throw redirect({

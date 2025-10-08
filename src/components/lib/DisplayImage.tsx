@@ -4,15 +4,11 @@ import type { ImageStatus } from '@/types/image';
 import { useGetImage } from '@/hooks/useImages';
 
 export function DisplayImage({ imageStatus }: { imageStatus: ImageStatus }) {
-  console.log('imageStatus.id', imageStatus.id);
   const { image, isLoading } = useGetImage(imageStatus.id);
-  console.log('useGetImage result:', { image, isLoading });
 
   if (isLoading) {
     return <div>Loading...</div>;
   }
-
-  console.log('image', image, image?.image);
 
   return (
     <Card type="plain">

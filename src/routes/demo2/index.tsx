@@ -143,40 +143,35 @@ function RouteComponent() {
     [activeCard, openCard, closeCardAnimation]
   );
 
-  const closeCard = useCallback(() => {
-    if (activeCard === null || isAnimating) return;
-    closeCardAnimation(activeCard);
-  }, [activeCard, isAnimating, closeCardAnimation]);
-
   const cards = [
     {
       id: 1,
-      src: 'https://yours-fun-api.testnet.megayours.com/v1/gifs/public/7c84c8b91f2fd007eff3088e2f76bc5869ee47d8edb4122291910e998bbe7652.gif',
+      src: `${import.meta.env.VITE_API_URL}/gifs/public/7c84c8b91f2fd007eff3088e2f76bc5869ee47d8edb4122291910e998bbe7652.gif`,
       title: 'Card 1',
     },
     {
       id: 2,
-      src: 'https://yours-fun-api.testnet.megayours.com/v1/gifs/public/5e76fa05dc2ddb9ee9502ebc9fd569803d6860e1d0bb4c153c1fb4c58136fd74.gif',
+      src: `${import.meta.env.VITE_API_URL}/gifs/public/5e76fa05dc2ddb9ee9502ebc9fd569803d6860e1d0bb4c153c1fb4c58136fd74.gif`,
       title: 'Card 2',
     },
     {
       id: 3,
-      src: 'https://yours-fun-api.testnet.megayours.com/v1/gifs/public/4853f749a215f382ed9da2749eeadee6e2537fb0d7f6a8e562f8a14f365fe7c7.gif',
+      src: `${import.meta.env.VITE_API_URL}/gifs/public/4853f749a215f382ed9da2749eeadee6e2537fb0d7f6a8e562f8a14f365fe7c7.gif`,
       title: 'Card 3',
     },
     {
       id: 4,
-      src: 'https://yours-fun-api.testnet.megayours.com/v1/gifs/public/7c84c8b91f2fd007eff3088e2f76bc5869ee47d8edb4122291910e998bbe7652.gif',
+      src: `${import.meta.env.VITE_API_URL}/gifs/public/7c84c8b91f2fd007eff3088e2f76bc5869ee47d8edb4122291910e998bbe7652.gif`,
       title: 'Card 1',
     },
     {
       id: 5,
-      src: 'https://yours-fun-api.testnet.megayours.com/v1/gifs/public/5e76fa05dc2ddb9ee9502ebc9fd569803d6860e1d0bb4c153c1fb4c58136fd74.gif',
+      src: `${import.meta.env.VITE_API_URL}/gifs/public/5e76fa05dc2ddb9ee9502ebc9fd569803d6860e1d0bb4c153c1fb4c58136fd74.gif`,
       title: 'Card 2',
     },
     {
       id: 6,
-      src: 'https://yours-fun-api.testnet.megayours.com/v1/gifs/public/4853f749a215f382ed9da2749eeadee6e2537fb0d7f6a8e562f8a14f365fe7c7.gif',
+      src: `${import.meta.env.VITE_API_URL}/gifs/public/4853f749a215f382ed9da2749eeadee6e2537fb0d7f6a8e562f8a14f365fe7c7.gif`,
       title: 'Card 3',
     },
   ];

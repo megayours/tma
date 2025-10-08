@@ -1,13 +1,6 @@
-import { DisplayImage } from '../DisplayImage';
-import type { PromptWithContent } from '@/types/content';
+import type { Prompt } from '@/types/prompt';
 
-export function LatestImage({
-  prompt,
-  bg,
-}: {
-  prompt: PromptWithContent;
-  bg: string;
-}) {
+export function LatestImage({ prompt, bg }: { prompt: Prompt; bg: string }) {
   // return (
   //   <div className="flex gap-4 overflow-x-auto pb-4">
   //     {prompt.latestContentUrl && (
@@ -19,7 +12,6 @@ export function LatestImage({
   // );
 
   // TODO: temporary, revert once api is updated
-  console.log('PROMPT', prompt);
   return (
     <div
       className="flex h-full w-full items-center justify-center"

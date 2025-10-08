@@ -1,13 +1,26 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useGetPrompts } from '../../hooks/usePrompts';
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 
 export const Route = createFileRoute('/demo3/')({
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  const { prompts, isLoading } = useGetPrompts();
-
-  console.log('prompts', prompts);
-  return <div>Hello "/demo3/"!</div>;
+  return (
+    <div>
+      <h1>Hello "/demo3/"!</h1>
+      <DotLottieReact
+        className="h-100 w-100"
+        dotLottieRefCallback={dotLottie => {
+          if (dotLottie) {
+            dotLottie.addEventListener('complete', () => {
+              console.log('Animation completed!');
+            });
+          }
+        }}
+        src="/lotties/confetti.lottie"
+        autoplay
+      />
+    </div>
+  );
 }

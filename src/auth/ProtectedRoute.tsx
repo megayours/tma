@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { useAuth } from './useAuth';
+import { useAuthContext } from './AuthProvider';
 import { Link } from '@tanstack/react-router';
 
 interface ProtectedRouteProps {
@@ -7,8 +7,7 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { isAuthenticated, isAuthenticating, isTelegram, user, logout } =
-    useAuth();
+  const { isAuthenticated, isAuthenticating, isTelegram } = useAuthContext();
 
   // Add your authentication logic here
   // For now, just render children
@@ -22,7 +21,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
       <div className="p-4">
         <h1 className="mb-4 text-2xl font-bold">Login with Discord</h1>
         <a
-          href={`https://yours-fun-api.testnet.megayours.com/v1/auth/discord/authorize?state=${encodeURIComponent(window.location.pathname)}`}
+          href={`${import.meta.env.VITE_API_URL}/auth/discord/authorize?state=${encodeURIComponent('/')}&redirect_base_url=${encodeURIComponent(window.location.origin)}`}
           className="inline-block rounded bg-blue-600 px-6 py-3 text-white transition-colors hover:bg-blue-700"
         >
           Login with Discord
@@ -36,11 +35,6 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
       <div className="p-4">
         <h2 className="mb-4 text-xl font-semibold">Not Authenticated</h2>
         <p className="mb-4">isTelegram: {isTelegram ? 'true' : 'false'}</p>
-        {user && (
-          <div className="mb-4 rounded bg-gray-100 p-3">
-            <p>User: {user.user?.username || user.username || 'Unknown'}</p>
-          </div>
-        )}
         <Link
           to="/"
           search={{
@@ -57,24 +51,5 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     );
   }
 
-  return (
-    <div>
-      {user && (
-        <div className="border-b bg-gray-100 p-2">
-          <div className="flex items-center justify-between">
-            <span>
-              Welcome, {user.user?.username || user.username || 'User'}!
-            </span>
-            <button
-              onClick={logout}
-              className="rounded bg-red-600 px-3 py-1 text-sm text-white hover:bg-red-700"
-            >
-              Logout
-            </button>
-          </div>
-        </div>
-      )}
-      {children}
-    </div>
-  );
+  return <>{children}</>;
 }

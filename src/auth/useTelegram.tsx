@@ -1,6 +1,6 @@
 import { isTMA } from '@telegram-apps/bridge';
 import { useRawInitData, useLaunchParams } from '@telegram-apps/sdk-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 
 export function useTelegramRawInitData():
   | {
@@ -10,7 +10,6 @@ export function useTelegramRawInitData():
     }
   | undefined {
   if (isTMA()) {
-    console.log('launchParam', useLaunchParams());
     return {
       initData: useRawInitData(),
       launchParams: useLaunchParams(),
@@ -28,7 +27,11 @@ export function useTelegramTheme() {
   useEffect(() => {
     if (rawInitData?.isTMA && rawInitData.launchParams?.tgWebAppThemeParams) {
       const tgThemeParams = rawInitData.launchParams.tgWebAppThemeParams;
-      console.log('Using launchParams theme:', tgThemeParams);
+
+      // Debug logging to check Telegram theme colors
+      console.log('🎨 Telegram theme params:', tgThemeParams);
+      console.log('📦 secondary_bg_color:', tgThemeParams.secondary_bg_color);
+      console.log('🌈 bg_color:', tgThemeParams.bg_color);
 
       setThemeParams(tgThemeParams);
 
@@ -37,6 +40,9 @@ export function useTelegramTheme() {
       const bgColor = tgThemeParams.bg_color;
       const isDarkTheme =
         bgColor && parseInt(bgColor.replace('#', ''), 16) < 0x808080;
+
+      console.log('🌙 isDarkTheme:', isDarkTheme);
+
       setIsDark(isDarkTheme);
 
       // Apply theme to document
@@ -69,13 +75,39 @@ export function useTelegramTheme() {
           );
         }
       });
+    } else {
+      // When not in Telegram, check for system preference or localStorage
+      const savedTheme = localStorage.getItem('theme');
+      const systemPrefersDark = window.matchMedia(
+        '(prefers-color-scheme: dark)'
+      ).matches;
+
+      // Use saved theme, fallback to system preference, then default to light
+      const shouldUseDark =
+        savedTheme === 'dark' || (savedTheme === null && systemPrefersDark);
+      setIsDark(shouldUseDark);
+
+      // Apply theme to document
+      document.documentElement.classList.toggle('dark', shouldUseDark);
     }
   }, [rawInitData]);
+
+  const toggleTheme = useCallback(() => {
+    const newIsDark = !isDark;
+    setIsDark(newIsDark);
+
+    // Save to localStorage
+    localStorage.setItem('theme', newIsDark ? 'dark' : 'light');
+
+    // Apply to document
+    document.documentElement.classList.toggle('dark', newIsDark);
+  }, [isDark]);
 
   return {
     isDark,
     themeParams,
     isTelegram: isTMA(),
+    toggleTheme,
   };
 }
 

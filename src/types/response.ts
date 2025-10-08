@@ -18,16 +18,25 @@ export const RawPromptSchema = z.object({
   image: z.string().nullable(),
   type: z.string(),
   additional_content_ids: z.array(z.string()).optional(),
-  published: z.boolean(),
-  last_used: z.number(),
+  published: z.boolean().optional(),
+  last_used: z.number().optional(),
   created_at: z.number(),
-  updated_at: z.number(),
+  updated_at: z.number().optional(),
+  published_at: z.number().optional(),
   usage_count: z.number(),
-  contracts: z.array(ContractSchema),
-  images: z.array(z.string()),
-  videos: z.array(z.string()),
-  gifs: z.array(z.string()),
+  generation_count: z.number().optional(),
+  has_generated: z.boolean().optional(),
+  owner_id: z.string().optional(),
+  owner_name: z.string().optional(),
+  latest_content_url: z.string().nullable().optional(),
+  contracts: z.array(ContractSchema).optional(),
+  images: z.array(z.string()).optional(),
+  videos: z.array(z.string()).optional(),
+  gifs: z.array(z.string()).optional(),
   versions: z.any().optional(),
+  lastestContentUrl: z.string().optional(),
+  min_tokens: z.number().optional(),
+  max_tokens: z.number().optional(),
 });
 export type RawPrompt = z.infer<typeof RawPromptSchema>;
 
@@ -43,11 +52,41 @@ export const PromptsResponseSchema = z.object({
 });
 export type PromptsResponse = z.infer<typeof PromptsResponseSchema>;
 
-// Token schema
-export const TokenSchema = z.object({
-  contract: ContractSchema,
-  id: z.string(),
-});
+// Token schema - handles both formats (contract/collection, id/token_id)
+export const TokenSchema = z
+  .object({
+    // Handle both token_id and id
+    token_id: z.string().optional(),
+    id: z.string().optional(),
+    name: z.string().optional(),
+    image: z.string().optional(),
+    description: z.string().optional(),
+    attributes: z.any().optional(),
+    owner: z.string().optional(),
+    // Handle both contract and collection formats
+    contract: ContractSchema.optional(),
+    collection: z
+      .object({
+        id: z.number(),
+        name: z.string(),
+        chain: z.string(),
+        contract_address: z.string(),
+      })
+      .optional(),
+  })
+  .transform(data => ({
+    id: data.id || data.token_id || '',
+    name: data.name,
+    image: data.image,
+    description: data.description,
+    attributes: data.attributes,
+    owner: data.owner,
+    contract: data.contract || {
+      chain: data.collection!.chain,
+      address: data.collection!.contract_address,
+      name: data.collection!.name,
+    },
+  }));
 export type Token = z.infer<typeof TokenSchema>;
 
 // Content status enum
@@ -74,6 +113,7 @@ export const RawContentResponseSchema = z.object({
   token: TokenSchema.optional(),
   tokens: z.array(TokenSchema).optional(),
   prompt_id: z.union([z.string(), z.number()]).nullable().optional(),
+  session: z.any().optional(),
 });
 export type RawContentResponse = z.infer<typeof RawContentResponseSchema>;
 
@@ -107,3 +147,32 @@ export const ContentListResponseSchema = z.object({
   pagination: PaginationResponseSchema,
 });
 export type ContentListResponse = z.infer<typeof ContentListResponseSchema>;
+
+// Generation content schema for my-recent-generations endpoint
+export const GenerationContentSchema = z.object({
+  id: z.string(),
+  type: z.enum(['image', 'video', 'sticker', 'animated_sticker', 'gif']),
+  path: z.string(),
+  url: z.string(),
+  preview_url: z.string().nullable(),
+  watermarked_url: z.string().nullable(),
+  created_at: z.number(),
+  revealed_at: z.number().nullable(),
+  creator_id: z.string(),
+  creator_name: z.string().nullable(),
+  prompt: PromptSchema.nullable(),
+  tokens: z.array(TokenSchema).optional(),
+});
+export type GenerationContent = z.infer<typeof GenerationContentSchema>;
+
+// My recent generations response schema
+export const MyRecentGenerationsResponseSchema = z.object({
+  data: z.array(GenerationContentSchema),
+  pagination: PaginationResponseSchema,
+});
+export type MyRecentGenerationsResponse = z.infer<
+  typeof MyRecentGenerationsResponseSchema
+>;
+
+// Export the Content type from content.ts
+export type { Content } from './content';

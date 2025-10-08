@@ -14,12 +14,6 @@ export type ContentSortBy = z.infer<typeof ContentSortBySchema>;
 export const ContentSortOrderSchema = z.enum(['asc', 'desc']);
 export type ContentSortOrder = z.infer<typeof ContentSortOrderSchema>;
 
-export const ContentPaginationSchema = z.object({
-  page: z.string().default('1'),
-  size: z.string().default('10'),
-});
-export type ContentPagination = z.infer<typeof ContentPaginationSchema>;
-
 export const FilterSchema = z.object({
   sortBy: z.enum(['last_used', 'created_at']).optional(),
   sortOrder: z.enum(['asc', 'desc']).optional(),
@@ -29,6 +23,8 @@ export type Filter = z.infer<typeof FilterSchema>;
 export const PaginationSchema = z.object({
   page: z.number().optional(),
   size: z.number().optional(),
+  total: z.number().optional(),
+  totalPages: z.number().optional(),
 });
 export type Pagination = z.infer<typeof PaginationSchema>;
 
@@ -58,6 +54,7 @@ export const ContentFiltersSchema = z.object({
   createdAfter: z.string().optional(),
   filters: FilterSchema.optional(),
   pagination: PaginationSchema.optional(),
+  session: z.any().optional(),
 });
 export type ContentFilters = z.infer<typeof ContentFiltersSchema>;
 
@@ -66,3 +63,10 @@ export const ContentRequestSchema = z.object({
   pagination: PaginationSchema.optional(),
 });
 export type ContentRequest = z.infer<typeof ContentRequestSchema>;
+
+export const MyRecentGenerationsRequestSchema = z.object({
+  type: z.enum(['all', 'sticker_packs', 'images', 'videos', 'stickers', 'animated_stickers']).default('all'),
+  pagination: PaginationSchema.optional(),
+  days: z.string().default('30'),
+});
+export type MyRecentGenerationsRequest = z.infer<typeof MyRecentGenerationsRequestSchema>;

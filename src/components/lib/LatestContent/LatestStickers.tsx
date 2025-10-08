@@ -7,19 +7,17 @@ export function LatestSticker({
   prompt: PromptWithContent;
   bg: string;
 }) {
-  console.log('PROMPT', prompt);
-
   return (
     <div
       className="flex h-full w-full items-center justify-center"
       style={{
         backgroundImage: `url(${bg})`,
-        backgroundSize: 'contain',
+        backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
       }}
     >
-      <div className="flex h-full w-full items-center justify-center rounded-2xl bg-white/50 p-5">
+      <div className="flex h-full w-full items-center justify-center bg-white/50 p-5">
         <img
           src={prompt.latestContentUrl}
           alt="latest sticker content"

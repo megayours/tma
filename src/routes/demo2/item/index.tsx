@@ -24,8 +24,7 @@ function RouteComponent() {
       >
         <div className="image-container relative flex h-full items-center justify-center">
           <img
-            src="https://yours-fun-api.testnet.megayours.com/v1/gifs/public/7c84c8b91f2fd007eff3088e2f76bc5869ee47d8edb4122291910e998bbe7652.gif"
-            // src="https://yours-fun-api.testnet.megayours.com/v1/gifs/public/4853f749a215f382ed9da2749eeadee6e2537fb0d7f6a8e562f8a14f365fe7c7.gif"
+            src={`${import.meta.env.VITE_API_URL}/gifs/public/7c84c8b91f2fd007eff3088e2f76bc5869ee47d8edb4122291910e998bbe7652.gif`}
             alt="test"
             className="h-full w-full object-cover object-center"
           />

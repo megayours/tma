@@ -1,11 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { Feed } from './feed';
-// import { ThemeDemo } from '../components/ThemeDemo';
-// import { ThemeUsageExamples } from '../components/ThemeUsageExamples';
-// import { TelegramThemeStatus } from '../components/TelegramThemeStatus';
-// import { TelegramThemeDemo } from '../components/TelegramThemeDemo';
-// import { TelegramUIComponentsDemo } from '../components/TelegramUIComponentsDemo';
-// import { ExampleApp } from '../components/ExampleApp';
+import { Landing } from '@/routes/landing';
 
 export const Route = createFileRoute('/')({
   component: Index,
@@ -14,7 +8,7 @@ export const Route = createFileRoute('/')({
 function Index() {
   return (
     <div className="bg-tg-bg text-tg-text">
-      <Feed />
+      <Landing />
     </div>
   );
 }

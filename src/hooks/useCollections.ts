@@ -1,0 +1,241 @@
+import { useMemo } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { Pagination } from '../types/requests';
+import type { Token } from '../types/response';
+import { useSession } from '@/auth/SessionProvider';
+import type { Session } from '@/auth/useAuth';
+
+export type SupportedCollection = {
+  address: string;
+  chain: string;
+  name: string;
+  image: string;
+  id?: string;
+};
+
+export function useGetSupportedCollections() {
+  const { session } = useSession();
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['supportedCollections'],
+    queryFn: async () => {
+      if (!session) return;
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/tokens/extended-collections`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: session.authToken,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data as SupportedCollection[];
+    },
+  });
+
+  return { data, isLoading, error };
+}
+
+export function useGetCollectionsWithPrompt(prompt?: {
+  contracts?: Array<{
+    chain: string;
+    address: string;
+    name: string;
+    image?: string;
+  }>;
+}) {
+  const {
+    data: supportedCollections,
+    isLoading,
+    error,
+  } = useGetSupportedCollections();
+
+  const collections = useMemo(() => {
+    // Create a lookup map for supported collections (chain + address -> collection)
+    const supportedCollectionsMap = new Map(
+      supportedCollections?.map(collection => [
+        `${collection.chain}:${collection.address}`,
+        collection,
+      ]) || []
+    );
+
+    const promptCollections =
+      prompt?.contracts?.map(contract => {
+        // Fast O(1) lookup instead of O(n) find
+        const matchingSupportedCollection = supportedCollectionsMap.get(
+          `${contract.chain}:${contract.address}`
+        );
+
+        return {
+          ...contract,
+          image:
+            matchingSupportedCollection?.image ||
+            contract.image ||
+            '/nfts/not-available.png',
+        };
+      }) || [];
+
+    // If there are prompt contracts, return only those
+    // Otherwise, return supported collections
+    return promptCollections.length > 0
+      ? promptCollections
+      : supportedCollections || [];
+  }, [prompt?.contracts, supportedCollections]);
+
+  return { data: collections, isLoading, error };
+}
+
+export function useGetTokensByCollection(
+  collection?: SupportedCollection,
+  page: number = 1,
+  limit: number = 10
+) {
+  const { data, isLoading, error } = useQuery({
+    queryKey: [
+      'tokensByCollection',
+      collection?.address,
+      collection?.chain,
+      page,
+      limit,
+    ],
+    queryFn: async (): Promise<{
+      tokens: Token[];
+      pagination: Pagination;
+    }> => {
+      if (!collection) {
+        throw new Error('No collection provided');
+      }
+
+      // Modern approach: Use URLSearchParams for cleaner query string building
+      const searchParams = new URLSearchParams({
+        chain: collection.chain,
+        contract_address: collection.address,
+        page: page.toString(),
+        page_size: limit.toString(),
+      });
+
+      const url = `${import.meta.env.VITE_PUBLIC_API_URL}/tokens?${searchParams.toString()}`;
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      return {
+        tokens: data.data,
+        pagination: data.pagination,
+      } as {
+        tokens: Token[];
+        pagination: Pagination;
+      };
+    },
+    enabled: !!collection?.address && !!collection?.chain, // Only run if we have required data
+  });
+
+  return { data, isLoading, error };
+}
+
+export function useGetNFTByCollectionAndTokenId(
+  chain: string,
+  address: string,
+  tokenId: string
+) {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['nftByCollectionAndTokenId', chain, address, tokenId],
+    queryFn: async (): Promise<Token | null> => {
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/tokens/${chain}/${address}/${tokenId}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (response.status === 404) {
+        // NFT doesn't exist - this is a normal case, not an error
+        return null;
+      }
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data as Token;
+    },
+    enabled: !!chain && !!address && !!tokenId, // Only run if we have required data
+  });
+
+  return { data, isLoading, error };
+}
+
+export function useAddToFavoritesMutation(
+  collection: SupportedCollection | null,
+  tokenId: string
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (session: Session | null | undefined) => {
+      if (!session) return;
+      if (!collection) return;
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/profile/favorites`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: session.authToken,
+          },
+          body: JSON.stringify({
+            contract: {
+              chain: collection.chain,
+              address: collection.address,
+            },
+            id: tokenId,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        let errorMessage = `HTTP error! status: ${response.status}`;
+        try {
+          const errorData = await response.json();
+          if (errorData.message) {
+            errorMessage += ` - ${errorData.message}`;
+          }
+        } catch {
+          // If response body is not JSON, use status text
+          errorMessage += ` - ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
+      }
+
+      const data = await response.json();
+      return data;
+    },
+    onSuccess: (_data, session) => {
+      // Invalidate the favorites query to refetch the updated list
+      queryClient.invalidateQueries({
+        queryKey: ['favorites', session?.id],
+      });
+    },
+    onError: (error, _variables, _context) => {
+      console.error('Error adding to favorites:', error.message || error);
+    },
+  });
+}

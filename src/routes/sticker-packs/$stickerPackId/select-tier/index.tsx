@@ -1,6 +1,5 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useStickerPackPurchase } from '@/contexts/StickerPackPurchaseContext';
-import { StepProgressIndicator } from '@/components/StickerPack/StepProgressIndicator';
 import { TierSelector } from '@/components/StickerPack/TierSelector';
 import { TelegramMainButton } from '../../../../components/TelegramMainButton';
 
@@ -15,13 +14,6 @@ function RouteComponent() {
   const navigate = useNavigate();
   const { stickerPack, selectedTier, setSelectedTier } =
     useStickerPackPurchase();
-
-  const handleBack = () => {
-    navigate({
-      to: '/sticker-packs/$stickerPackId/select-nfts',
-      params: { stickerPackId },
-    });
-  };
 
   const handleReview = () => {
     navigate({

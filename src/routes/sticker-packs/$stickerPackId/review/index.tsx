@@ -2,7 +2,6 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useSession } from '@/auth/SessionProvider';
 import { useStickerPackPurchase } from '@/contexts/StickerPackPurchaseContext';
 import { usePurchase } from '@/hooks/usePurchase';
-import { StepProgressIndicator } from '@/components/StickerPack/StepProgressIndicator';
 
 export const Route = createFileRoute('/sticker-packs/$stickerPackId/review/')({
   component: RouteComponent,
@@ -73,11 +72,6 @@ function RouteComponent() {
 
   const tierPricing = stickerPack.pricing[selectedTier];
   const isFree = tierPricing.amount_cents === null;
-
-  const hasPaidTiers =
-    stickerPack.pricing.basic.amount_cents !== null ||
-    stickerPack.pricing.gold.amount_cents !== null ||
-    stickerPack.pricing.legendary.amount_cents !== null;
 
   return (
     <div className="mx-auto max-w-4xl p-4">

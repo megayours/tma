@@ -43,6 +43,8 @@ export function Landing() {
           </div> */}
         </Link>
       ))}
+      <Link to="/sticker-packs">Link to Sticker Packs</Link>
+      <Link to="/feed">Link to Feed</Link>
     </div>
   );
 }

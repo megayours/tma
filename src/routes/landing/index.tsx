@@ -1,6 +1,4 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { useTelegramTheme } from '@/auth/useTelegram';
-import { useSession } from '@/auth/SessionProvider';
 import { StickerPackItem } from '@/routes/landing/StickerPackItem';
 import { useStickerPacks } from '@/hooks/useStickerPacks';
 import { useWebAppStartParam } from '@/hooks/useWebAppStartParam';
@@ -14,8 +12,6 @@ function RouteComponent() {
 }
 
 export function Landing() {
-  const { isDark, themeParams, isTelegram } = useTelegramTheme();
-  const { isAuthenticated } = useSession();
   const { data: stickerPacks } = useStickerPacks({
     pagination: {
       page: 1,

@@ -1,13 +1,11 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useCallback, useEffect, useState } from 'react';
 import { useStickerPackPurchase } from '@/contexts/StickerPackPurchaseContext';
-import { StepProgressIndicator } from '@/components/StickerPack/StepProgressIndicator';
 import { TelegramMainButton } from '@/components/TelegramMainButton';
 import { useGetSupportedCollections } from '@/hooks/useCollections';
 import { NFTSelector } from './NFTSelector';
 import type { Token } from '@/types/response';
 import { useSelectedNFTs } from '../../../../contexts/SelectedNFTsContext';
-import { useGetFavorites } from '../../../../hooks/useFavorites';
 
 export const Route = createFileRoute(
   '/sticker-packs/$stickerPackId/select-nfts/'

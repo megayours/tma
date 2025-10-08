@@ -118,7 +118,7 @@ function RouteComponent() {
         )}
 
         {/* Error State */}
-        {executionStatus?.status === 'failed' && (
+        {executionStatus?.status === 'error' && (
           <div className="bg-tg-secondary-bg rounded-lg p-6 text-center">
             <h2 className="mb-4 text-xl font-semibold text-red-600">
               Generation Failed

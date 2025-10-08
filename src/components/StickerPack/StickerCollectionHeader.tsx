@@ -10,8 +10,6 @@ export function StickerCollectionHeader({
   stickerPack,
   endDate = '22d',
 }: StickerCollectionHeaderProps) {
-  const featuredSticker = stickerPack.items[0];
-
   return (
     <div className="relative rounded-lg p-2">
       <div className="flex w-full flex-col items-center">

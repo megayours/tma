@@ -3,7 +3,6 @@ import { useEffect } from 'react';
 import { useSession } from '@/auth/SessionProvider';
 import { useStickerPack } from '@/hooks/useStickerPacks';
 import { useStickerPackPurchase } from '@/contexts/StickerPackPurchaseContext';
-import { StepProgressIndicator } from '@/components/StickerPack/StepProgressIndicator';
 import { StickerPackContentList } from '@/components/StickerPack/StickerPackContentList';
 import { StickerCollectionHeader } from '@/components/StickerPack/StickerCollectionHeader';
 import { TelegramMainButton } from '@/components/TelegramMainButton';

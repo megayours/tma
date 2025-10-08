@@ -106,7 +106,7 @@ export const NFTSelectionOnly = ({
 
   return (
     <div
-      className={`bg-tg-bg border-tg-hint/20 rounded-lg border shadow-lg ${className} overflow-y-scroll`}
+      className={`${className} overflow-y-scroll`}
       onClick={handleCloudClick}
     >
       {/* Header */}

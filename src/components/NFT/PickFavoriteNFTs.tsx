@@ -4,13 +4,14 @@ import type { Token } from '@/types/response';
 
 interface PickFavoriteNFTsProps {
   onTokenSelect: (favorite: { token: Token }) => void;
+  selectedNFT?: Token | null;
 }
 
 /**
  * Component that displays favorite NFTs in a horizontal scrolling list
  * with Telegram-like UI styling
  */
-export const PickFavoriteNFTs = ({ onTokenSelect }: PickFavoriteNFTsProps) => {
+export const PickFavoriteNFTs = ({ onTokenSelect, selectedNFT }: PickFavoriteNFTsProps) => {
   const { session } = useSession();
   const { favorites, isLoadingFavorites } = useGetFavorites(session);
 
@@ -21,6 +22,14 @@ export const PickFavoriteNFTs = ({ onTokenSelect }: PickFavoriteNFTsProps) => {
 
   const handleFavoriteClick = (favorite: { token: Token }) => {
     onTokenSelect(favorite);
+  };
+
+  const isSelected = (favorite: { token: Token }) => {
+    if (!selectedNFT) return false;
+    return (
+      favorite.token.id === selectedNFT.id &&
+      favorite.token.contract.address === selectedNFT.contract.address
+    );
   };
 
   return (
@@ -39,7 +48,11 @@ export const PickFavoriteNFTs = ({ onTokenSelect }: PickFavoriteNFTsProps) => {
             <div className="flex flex-col items-center gap-2">
               {/* NFT Image - Circular */}
               <div className="relative">
-                <div className="bg-tg-secondary border-tg-section-separator hover:bg-tg-secondary/80 h-20 w-20 rounded-full border p-1 transition-colors">
+                <div className={`bg-tg-secondary hover:bg-tg-secondary/80 h-20 w-20 rounded-full p-1 transition-colors ${
+                  isSelected(favorite)
+                    ? 'border-2 border-tg-accent-text'
+                    : 'border border-tg-section-separator'
+                }`}>
                   <img
                     src={favorite.token.image || '/nfts/not-available.png'}
                     alt={favorite.token.name || `NFT #${favorite.token.id}`}

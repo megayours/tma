@@ -85,6 +85,17 @@ export const useExecutionStatus = ({
       const validatedStatus = safeParse(ExecutionStatusSchema, rawData);
 
       if (!validatedStatus) {
+        console.error('Validation failed for execution status');
+        console.error('Raw data received:', rawData);
+        console.error('Expected schema:', ExecutionStatusSchema);
+
+        // Try to parse and show specific validation errors
+        try {
+          ExecutionStatusSchema.parse(rawData);
+        } catch (zodError) {
+          console.error('Zod validation errors:', zodError);
+        }
+
         throw new Error('Invalid status response format');
       }
 

@@ -27,8 +27,10 @@ export function Landing() {
   return (
     <div className="bg-tg-bg flex h-screen snap-y snap-mandatory flex-col overflow-y-scroll">
       {stickerPacks?.data.map(stickerPack => (
-        <div
+        <Link
           key={stickerPack.id}
+          to="/sticker-packs/$stickerPackId"
+          params={{ stickerPackId: stickerPack.id.toString() }}
           className="flex h-[70vh] shrink-0 snap-start flex-col"
         >
           <div className="flex flex-1">
@@ -39,7 +41,7 @@ export function Landing() {
               <span className="font-bold text-white">Button</span>
             </div>
           </div> */}
-        </div>
+        </Link>
       ))}
     </div>
   );

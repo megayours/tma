@@ -11,10 +11,12 @@ import { NFTSelectionOnly } from '@/components/Feed/NFTSelectionOnly';
 import { PurchaseButton } from '@/components/StickerPack/PurchaseButton';
 import { TelegramMainButton } from '@/components/TelegramMainButton';
 import { useTelegramTheme } from '@/auth/useTelegram';
+import { StickerPackContentList } from '@/components/StickerPack/StickerPackContentList';
 import {
   StickerPackAnimationProvider,
   useStickerPackAnimationContext,
 } from '@/contexts/StickerPackAnimationContext';
+import { StickerPackPurchaseProvider } from '@/contexts/StickerPackPurchaseContext';
 import { redirectToTelegramBot } from '@/utils/telegramRedirect';
 import type { Token } from '@/types/response';
 
@@ -30,6 +32,23 @@ export const Route = createFileRoute('/sticker-packs/$stickerPackId/')({
 });
 
 function RouteComponent() {
+  const { stickerPackId } = Route.useParams();
+  const navigate = useNavigate();
+
+  // Redirect to the new multi-step flow
+  useEffect(() => {
+    navigate({
+      to: '/sticker-packs/$stickerPackId/details',
+      params: { stickerPackId },
+      replace: true,
+    });
+  }, [stickerPackId, navigate]);
+
+  return null;
+}
+
+// Keep the old single-page flow component for reference/fallback
+function RouteComponentOld() {
   return (
     <StickerPackAnimationProvider>
       <StickerPackContent />
@@ -112,10 +131,15 @@ function StickerPackContent() {
     onSuccess: data => {
       // Trigger animation for successful purchases
       if (data.status === 'processing' || data.status === 'completed') {
-        triggerAnimation(data.status, data.status === 'completed' ? () => {
-          // Redirect to Telegram bot after animation completes
-          redirectToTelegramBot();
-        } : undefined);
+        triggerAnimation(
+          data.status,
+          data.status === 'completed'
+            ? () => {
+                // Redirect to Telegram bot after animation completes
+                redirectToTelegramBot();
+              }
+            : undefined
+        );
       }
 
       // If payment is required, navigate to checkout page
@@ -250,27 +274,36 @@ function StickerPackContent() {
               <p className="text-tg-text text-sm">{stickerPack.description}</p>
             </div>
           )}
+        </div>
 
-          {/* NFT Selection */}
-          <div className="flex-1">
-            <NFTSelectionOnly
-              selectedFavorite={selectedFavorite}
-              requiredTokens={stickerPack.min_tokens_required}
-              optionalTokens={Math.max(
-                0,
-                stickerPack.max_tokens_required -
-                  stickerPack.min_tokens_required
-              )}
-              onTokensChange={handleTokensChange}
-              prompt={{
-                id: 1,
-                name: `Generate stickers for ${stickerPack.name}`,
-                prompt: `Generate stickers for ${stickerPack.name}`,
-                createdAt: Date.now(),
-                version: 1,
-              }}
+        {/* Full Sticker Pack Content List */}
+        {stickerPack?.items && stickerPack.items.length > 0 && (
+          <div className="bg-tg-secondary-bg rounded-lg p-6">
+            <h2 className="mb-4 text-lg font-semibold">All Stickers</h2>
+            <StickerPackContentList
+              items={stickerPack.items}
+              packName={stickerPack.name}
             />
           </div>
+        )}
+        {/* NFT Selection */}
+        <div className="flex-1">
+          <NFTSelectionOnly
+            selectedFavorite={selectedFavorite}
+            requiredTokens={stickerPack.min_tokens_required}
+            optionalTokens={Math.max(
+              0,
+              stickerPack.max_tokens_required - stickerPack.min_tokens_required
+            )}
+            onTokensChange={handleTokensChange}
+            prompt={{
+              id: 1,
+              name: `Generate stickers for ${stickerPack.name}`,
+              prompt: `Generate stickers for ${stickerPack.name}`,
+              createdAt: Date.now(),
+              version: 1,
+            }}
+          />
         </div>
 
         {/* Tier Selection */}
@@ -305,7 +338,6 @@ function StickerPackContent() {
               </p>
             </div>
           )}
-
           {/* Show completion message */}
           {isCompleted && executionStatus && (
             <div className="bg-tg-bg border-tg-hint/20 rounded-lg border p-6 text-center">
@@ -328,8 +360,7 @@ function StickerPackContent() {
               )}
             </div>
           )}
-
-          {/* Show purchase button for initial state, error state, or when pending */}
+          Show purchase button for initial state, error state, or when pending
           {(state === 'idle' || state === 'error' || isPending) && (
             <>
               {/* Telegram Main Button */}
@@ -368,14 +399,12 @@ function StickerPackContent() {
               )}
             </>
           )}
-
           {/* Error handling */}
           {state === 'error' && (
             <p className="mt-4 text-center text-sm text-red-500">
               Something went wrong. Please try again.
             </p>
           )}
-
           {/* Validation messages */}
           {!canPurchase && state === 'idle' && (
             <p className="mt-4 text-center text-sm text-red-500">

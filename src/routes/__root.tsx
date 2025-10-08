@@ -198,7 +198,7 @@ function AppContent() {
         {isViewportMounted && !isViewportMounting && (
           // Optimistically take the space
           <div
-            className="mb-4 w-full"
+            className="w-full"
             style={{
               marginTop: viewportSafeAreaInsets.top,
               height: contentSafeAreaInsets.top,

@@ -4,9 +4,7 @@ import { useStickerPackPurchase } from '@/contexts/StickerPackPurchaseContext';
 import { usePurchase } from '@/hooks/usePurchase';
 import { StepProgressIndicator } from '@/components/StickerPack/StepProgressIndicator';
 
-export const Route = createFileRoute(
-  '/sticker-packs/$stickerPackId/review/'
-)({
+export const Route = createFileRoute('/sticker-packs/$stickerPackId/review/')({
   component: RouteComponent,
 });
 
@@ -83,8 +81,6 @@ function RouteComponent() {
 
   return (
     <div className="mx-auto max-w-4xl p-4">
-      <StepProgressIndicator currentStep={3} skipTierSelection={!hasPaidTiers} />
-
       <div className="space-y-4">
         {/* Review Summary */}
         <div className="bg-tg-secondary-bg rounded-lg p-6">
@@ -109,7 +105,7 @@ function RouteComponent() {
                   key={`${nft.contract.address}-${nft.id}`}
                   className="bg-tg-bg rounded p-2 text-sm"
                 >
-                  <div className="font-semibold">
+                  <div className="text-tg-text font-semibold">
                     {nft.name || `NFT #${index + 1}`}
                   </div>
                   <div className="text-tg-hint text-xs">

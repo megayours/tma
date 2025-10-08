@@ -13,7 +13,6 @@ const tierDisplayNames = {
   legendary: 'Platinum',
 };
 
-
 function TierCard({
   tier,
   displayName,
@@ -38,28 +37,30 @@ function TierCard({
   const getTierColors = (tierKey: string, isSelected: boolean) => {
     const baseColors = {
       basic: isSelected
-        ? 'border-slate-300 bg-slate-50 text-slate-900 shadow-sm'
-        : 'border-slate-200 hover:border-slate-300 bg-white text-slate-700 hover:shadow-sm',
+        ? 'border-slate-300 text-slate-900 shadow-sm'
+        : 'border-slate-200 hover:border-slate-300 text-slate-700 hover:shadow-sm',
       gold: isSelected
-        ? 'border-amber-300 bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-900 shadow-sm shadow-amber-200'
+        ? 'border-amber-300  text-amber-900 shadow-sm shadow-amber-200'
         : 'border-amber-200 hover:border-amber-300 bg-gradient-to-r from-amber-25 to-yellow-25 text-amber-700 hover:shadow-sm',
       legendary: isSelected
-        ? 'border-violet-300 bg-gradient-to-r from-violet-50 to-purple-50 text-violet-900 shadow-sm shadow-violet-200'
-        : 'border-violet-200 hover:border-violet-300 bg-gradient-to-r from-violet-25 to-purple-25 text-violet-700 hover:shadow-sm'
+        ? 'border-violet-300 text-violet-900 shadow-sm shadow-violet-200'
+        : 'border-violet-200 hover:border-violet-300 bg-gradient-to-r from-violet-25 to-purple-25 text-violet-700 hover:shadow-sm',
     };
     return baseColors[tierKey as keyof typeof baseColors] || baseColors.basic;
   };
 
-  const tierKey = Object.keys(tierDisplayNames).find(key =>
-    tierDisplayNames[key as keyof typeof tierDisplayNames] === displayName
-  ) || 'basic';
+  const tierKey =
+    Object.keys(tierDisplayNames).find(
+      key =>
+        tierDisplayNames[key as keyof typeof tierDisplayNames] === displayName
+    ) || 'basic';
 
   // Get price color based on tier
   const getPriceColor = (tierKey: string) => {
     const colors = {
-      basic: 'text-slate-800',
+      basic: 'text-tg-text',
       gold: 'text-amber-800',
-      legendary: 'text-violet-800'
+      legendary: 'text-violet-800',
     };
     return colors[tierKey as keyof typeof colors] || colors.basic;
   };
@@ -74,19 +75,16 @@ function TierCard({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           {/* Tier Icon */}
-          <div className={`w-2 h-2 rounded-full ${
-            tierKey === 'basic' ? 'bg-slate-400' :
-            tierKey === 'gold' ? 'bg-amber-400' :
-            'bg-violet-400'
-          }`}></div>
-          <h3 className="font-semibold text-base">
-            {displayName}
-          </h3>
-          {isSelected && (
-            <div className="flex h-4 w-4 items-center justify-center rounded-full bg-current">
-              <div className="h-2 w-2 rounded-full bg-white"></div>
-            </div>
-          )}
+          <div
+            className={`h-2 w-2 rounded-full ${
+              tierKey === 'basic'
+                ? 'bg-slate-400'
+                : tierKey === 'gold'
+                  ? 'bg-amber-400'
+                  : 'bg-violet-400'
+            }`}
+          ></div>
+          <h3 className="text-base font-semibold">{displayName}</h3>
         </div>
         <div className={`text-lg font-bold ${getPriceColor(tierKey)}`}>
           {tier.formatted_price || 'Free'}
@@ -102,11 +100,7 @@ export function TierSelector({
   onTierSelect,
   disabled,
 }: TierSelectorProps) {
-  const {
-    data: stickerPack,
-    isLoading,
-    error,
-  } = useStickerPack(stickerPackId);
+  const { data: stickerPack, isLoading, error } = useStickerPack(stickerPackId);
 
   // Debug logging
   console.log('TierSelector Debug:', {
@@ -114,13 +108,13 @@ export function TierSelector({
     isLoading,
     error: error?.message,
     stickerPack: stickerPack ? 'loaded' : 'null',
-    pricing: stickerPack?.pricing
+    pricing: stickerPack?.pricing,
   });
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        <h2 className="text-lg font-semibold">Select Tier</h2>
+      <div className="bg-tg-bg space-y-4">
+        <h2 className="text-tg-text text-lg font-semibold">Select Tier</h2>
         <div className="grid gap-4 md:grid-cols-3">
           {[1, 2, 3].map(i => (
             <div key={i} className="animate-pulse rounded-lg border p-4">
@@ -138,17 +132,15 @@ export function TierSelector({
   if (error || !stickerPack) {
     return (
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold">Select Tier</h2>
+        <h2 className="text-tg-text text-lg font-semibold">Select Tier</h2>
         <div className="rounded-lg border border-red-200 bg-red-50 p-4">
           <p className="text-sm text-red-600">
             Failed to load pricing information. Please try again.
           </p>
           {error && (
-            <p className="text-xs text-red-500 mt-2">
-              Error: {error.message}
-            </p>
+            <p className="mt-2 text-xs text-red-500">Error: {error.message}</p>
           )}
-          <p className="text-xs text-gray-500 mt-2">
+          <p className="mt-2 text-xs text-gray-500">
             Sticker Pack ID: {stickerPackId}
           </p>
         </div>
@@ -157,9 +149,12 @@ export function TierSelector({
   }
 
   // Dynamically generate tiers based on what's available in the pricing data
-  const availableTiers = Object.entries(stickerPack.pricing).filter(([_, tierData]) =>
-    // Include tier if it has pricing info or is available for free
-    tierData.stripe_price_id !== null || tierData.amount_cents !== null || tierData.formatted_price !== null
+  const availableTiers = Object.entries(stickerPack.pricing).filter(
+    ([_, tierData]) =>
+      // Include tier if it has pricing info or is available for free
+      tierData.stripe_price_id !== null ||
+      tierData.amount_cents !== null ||
+      tierData.formatted_price !== null
   );
 
   const tiers: Array<{
@@ -176,15 +171,17 @@ export function TierSelector({
     return (
       <div className="space-y-6">
         <div className="text-center">
-          <h2 className="text-xl font-bold text-gray-900 mb-1">Select Tier</h2>
-          <p className="text-sm text-gray-600">Choose your preferred quality level</p>
+          <h2 className="mb-1 text-xl font-bold text-gray-900">Select Tier</h2>
+          <p className="text-sm text-gray-600">
+            Choose your preferred quality level
+          </p>
         </div>
-        <div className="grid gap-3 grid-cols-1">
-          <div className="cursor-pointer rounded-xl border-2 p-4 transition-all duration-200 border-slate-300 bg-slate-50 text-slate-900 shadow-sm scale-[1.02] ring-2 ring-offset-2">
+        <div className="grid grid-cols-1 gap-3">
+          <div className="scale-[1.02] cursor-pointer rounded-xl border-2 border-slate-300 bg-slate-50 p-4 text-slate-900 shadow-sm ring-2 ring-offset-2 transition-all duration-200">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-2 h-2 rounded-full bg-slate-400"></div>
-                <h3 className="font-semibold text-base">Basic</h3>
+                <div className="h-2 w-2 rounded-full bg-slate-400"></div>
+                <h3 className="text-base font-semibold">Basic</h3>
                 <div className="flex h-4 w-4 items-center justify-center rounded-full bg-current">
                   <div className="h-2 w-2 rounded-full bg-white"></div>
                 </div>
@@ -198,13 +195,20 @@ export function TierSelector({
   }
 
   // Adjust grid columns based on number of available tiers
-  const gridCols = tiers.length === 1 ? 'grid-cols-1' : tiers.length === 2 ? 'md:grid-cols-2' : 'md:grid-cols-3';
+  const gridCols =
+    tiers.length === 1
+      ? 'grid-cols-1'
+      : tiers.length === 2
+        ? 'md:grid-cols-2'
+        : 'md:grid-cols-3';
 
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-xl font-bold text-gray-900 mb-1">Select Tier</h2>
-        <p className="text-sm text-gray-600">Choose your preferred quality level</p>
+        <h2 className="mb-1 text-xl font-bold text-gray-900">Select Tier</h2>
+        <p className="text-sm text-gray-600">
+          Choose your preferred quality level
+        </p>
       </div>
       <div className={`grid gap-3 ${gridCols}`}>
         {tiers.map(({ key, displayName, tier }) => {

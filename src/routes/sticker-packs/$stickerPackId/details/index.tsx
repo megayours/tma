@@ -37,6 +37,33 @@ function RouteComponent() {
     });
   };
 
+  // Calculate the lowest price from all tiers
+  const getButtonText = () => {
+    if (!stickerPack) return 'Get Stickers with your NFT';
+
+    const prices = [
+      stickerPack.pricing.basic,
+      stickerPack.pricing.gold,
+      stickerPack.pricing.legendary,
+    ]
+      .filter(tier => tier.amount_cents !== null && tier.formatted_price !== null)
+      .map(tier => ({
+        cents: tier.amount_cents!,
+        formatted: tier.formatted_price!,
+      }));
+
+    if (prices.length === 0) {
+      return 'Get Stickers with your NFT';
+    }
+
+    // Find the lowest price
+    const lowestPrice = prices.reduce((min, current) =>
+      current.cents < min.cents ? current : min
+    );
+
+    return `Starting from ${lowestPrice.formatted}`;
+  };
+
   if (isLoading) {
     return (
       <div className="mx-auto max-w-4xl p-4">
@@ -101,7 +128,7 @@ function RouteComponent() {
 
         {/* Get Started Button */}
         <TelegramMainButton
-          text="Get Stickers with your NFT"
+          text={getButtonText()}
           onClick={handleGetStarted}
           visible={true}
         />

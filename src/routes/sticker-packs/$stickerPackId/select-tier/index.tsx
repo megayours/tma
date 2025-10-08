@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useStickerPackPurchase } from '@/contexts/StickerPackPurchaseContext';
 import { StepProgressIndicator } from '@/components/StickerPack/StepProgressIndicator';
 import { TierSelector } from '@/components/StickerPack/TierSelector';
+import { TelegramMainButton } from '../../../../components/TelegramMainButton';
 
 export const Route = createFileRoute(
   '/sticker-packs/$stickerPackId/select-tier/'
@@ -46,8 +47,6 @@ function RouteComponent() {
 
   return (
     <div className="mx-auto max-w-4xl p-4">
-      <StepProgressIndicator currentStep={2} />
-
       <div className="space-y-4">
         {/* Tier Selection */}
         {hasPaidTiers ? (
@@ -74,20 +73,12 @@ function RouteComponent() {
         )}
 
         {/* Navigation Buttons */}
-        <div className="flex justify-between">
-          <button
-            onClick={handleBack}
-            className="rounded-lg border border-gray-300 px-6 py-3 font-semibold transition-colors hover:bg-gray-100"
-          >
-            Back
-          </button>
-          <button
-            onClick={handleReview}
-            className="rounded-lg bg-blue-500 px-6 py-3 font-semibold text-white transition-colors hover:bg-blue-600"
-          >
-            Review
-          </button>
-        </div>
+        <TelegramMainButton
+          text="Review"
+          onClick={handleReview}
+          disabled={false}
+          visible={true}
+        />
       </div>
     </div>
   );

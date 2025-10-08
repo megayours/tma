@@ -39,8 +39,11 @@ export function Landing() {
           </div> */}
         </Link>
       ))}
-      <Link to="/sticker-packs">Link to Sticker Packs</Link>
-      <Link to="/feed">Link to Feed</Link>
+      <div className="flex flex-col gap-2">
+        <Link to="/sticker-packs">Link to Sticker Packs</Link>
+        <Link to="/feed">Link to Feed</Link>
+        <Link to="/about">Check about</Link>
+      </div>
     </div>
   );
 }

@@ -91,10 +91,60 @@ function RouteComponent() {
   };
 
   if (!stickerPack) {
+    // Skeleton loading state
     return (
       <div className="mx-auto max-w-4xl p-4">
-        <div className="flex items-center justify-center p-8">
-          <div className="text-lg">Loading...</div>
+        <div className="space-y-4">
+          <div className="rounded-lg p-6">
+            {/* Selected NFT Skeleton */}
+            <div className="mb-8">
+              {/* Heading skeleton */}
+              <div className="mb-6 flex justify-center">
+                <div className="bg-tg-secondary h-6 w-32 animate-pulse rounded" />
+              </div>
+
+              {/* Circular NFT image skeleton */}
+              <div className="flex justify-center py-4">
+                <div className="flex flex-col items-center gap-3">
+                  <div className="bg-tg-secondary h-52 w-52 animate-pulse rounded-full" />
+
+                  {/* NFT info skeleton */}
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="bg-tg-secondary h-4 w-32 animate-pulse rounded" />
+                    <div className="bg-tg-secondary h-3 w-24 animate-pulse rounded" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Selection heading skeleton */}
+            <div className="mb-4">
+              <div className="bg-tg-secondary h-6 w-40 animate-pulse rounded" />
+            </div>
+
+            {/* Favorites section skeleton */}
+            <div className="border-tg-section-separator border-t pt-4">
+              <div className="mb-4 space-y-4">
+                {/* Tabs skeleton */}
+                <div className="flex justify-center gap-2">
+                  <div className="bg-tg-secondary h-8 w-24 animate-pulse rounded" />
+                  <div className="bg-tg-secondary h-8 w-28 animate-pulse rounded" />
+                </div>
+
+                {/* Favorites list skeleton */}
+                <div className="flex gap-2 overflow-x-auto p-2">
+                  {[1, 2, 3, 4].map(i => (
+                    <div key={i} className="flex-shrink-0">
+                      <div className="flex flex-col items-center gap-2">
+                        <div className="bg-tg-secondary h-20 w-20 animate-pulse rounded-full" />
+                        <div className="bg-tg-secondary h-3 w-16 animate-pulse rounded" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -114,24 +164,33 @@ function RouteComponent() {
         <div className="rounded-lg p-6">
           {/* Display Selected NFT if available */}
           {selectedNFTs.length > 0 && (
-            <div className={`transition-all duration-500 ${
-              isSelectorOpen ? 'mb-6' : 'mb-8'
-            }`}>
-              <h2 className={`text-center text-lg font-semibold transition-all duration-500 ${
-                isSelectorOpen ? 'mb-4' : 'mb-6'
-              }`}>
+            <div
+              className={`transition-all duration-500 ${
+                isSelectorOpen ? 'mb-6' : 'mb-8'
+              }`}
+            >
+              <h2
+                className={`text-center text-lg font-semibold transition-all duration-500 ${
+                  isSelectorOpen ? 'mb-4' : 'mb-6'
+                }`}
+              >
                 Selected NFT
               </h2>
-              <div className={`flex justify-center items-center transition-all duration-500 ${
-                isSelectorOpen ? '' : 'py-4'
-              }`}>
+              <div
+                className={`flex items-center justify-center transition-all duration-500 ${
+                  isSelectorOpen ? '' : 'py-4'
+                }`}
+              >
                 {selectedNFTs.map((nft, index) => (
                   <div
                     key="selected-nft"
                     className="flex flex-col items-center gap-3"
                   >
                     {/* NFT Image - Circular with Edit Icon */}
-                    <div className="relative cursor-pointer transition-all duration-500 ease-in-out" onClick={toggleSelector}>
+                    <div
+                      className="relative cursor-pointer transition-all duration-500 ease-in-out"
+                      onClick={toggleSelector}
+                    >
                       {nft?.image && (
                         <img
                           src={nft.image}
@@ -143,9 +202,13 @@ function RouteComponent() {
                       )}
 
                       {/* Edit Icon - Overlay */}
-                      <div className={`absolute rounded-full bg-tg-accent-text transition-all duration-500 ease-in-out hover:opacity-90 ${
-                        isSelectorOpen ? 'bottom-1 right-1 p-1.5' : 'bottom-3 right-3 p-2.5'
-                      }`}>
+                      <div
+                        className={`bg-tg-accent-text absolute rounded-full transition-all duration-500 ease-in-out hover:opacity-90 ${
+                          isSelectorOpen
+                            ? 'right-1 bottom-1 p-1.5'
+                            : 'right-3 bottom-3 p-2.5'
+                        }`}
+                      >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           className={`text-white transition-all duration-500 ease-in-out ${
@@ -160,18 +223,28 @@ function RouteComponent() {
                     </div>
 
                     {/* NFT Info Below */}
-                    <div className="text-center transition-all duration-500 ease-in-out">
-                      <div className={`font-semibold transition-all duration-500 ease-in-out ${
-                        isSelectorOpen ? 'text-sm' : 'text-base'
-                      }`}>
+                    <div className="text-tg-text text-center transition-all duration-500 ease-in-out">
+                      <div
+                        className={`font-semibold transition-all duration-500 ease-in-out ${
+                          isSelectorOpen ? 'text-sm' : 'text-base'
+                        }`}
+                      >
                         {nft?.name || `NFT #${nft?.id || index}`}
                       </div>
-                      <div className={`text-tg-hint transition-all duration-500 ease-in-out ${
-                        isSelectorOpen ? 'text-xs' : 'text-sm'
-                      }`}>
+                      <div
+                        className={`text-tg-hint transition-all duration-500 ease-in-out ${
+                          isSelectorOpen ? 'text-xs' : 'text-sm'
+                        }`}
+                      >
                         {nft?.contract?.name || 'Unknown Collection'}
                       </div>
                     </div>
+                    {/* "Stickers Incoming..." message - only when NOT modifying */}
+                    {/* {!isSelectorOpen && (
+                      <div className="text-tg-accent-text mt-2 animate-pulse text-4xl font-medium">
+                        Stickers Incoming...
+                      </div>
+                    )} */}
                   </div>
                 ))}
               </div>
@@ -195,7 +268,7 @@ function RouteComponent() {
 
         {/* Navigation Button */}
         <TelegramMainButton
-          text="Go Go Go"
+          text="Proceed"
           onClick={handleContinue}
           disabled={!canContinue}
           visible={true}

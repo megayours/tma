@@ -8,7 +8,7 @@ const ExecutionStatusSchema = z.object({
   id: z.string(),
   bundle_id: z.number(),
   user_account_id: z.string(),
-  nft_token_id: z.number().optional(),
+  nft_token_id: z.number().nullish(),
   effect_style: z.enum(['basic', 'gold', 'legendary']),
   status: z.enum([
     'pending_payment',
@@ -17,22 +17,22 @@ const ExecutionStatusSchema = z.object({
     'error',
     'cancelled',
   ]),
-  payment_status: z.enum(['pending', 'paid', 'failed', 'refunded']).optional(),
+  payment_status: z.enum(['pending', 'paid', 'failed', 'refunded']).nullish(),
   total_prompts: z.number(),
   completed_prompts: z.number(),
   telegram_pack_url: z.string().nullable(),
   progress_percentage: z.number(),
-  error_message: z.string().optional(),
+  error_message: z.string().nullish(),
   items: z
     .array(
       z.object({
         id: z.number(),
         status: z.string(),
-        generated_content_id: z.string().optional(),
+        generated_content_id: z.string().nullish(),
         sort_order: z.number(),
       })
     )
-    .optional(),
+    .nullish(),
 });
 
 export type ExecutionStatus = z.infer<typeof ExecutionStatusSchema>;

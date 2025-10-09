@@ -55,16 +55,6 @@ function TierCard({
         tierDisplayNames[key as keyof typeof tierDisplayNames] === displayName
     ) || 'basic';
 
-  // Get price color based on tier
-  const getPriceColor = (tierKey: string) => {
-    const colors = {
-      basic: 'text-tg-text',
-      gold: 'text-amber-800',
-      legendary: 'text-violet-800',
-    };
-    return colors[tierKey as keyof typeof colors] || colors.basic;
-  };
-
   return (
     <div
       className={`cursor-pointer rounded-xl border-2 p-4 transition-all duration-200 ${getTierColors(tierKey, isSelected)} ${

@@ -83,10 +83,11 @@ function CheckoutPage() {
       }
     }
 
-    // Navigate to purchases page
+    // Navigate to success page
     navigate({
-      to: '/profile/purchases',
-      search: { execution_id: executionId },
+      to: '/sticker-packs/$stickerPackId/success',
+      params: { stickerPackId },
+      search: { executionId },
     });
   };
 

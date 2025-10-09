@@ -13,6 +13,96 @@ export const Route = createFileRoute(
   component: RouteComponent,
 });
 
+// Selected NFT Display Component
+function SelectedNFTDisplay({
+  selectedNFTs,
+  isSelectorOpen,
+  onToggleSelector,
+}: {
+  selectedNFTs: Token[];
+  isSelectorOpen: boolean;
+  onToggleSelector: () => void;
+}) {
+  if (selectedNFTs.length === 0) return null;
+
+  return (
+    <div>
+      <h2
+        className={`text-center text-lg font-semibold transition-all duration-500 ${
+          isSelectorOpen ? 'mb-4 opacity-0' : 'mb-6 opacity-100'
+        }`}
+      >
+        Selected NFT
+      </h2>
+      <div
+        className={`flex items-center justify-center transition-all duration-500`}
+      >
+        {selectedNFTs.map((nft, index) => (
+          <div key="selected-nft" className="flex flex-col items-center gap-3">
+            {/* NFT Image - Circular with Edit Icon */}
+            <div
+              className="relative cursor-pointer transition-all duration-500 ease-in-out"
+              onClick={onToggleSelector}
+            >
+              {nft?.image && (
+                <img
+                  src={nft.image}
+                  alt={nft?.name || `NFT #${nft?.id || index}`}
+                  className={`rounded-full object-cover transition-all duration-500 ease-in-out ${
+                    isSelectorOpen ? 'h-24 w-24' : 'h-52 w-52'
+                  }`}
+                />
+              )}
+
+              {/* Edit Icon - Overlay */}
+              <div
+                className={`bg-tg-accent-text absolute rounded-full transition-all duration-500 ease-in-out hover:opacity-90 ${
+                  isSelectorOpen
+                    ? 'right-1 bottom-1 p-1.5'
+                    : 'right-3 bottom-3 p-2.5'
+                }`}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className={`text-white transition-all duration-500 ease-in-out ${
+                    isSelectorOpen ? 'h-3 w-3' : 'h-5 w-5'
+                  }`}
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                </svg>
+              </div>
+            </div>
+
+            {/* NFT Info Below */}
+            <div
+              className={`text-tg-text text-center transition-all duration-500 ease-in-out ${
+                isSelectorOpen ? 'opacity-0' : 'opacity-100'
+              }`}
+            >
+              <div
+                className={`font-semibold transition-all duration-500 ease-in-out ${
+                  isSelectorOpen ? 'text-sm' : 'text-base'
+                }`}
+              >
+                {nft?.name || `NFT #${nft?.id || index}`}
+              </div>
+              <div
+                className={`text-tg-hint transition-all duration-500 ease-in-out ${
+                  isSelectorOpen ? 'text-xs' : 'text-sm'
+                }`}
+              >
+                {nft?.contract?.name || 'Unknown Collection'}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function RouteComponent() {
   const { stickerPackId } = Route.useParams();
   const navigate = useNavigate();
@@ -95,7 +185,7 @@ function RouteComponent() {
     return (
       <div className="mx-auto max-w-4xl p-4">
         <div className="space-y-4">
-          <div className="rounded-lg p-6">
+          <div className="rounded-lg p-2">
             {/* Selected NFT Skeleton */}
             <div className="mb-8">
               {/* Heading skeleton */}
@@ -161,96 +251,13 @@ function RouteComponent() {
 
       <div className="space-y-4">
         {/* NFT Selection - Unified */}
-        <div className="rounded-lg p-6">
+        <div className="rounded-lg">
           {/* Display Selected NFT if available */}
-          {selectedNFTs.length > 0 && (
-            <div
-              className={`transition-all duration-500 ${
-                isSelectorOpen ? 'mb-6' : 'mb-8'
-              }`}
-            >
-              <h2
-                className={`text-center text-lg font-semibold transition-all duration-500 ${
-                  isSelectorOpen ? 'mb-4' : 'mb-6'
-                }`}
-              >
-                Selected NFT
-              </h2>
-              <div
-                className={`flex items-center justify-center transition-all duration-500 ${
-                  isSelectorOpen ? '' : 'py-4'
-                }`}
-              >
-                {selectedNFTs.map((nft, index) => (
-                  <div
-                    key="selected-nft"
-                    className="flex flex-col items-center gap-3"
-                  >
-                    {/* NFT Image - Circular with Edit Icon */}
-                    <div
-                      className="relative cursor-pointer transition-all duration-500 ease-in-out"
-                      onClick={toggleSelector}
-                    >
-                      {nft?.image && (
-                        <img
-                          src={nft.image}
-                          alt={nft?.name || `NFT #${nft?.id || index}`}
-                          className={`rounded-full object-cover transition-all duration-500 ease-in-out ${
-                            isSelectorOpen ? 'h-24 w-24' : 'h-52 w-52'
-                          }`}
-                        />
-                      )}
-
-                      {/* Edit Icon - Overlay */}
-                      <div
-                        className={`bg-tg-accent-text absolute rounded-full transition-all duration-500 ease-in-out hover:opacity-90 ${
-                          isSelectorOpen
-                            ? 'right-1 bottom-1 p-1.5'
-                            : 'right-3 bottom-3 p-2.5'
-                        }`}
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className={`text-white transition-all duration-500 ease-in-out ${
-                            isSelectorOpen ? 'h-3 w-3' : 'h-5 w-5'
-                          }`}
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                        >
-                          <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                        </svg>
-                      </div>
-                    </div>
-
-                    {/* NFT Info Below */}
-                    <div className="text-tg-text text-center transition-all duration-500 ease-in-out">
-                      <div
-                        className={`font-semibold transition-all duration-500 ease-in-out ${
-                          isSelectorOpen ? 'text-sm' : 'text-base'
-                        }`}
-                      >
-                        {nft?.name || `NFT #${nft?.id || index}`}
-                      </div>
-                      <div
-                        className={`text-tg-hint transition-all duration-500 ease-in-out ${
-                          isSelectorOpen ? 'text-xs' : 'text-sm'
-                        }`}
-                      >
-                        {nft?.contract?.name || 'Unknown Collection'}
-                      </div>
-                    </div>
-                    {/* "Stickers Incoming..." message - only when NOT modifying */}
-                    {/* {!isSelectorOpen && (
-                      <div className="text-tg-accent-text mt-2 animate-pulse text-4xl font-medium">
-                        Stickers Incoming...
-                      </div>
-                    )} */}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
+          <SelectedNFTDisplay
+            selectedNFTs={selectedNFTs}
+            isSelectorOpen={isSelectorOpen}
+            onToggleSelector={toggleSelector}
+          />
           {/* NFT Selection - Collapsible */}
           {isSelectorOpen && (
             <div>
@@ -270,7 +277,7 @@ function RouteComponent() {
         <TelegramMainButton
           text="Proceed"
           onClick={handleContinue}
-          disabled={!canContinue}
+          disabled={!canContinue || isSelectorOpen}
           visible={true}
         />
       </div>

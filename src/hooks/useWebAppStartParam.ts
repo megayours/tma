@@ -1,24 +1,26 @@
+import { useMemo } from 'react';
 import { useTelegramTheme } from '@/auth/useTelegram';
 import { useLaunchParams } from '@telegram-apps/sdk-react';
 import { useGetCommunityCollections } from './useCommunities';
 
-const getParamsFromTelegram = () => {
-  const { tgWebAppStartParam } = useLaunchParams();
-  console.log('start param', tgWebAppStartParam);
-  const communityId = tgWebAppStartParam?.split('_')[1];
-  const { data } = useGetCommunityCollections(communityId || '');
-  const supportedCollections = data?.collections;
-  console.log('Supported Collection', supportedCollections);
-  return { collections: supportedCollections };
-};
-
 export const useWebAppStartParam = () => {
   const { isTelegram } = useTelegramTheme();
+  const { tgWebAppStartParam } = useLaunchParams();
 
-  console.log('isTelegram', isTelegram);
+  const communityId = useMemo(
+    () => tgWebAppStartParam?.split('_')[1],
+    [tgWebAppStartParam]
+  );
 
-  if (isTelegram) {
-    return getParamsFromTelegram();
-  }
-  return undefined;
+  const { data } = useGetCommunityCollections(communityId || '');
+
+  const result = useMemo(() => {
+    if (!isTelegram) return undefined;
+
+    return {
+      collections: data?.collections,
+    };
+  }, [isTelegram, data?.collections]);
+
+  return result;
 };

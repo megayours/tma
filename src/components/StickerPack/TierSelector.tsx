@@ -37,13 +37,13 @@ function TierCard({
   const getTierColors = (tierKey: string, isSelected: boolean) => {
     const baseColors = {
       basic: isSelected
-        ? 'border-slate-300 text-slate-900 shadow-sm'
+        ? 'border-slate-300 text-slate-900 shadow-sm bg-slate-200/40'
         : 'border-slate-200 hover:border-slate-300 text-slate-700 hover:shadow-sm',
       gold: isSelected
-        ? 'border-amber-300  text-amber-900 shadow-sm shadow-amber-200'
+        ? 'border-amber-300  text-amber-900 shadow-sm shadow-amber-200 bg-amber-200/40'
         : 'border-amber-200 hover:border-amber-300 bg-gradient-to-r from-amber-25 to-yellow-25 text-amber-700 hover:shadow-sm',
       legendary: isSelected
-        ? 'border-violet-300 text-violet-900 shadow-sm shadow-violet-200'
+        ? 'border-violet-300 text-violet-900 shadow-sm shadow-violet-200 bg-violet-200/40'
         : 'border-violet-200 hover:border-violet-300 bg-gradient-to-r from-violet-25 to-purple-25 text-violet-700 hover:shadow-sm',
     };
     return baseColors[tierKey as keyof typeof baseColors] || baseColors.basic;
@@ -69,7 +69,7 @@ function TierCard({
     <div
       className={`cursor-pointer rounded-xl border-2 p-4 transition-all duration-200 ${getTierColors(tierKey, isSelected)} ${
         !isAvailable || isSoldOut || disabled ? 'opacity-50' : ''
-      } ${isSelected ? 'scale-[1.02] ring-2 ring-offset-2' : 'hover:scale-[1.01]'}`}
+      } ${isSelected ? 'scale-[1.04] ring-2 ring-offset-2' : 'hover:scale-[1.01]'}`}
       onClick={!disabled && isAvailable && !isSoldOut ? onClick : undefined}
     >
       <div className="flex items-center justify-between">
@@ -86,7 +86,7 @@ function TierCard({
           ></div>
           <h3 className="text-base font-semibold">{displayName}</h3>
         </div>
-        <div className={`text-lg font-bold ${getPriceColor(tierKey)}`}>
+        <div className={`text-tg-text text-lg font-semibold`}>
           {tier.formatted_price || 'Free'}
         </div>
       </div>
@@ -113,18 +113,15 @@ export function TierSelector({
 
   if (isLoading) {
     return (
-      <div className="bg-tg-bg space-y-4">
-        <h2 className="text-tg-text text-lg font-semibold">Select Tier</h2>
-        <div className="grid gap-4 md:grid-cols-3">
-          {[1, 2, 3].map(i => (
-            <div key={i} className="animate-pulse rounded-lg border p-4">
-              <div className="mb-2 h-4 rounded bg-gray-200"></div>
-              <div className="mb-3 h-6 rounded bg-gray-200"></div>
-              <div className="mb-3 h-3 rounded bg-gray-200"></div>
-              <div className="h-8 rounded bg-gray-200"></div>
-            </div>
-          ))}
-        </div>
+      <div className="grid gap-4 md:grid-cols-3">
+        {[1, 2, 3].map(i => (
+          <div key={i} className="animate-pulse rounded-lg border p-4">
+            <div className="mb-2 h-4 rounded bg-gray-200"></div>
+            <div className="mb-3 h-6 rounded bg-gray-200"></div>
+            <div className="mb-3 h-3 rounded bg-gray-200"></div>
+            <div className="h-8 rounded bg-gray-200"></div>
+          </div>
+        ))}
       </div>
     );
   }
@@ -167,33 +164,6 @@ export function TierSelector({
     tier: tierData,
   }));
 
-  if (tiers.length === 0) {
-    return (
-      <div className="space-y-6">
-        <div className="text-center">
-          <h2 className="mb-1 text-xl font-bold text-gray-900">Select Tier</h2>
-          <p className="text-sm text-gray-600">
-            Choose your preferred quality level
-          </p>
-        </div>
-        <div className="grid grid-cols-1 gap-3">
-          <div className="scale-[1.02] cursor-pointer rounded-xl border-2 border-slate-300 bg-slate-50 p-4 text-slate-900 shadow-sm ring-2 ring-offset-2 transition-all duration-200">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="h-2 w-2 rounded-full bg-slate-400"></div>
-                <h3 className="text-base font-semibold">Basic</h3>
-                <div className="flex h-4 w-4 items-center justify-center rounded-full bg-current">
-                  <div className="h-2 w-2 rounded-full bg-white"></div>
-                </div>
-              </div>
-              <div className="text-lg font-bold text-slate-800">Free</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   // Adjust grid columns based on number of available tiers
   const gridCols =
     tiers.length === 1
@@ -203,31 +173,23 @@ export function TierSelector({
         : 'md:grid-cols-3';
 
   return (
-    <div className="space-y-6">
-      <div className="text-center">
-        <h2 className="mb-1 text-xl font-bold text-gray-900">Select Tier</h2>
-        <p className="text-sm text-gray-600">
-          Choose your preferred quality level
-        </p>
-      </div>
-      <div className={`grid gap-3 ${gridCols}`}>
-        {tiers.map(({ key, displayName, tier }) => {
-          const isAvailable =
-            tier.stripe_price_id !== null || tier.amount_cents === null;
+    <div className={`grid gap-3 ${gridCols}`}>
+      {tiers.map(({ key, displayName, tier }) => {
+        const isAvailable =
+          tier.stripe_price_id !== null || tier.amount_cents === null;
 
-          return (
-            <TierCard
-              key={key}
-              tier={tier}
-              displayName={displayName}
-              isSelected={selectedTier === key}
-              isAvailable={isAvailable}
-              onClick={() => onTierSelect(key)}
-              disabled={disabled}
-            />
-          );
-        })}
-      </div>
+        return (
+          <TierCard
+            key={key}
+            tier={tier}
+            displayName={displayName}
+            isSelected={selectedTier === key}
+            isAvailable={isAvailable}
+            onClick={() => onTierSelect(key)}
+            disabled={disabled}
+          />
+        );
+      })}
     </div>
   );
 }

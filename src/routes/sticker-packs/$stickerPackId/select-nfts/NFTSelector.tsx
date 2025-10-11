@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@telegram-apps/telegram-ui';
 import { PickFavoriteNFTs } from '@/components/NFT/PickFavoriteNFTs';
 import { SelectCollection } from '@/components/NFT/SelectCollection';
@@ -6,6 +6,8 @@ import { SelectTokenId } from '@/components/NFT/SelectTokenId';
 import { DisplayNFT } from '@/components/NFT/DisplayNFT';
 import type { SupportedCollection } from '@/hooks/useCollections';
 import type { Token } from '@/types/response';
+import { useSession } from '@/auth/SessionProvider';
+import { useGetFavorites } from '@/hooks/useFavorites';
 
 interface NFTSelectorProps {
   collections?: SupportedCollection[];
@@ -14,9 +16,18 @@ interface NFTSelectorProps {
 }
 
 export function NFTSelector({ collections, onTokenSelect, selectedNFT }: NFTSelectorProps) {
+  const { session } = useSession();
+  const { favorites, isLoadingFavorites } = useGetFavorites(session);
   const [selectionMode, setSelectionMode] = useState<'favorites' | 'collections'>('favorites');
   const [selectedCollection, setSelectedCollection] = useState<SupportedCollection | null>(null);
   const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null);
+
+  // Switch to collections tab if there are no favorites
+  useEffect(() => {
+    if (!isLoadingFavorites && (!favorites || favorites.length === 0)) {
+      setSelectionMode('collections');
+    }
+  }, [favorites, isLoadingFavorites]);
 
   const handleFavoriteSelect = (favorite: { token: Token }) => {
     onTokenSelect(favorite.token);

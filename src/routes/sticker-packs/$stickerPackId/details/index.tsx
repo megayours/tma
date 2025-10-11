@@ -1,8 +1,6 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useEffect } from 'react';
 import { useSession } from '@/auth/SessionProvider';
 import { useStickerPack } from '@/hooks/useStickerPacks';
-import { useStickerPackPurchase } from '@/contexts/StickerPackPurchaseContext';
 import { StickerPackContentList } from '@/components/StickerPack/StickerPackContentList';
 import { StickerCollectionHeader } from '@/components/StickerPack/StickerCollectionHeader';
 import { TelegramMainButton } from '@/components/TelegramMainButton';
@@ -15,20 +13,12 @@ function RouteComponent() {
   const { stickerPackId } = Route.useParams();
   const navigate = useNavigate();
   const { session } = useSession();
-  const { setStickerPack } = useStickerPackPurchase();
 
   const {
     data: stickerPack,
     isLoading,
     error,
   } = useStickerPack(stickerPackId, session);
-
-  // Store sticker pack in context when loaded
-  useEffect(() => {
-    if (stickerPack) {
-      setStickerPack(stickerPack);
-    }
-  }, [stickerPack, setStickerPack]);
 
   const handleGetStarted = () => {
     navigate({

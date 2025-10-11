@@ -7,11 +7,13 @@ export const useWebAppStartParam = () => {
   const { isTelegram } = useTelegramTheme();
   const { tgWebAppStartParam } = useLaunchParams();
 
+  console.log('tgWebAppStartParam', tgWebAppStartParam);
   const communityId = useMemo(
-    () => tgWebAppStartParam?.split('_')[1],
+    () => tgWebAppStartParam?.split('_')[0],
     [tgWebAppStartParam]
   );
 
+  console.log('communityId', communityId);
   const { data } = useGetCommunityCollections(communityId || '');
 
   const result = useMemo(() => {

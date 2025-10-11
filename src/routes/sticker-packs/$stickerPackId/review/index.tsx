@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useSession } from '@/auth/SessionProvider';
 import { useStickerPackPurchase } from '@/contexts/StickerPackPurchaseContext';
 import { usePurchase } from '@/hooks/usePurchase';
+import { TelegramMainButton } from '@/components/TelegramMainButton';
 
 export const Route = createFileRoute('/sticker-packs/$stickerPackId/review/')({
   component: RouteComponent,
@@ -43,13 +44,6 @@ function RouteComponent() {
       alert(`Purchase failed: ${error.message}`);
     },
   });
-
-  const handleBack = () => {
-    navigate({
-      to: '/sticker-packs/$stickerPackId/select-tier',
-      params: { stickerPackId },
-    });
-  };
 
   const handleConfirm = () => {
     if (!selectedNFTs || selectedNFTs.length === 0) {
@@ -127,27 +121,18 @@ function RouteComponent() {
           </div>
         </div>
 
-        {/* Navigation Buttons */}
-        <div className="flex justify-between">
-          <button
-            onClick={handleBack}
-            disabled={isPending}
-            className="rounded-lg border border-gray-300 px-6 py-3 font-semibold transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            Back
-          </button>
-          <button
-            onClick={handleConfirm}
-            disabled={isPending}
-            className="rounded-lg bg-blue-500 px-6 py-3 font-semibold text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {isPending
+        <TelegramMainButton
+          text={
+            isPending
               ? 'Processing...'
               : isFree
                 ? 'Confirm & Generate'
-                : 'Confirm & Purchase'}
-          </button>
-        </div>
+                : 'Confirm & Purchase'
+          }
+          onClick={handleConfirm}
+          disabled={isPending}
+          visible={true}
+        />
       </div>
     </div>
   );

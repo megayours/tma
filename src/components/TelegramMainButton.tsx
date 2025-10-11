@@ -57,7 +57,11 @@ export const TelegramMainButton: React.FC<TelegramMainButtonProps> = ({
     if (mainButton.onClick.isAvailable()) {
       clickHandlerRef.current = onClick;
       const offClick = mainButton.onClick(() => {
-        if (clickHandlerRef.current && !disabledRef.current && !loadingRef.current) {
+        if (
+          clickHandlerRef.current &&
+          !disabledRef.current &&
+          !loadingRef.current
+        ) {
           clickHandlerRef.current();
         }
       });
@@ -70,7 +74,10 @@ export const TelegramMainButton: React.FC<TelegramMainButtonProps> = ({
             mainButton.setParams({ isVisible: false });
             console.log('TelegramMainButton: Hidden from main useEffect');
           } catch (error) {
-            console.error('TelegramMainButton: Error hiding main button:', error);
+            console.error(
+              'TelegramMainButton: Error hiding main button:',
+              error
+            );
           }
         }
       };
@@ -82,17 +89,19 @@ export const TelegramMainButton: React.FC<TelegramMainButtonProps> = ({
     clickHandlerRef.current = onClick;
   }, [onClick]);
 
+  console.log('aAAA disabled', disabled);
   // Update main button parameters when props change
   useEffect(() => {
     if (!isTelegram || !mainButton.setParams.isAvailable()) return;
 
+    console.log('another ROUND', disabled);
     try {
       const params: any = {
         text: loading ? 'Processing...' : text,
         isEnabled: !disabled && !loading,
-        isVisible: visible,
         isLoaderVisible: loading,
         isProgressVisible: loading,
+        isVisible: visible && !disabled,
         hasShineEffect,
       };
 
@@ -104,17 +113,32 @@ export const TelegramMainButton: React.FC<TelegramMainButtonProps> = ({
         params.textColor = textColor;
       }
 
+      console.log('params', params);
+
       mainButton.setParams(params);
     } catch (error) {
       console.error('TelegramMainButton: Error updating params:', error);
     }
-  }, [isTelegram, text, disabled, loading, visible, backgroundColor, textColor, hasShineEffect]);
+  }, [
+    isTelegram,
+    text,
+    disabled,
+    loading,
+    visible,
+    backgroundColor,
+    textColor,
+    hasShineEffect,
+  ]);
 
   // Dedicated cleanup useEffect to ensure button is hidden on component unmount
   useEffect(() => {
     return () => {
       // Always try to hide the button when component unmounts
-      if (isTelegram && mainButton.setParams && mainButton.setParams.isAvailable()) {
+      if (
+        isTelegram &&
+        mainButton.setParams &&
+        mainButton.setParams.isAvailable()
+      ) {
         try {
           mainButton.setParams({ isVisible: false });
           console.log('TelegramMainButton: Hidden on component cleanup');

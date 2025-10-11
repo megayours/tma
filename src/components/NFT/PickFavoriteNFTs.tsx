@@ -25,11 +25,13 @@ function FavoriteItem({ favorite, isSelected, onSelect }: FavoriteItemProps) {
       <div className="flex flex-col items-center gap-2">
         {/* NFT Image - Circular */}
         <div className="relative">
-          <div className={`bg-tg-secondary hover:bg-tg-secondary/80 h-20 w-20 rounded-full p-1 transition-colors ${
-            isSelected
-              ? 'border-2 border-tg-accent-text'
-              : 'border border-tg-section-separator'
-          }`}>
+          <div
+            className={`bg-tg-secondary hover:bg-tg-secondary/80 h-20 w-20 rounded-full p-1 transition-colors ${
+              isSelected
+                ? 'border-tg-accent-text border-2'
+                : 'border-tg-section-separator border'
+            }`}
+          >
             {/* Loading placeholder - Skeleton/Pulse animation */}
             {!imageLoaded && (
               <div className="absolute inset-0 flex items-center justify-center">
@@ -65,7 +67,10 @@ function FavoriteItem({ favorite, isSelected, onSelect }: FavoriteItemProps) {
  * Component that displays favorite NFTs in a horizontal scrolling list
  * with Telegram-like UI styling
  */
-export const PickFavoriteNFTs = ({ onTokenSelect, selectedNFT }: PickFavoriteNFTsProps) => {
+export const PickFavoriteNFTs = ({
+  onTokenSelect,
+  selectedNFT,
+}: PickFavoriteNFTsProps) => {
   const { session } = useSession();
   const { favorites, isLoadingFavorites } = useGetFavorites(session);
 

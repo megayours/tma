@@ -39,21 +39,27 @@ function RouteComponent() {
 
   return (
     <div className="mx-auto max-w-4xl p-4">
-      <div className="space-y-4">
+      <div className="flex flex-col gap-4">
         {/* Tier Selection */}
         {hasPaidTiers ? (
-          <div className="bg-tg-secondary-bg rounded-lg p-6">
-            <h2 className="mb-4 text-lg font-semibold">Choose Your Tier</h2>
-            <p className="text-tg-hint mb-4 text-sm">
-              Select the quality tier for your sticker pack
-            </p>
+          <>
+            <div className="bg-tg-secondary-bg rounded-lg p-6">
+              <div className="text-center">
+                <h2 className="text-tg-text mb-1 text-xl font-bold">
+                  Select Tier
+                </h2>
+                <p className="text-tg-subtitle-text text-sm">
+                  Choose your preferred quality level
+                </p>
+              </div>
+            </div>
             <TierSelector
               stickerPackId={stickerPackId}
               selectedTier={selectedTier}
               onTierSelect={setSelectedTier}
               disabled={false}
             />
-          </div>
+          </>
         ) : (
           <div className="bg-tg-secondary-bg rounded-lg p-6">
             <h2 className="mb-4 text-lg font-semibold">Free Tier</h2>

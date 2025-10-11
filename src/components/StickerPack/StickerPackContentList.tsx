@@ -14,15 +14,9 @@ interface ContentItemProps {
 
 const ContentItem = ({ item, packName, index }: ContentItemProps) => {
   const [imageLoading, setImageLoading] = useState(true);
-  const [imageError, setImageError] = useState(false);
 
   const handleImageLoad = () => {
     setImageLoading(false);
-  };
-
-  const handleImageError = () => {
-    setImageLoading(false);
-    setImageError(true);
   };
 
   return (
@@ -30,14 +24,14 @@ const ContentItem = ({ item, packName, index }: ContentItemProps) => {
       {imageLoading && (
         <div className="absolute inset-0 animate-pulse rounded-lg bg-gray-300" />
       )}
-      {item.preview_url && !imageError ? (
+      {item.preview_url ? (
         <img
           src={item.preview_url}
           alt={`${packName || 'Sticker'} ${index + 1}`}
           className="h-full w-full object-cover"
           loading="lazy"
+          decoding="async"
           onLoad={handleImageLoad}
-          onError={handleImageError}
         />
       ) : (
         <div className="bg-tg-hint/20 flex h-full w-full items-center justify-center">

@@ -1,22 +1,46 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useSession } from '@/auth/SessionProvider';
 import { useStickerPackPurchase } from '@/contexts/StickerPackPurchaseContext';
 import { useExecutionStatus } from '@/hooks/useExecutionStatus';
 import { StepProgressIndicator } from '@/components/StickerPack/StepProgressIndicator';
 import { redirectToTelegramBot } from '@/utils/telegramRedirect';
 import { useStickerPackAnimationContext } from '@/contexts/StickerPackAnimationContext';
+import { z } from 'zod';
+
+const processingSearchSchema = z.object({
+  nft: z.string().optional(),
+  tier: z.enum(['basic', 'gold', 'legendary']).optional(),
+});
 
 export const Route = createFileRoute(
-  '/sticker-packs/$stickerPackId/processing/'
+  '/sticker-packs/$stickerPackId/processing/$executionId/'
 )({
+  validateSearch: processingSearchSchema,
   component: RouteComponent,
 });
 
 function RouteComponent() {
+  const { executionId } = Route.useParams();
+  const search = Route.useSearch();
   const { session } = useSession();
-  const { stickerPack, executionId } = useStickerPackPurchase();
+  const { stickerPack, setExecutionId, setSelectedTier } =
+    useStickerPackPurchase();
   const { triggerAnimation } = useStickerPackAnimationContext();
+
+  // Track if animations have been triggered to ensure they only run once
+  const hasTriggeredProcessing = useRef(false);
+  const hasTriggeredCompletion = useRef(false);
+
+  // Sync URL params with context on mount
+  useEffect(() => {
+    if (executionId) {
+      setExecutionId(executionId);
+    }
+    if (search.tier) {
+      setSelectedTier(search.tier);
+    }
+  }, [executionId, search.tier, setExecutionId, setSelectedTier]);
 
   const {
     status: executionStatus,
@@ -28,10 +52,13 @@ function RouteComponent() {
     executionId,
     pollingInterval: 5000, // Poll every 5 seconds
     onComplete: _ => {
-      triggerAnimation('completed', () => {
-        // Redirect to Telegram bot after animation completes
-        redirectToTelegramBot();
-      });
+      if (!hasTriggeredCompletion.current) {
+        hasTriggeredCompletion.current = true;
+        triggerAnimation('completed', () => {
+          // Redirect to Telegram bot after animation completes
+          redirectToTelegramBot();
+        });
+      }
     },
     onError: status => {
       console.error('Execution error:', status);
@@ -40,7 +67,8 @@ function RouteComponent() {
 
   // Trigger animation when processing starts
   useEffect(() => {
-    if (isProcessing) {
+    if (isProcessing && !hasTriggeredProcessing.current) {
+      hasTriggeredProcessing.current = true;
       triggerAnimation('processing');
     }
   }, [isProcessing, triggerAnimation]);
@@ -62,7 +90,10 @@ function RouteComponent() {
 
   return (
     <div className="mx-auto max-w-4xl p-4">
-      <StepProgressIndicator currentStep={4} skipTierSelection={!hasPaidTiers} />
+      <StepProgressIndicator
+        currentStep={4}
+        skipTierSelection={!hasPaidTiers}
+      />
 
       <div className="space-y-4">
         {/* Processing Progress */}

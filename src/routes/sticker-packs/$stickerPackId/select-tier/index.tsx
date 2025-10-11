@@ -2,15 +2,22 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useStickerPackPurchase } from '@/contexts/StickerPackPurchaseContext';
 import { TierSelector } from '@/components/StickerPack/TierSelector';
 import { TelegramMainButton } from '../../../../components/TelegramMainButton';
+import { z } from 'zod';
+
+const selectTierSearchSchema = z.object({
+  nft: z.string().optional(),
+});
 
 export const Route = createFileRoute(
   '/sticker-packs/$stickerPackId/select-tier/'
 )({
+  validateSearch: selectTierSearchSchema,
   component: RouteComponent,
 });
 
 function RouteComponent() {
   const { stickerPackId } = Route.useParams();
+  const search = Route.useSearch();
   const navigate = useNavigate();
   const { stickerPack, selectedTier, setSelectedTier } =
     useStickerPackPurchase();
@@ -19,6 +26,10 @@ function RouteComponent() {
     navigate({
       to: '/sticker-packs/$stickerPackId/review',
       params: { stickerPackId },
+      search: {
+        nft: search.nft,
+        tier: selectedTier,
+      },
     });
   };
 

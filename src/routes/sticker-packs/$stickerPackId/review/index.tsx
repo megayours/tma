@@ -3,17 +3,39 @@ import { useSession } from '@/auth/SessionProvider';
 import { useStickerPackPurchase } from '@/contexts/StickerPackPurchaseContext';
 import { usePurchase } from '@/hooks/usePurchase';
 import { TelegramMainButton } from '@/components/TelegramMainButton';
+import { z } from 'zod';
+import { useEffect } from 'react';
+
+const reviewSearchSchema = z.object({
+  nft: z.string().optional(),
+  tier: z.enum(['basic', 'gold', 'legendary']).optional(),
+});
 
 export const Route = createFileRoute('/sticker-packs/$stickerPackId/review/')({
+  validateSearch: reviewSearchSchema,
   component: RouteComponent,
 });
 
 function RouteComponent() {
   const { stickerPackId } = Route.useParams();
+  const search = Route.useSearch();
   const navigate = useNavigate();
   const { session } = useSession();
-  const { stickerPack, selectedNFTs, selectedTier, setExecutionId } =
-    useStickerPackPurchase();
+  const {
+    stickerPack,
+    selectedNFTs,
+    selectedTier,
+    setExecutionId,
+    setSelectedTier,
+  } = useStickerPackPurchase();
+
+  // Sync URL params with context on mount/change
+  useEffect(() => {
+    // Sync tier from URL if available
+    if (search.tier && search.tier !== selectedTier) {
+      setSelectedTier(search.tier);
+    }
+  }, [search.tier, selectedTier, setSelectedTier]);
 
   const { purchaseStickerPack, isPending } = usePurchase(session, {
     onSuccess: data => {
@@ -26,16 +48,19 @@ function RouteComponent() {
             executionId: data.execution_id,
             clientSecret: data.checkout.client_secret,
             publishableKey: data.checkout.publishable_key,
-            selectedTier,
-            selectedTokens: encodeURIComponent(JSON.stringify(selectedNFTs)),
+            nft: search.nft,
+            tier: selectedTier,
           },
         });
       } else {
         // Free tier or direct processing - go to processing page
         setExecutionId(data.execution_id);
         navigate({
-          to: '/sticker-packs/$stickerPackId/processing',
-          params: { stickerPackId },
+          to: `/sticker-packs/${stickerPackId}/processing/${data.execution_id}`,
+          search: {
+            nft: search.nft,
+            tier: selectedTier,
+          },
         });
       }
     },

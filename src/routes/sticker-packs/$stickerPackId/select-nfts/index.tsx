@@ -6,6 +6,7 @@ import { useGetSupportedCollections } from '@/hooks/useCollections';
 import { NFTSelector } from './NFTSelector';
 import type { Token } from '@/types/response';
 import { useSelectedNFTs } from '../../../../contexts/SelectedNFTsContext';
+import { encodeNFT } from '@/utils/nftEncoding';
 
 export const Route = createFileRoute(
   '/sticker-packs/$stickerPackId/select-nfts/'
@@ -160,6 +161,9 @@ function RouteComponent() {
       return;
     }
 
+    // Encode the selected NFT for URL
+    const encodedNFT = encodeNFT(selectedNFTs[0]);
+
     // Check if there are any paid tiers
     const hasPaidTiers =
       stickerPack?.pricing.basic.amount_cents !== null ||
@@ -171,11 +175,18 @@ function RouteComponent() {
       navigate({
         to: '/sticker-packs/$stickerPackId/review',
         params: { stickerPackId },
+        search: {
+          nft: encodedNFT,
+          tier: 'basic', // Default to basic for free tier
+        },
       });
     } else {
       navigate({
         to: '/sticker-packs/$stickerPackId/select-tier',
         params: { stickerPackId },
+        search: {
+          nft: encodedNFT,
+        },
       });
     }
   };

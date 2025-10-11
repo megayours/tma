@@ -116,13 +116,20 @@ function RouteComponent() {
               {selectedNFTs.map((nft, index) => (
                 <div
                   key={`${nft.contract.address}-${nft.id}`}
-                  className="bg-tg-bg rounded p-2 text-sm"
+                  className="bg-tg-bg flex items-center gap-3 rounded p-2 text-sm"
                 >
-                  <div className="text-tg-text font-semibold">
-                    {nft.name || `NFT #${index + 1}`}
-                  </div>
-                  <div className="text-tg-hint text-xs">
-                    {nft.contract.name} #{nft.id}
+                  <img
+                    src={nft.image || '/nfts/not-available.png'}
+                    alt={nft.name || `NFT #${index + 1}`}
+                    className="h-12 w-12 rounded-full object-cover"
+                  />
+                  <div className="flex-1">
+                    <div className="text-tg-text font-semibold">
+                      {nft.name || `NFT #${index + 1}`}
+                    </div>
+                    <div className="text-tg-hint text-xs">
+                      {nft.contract.name} #{nft.id}
+                    </div>
                   </div>
                 </div>
               ))}

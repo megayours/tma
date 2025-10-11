@@ -7,6 +7,7 @@ import { NFTSelector } from './NFTSelector';
 import type { Token } from '@/types/response';
 import { useSelectedNFTs } from '../../../../contexts/SelectedNFTsContext';
 import { encodeNFT } from '@/utils/nftEncoding';
+import { useWebAppStartParam } from '@/hooks/useWebAppStartParam';
 
 export const Route = createFileRoute(
   '/sticker-packs/$stickerPackId/select-nfts/'
@@ -111,6 +112,24 @@ function RouteComponent() {
     useStickerPackPurchase();
   const { data: collections } = useGetSupportedCollections();
   const { selectedFavorite } = useSelectedNFTs();
+  const { collections: communityCollections } = useWebAppStartParam() || {
+    collections: [],
+  };
+
+  // get the overlap between communityCollections and collections
+  // if communityCollections is empty, use all collections
+  const filteredCollections =
+    !communityCollections || communityCollections.length === 0
+      ? collections
+      : collections?.filter(collection =>
+          communityCollections.some(
+            c =>
+              c.address === collection.address && c.chain === collection.chain
+          )
+        );
+  console.log('communityCollections', communityCollections);
+  console.log('collections', collections);
+  console.log('filteredCollections', filteredCollections);
 
   // State for selector visibility
   const [isSelectorOpen, setIsSelectorOpen] = useState(false);
@@ -276,7 +295,7 @@ function RouteComponent() {
                 {selectedNFTs.length === 0 ? 'Select Your NFT' : 'Change NFT'}
               </h2>
               <NFTSelector
-                collections={collections}
+                collections={filteredCollections}
                 onTokenSelect={handleTokenSelect}
                 selectedNFT={selectedNFTs[0] || null}
               />

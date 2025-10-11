@@ -1,14 +1,16 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useSession } from '@/auth/SessionProvider';
-import { useStickerPackPurchase } from '@/contexts/StickerPackPurchaseContext';
 import { usePurchase } from '@/hooks/usePurchase';
 import { TelegramMainButton } from '@/components/TelegramMainButton';
 import { z } from 'zod';
-import { useEffect } from 'react';
+import { useMemo } from 'react';
+import { decodeNFT } from '@/utils/nftEncoding';
+import { useStickerPack } from '@/hooks/useStickerPacks';
+import { useGetNFTByCollectionAndTokenId } from '@/hooks/useCollections';
 
 const reviewSearchSchema = z.object({
-  nft: z.string().optional(),
-  tier: z.enum(['basic', 'gold', 'legendary']).optional(),
+  nft: z.string(),
+  tier: z.enum(['basic', 'gold', 'legendary']),
 });
 
 export const Route = createFileRoute('/sticker-packs/$stickerPackId/review/')({
@@ -21,21 +23,29 @@ function RouteComponent() {
   const search = Route.useSearch();
   const navigate = useNavigate();
   const { session } = useSession();
-  const {
-    stickerPack,
-    selectedNFTs,
-    selectedTier,
-    setExecutionId,
-    setSelectedTier,
-  } = useStickerPackPurchase();
 
-  // Sync URL params with context on mount/change
-  useEffect(() => {
-    // Sync tier from URL if available
-    if (search.tier && search.tier !== selectedTier) {
-      setSelectedTier(search.tier);
+  // Fetch sticker pack data
+  const { data: stickerPack, isLoading: isLoadingStickerPack } = useStickerPack(stickerPackId, session);
+
+  // Decode NFT from URL
+  const nftData = useMemo(() => {
+    try {
+      return decodeNFT(search.nft);
+    } catch (error) {
+      console.error('Failed to decode NFT from URL:', error);
+      return null;
     }
-  }, [search.tier, selectedTier, setSelectedTier]);
+  }, [search.nft]);
+
+  // Fetch full NFT data from API using decoded URL params
+  const {
+    data: selectedToken,
+    isLoading: isLoadingNFT
+  } = useGetNFTByCollectionAndTokenId(
+    nftData?.chain || '',
+    nftData?.contractAddress || '',
+    nftData?.tokenId || ''
+  );
 
   const { purchaseStickerPack, isPending } = usePurchase(session, {
     onSuccess: data => {
@@ -49,17 +59,16 @@ function RouteComponent() {
             clientSecret: data.checkout.client_secret,
             publishableKey: data.checkout.publishable_key,
             nft: search.nft,
-            tier: selectedTier,
+            tier: search.tier,
           },
         });
       } else {
         // Free tier or direct processing - go to processing page
-        setExecutionId(data.execution_id);
         navigate({
           to: `/sticker-packs/${stickerPackId}/processing/${data.execution_id}`,
           search: {
             nft: search.nft,
-            tier: selectedTier,
+            tier: search.tier,
           },
         });
       }
@@ -71,15 +80,16 @@ function RouteComponent() {
   });
 
   const handleConfirm = () => {
-    if (!selectedNFTs || selectedNFTs.length === 0) {
-      alert('No NFTs selected. Please go back and select NFTs.');
+    if (!selectedToken) {
+      alert('No NFT selected. Please go back and select an NFT.');
       return;
     }
 
-    purchaseStickerPack(parseInt(stickerPackId), selectedNFTs, selectedTier);
+    purchaseStickerPack(parseInt(stickerPackId), [selectedToken], search.tier);
   };
 
-  if (!stickerPack) {
+  // Loading or error states
+  if (isLoadingStickerPack || isLoadingNFT || !stickerPack) {
     return (
       <div className="mx-auto max-w-4xl p-4">
         <div className="flex items-center justify-center p-8">
@@ -89,7 +99,17 @@ function RouteComponent() {
     );
   }
 
-  const tierPricing = stickerPack.pricing[selectedTier];
+  if (!nftData || !selectedToken) {
+    return (
+      <div className="mx-auto max-w-4xl p-4">
+        <div className="flex items-center justify-center p-8">
+          <div className="text-lg text-red-600">Invalid NFT data. Please go back and select an NFT.</div>
+        </div>
+      </div>
+    );
+  }
+
+  const tierPricing = stickerPack.pricing[search.tier];
   const isFree = tierPricing.amount_cents === null;
 
   return (
@@ -107,39 +127,32 @@ function RouteComponent() {
             <p className="text-tg-text">{stickerPack.name}</p>
           </div>
 
-          {/* Selected NFTs */}
+          {/* Selected NFT */}
           <div className="mb-4">
             <h3 className="text-tg-hint mb-2 text-sm font-semibold">
-              Selected NFTs
+              Selected NFT
             </h3>
-            <div className="space-y-2">
-              {selectedNFTs.map((nft, index) => (
-                <div
-                  key={`${nft.contract.address}-${nft.id}`}
-                  className="bg-tg-bg flex items-center gap-3 rounded p-2 text-sm"
-                >
-                  <img
-                    src={nft.image || '/nfts/not-available.png'}
-                    alt={nft.name || `NFT #${index + 1}`}
-                    className="h-12 w-12 rounded-full object-cover"
-                  />
-                  <div className="flex-1">
-                    <div className="text-tg-text font-semibold">
-                      {nft.name || `NFT #${index + 1}`}
-                    </div>
-                    <div className="text-tg-hint text-xs">
-                      {nft.contract.name} #{nft.id}
-                    </div>
-                  </div>
+            <div className="bg-tg-bg flex items-center gap-3 rounded p-2 text-sm">
+              <img
+                src={selectedToken.image || '/nfts/not-available.png'}
+                alt={selectedToken.name || `NFT #${selectedToken.id}`}
+                className="h-12 w-12 rounded-full object-cover"
+              />
+              <div className="flex-1">
+                <div className="text-tg-text font-semibold">
+                  {selectedToken.name || `NFT #${selectedToken.id}`}
                 </div>
-              ))}
+                <div className="text-tg-hint text-xs">
+                  {selectedToken.contract.name} #{selectedToken.id}
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Selected Tier */}
           <div className="mb-4">
             <h3 className="text-tg-hint mb-2 text-sm font-semibold">Tier</h3>
-            <p className="text-tg-text capitalize">{selectedTier}</p>
+            <p className="text-tg-text capitalize">{search.tier}</p>
           </div>
 
           {/* Price */}

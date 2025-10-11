@@ -1,5 +1,4 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router';
-import { StickerPackPurchaseProvider } from '@/contexts/StickerPackPurchaseContext';
 import { StickerPackAnimationProvider } from '@/contexts/StickerPackAnimationContext';
 
 export const Route = createFileRoute('/sticker-packs/$stickerPackId')({
@@ -8,10 +7,8 @@ export const Route = createFileRoute('/sticker-packs/$stickerPackId')({
 
 function LayoutComponent() {
   return (
-    <StickerPackPurchaseProvider>
-      <StickerPackAnimationProvider>
-        <Outlet />
-      </StickerPackAnimationProvider>
-    </StickerPackPurchaseProvider>
+    <StickerPackAnimationProvider>
+      <Outlet />
+    </StickerPackAnimationProvider>
   );
 }

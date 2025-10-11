@@ -1,8 +1,10 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useStickerPackPurchase } from '@/contexts/StickerPackPurchaseContext';
 import { TierSelector } from '@/components/StickerPack/TierSelector';
 import { TelegramMainButton } from '../../../../components/TelegramMainButton';
 import { z } from 'zod';
+import { useState } from 'react';
+import { useStickerPack } from '@/hooks/useStickerPacks';
+import { useSession } from '@/auth/SessionProvider';
 
 const selectTierSearchSchema = z.object({
   nft: z.string().optional(),
@@ -19,10 +21,20 @@ function RouteComponent() {
   const { stickerPackId } = Route.useParams();
   const search = Route.useSearch();
   const navigate = useNavigate();
-  const { stickerPack, selectedTier, setSelectedTier } =
-    useStickerPackPurchase();
+  const { session } = useSession();
+
+  // Fetch sticker pack data
+  const { data: stickerPack, isLoading: isLoadingStickerPack } = useStickerPack(stickerPackId, session);
+
+  // Local state for tier selection
+  const [selectedTier, setSelectedTier] = useState<'basic' | 'gold' | 'legendary'>('basic');
 
   const handleReview = () => {
+    if (!search.nft) {
+      alert('No NFT selected. Please go back and select an NFT.');
+      return;
+    }
+
     navigate({
       to: '/sticker-packs/$stickerPackId/review',
       params: { stickerPackId },
@@ -33,7 +45,7 @@ function RouteComponent() {
     });
   };
 
-  if (!stickerPack) {
+  if (isLoadingStickerPack || !stickerPack) {
     return (
       <div className="mx-auto max-w-4xl p-4">
         <div className="flex items-center justify-center p-8">

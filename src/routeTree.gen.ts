@@ -21,6 +21,7 @@ import { Route as FeedIndexRouteImport } from './routes/feed/index'
 import { Route as Demo3IndexRouteImport } from './routes/demo3/index'
 import { Route as Demo2IndexRouteImport } from './routes/demo2/index'
 import { Route as StickerPacksStickerPackIdRouteImport } from './routes/sticker-packs/$stickerPackId'
+import { Route as ProfileAdminRouteImport } from './routes/profile/admin'
 import { Route as AuthRefreshRouteImport } from './routes/auth/refresh'
 import { Route as StickerPacksStickerPackIdIndexRouteImport } from './routes/sticker-packs/$stickerPackId/index'
 import { Route as ProfilePurchasesIndexRouteImport } from './routes/profile/purchases/index'
@@ -109,6 +110,11 @@ const StickerPacksStickerPackIdRoute =
     path: '/$stickerPackId',
     getParentRoute: () => StickerPacksRoute,
   } as any)
+const ProfileAdminRoute = ProfileAdminRouteImport.update({
+  id: '/profile/admin',
+  path: '/profile/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRefreshRoute = AuthRefreshRouteImport.update({
   id: '/auth/refresh',
   path: '/auth/refresh',
@@ -260,6 +266,7 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/sticker-packs': typeof StickerPacksRouteWithChildren
   '/auth/refresh': typeof AuthRefreshRoute
+  '/profile/admin': typeof ProfileAdminRoute
   '/sticker-packs/$stickerPackId': typeof StickerPacksStickerPackIdRouteWithChildren
   '/demo2': typeof Demo2IndexRoute
   '/demo3': typeof Demo3IndexRoute
@@ -299,6 +306,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/auth/refresh': typeof AuthRefreshRoute
+  '/profile/admin': typeof ProfileAdminRoute
   '/demo2': typeof Demo2IndexRoute
   '/demo3': typeof Demo3IndexRoute
   '/feed': typeof FeedIndexRoute
@@ -338,6 +346,7 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/sticker-packs': typeof StickerPacksRouteWithChildren
   '/auth/refresh': typeof AuthRefreshRoute
+  '/profile/admin': typeof ProfileAdminRoute
   '/sticker-packs/$stickerPackId': typeof StickerPacksStickerPackIdRouteWithChildren
   '/demo2/': typeof Demo2IndexRoute
   '/demo3/': typeof Demo3IndexRoute
@@ -380,6 +389,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/sticker-packs'
     | '/auth/refresh'
+    | '/profile/admin'
     | '/sticker-packs/$stickerPackId'
     | '/demo2'
     | '/demo3'
@@ -419,6 +429,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/auth/refresh'
+    | '/profile/admin'
     | '/demo2'
     | '/demo3'
     | '/feed'
@@ -457,6 +468,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/sticker-packs'
     | '/auth/refresh'
+    | '/profile/admin'
     | '/sticker-packs/$stickerPackId'
     | '/demo2/'
     | '/demo3/'
@@ -498,6 +510,7 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   StickerPacksRoute: typeof StickerPacksRouteWithChildren
   AuthRefreshRoute: typeof AuthRefreshRoute
+  ProfileAdminRoute: typeof ProfileAdminRoute
   Demo2IndexRoute: typeof Demo2IndexRoute
   Demo3IndexRoute: typeof Demo3IndexRoute
   FeedIndexRoute: typeof FeedIndexRoute
@@ -607,6 +620,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/sticker-packs/$stickerPackId'
       preLoaderRoute: typeof StickerPacksStickerPackIdRouteImport
       parentRoute: typeof StickerPacksRoute
+    }
+    '/profile/admin': {
+      id: '/profile/admin'
+      path: '/profile/admin'
+      fullPath: '/profile/admin'
+      preLoaderRoute: typeof ProfileAdminRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/auth/refresh': {
       id: '/auth/refresh'
@@ -876,6 +896,7 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   StickerPacksRoute: StickerPacksRouteWithChildren,
   AuthRefreshRoute: AuthRefreshRoute,
+  ProfileAdminRoute: ProfileAdminRoute,
   Demo2IndexRoute: Demo2IndexRoute,
   Demo3IndexRoute: Demo3IndexRoute,
   FeedIndexRoute: FeedIndexRoute,

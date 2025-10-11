@@ -1,6 +1,5 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useCallback, useEffect, useState } from 'react';
-import { useStickerPackPurchase } from '@/contexts/StickerPackPurchaseContext';
 import { TelegramMainButton } from '@/components/TelegramMainButton';
 import { useGetSupportedCollections } from '@/hooks/useCollections';
 import { NFTSelector } from './NFTSelector';
@@ -8,6 +7,8 @@ import type { Token } from '@/types/response';
 import { useSelectedNFTs } from '../../../../contexts/SelectedNFTsContext';
 import { encodeNFT } from '@/utils/nftEncoding';
 import { useWebAppStartParam } from '@/hooks/useWebAppStartParam';
+import { useStickerPack } from '@/hooks/useStickerPacks';
+import { useSession } from '@/auth/SessionProvider';
 
 export const Route = createFileRoute(
   '/sticker-packs/$stickerPackId/select-nfts/'
@@ -108,13 +109,19 @@ function SelectedNFTDisplay({
 function RouteComponent() {
   const { stickerPackId } = Route.useParams();
   const navigate = useNavigate();
-  const { stickerPack, setSelectedNFTs, selectedNFTs } =
-    useStickerPackPurchase();
+  const { session } = useSession();
+
+  // Fetch sticker pack data
+  const { data: stickerPack, isLoading: isLoadingStickerPack } = useStickerPack(stickerPackId, session);
+
   const { data: collections } = useGetSupportedCollections();
   const { selectedFavorite } = useSelectedNFTs();
   const { collections: communityCollections } = useWebAppStartParam() || {
     collections: [],
   };
+
+  // Local state for selected NFTs
+  const [selectedNFTs, setSelectedNFTs] = useState<Token[]>([]);
 
   // get the overlap between communityCollections and collections
   // if communityCollections is empty, use all collections
@@ -210,7 +217,7 @@ function RouteComponent() {
     }
   };
 
-  if (!stickerPack) {
+  if (isLoadingStickerPack || !stickerPack) {
     // Skeleton loading state
     return (
       <div className="mx-auto max-w-4xl p-4">

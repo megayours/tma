@@ -129,27 +129,69 @@ function RouteComponent() {
             {/* Sticker Pack Details */}
             <div className="mb-6 space-y-2">
               <div>
-                <span className="text-tg-hint text-sm font-medium">Sticker Pack: </span>
-                <span className="text-tg-text text-sm font-semibold">{stickerPack.name}</span>
+                <span className="text-tg-hint text-sm font-medium">
+                  Sticker Pack:{' '}
+                </span>
+                <span className="text-tg-text text-sm font-semibold">
+                  {stickerPack.name}
+                </span>
               </div>
               {stickerPack.description && (
                 <div>
-                  <span className="text-tg-hint text-sm font-medium">Description: </span>
-                  <span className="text-tg-text text-sm">{stickerPack.description}</span>
+                  <span className="text-tg-hint text-sm font-medium">
+                    Description:{' '}
+                  </span>
+                  <span className="text-tg-text text-sm">
+                    {stickerPack.description}
+                  </span>
                 </div>
               )}
               {executionStatus?.effect_style && (
                 <div>
-                  <span className="text-tg-hint text-sm font-medium">Tier: </span>
-                  <span className="text-tg-text text-sm capitalize">{executionStatus.effect_style}</span>
+                  <span className="text-tg-hint text-sm font-medium">
+                    Tier:{' '}
+                  </span>
+                  <span className="text-tg-text text-sm capitalize">
+                    {executionStatus.effect_style}
+                  </span>
                 </div>
               )}
             </div>
 
             {/* Status Message */}
-            <p className="text-tg-hint text-center text-sm">
-              We are creating your stickers. You will receive a link when they are completed.
-            </p>
+            <div className="text-center">
+              <p className="text-tg-hint mb-4 text-sm">
+                We're creating your stickers! This usually takes a few minutes.
+              </p>
+              <p className="text-tg-hint mb-3 text-sm font-semibold">
+                To receive notifications when ready:
+              </p>
+              <div className="text-tg-text mb-3 flex items-center justify-center gap-2 text-sm">
+                <span>📱</span>
+                <span>
+                  Send{' '}
+                  <code className="bg-tg-bg rounded px-1.5 py-0.5 font-mono text-xs">
+                    /status
+                  </code>{' '}
+                  in our{' '}
+                  <a
+                    href={import.meta.env.VITE_PUBLIC_BOT_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-tg-link hover:underline"
+                  >
+                    Telegram bot
+                  </a>
+                </span>
+              </div>
+              <div className="text-tg-hint mb-2 text-xs italic">
+                (Required to get notified via Telegram)
+              </div>
+              <div className="text-tg-text flex items-center justify-center gap-2 text-sm">
+                <span>👤</span>
+                <span>Or check your profile's "My Generations" section</span>
+              </div>
+            </div>
           </div>
         )}
 
@@ -263,7 +305,8 @@ function RouteComponent() {
               🎉 Your Sticker Pack is Ready!
             </h2>
             <p className="text-tg-hint mb-6 text-sm">
-              All {executionStatus.total_prompts} stickers have been generated successfully.
+              All {executionStatus.total_prompts} stickers have been generated
+              successfully.
             </p>
 
             {/* Telegram Link */}

@@ -18,11 +18,11 @@ import {
 import { useEffect, useState } from 'react';
 import { AppRoot } from '@telegram-apps/telegram-ui';
 import { NavBar } from '@/components/lib/auth/NavBar';
+import { FavoriteNFT } from '@/components/lib/auth/FavoriteNFT';
 import { useTelegramTheme } from '@/auth/useTelegram';
 import { ToastProvider } from '@/components/ui';
 import { SelectedNFTsProvider } from '@/contexts/SelectedNFTsContext';
 import { useSession } from '@/auth/SessionProvider';
-import { FavoriteRedirectHandler } from '@/components/FavoriteRedirectHandler';
 // import { AddToHomeScreenButton } from '@/components/AddToHomeScreenButton';
 
 function TelegramAppHandler() {
@@ -184,10 +184,9 @@ function AppContent() {
   const location = useLocation();
   const { isAuthenticated } = useSession();
   const isViewportMounting = useSignal(viewport.isMounting);
-  const shouldHideNavBar =
-    location.pathname.startsWith('/profile/prompt/edit') ||
-    location.pathname.startsWith('/landing') ||
-    location.pathname.match('/');
+  const shouldHaveNavBar = location.pathname.startsWith('/feed');
+  const shouldHaveTopBar =
+    location.pathname.startsWith('/landing') || location.pathname === '/';
   const isViewportMounted = useSignal(viewport.isMounted);
   const contentSafeAreaInsets = useSignal(viewport.contentSafeAreaInsets);
   const viewportSafeAreaInsets = useSignal(viewport.safeAreaInsets);
@@ -211,10 +210,21 @@ function AppContent() {
           </div>
         )}
 
-        <main className={`bg-tg-bg h-full`}>
+        {shouldHaveTopBar && (
+          <div
+            className="fixed top-0 right-0 left-0 z-20 flex h-15 items-center justify-end p-4"
+            style={{
+              marginTop:
+                contentSafeAreaInsets.top + viewportSafeAreaInsets.top + 5,
+            }}
+          >
+            <FavoriteNFT />
+          </div>
+        )}
+        <main className={`bg-tg-bg h-full ${shouldHaveTopBar ? 'pt-18' : ''}`}>
           <Outlet />
         </main>
-        {!shouldHideNavBar && (
+        {shouldHaveNavBar && (
           <div
             className="fixed right-0 bottom-0 left-0 z-10 flex h-16 items-center"
             style={{
@@ -236,7 +246,7 @@ function AppContent() {
   if (isAuthenticated) {
     return (
       <SelectedNFTsProvider>
-        <FavoriteRedirectHandler />
+        {/* <FavoriteRedirectHandler /> */}
         {content}
       </SelectedNFTsProvider>
     );

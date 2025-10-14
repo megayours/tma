@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { PromptEditor } from '@/components/Prompt/PromptEditor';
-import { useSelectedNFTs } from '@/contexts/SelectedNFTsContext';
+import { useSelectedNFTsSafe } from '@/contexts/SelectedNFTsContext';
 
 export const Route = createFileRoute('/profile/prompt/edit/$promptId/')({
   component: RouteComponent,
@@ -8,7 +8,7 @@ export const Route = createFileRoute('/profile/prompt/edit/$promptId/')({
 
 function RouteComponent() {
   const { promptId } = Route.useParams();
-  const { selectedNFTs, setSelectedNFTs } = useSelectedNFTs();
+  const { selectedNFTs, setSelectedNFTs } = useSelectedNFTsSafe();
 
   return (
     <PromptEditor

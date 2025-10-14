@@ -34,6 +34,16 @@ export function useGetCommunityCollections(communityId: string) {
       }
 
       const data = await response.json();
+      // Normalize collections to have 'address' property and remove 'contract_address'
+      if (data.collections) {
+        data.collections = data.collections.map((c: any) => {
+          const { contract_address, ...rest } = c;
+          return {
+            ...rest,
+            address: contract_address,
+          };
+        });
+      }
       return data as Community;
     },
     enabled: !!communityId && !!session,

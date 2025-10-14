@@ -1,12 +1,14 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useCallback, useEffect, useState } from 'react';
-import { useStickerPackPurchase } from '@/contexts/StickerPackPurchaseContext';
 import { TelegramMainButton } from '@/components/TelegramMainButton';
 import { useGetSupportedCollections } from '@/hooks/useCollections';
 import { NFTSelector } from './NFTSelector';
 import type { Token } from '@/types/response';
-import { useSelectedNFTs } from '../../../../contexts/SelectedNFTsContext';
-
+import { useSelectedNFTsSafe } from '../../../../contexts/SelectedNFTsContext';
+import { encodeNFT } from '@/utils/nftEncoding';
+import { useWebAppStartParam } from '@/hooks/useWebAppStartParam';
+import { useStickerPack } from '@/hooks/useStickerPacks';
+import { useSession } from '@/auth/SessionProvider';
 export const Route = createFileRoute(
   '/sticker-packs/$stickerPackId/select-nfts/'
 )({
@@ -106,10 +108,34 @@ function SelectedNFTDisplay({
 function RouteComponent() {
   const { stickerPackId } = Route.useParams();
   const navigate = useNavigate();
-  const { stickerPack, setSelectedNFTs, selectedNFTs } =
-    useStickerPackPurchase();
+  const { session } = useSession();
+
+  // Fetch sticker pack data
+  const { data: stickerPack, isLoading: isLoadingStickerPack } = useStickerPack(stickerPackId, session);
+
   const { data: collections } = useGetSupportedCollections();
-  const { selectedFavorite } = useSelectedNFTs();
+  const { selectedFavorite } = useSelectedNFTsSafe();
+  const { collections: communityCollections } = useWebAppStartParam() || {
+    collections: [],
+  };
+
+  // Local state for selected NFTs
+  const [selectedNFTs, setSelectedNFTs] = useState<Token[]>([]);
+
+  // get the overlap between communityCollections and collections
+  // if communityCollections is empty, use all collections
+  const filteredCollections =
+    !communityCollections || communityCollections.length === 0
+      ? collections
+      : collections?.filter(collection =>
+          communityCollections.some(
+            c =>
+              c.address === collection.address && c.chain === collection.chain
+          )
+        );
+  console.log('communityCollections', communityCollections);
+  console.log('collections', collections);
+  console.log('filteredCollections', filteredCollections);
 
   // State for selector visibility
   const [isSelectorOpen, setIsSelectorOpen] = useState(false);
@@ -160,6 +186,9 @@ function RouteComponent() {
       return;
     }
 
+    // Encode the selected NFT for URL
+    const encodedNFT = encodeNFT(selectedNFTs[0]);
+
     // Check if there are any paid tiers
     const hasPaidTiers =
       stickerPack?.pricing.basic.amount_cents !== null ||
@@ -171,16 +200,23 @@ function RouteComponent() {
       navigate({
         to: '/sticker-packs/$stickerPackId/review',
         params: { stickerPackId },
+        search: {
+          nft: encodedNFT,
+          tier: 'basic', // Default to basic for free tier
+        },
       });
     } else {
       navigate({
         to: '/sticker-packs/$stickerPackId/select-tier',
         params: { stickerPackId },
+        search: {
+          nft: encodedNFT,
+        },
       });
     }
   };
 
-  if (!stickerPack) {
+  if (isLoadingStickerPack || !stickerPack) {
     // Skeleton loading state
     return (
       <div className="mx-auto max-w-4xl p-4">
@@ -265,7 +301,7 @@ function RouteComponent() {
                 {selectedNFTs.length === 0 ? 'Select Your NFT' : 'Change NFT'}
               </h2>
               <NFTSelector
-                collections={collections}
+                collections={filteredCollections}
                 onTokenSelect={handleTokenSelect}
                 selectedNFT={selectedNFTs[0] || null}
               />

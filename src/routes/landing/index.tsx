@@ -12,26 +12,26 @@ function RouteComponent() {
 }
 
 export function Landing() {
+  console.log('useWebAppStartParam', useWebAppStartParam());
+  console.log('useWebAppStartParam', useWebAppStartParam()?.collections);
   const { data: stickerPacks } = useStickerPacks({
     pagination: {
       page: 1,
       size: 10,
     },
-    tokenCollections: useWebAppStartParam()?.collections,
+    tokenCollections: useWebAppStartParam()?.collections || undefined,
   });
 
   return (
-    <div className="bg-tg-bg flex h-screen snap-y snap-mandatory flex-col overflow-y-scroll">
+    <div className="bg-tg-secondary-bg flex h-screen snap-y snap-mandatory flex-col gap-2 overflow-y-scroll">
       {stickerPacks?.data.map(stickerPack => (
         <Link
           key={stickerPack.id}
           to="/sticker-packs/$stickerPackId"
           params={{ stickerPackId: stickerPack.id.toString() }}
-          className="flex h-[70vh] shrink-0 snap-start flex-col"
+          className="bg-tg-section-bg flex shrink-0 snap-start flex-col"
         >
-          <div className="flex flex-1">
-            <StickerPackItem stickerPack={stickerPack} />
-          </div>
+          <StickerPackItem stickerPack={stickerPack} />
           {/* <div className="flex h-20 bg-blue-500">
             <div className="flex flex-1">
               <span className="font-bold text-white">Button</span>

@@ -212,7 +212,7 @@ function AppContent() {
 
         {shouldHaveTopBar && (
           <div
-            className="fixed top-0 right-0 left-0 z-20 flex h-10 items-center justify-end p-4"
+            className="fixed top-0 right-0 left-0 z-20 flex h-15 items-center justify-end p-4"
             style={{
               marginTop:
                 contentSafeAreaInsets.top + viewportSafeAreaInsets.top + 5,
@@ -221,7 +221,7 @@ function AppContent() {
             <FavoriteNFT />
           </div>
         )}
-        <main className={`bg-tg-bg h-full`}>
+        <main className={`bg-tg-bg h-full ${shouldHaveTopBar ? 'pt-18' : ''}`}>
           <Outlet />
         </main>
         {shouldHaveNavBar && (

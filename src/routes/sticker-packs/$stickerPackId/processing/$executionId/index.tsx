@@ -53,7 +53,6 @@ function RouteComponent() {
 
   // Track if animations have been triggered to ensure they only run once
   const hasTriggeredProcessing = useRef(false);
-  const hasTriggeredCompletion = useRef(false);
 
   const {
     status: executionStatus,
@@ -63,15 +62,6 @@ function RouteComponent() {
     session,
     executionId,
     pollingInterval: 5000, // Poll every 5 seconds
-    onComplete: _ => {
-      if (!hasTriggeredCompletion.current) {
-        hasTriggeredCompletion.current = true;
-        triggerAnimation('completed', () => {
-          // Redirect to profile after animation completes
-          navigate({ to: '/profile' });
-        });
-      }
-    },
     onError: status => {
       console.error('Execution error:', status);
     },
@@ -194,99 +184,6 @@ function RouteComponent() {
             </div>
           </div>
         )}
-
-        {/* Items List - Collapsible (Commented out for now) */}
-        {/* {executionStatus?.items && executionStatus.items.length > 0 && (
-          <div className="bg-tg-secondary-bg rounded-lg p-6">
-            <button
-              onClick={() => setIsStickersExpanded(!isStickersExpanded)}
-              className="flex w-full items-center justify-between"
-            >
-              <h3 className="text-tg-text text-lg font-semibold">
-                Stickers ({executionStatus.completed_prompts}/{executionStatus.total_prompts})
-              </h3>
-              <svg
-                className={`text-tg-text h-5 w-5 transition-transform duration-200 ${
-                  isStickersExpanded ? 'rotate-180' : ''
-                }`}
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-            </button>
-
-            {isStickersExpanded && (
-              <div className="mt-4 space-y-3">
-                {executionStatus.items.map((item, index) => (
-                  <div
-                    key={item.id || index}
-                    className="bg-tg-bg flex items-center gap-3 rounded-lg p-3"
-                  >
-                    <div className="flex-shrink-0">
-                      {item.status === 'completed' ? (
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500">
-                          <svg
-                            className="h-5 w-5 text-white"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M5 13l4 4L19 7"
-                            />
-                          </svg>
-                        </div>
-                      ) : item.status === 'processing' ? (
-                        <div className="flex h-8 w-8 items-center justify-center">
-                          <div className="h-6 w-6 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
-                        </div>
-                      ) : item.status === 'error' ? (
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-500">
-                          <svg
-                            className="h-5 w-5 text-white"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M6 18L18 6M6 6l12 12"
-                            />
-                          </svg>
-                        </div>
-                      ) : (
-                        <div className="bg-tg-hint/20 h-8 w-8 rounded-full" />
-                      )}
-                    </div>
-
-                    <div className="flex-1">
-                      <div className="text-tg-text text-sm font-medium">
-                        Sticker {index + 1}
-                      </div>
-                      <div className="text-tg-hint text-xs capitalize">
-                        {item.status || 'pending'}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )} */}
-
-        {/* Go to Profile Button */}
         {isProcessing && (
           <div className="flex justify-center">
             <button
@@ -298,7 +195,6 @@ function RouteComponent() {
           </div>
         )}
 
-        {/* Completion Message */}
         {isCompleted && executionStatus && (
           <div className="bg-tg-secondary-bg rounded-lg p-6 text-center">
             <h2 className="text-tg-text mb-4 text-2xl font-semibold">
@@ -315,11 +211,27 @@ function RouteComponent() {
                 href={executionStatus.telegram_pack_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-block rounded-lg bg-blue-500 px-6 py-3 font-semibold text-white transition-colors hover:bg-blue-600"
+                className="bg-tg-button inline-block rounded-lg px-6 py-3 font-semibold text-white transition-colors hover:bg-blue-600"
               >
                 Add to Telegram
               </a>
             )}
+
+            {/* show the stickers */}
+            {/* {executionStatus.items && (
+              <div className="grid grid-cols-5 gap-2">
+                {executionStatus.items.map((sticker, index) => (
+                  <img
+                    key={index}
+                    src={
+                      sticker.generated_content_url ||
+                      sticker.bundle_item.preview_url
+                    }
+                    alt={sticker.bundle_item.prompt.name}
+                  />
+                ))}
+              </div>
+            )} */}
           </div>
         )}
 

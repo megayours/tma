@@ -3,7 +3,7 @@ import { useSession } from '@/auth/SessionProvider';
 import { usePurchase } from '@/hooks/usePurchase';
 import { TelegramMainButton } from '@/components/TelegramMainButton';
 import { z } from 'zod';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { decodeNFT } from '@/utils/nftEncoding';
 import { useStickerPack } from '@/hooks/useStickerPacks';
 import { useGetNFTByCollectionAndTokenId } from '@/hooks/useCollections';
@@ -23,9 +23,13 @@ function RouteComponent() {
   const search = Route.useSearch();
   const navigate = useNavigate();
   const { session } = useSession();
+  const [isLoading, setIsLoading] = useState(false);
 
   // Fetch sticker pack data
-  const { data: stickerPack, isLoading: isLoadingStickerPack } = useStickerPack(stickerPackId, session);
+  const { data: stickerPack, isLoading: isLoadingStickerPack } = useStickerPack(
+    stickerPackId,
+    session
+  );
 
   // Decode NFT from URL
   const nftData = useMemo(() => {
@@ -38,14 +42,12 @@ function RouteComponent() {
   }, [search.nft]);
 
   // Fetch full NFT data from API using decoded URL params
-  const {
-    data: selectedToken,
-    isLoading: isLoadingNFT
-  } = useGetNFTByCollectionAndTokenId(
-    nftData?.chain || '',
-    nftData?.contractAddress || '',
-    nftData?.tokenId || ''
-  );
+  const { data: selectedToken, isLoading: isLoadingNFT } =
+    useGetNFTByCollectionAndTokenId(
+      nftData?.chain || '',
+      nftData?.contractAddress || '',
+      nftData?.tokenId || ''
+    );
 
   const { purchaseStickerPack, isPending } = usePurchase(session, {
     onSuccess: data => {
@@ -80,11 +82,12 @@ function RouteComponent() {
   });
 
   const handleConfirm = () => {
+    setIsLoading(true);
     if (!selectedToken) {
       alert('No NFT selected. Please go back and select an NFT.');
       return;
     }
-
+    // set is loading
     purchaseStickerPack(parseInt(stickerPackId), [selectedToken], search.tier);
   };
 
@@ -103,7 +106,9 @@ function RouteComponent() {
     return (
       <div className="mx-auto max-w-4xl p-4">
         <div className="flex items-center justify-center p-8">
-          <div className="text-lg text-red-600">Invalid NFT data. Please go back and select an NFT.</div>
+          <div className="text-lg text-red-600">
+            Invalid NFT data. Please go back and select an NFT.
+          </div>
         </div>
       </div>
     );
@@ -167,15 +172,10 @@ function RouteComponent() {
         </div>
 
         <TelegramMainButton
-          text={
-            isPending
-              ? 'Processing...'
-              : isFree
-                ? 'Confirm & Generate'
-                : 'Confirm & Purchase'
-          }
+          text={isFree ? 'Confirm & Generate' : 'Confirm & Purchase'}
           onClick={handleConfirm}
           disabled={isPending}
+          loading={isPending || isLoading}
           visible={true}
         />
       </div>

@@ -4,12 +4,11 @@ import { TelegramMainButton } from '@/components/TelegramMainButton';
 import { useGetSupportedCollections } from '@/hooks/useCollections';
 import { NFTSelector } from './NFTSelector';
 import type { Token } from '@/types/response';
-import { useSelectedNFTs } from '../../../../contexts/SelectedNFTsContext';
+import { useSelectedNFTsSafe } from '../../../../contexts/SelectedNFTsContext';
 import { encodeNFT } from '@/utils/nftEncoding';
 import { useWebAppStartParam } from '@/hooks/useWebAppStartParam';
 import { useStickerPack } from '@/hooks/useStickerPacks';
 import { useSession } from '@/auth/SessionProvider';
-
 export const Route = createFileRoute(
   '/sticker-packs/$stickerPackId/select-nfts/'
 )({
@@ -115,7 +114,7 @@ function RouteComponent() {
   const { data: stickerPack, isLoading: isLoadingStickerPack } = useStickerPack(stickerPackId, session);
 
   const { data: collections } = useGetSupportedCollections();
-  const { selectedFavorite } = useSelectedNFTs();
+  const { selectedFavorite } = useSelectedNFTsSafe();
   const { collections: communityCollections } = useWebAppStartParam() || {
     collections: [],
   };

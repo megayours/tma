@@ -101,7 +101,7 @@ export const useStickerPacks = (params: UseStickerPacksParams) => {
   const size = pagination?.size || 10;
 
   return useQuery({
-    queryKey: ['sticker-packs', type, page, size],
+    queryKey: ['sticker-packs', type, page, size, tokenCollections],
     queryFn: async (): Promise<StickerPacksResponse> => {
       try {
         // Build query parameters
@@ -110,12 +110,15 @@ export const useStickerPacks = (params: UseStickerPacksParams) => {
           size: size.toString(),
         });
 
-        // Add token_collections if provided
+        console.log('tokenCollections', tokenCollections);
+        // Add token_collection_ids if provided
         if (tokenCollections && tokenCollections.length > 0) {
-          queryParams.append(
-            'token_collections',
-            tokenCollections.map(collection => collection.id).join(',')
-          );
+          tokenCollections.forEach(collection => {
+            queryParams.append(
+              'token_collection_ids',
+              collection.id?.toString() || ''
+            );
+          });
         }
 
         // Add type parameter if provided

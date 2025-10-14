@@ -1,8 +1,10 @@
 import { Link } from '@tanstack/react-router';
-import { useSelectedNFTsSafe } from '@/contexts/SelectedNFTsContext';
+import { useGetFavorites } from '@/hooks/useFavorites';
+import { useSession } from '@/auth/SessionProvider';
 
 export function FavoriteNFT() {
-  const { selectedFavorite } = useSelectedNFTsSafe();
+  const { session } = useSession();
+  const { selectedFavorite } = useGetFavorites(session!);
 
   // Don't render if no favorite is selected
   if (!selectedFavorite) {

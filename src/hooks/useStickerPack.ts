@@ -64,7 +64,7 @@ export interface StickerPackExecution {
   user_account_id: string;
   nft_token_id: number;
   effect_style: string;
-  status: 'processing' | 'completed' | 'failed';
+  status: 'pending_payment' | 'processing' | 'completed' | 'failed' | 'cancelled';
   total_prompts: number;
   completed_prompts: number;
   error_message: string | null;
@@ -92,6 +92,8 @@ export interface UseStickerPackExecutionsParams {
     page?: number;
     size?: number;
   };
+  status?: 'pending_payment' | 'processing' | 'completed' | 'failed' | 'cancelled';
+  bundle_id?: number;
 }
 
 export const useStickerPackExecutions = (
@@ -112,6 +114,12 @@ export const useStickerPackExecutions = (
       }
       if (params.pagination?.size) {
         queryParams.append('size', params.pagination.size.toString());
+      }
+      if (params.status) {
+        queryParams.append('status', params.status);
+      }
+      if (params.bundle_id) {
+        queryParams.append('bundle_id', params.bundle_id.toString());
       }
 
       const queryString = queryParams.toString();

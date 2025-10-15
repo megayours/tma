@@ -61,7 +61,8 @@ const PromptEditorContent = ({
       addToast({
         type: 'error',
         title: 'Error',
-        message: error.message || 'Failed to generate preview. Please try again.',
+        message:
+          error.message || 'Failed to generate preview. Please try again.',
       });
     },
   });
@@ -115,7 +116,7 @@ const PromptEditorContent = ({
       </div>
 
       {/* Portal container for AddContentButton and NFTCloud */}
-      <div className="bg-tg-bg pointer-events-none fixed right-0 bottom-20 left-0 z-29 overflow-y-scroll pb-10">
+      <div className="bg-tg-bg pointer-events-none fixed right-0 bottom-20 left-0 z-29 overflow-y-scroll pb-16">
         <div id="custom-input-container"></div>
       </div>
 
@@ -153,7 +154,9 @@ const PromptEditorContent = ({
                 mode="filled"
                 size="m"
                 onClick={handleGenerate}
-                disabled={isGenerating || promptMutation.isPending || !promptText.trim()}
+                disabled={
+                  isGenerating || promptMutation.isPending || !promptText.trim()
+                }
                 loading={isGenerating || promptMutation.isPending}
               >
                 <IoSend className="text-tg-button-text" />

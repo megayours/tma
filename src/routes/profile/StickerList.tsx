@@ -1,5 +1,8 @@
 import { useSession } from '@/auth/SessionProvider';
-import { useStickerPackExecutions, type StickerPackExecution } from '@/hooks/useStickerPack';
+import {
+  useStickerPackExecutions,
+  type StickerPackExecution,
+} from '@/hooks/useStickerPack';
 import { useState } from 'react';
 
 // Loading dots animation component
@@ -14,7 +17,11 @@ function LoadingDots() {
 }
 
 // Sticker pack visualization component
-function StickerPackVisualization({ execution }: { execution: StickerPackExecution }) {
+function StickerPackVisualization({
+  execution,
+}: {
+  execution: StickerPackExecution;
+}) {
   return (
     <div>
       {/* Sticker Grid - 5 columns like Telegram, compact layout */}
@@ -39,7 +46,7 @@ function StickerPackVisualization({ execution }: { execution: StickerPackExecuti
             ) : item.status === 'failed' ? (
               // Failed - show error icon
               <div className="flex h-full w-full items-center justify-center">
-                <span className="text-red-500 text-xl">✕</span>
+                <span className="text-xl text-red-500">✕</span>
               </div>
             ) : (
               // Fallback - show loading dots
@@ -51,8 +58,11 @@ function StickerPackVisualization({ execution }: { execution: StickerPackExecuti
         ))}
 
         {/* Fill empty slots if items < total_prompts */}
-        {execution.items && execution.items.length < execution.total_prompts &&
-          Array.from({ length: execution.total_prompts - execution.items.length }).map((_, index) => (
+        {execution.items &&
+          execution.items.length < execution.total_prompts &&
+          Array.from({
+            length: execution.total_prompts - execution.items.length,
+          }).map((_, index) => (
             <div
               key={`empty-${index}`}
               className="relative aspect-square overflow-hidden rounded-lg"
@@ -115,24 +125,21 @@ export function StickerList() {
 
   return (
     <div className="space-y-4 p-4">
-      <h1 className="text-tg-text text-2xl font-bold">My Sticker Packs</h1>
-
       {/* Executions List */}
       <div className="space-y-2">
         {data.data.map(execution => (
-          <div
-            key={execution.id}
-            className="overflow-hidden rounded-xl"
-          >
+          <div key={execution.id} className="overflow-hidden rounded-xl">
             {/* Header */}
             <div className="flex items-start justify-between gap-2 px-4 pt-4 pb-2">
-              <div className="flex-1 min-w-0">
-                <h3 className="text-tg-text text-base font-semibold leading-tight">
-                  {execution.bundle.name} ({execution.effect_style.toUpperCase()})
+              <div className="min-w-0 flex-1">
+                <h3 className="text-tg-text text-base leading-tight font-semibold">
+                  {execution.bundle.name} (
+                  {execution.effect_style.toUpperCase()})
                 </h3>
                 {execution.nft_token && (
                   <div className="text-tg-hint mt-0.5 truncate text-xs">
-                    {execution.nft_token.contract.name} #{execution.nft_token.id}
+                    {execution.nft_token.contract.name} #
+                    {execution.nft_token.id}
                   </div>
                 )}
               </div>
@@ -191,7 +198,7 @@ export function StickerList() {
           <button
             onClick={() => setPage(p => Math.max(1, p - 1))}
             disabled={page === 1}
-            className="text-tg-text disabled:text-tg-hint rounded-lg bg-tg-secondary-bg px-4 py-2 disabled:cursor-not-allowed"
+            className="text-tg-text disabled:text-tg-hint bg-tg-secondary-bg rounded-lg px-4 py-2 disabled:cursor-not-allowed"
           >
             Previous
           </button>
@@ -199,9 +206,11 @@ export function StickerList() {
             Page {page} of {data.pagination.totalPages}
           </span>
           <button
-            onClick={() => setPage(p => Math.min(data.pagination.totalPages, p + 1))}
+            onClick={() =>
+              setPage(p => Math.min(data.pagination.totalPages, p + 1))
+            }
             disabled={page === data.pagination.totalPages}
-            className="text-tg-text disabled:text-tg-hint rounded-lg bg-tg-secondary-bg px-4 py-2 disabled:cursor-not-allowed"
+            className="text-tg-text disabled:text-tg-hint bg-tg-secondary-bg rounded-lg px-4 py-2 disabled:cursor-not-allowed"
           >
             Next
           </button>

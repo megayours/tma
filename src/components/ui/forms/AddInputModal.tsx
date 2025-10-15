@@ -31,7 +31,7 @@ export const AddInputModal = ({
   }
 
   const modalContent = (
-    <div className="bg-tg-bg pointer-events-auto relative left-0 flex h-auto min-h-16 w-full overflow-auto select-auto">
+    <div className="bg-tg-bg pointer-events-auto relative left-0 h-auto min-h-16 w-full overflow-auto select-auto">
       {/* Main menu when no specific content is selected */}
       {selectedContent === null && (
         <AddInputMenu onSelectContent={onSelectContent} />

@@ -34,6 +34,7 @@ import { Route as PostPostIdIndexRouteImport } from './routes/post/$postId/index
 import { Route as Demo2ItemIndexRouteImport } from './routes/demo2/item/index'
 import { Route as StickerPacksStickerPackIdSuccessRouteImport } from './routes/sticker-packs/$stickerPackId/success'
 import { Route as StickerPacksStickerPackIdCheckoutRouteImport } from './routes/sticker-packs/$stickerPackId/checkout'
+import { Route as ProfilePromptCreateRouteImport } from './routes/profile/prompt/create'
 import { Route as ProfilePromptEditRouteRouteImport } from './routes/profile/prompt/edit/route'
 import { Route as StickerPacksStickerPackIdSelectTierIndexRouteImport } from './routes/sticker-packs/$stickerPackId/select-tier/index'
 import { Route as StickerPacksStickerPackIdSelectNftsIndexRouteImport } from './routes/sticker-packs/$stickerPackId/select-nfts/index'
@@ -180,6 +181,11 @@ const StickerPacksStickerPackIdCheckoutRoute =
     path: '/checkout',
     getParentRoute: () => StickerPacksStickerPackIdRoute,
   } as any)
+const ProfilePromptCreateRoute = ProfilePromptCreateRouteImport.update({
+  id: '/profile/prompt/create',
+  path: '/profile/prompt/create',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProfilePromptEditRouteRoute = ProfilePromptEditRouteRouteImport.update({
   id: '/profile/prompt/edit',
   path: '/profile/prompt/edit',
@@ -277,6 +283,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof ProfileIndexRoute
   '/sticker-packs/': typeof StickerPacksIndexRoute
   '/profile/prompt/edit': typeof ProfilePromptEditRouteRouteWithChildren
+  '/profile/prompt/create': typeof ProfilePromptCreateRoute
   '/sticker-packs/$stickerPackId/checkout': typeof StickerPacksStickerPackIdCheckoutRoute
   '/sticker-packs/$stickerPackId/success': typeof StickerPacksStickerPackIdSuccessRoute
   '/demo2/item': typeof Demo2ItemIndexRoute
@@ -316,6 +323,7 @@ export interface FileRoutesByTo {
   '/profile': typeof ProfileIndexRoute
   '/sticker-packs': typeof StickerPacksIndexRoute
   '/profile/prompt/edit': typeof ProfilePromptEditRouteRouteWithChildren
+  '/profile/prompt/create': typeof ProfilePromptCreateRoute
   '/sticker-packs/$stickerPackId/checkout': typeof StickerPacksStickerPackIdCheckoutRoute
   '/sticker-packs/$stickerPackId/success': typeof StickerPacksStickerPackIdSuccessRoute
   '/demo2/item': typeof Demo2ItemIndexRoute
@@ -357,6 +365,7 @@ export interface FileRoutesById {
   '/profile/': typeof ProfileIndexRoute
   '/sticker-packs/': typeof StickerPacksIndexRoute
   '/profile/prompt/edit': typeof ProfilePromptEditRouteRouteWithChildren
+  '/profile/prompt/create': typeof ProfilePromptCreateRoute
   '/sticker-packs/$stickerPackId/checkout': typeof StickerPacksStickerPackIdCheckoutRoute
   '/sticker-packs/$stickerPackId/success': typeof StickerPacksStickerPackIdSuccessRoute
   '/demo2/item/': typeof Demo2ItemIndexRoute
@@ -400,6 +409,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/sticker-packs/'
     | '/profile/prompt/edit'
+    | '/profile/prompt/create'
     | '/sticker-packs/$stickerPackId/checkout'
     | '/sticker-packs/$stickerPackId/success'
     | '/demo2/item'
@@ -439,6 +449,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/sticker-packs'
     | '/profile/prompt/edit'
+    | '/profile/prompt/create'
     | '/sticker-packs/$stickerPackId/checkout'
     | '/sticker-packs/$stickerPackId/success'
     | '/demo2/item'
@@ -479,6 +490,7 @@ export interface FileRouteTypes {
     | '/profile/'
     | '/sticker-packs/'
     | '/profile/prompt/edit'
+    | '/profile/prompt/create'
     | '/sticker-packs/$stickerPackId/checkout'
     | '/sticker-packs/$stickerPackId/success'
     | '/demo2/item/'
@@ -519,6 +531,7 @@ export interface RootRouteChildren {
   PrivateIndexRoute: typeof PrivateIndexRoute
   ProfileIndexRoute: typeof ProfileIndexRoute
   ProfilePromptEditRouteRoute: typeof ProfilePromptEditRouteRouteWithChildren
+  ProfilePromptCreateRoute: typeof ProfilePromptCreateRoute
   Demo2ItemIndexRoute: typeof Demo2ItemIndexRoute
   PostPostIdIndexRoute: typeof PostPostIdIndexRoute
   PostCreateIndexRoute: typeof PostCreateIndexRoute
@@ -711,6 +724,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/sticker-packs/$stickerPackId/checkout'
       preLoaderRoute: typeof StickerPacksStickerPackIdCheckoutRouteImport
       parentRoute: typeof StickerPacksStickerPackIdRoute
+    }
+    '/profile/prompt/create': {
+      id: '/profile/prompt/create'
+      path: '/profile/prompt/create'
+      fullPath: '/profile/prompt/create'
+      preLoaderRoute: typeof ProfilePromptCreateRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/profile/prompt/edit': {
       id: '/profile/prompt/edit'
@@ -905,6 +925,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivateIndexRoute: PrivateIndexRoute,
   ProfileIndexRoute: ProfileIndexRoute,
   ProfilePromptEditRouteRoute: ProfilePromptEditRouteRouteWithChildren,
+  ProfilePromptCreateRoute: ProfilePromptCreateRoute,
   Demo2ItemIndexRoute: Demo2ItemIndexRoute,
   PostPostIdIndexRoute: PostPostIdIndexRoute,
   PostCreateIndexRoute: PostCreateIndexRoute,

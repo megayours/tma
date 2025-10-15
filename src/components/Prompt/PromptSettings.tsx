@@ -49,6 +49,11 @@ export const PromptSettings = ({
   const { models, isLoading: modelsLoading } = useModels();
   const { data: supportedCollections, isLoading: collectionsLoading } =
     useGetSupportedCollections();
+  const filteredModels = models.filter(model =>
+    model.capabilities.some(
+      capability => capability.type === prompt.type!.slice(0, -1)
+    )
+  );
 
   // Local state for form fields
   const [editedPrompt, setEditedPrompt] = useState<Prompt>(() => {
@@ -259,15 +264,6 @@ export const PromptSettings = ({
     setHasChanges(true);
   };
 
-  // Type options for select
-  const typeOptions = [
-    { value: 'images', label: 'Images' },
-    { value: 'videos', label: 'Videos' },
-    { value: 'stickers', label: 'Stickers' },
-    { value: 'animated_stickers', label: 'Animated Stickers' },
-    { value: 'gifs', label: 'GIFs' },
-  ];
-
   if (!isOpen) return null;
 
   return (
@@ -350,32 +346,6 @@ export const PromptSettings = ({
             </Cell>
           </Section>
 
-          {/* Content Configuration Section */}
-          <Section
-            header="Content Configuration"
-            footer="Set up the content type and main prompt text for generation."
-          >
-            <Cell
-              before={
-                <IconContainer>
-                  <IoLayersOutline />
-                </IconContainer>
-              }
-            >
-              <Select
-                value={editedPrompt.type || 'images'}
-                onChange={e => updateField('type', e.target.value)}
-                className="w-full"
-              >
-                {typeOptions.map(option => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </Select>
-            </Cell>
-          </Section>
-
           {/* AI Model Settings Section */}
           <Section
             header="AI Model Settings"
@@ -397,7 +367,7 @@ export const PromptSettings = ({
                 <option value="">
                   {modelsLoading ? 'Loading models...' : 'Select a model'}
                 </option>
-                {models
+                {filteredModels
                   .filter(model => model.isEnabled)
                   .map(model => (
                     <option key={model.id} value={model.id}>

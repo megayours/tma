@@ -8,6 +8,7 @@ export type Session = {
   id: string;
   username: string;
   jwt: string;
+  role: string;
   expiration?: number | null;
   rawUser: string;
   authToken: string;
@@ -89,7 +90,7 @@ export function useAuth() {
 
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_PUBLIC_API_URL}/auth/validate`,
+        `${import.meta.env.VITE_PUBLIC_API_URL}/profile`,
         {
           method: 'GET',
           headers: {
@@ -99,7 +100,6 @@ export function useAuth() {
         }
       );
 
-      console.log('response', response);
       if (response.ok) {
         const data = await response.json();
         const tokenExpirationTime = getExpTimestamp(discordToken);
@@ -109,6 +109,7 @@ export function useAuth() {
           id: data.id,
           username: data.name,
           jwt: discordToken,
+          role: data.role,
           expiration: tokenExpirationTime,
           rawUser: JSON.stringify(data),
           authToken: 'Bearer ' + discordToken,
@@ -162,6 +163,7 @@ export function useAuth() {
           id: data.id,
           username: data.name,
           jwt: telegramUser.initData,
+          role: data.role,
           expiration: getExpTimestamp(telegramUser.initData),
           rawUser: JSON.stringify(data),
           authToken: 'tma ' + telegramUser.initData,

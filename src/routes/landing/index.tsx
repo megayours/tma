@@ -12,14 +12,15 @@ function RouteComponent() {
 }
 
 export function Landing() {
-  console.log('useWebAppStartParam', useWebAppStartParam());
-  console.log('useWebAppStartParam', useWebAppStartParam()?.collections);
+  // ✅ Call the hook only ONCE and store the result
+  const webAppStartParam = useWebAppStartParam();
+
   const { data: stickerPacks } = useStickerPacks({
     pagination: {
       page: 1,
       size: 10,
     },
-    tokenCollections: useWebAppStartParam()?.collections || undefined,
+    tokenCollections: webAppStartParam?.collections || undefined,
   });
 
   return (

@@ -42,7 +42,7 @@ export const Route = createFileRoute('/auth/discord/v1/callback/')({
     try {
       // Call the Discord callback endpoint directly
       const callbackResponse = await fetch(
-        `${import.meta.env.VITE_API_URL}/auth/discord/callback?code=${code}&state=${state || ''}&redirect_base_url=${encodeURIComponent(window.location.origin)}`,
+        `${import.meta.env.VITE_PUBLIC_API_URL}/auth/discord/callback?code=${code}&state=${state || ''}&redirect_base_url=${encodeURIComponent(window.location.origin)}`,
         {
           method: 'GET',
           headers: {

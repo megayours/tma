@@ -133,9 +133,6 @@ function RouteComponent() {
               c.address === collection.address && c.chain === collection.chain
           )
         );
-  console.log('communityCollections', communityCollections);
-  console.log('collections', collections);
-  console.log('filteredCollections', filteredCollections);
 
   // State for selector visibility
   const [isSelectorOpen, setIsSelectorOpen] = useState(false);
@@ -304,18 +301,29 @@ function RouteComponent() {
                 collections={filteredCollections}
                 onTokenSelect={handleTokenSelect}
                 selectedNFT={selectedNFTs[0] || null}
+                onCancel={() => setIsSelectorOpen(false)}
               />
             </div>
           )}
         </div>
 
-        {/* Navigation Button */}
-        <TelegramMainButton
-          text="Proceed"
-          onClick={handleContinue}
-          disabled={!canContinue || isSelectorOpen}
-          visible={true}
-        />
+        {/* Navigation Buttons */}
+        {isSelectorOpen && selectedNFTs.length > 0 ? (
+          // Show Cancel button when selector is open and an NFT is already selected
+          <TelegramMainButton
+            text="Cancel"
+            onClick={() => setIsSelectorOpen(false)}
+            visible={true}
+          />
+        ) : (
+          // Show Proceed button when selector is closed or no NFT selected
+          <TelegramMainButton
+            text="Proceed"
+            onClick={handleContinue}
+            disabled={!canContinue || isSelectorOpen}
+            visible={true}
+          />
+        )}
       </div>
     </div>
   );

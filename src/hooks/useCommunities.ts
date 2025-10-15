@@ -46,7 +46,8 @@ export function useGetCommunityCollections(communityId: string) {
       }
       return data as Community;
     },
-    enabled: !!communityId && !!session,
+    enabled: !!communityId && communityId !== '' && !!session,
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes to prevent unnecessary refetches
   });
 
   return { data, isLoading, error };

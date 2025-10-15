@@ -34,9 +34,26 @@ export const TelegramMainButton: React.FC<TelegramMainButtonProps> = ({
     loadingRef.current = loading;
   }, [disabled, loading]);
 
-  // Only render in Telegram environment
+  // Render a normal button when not in Telegram
   if (!isTelegram) {
-    return null;
+    return visible ? (
+      <div className="fixed bottom-0 left-0 right-0 z-50 p-4">
+        <button
+          onClick={onClick}
+          disabled={disabled || loading}
+          className="bg-tg-button text-tg-button-text w-full rounded-lg px-6 py-3 text-center font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90"
+        >
+          {loading ? (
+            <span className="flex items-center justify-center gap-2">
+              <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+              Processing...
+            </span>
+          ) : (
+            text
+          )}
+        </button>
+      </div>
+    ) : null;
   }
 
   // Mount main button and set up click handler
@@ -72,7 +89,6 @@ export const TelegramMainButton: React.FC<TelegramMainButtonProps> = ({
         if (mainButton.setParams && mainButton.setParams.isAvailable()) {
           try {
             mainButton.setParams({ isVisible: false });
-            console.log('TelegramMainButton: Hidden from main useEffect');
           } catch (error) {
             console.error(
               'TelegramMainButton: Error hiding main button:',
@@ -89,12 +105,10 @@ export const TelegramMainButton: React.FC<TelegramMainButtonProps> = ({
     clickHandlerRef.current = onClick;
   }, [onClick]);
 
-  console.log('aAAA disabled', disabled);
   // Update main button parameters when props change
   useEffect(() => {
     if (!isTelegram || !mainButton.setParams.isAvailable()) return;
 
-    console.log('another ROUND', disabled);
     try {
       const params: any = {
         text: loading ? 'Processing...' : text,
@@ -112,8 +126,6 @@ export const TelegramMainButton: React.FC<TelegramMainButtonProps> = ({
       if (textColor) {
         params.textColor = textColor;
       }
-
-      console.log('params', params);
 
       mainButton.setParams(params);
     } catch (error) {
@@ -141,7 +153,6 @@ export const TelegramMainButton: React.FC<TelegramMainButtonProps> = ({
       ) {
         try {
           mainButton.setParams({ isVisible: false });
-          console.log('TelegramMainButton: Hidden on component cleanup');
         } catch (error) {
           console.error('TelegramMainButton: Error during cleanup:', error);
         }

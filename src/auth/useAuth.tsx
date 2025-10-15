@@ -89,7 +89,7 @@ export function useAuth() {
 
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/auth/validate`,
+        `${import.meta.env.VITE_PUBLIC_API_URL}/auth/validate`,
         {
           method: 'GET',
           headers: {
@@ -99,6 +99,7 @@ export function useAuth() {
         }
       );
 
+      console.log('response', response);
       if (response.ok) {
         const data = await response.json();
         const tokenExpirationTime = getExpTimestamp(discordToken);

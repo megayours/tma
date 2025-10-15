@@ -13,9 +13,10 @@ interface NFTSelectorProps {
   collections?: SupportedCollection[];
   onTokenSelect: (token: Token) => void;
   selectedNFT?: Token | null;
+  onCancel?: () => void;
 }
 
-export function NFTSelector({ collections, onTokenSelect, selectedNFT }: NFTSelectorProps) {
+export function NFTSelector({ collections, onTokenSelect, selectedNFT, onCancel }: NFTSelectorProps) {
   const { session } = useSession();
   const { favorites, isLoadingFavorites } = useGetFavorites(session);
   const [selectionMode, setSelectionMode] = useState<'favorites' | 'collections'>('favorites');
@@ -52,6 +53,10 @@ export function NFTSelector({ collections, onTokenSelect, selectedNFT }: NFTSele
   const handleCloseSelection = () => {
     setSelectedCollection(null);
     setSelectedTokenId(null);
+    // Call parent's onCancel if provided
+    if (onCancel) {
+      onCancel();
+    }
   };
 
   return (

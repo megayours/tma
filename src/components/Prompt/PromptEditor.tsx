@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect } from 'react';
 import type { Token } from '@/types/response';
 import { Button, Divider } from '@telegram-apps/telegram-ui';
+import { viewport, useSignal } from '@telegram-apps/sdk-react';
 
 import { AddInputButton } from '@/components/ui';
 import { IoSend } from 'react-icons/io5';
@@ -24,6 +25,7 @@ const PromptEditorContent = ({
   const [hasChanges, setHasChanges] = useState(false);
   const [isTextareaFocused, setIsTextareaFocused] = useState(false);
   const promptTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const isViewportMounted = useSignal(viewport.isMounted);
 
   // Use React Query to get the prompt data
   const { data: prompt, isLoading, error } = useGetPrompt(promptId, session);
@@ -103,7 +105,7 @@ const PromptEditorContent = ({
   return (
     <div className="bg-tg-bg">
       {/* Main content area */}
-      <div className="h-screen pb-60">
+      <div className={`h-screen ${isViewportMounted ? 'pb-80' : 'pb-60'}`}>
         {/* Your main content goes here */}
         {selectedVersion && (
           <div className="h-full">

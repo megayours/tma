@@ -49,11 +49,30 @@ export const PromptSettings = ({
   const { models, isLoading: modelsLoading } = useModels();
   const { data: supportedCollections, isLoading: collectionsLoading } =
     useGetSupportedCollections();
+
+  // Map prompt types to capability types
+  const getCapabilityType = (promptType: string): string => {
+    switch (promptType) {
+      case 'stickers':
+        return 'image'; // stickers use image capability
+      case 'animated_stickers':
+        return 'video'; // animated stickers use video capability
+      case 'images':
+        return 'image';
+      case 'videos':
+        return 'video';
+      default:
+        return promptType;
+    }
+  };
+
   const filteredModels = models.filter(model =>
     model.capabilities.some(
-      capability => capability.type === prompt.type!.slice(0, -1)
+      capability => capability.type === getCapabilityType(prompt.type!)
     )
   );
+
+  console.log('filteredModels', filteredModels, models, prompt.type);
 
   // Local state for form fields
   const [editedPrompt, setEditedPrompt] = useState<Prompt>(() => {
@@ -66,6 +85,8 @@ export const PromptSettings = ({
       model: initialModel,
     };
   });
+
+  console.log('current model:', editedPrompt.model, 'from prompt:', prompt.model, 'from version[0]:', prompt.versions?.[0]?.model);
   const [hasChanges, setHasChanges] = useState(false);
   const [selectedContracts, setSelectedContracts] = useState<Set<string>>(
     new Set()
@@ -267,7 +288,7 @@ export const PromptSettings = ({
   if (!isOpen) return null;
 
   return (
-    <div className="z-40 flex h-screen w-full flex-col bg-[var(--tgui--secondary_bg_color)] pb-20">
+    <div className="bg-tg-bg z-40 flex h-screen w-full flex-col bg-[var(--tgui--secondary_bg_color)] pb-20">
       {/* Header */}
       <div className="flex flex-shrink-0 items-center justify-center px-5 py-4">
         <img
@@ -279,7 +300,7 @@ export const PromptSettings = ({
 
       {/* Scrollable Content */}
       <div className="flex-1 overflow-y-auto">
-        <List className="m-0 bg-transparent p-5">
+        <List className="bg-tg-secondary-bg m-0 p-5">
           {/* Basic Information Section */}
           <Section
             header="Basic Information"

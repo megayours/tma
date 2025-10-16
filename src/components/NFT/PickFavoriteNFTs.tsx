@@ -12,10 +12,23 @@ interface FavoriteItemProps {
   favorite: { token: Token };
   isSelected: boolean;
   onSelect: (favorite: { token: Token }) => void;
+  onImageLoad?: () => void;
 }
 
-function FavoriteItem({ favorite, isSelected, onSelect }: FavoriteItemProps) {
+function FavoriteItem({
+  favorite,
+  isSelected,
+  onSelect,
+  onImageLoad,
+}: FavoriteItemProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
+
+  const handleImageLoad = () => {
+    setImageLoaded(true);
+    if (onImageLoad) {
+      onImageLoad();
+    }
+  };
 
   return (
     <div
@@ -47,7 +60,7 @@ function FavoriteItem({ favorite, isSelected, onSelect }: FavoriteItemProps) {
                 imageLoaded ? 'opacity-100' : 'opacity-0'
               }`}
               loading="lazy"
-              onLoad={() => setImageLoaded(true)}
+              onLoad={handleImageLoad}
             />
           </div>
         </div>
@@ -91,12 +104,16 @@ export const PickFavoriteNFTs = ({
     );
   };
 
+  const handleImageLoad = () => {
+    // Scroll to bottom of the page when an image loads
+    window.scrollTo({
+      top: document.documentElement.scrollHeight,
+      behavior: 'smooth',
+    });
+  };
+
   return (
     <div className="mb-3 p-2">
-      <div className="bg-tg-bg sticky top-0 z-10 w-full p-2">
-        <h2 className="text-tg-text mb-2 text-sm font-semibold">Favorites</h2>
-      </div>
-
       <div className="scrollbar-hide flex gap-2 overflow-x-auto p-2">
         {favorites.map(favorite => (
           <FavoriteItem
@@ -104,6 +121,7 @@ export const PickFavoriteNFTs = ({
             favorite={favorite}
             isSelected={isSelected(favorite)}
             onSelect={handleFavoriteClick}
+            onImageLoad={handleImageLoad}
           />
         ))}
       </div>

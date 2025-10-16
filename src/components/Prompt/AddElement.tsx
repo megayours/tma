@@ -18,11 +18,15 @@ interface AddElementProps {
 
 export const AddElement = ({ prompt, setIndex }: AddElementProps) => {
   const [showAddCloud, setShowAddCloud] = useState(false);
-  const [selectedCollection, setSelectedCollection] = useState<SupportedCollection | null>(null);
+  const [selectedCollection, setSelectedCollection] =
+    useState<SupportedCollection | null>(null);
   const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null);
-  const [selectionMode, setSelectionMode] = useState<'favorites' | 'collections'>('favorites');
+  const [selectionMode, setSelectionMode] = useState<
+    'favorites' | 'collections'
+  >('favorites');
 
-  const { optionalNFTs, maxOptionalTokens, addOptionalNFT } = useNFTSetsContext();
+  const { optionalNFTs, maxOptionalTokens, addOptionalNFT } =
+    useNFTSetsContext();
   const { data: collections } = useGetCollectionsWithPrompt(prompt);
 
   // Check if we can add more optional NFTs to this set
@@ -108,111 +112,113 @@ export const AddElement = ({ prompt, setIndex }: AddElementProps) => {
       </div>
 
       {/* Add Cloud Portal */}
-      {showAddCloud && (() => {
-        const portalContainer = document.getElementById('custom-input-container');
-        if (!portalContainer) return null;
+      {showAddCloud &&
+        (() => {
+          const portalContainer = document.getElementById(
+            'custom-input-container'
+          );
+          if (!portalContainer) return null;
 
-        const addCloudContent = (
-          <div
-            className="bg-tg-bg border-tg-hint/20 relative min-h-16 overflow-y-auto rounded-lg border shadow-lg"
-            style={{
-              maxHeight: '60vh',
-              minHeight: '64px',
-              height: 'auto',
-              overflow: 'auto',
-              zIndex: 9999,
-              position: 'relative',
-              pointerEvents: 'auto',
-              userSelect: 'auto',
-            }}
-            data-cloud-index={`add-${setIndex}`}
-            onClick={handleCloudClick}
-            onWheel={e => {
-              e.stopPropagation();
-            }}
-          >
-            {!selectedCollection && (
-              <div className="flex flex-col p-2">
-                {/* Segmented Control */}
-                <div className="mb-3">
-                  <div className="bg-tg-secondary border-tg-section-separator flex rounded-lg border p-1">
-                    <button
-                      className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                        selectionMode === 'favorites'
-                          ? 'bg-tg-button text-tg-button-text'
-                          : 'text-tg-text hover:bg-tg-hint/10'
-                      }`}
-                      onClick={() => setSelectionMode('favorites')}
-                    >
-                      Favorites
-                    </button>
-                    <button
-                      className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                        selectionMode === 'collections'
-                          ? 'bg-tg-button text-tg-button-text'
-                          : 'text-tg-text hover:bg-tg-hint/10'
-                      }`}
-                      onClick={() => setSelectionMode('collections')}
-                    >
-                      Collections
-                    </button>
+          const addCloudContent = (
+            <div
+              className="bg-tg-bg border-tg-hint/20 relative min-h-16 overflow-y-auto rounded-lg border shadow-lg"
+              style={{
+                maxHeight: '60vh',
+                minHeight: '64px',
+                height: 'auto',
+                overflow: 'auto',
+                zIndex: 9999,
+                position: 'relative',
+                pointerEvents: 'auto',
+                userSelect: 'auto',
+              }}
+              data-cloud-index={`add-${setIndex}`}
+              onClick={handleCloudClick}
+              onWheel={e => {
+                e.stopPropagation();
+              }}
+            >
+              {!selectedCollection && (
+                <div className="flex flex-col p-2">
+                  {/* Segmented Control */}
+                  <div className="mb-3">
+                    <div className="bg-tg-secondary border-tg-section-separator flex rounded-lg border p-1">
+                      <button
+                        className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                          selectionMode === 'favorites'
+                            ? 'bg-tg-button text-tg-button-text'
+                            : 'text-tg-text hover:bg-tg-hint/10'
+                        }`}
+                        onClick={() => setSelectionMode('favorites')}
+                      >
+                        Favorites
+                      </button>
+                      <button
+                        className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                          selectionMode === 'collections'
+                            ? 'bg-tg-button text-tg-button-text'
+                            : 'text-tg-text hover:bg-tg-hint/10'
+                        }`}
+                        onClick={() => setSelectionMode('collections')}
+                      >
+                        Collections
+                      </button>
+                    </div>
                   </div>
-                </div>
 
-                {/* Content based on selection mode */}
-                {selectionMode === 'favorites' && (
-                  <PickFavoriteNFTs onTokenSelect={handleSelectFavorite} />
-                )}
-                {selectionMode === 'collections' && (
-                  <SelectCollection
-                    collections={collections || []}
-                    onCollectionSelect={handleCollectionSelect}
-                    size="s"
-                  />
-                )}
-              </div>
-            )}
-            {selectedCollection && (
-              <>
-                <SelectTokenId
-                  collection={selectedCollection}
-                  onBack={handleBack}
-                  onTokenSelect={setSelectedTokenId}
-                />
-
-                <div className="h-[356px]">
-                  {selectedCollection && selectedTokenId && (
-                    <DisplayNFT
-                      collection={selectedCollection}
-                      tokenId={selectedTokenId}
-                      onClick={handleTokenSelect}
+                  {/* Content based on selection mode */}
+                  {selectionMode === 'favorites' && (
+                    <PickFavoriteNFTs onTokenSelect={handleSelectFavorite} />
+                  )}
+                  {selectionMode === 'collections' && (
+                    <SelectCollection
+                      collections={collections || []}
+                      onCollectionSelect={handleCollectionSelect}
                     />
                   )}
-                  {selectedCollection && !selectedTokenId && (
-                    <div className="flex flex-col gap-4 p-4">
-                      {/* Placeholder image with same height as DisplayNFT */}
-                      <div className="flex justify-center">
-                        <div className="bg-tg-secondary flex w-64 items-center justify-center rounded-lg">
-                          <div className="text-tg-hint text-center text-sm">
-                            Select a token ID to view NFT
+                </div>
+              )}
+              {selectedCollection && (
+                <>
+                  <SelectTokenId
+                    collection={selectedCollection}
+                    onBack={handleBack}
+                    onTokenSelect={setSelectedTokenId}
+                  />
+
+                  <div className="h-[356px]">
+                    {selectedCollection && selectedTokenId && (
+                      <DisplayNFT
+                        collection={selectedCollection}
+                        tokenId={selectedTokenId}
+                        onClick={handleTokenSelect}
+                      />
+                    )}
+                    {selectedCollection && !selectedTokenId && (
+                      <div className="flex flex-col gap-4 p-4">
+                        {/* Placeholder image with same height as DisplayNFT */}
+                        <div className="flex justify-center">
+                          <div className="bg-tg-secondary flex w-64 items-center justify-center rounded-lg">
+                            <div className="text-tg-hint text-center text-sm">
+                              Select a token ID to view NFT
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      {/* Placeholder title */}
-                      <div className="text-tg-hint text-center text-lg font-medium">
-                        {selectedCollection.name}
+                        {/* Placeholder title */}
+                        <div className="text-tg-hint text-center text-lg font-medium">
+                          {selectedCollection.name}
+                        </div>
                       </div>
-                    </div>
-                  )}
-                </div>
-              </>
-            )}
-          </div>
-        );
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          );
 
-        return createPortal(addCloudContent, portalContainer);
-      })()}
+          return createPortal(addCloudContent, portalContainer);
+        })()}
     </>
   );
 };

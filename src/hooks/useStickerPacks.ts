@@ -35,6 +35,8 @@ const PricingTierSchema = z.object({
   stripe_price_id: z.string().nullable(),
   supply: z.number().optional(),
   sold_supply: z.number().optional(),
+  max_supply: z.number().nullable().optional(),
+  purchase_count: z.number().optional(),
 });
 
 // Pricing schema
@@ -59,24 +61,30 @@ const StickerPackUserExecutionSchema = z.object({
 type StickerPackUserExecution = z.infer<typeof StickerPackUserExecutionSchema>;
 
 // Main sticker pack (StickerBundles as requested)
-const StickerBundlesSchema = z.object({
-  id: z.number(),
-  name: z.string(),
-  description: z.string().nullable(),
-  type: StickerPackTypeSchema,
-  is_active: z.boolean(),
-  created_by_admin_id: z.string(),
-  created_at: z.number(),
-  updated_at: z.number(),
-  item_count: z
-    .union([z.string(), z.number()])
-    .transform(val => (typeof val === 'string' ? parseInt(val, 10) : val)),
-  min_tokens_required: z.number(),
-  max_tokens_required: z.number(),
-  pricing: PricingSchema,
-  preview_items: z.array(StickerPackPreviewItemSchema),
-  user_execution: StickerPackUserExecutionSchema.nullable().optional(),
-});
+const StickerBundlesSchema = z
+  .object({
+    id: z.number(),
+    name: z.string(),
+    description: z.string().nullable(),
+    type: StickerPackTypeSchema,
+    is_active: z.boolean(),
+    created_by_admin_id: z.string(),
+    created_at: z.number(),
+    updated_at: z.number(),
+    expires_at: z.number().nullable().optional(),
+    item_count: z
+      .union([z.string(), z.number()])
+      .transform(val => (typeof val === 'string' ? parseInt(val, 10) : val)),
+    min_tokens_required: z.number(),
+    max_tokens_required: z.number(),
+    pricing: PricingSchema,
+    preview_items: z.array(StickerPackPreviewItemSchema),
+    user_execution: StickerPackUserExecutionSchema.nullable().optional(),
+  })
+  .transform(data => ({
+    ...data,
+    expiresAt: data.expires_at,
+  }));
 export type StickerBundles = z.infer<typeof StickerBundlesSchema>;
 
 // Response type
@@ -233,23 +241,29 @@ const StickerPackItemSchema = z.object({
 });
 
 // Single sticker pack schema (detailed)
-const StickerPackDetailSchema = z.object({
-  id: z.number(),
-  name: z.string(),
-  description: z.string().nullable(),
-  type: StickerPackTypeSchema,
-  is_active: z.boolean(),
-  created_by_admin_id: z.string(),
-  created_at: z.number(),
-  updated_at: z.number(),
-  min_tokens_required: z.number(),
-  max_tokens_required: z.number(),
-  pricing: PricingSchema,
-  items: z.array(StickerPackItemSchema),
-  item_count: z.number(),
-  preview_items: z.array(StickerPackPreviewItemSchema).optional(),
-  user_execution: StickerPackUserExecutionSchema.nullable().optional(),
-});
+const StickerPackDetailSchema = z
+  .object({
+    id: z.number(),
+    name: z.string(),
+    description: z.string().nullable(),
+    type: StickerPackTypeSchema,
+    is_active: z.boolean(),
+    created_by_admin_id: z.string(),
+    created_at: z.number(),
+    updated_at: z.number(),
+    expires_at: z.number().nullable().optional(),
+    min_tokens_required: z.number(),
+    max_tokens_required: z.number(),
+    pricing: PricingSchema,
+    items: z.array(StickerPackItemSchema),
+    item_count: z.number(),
+    preview_items: z.array(StickerPackPreviewItemSchema).optional(),
+    user_execution: StickerPackUserExecutionSchema.nullable().optional(),
+  })
+  .transform(data => ({
+    ...data,
+    expiresAt: data.expires_at,
+  }));
 
 export type StickerPackItem = z.infer<typeof StickerPackItemSchema>;
 export type StickerPackDetail = z.infer<typeof StickerPackDetailSchema>;

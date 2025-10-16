@@ -23,6 +23,7 @@ import { useTelegramTheme } from '@/auth/useTelegram';
 import { ToastProvider } from '@/components/ui';
 import { SelectedNFTsProvider } from '@/contexts/SelectedNFTsContext';
 import { useSession } from '@/auth/SessionProvider';
+import { Link } from '@tanstack/react-router';
 // import { AddToHomeScreenButton } from '@/components/AddToHomeScreenButton';
 
 function TelegramAppHandler() {
@@ -205,23 +206,32 @@ function AppContent() {
           >
             <div className={`flex h-full items-center justify-center`}>
               {/* <AddToHomeScreenButton /> */}
-              <h1 className="text-tg-text text-xl font-bold">Yours.fun</h1>
+              <Link to="/">
+                <h1 className="text-tg-text text-xl font-bold">Yours.fun</h1>
+              </Link>
             </div>
           </div>
         )}
 
         {shouldHaveTopBar && (
           <div
-            className="fixed top-0 right-0 left-0 z-20 flex h-15 items-center justify-end p-4"
+            className="bg-tg-secondary-bg fixed top-0 right-0 left-0 z-20 flex h-15 items-center justify-end p-4"
             style={{
               marginTop:
                 contentSafeAreaInsets.top + viewportSafeAreaInsets.top + 5,
             }}
           >
+            {!isViewportMounted && (
+              <div className="absolute left-1/2 -translate-x-1/2">
+                <Link to="/">
+                  <h1 className="text-tg-text text-xl font-bold">Yours.fun</h1>
+                </Link>
+              </div>
+            )}
             <FavoriteNFT />
           </div>
         )}
-        <main className={`bg-tg-bg h-full ${shouldHaveTopBar ? 'pt-18' : ''}`}>
+        <main className={`h-full ${shouldHaveTopBar ? 'pt-16' : ''}`}>
           <Outlet />
         </main>
         {shouldHaveNavBar && (

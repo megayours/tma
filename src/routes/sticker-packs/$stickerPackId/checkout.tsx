@@ -74,13 +74,13 @@ function CheckoutPage() {
       }
     }
 
-    // Navigate to processing page after payment
+    // Navigate to success/confetti page after payment
     if (executionId) {
       navigate({
-        to: `/sticker-packs/${stickerPackId}/processing/${executionId}`,
+        to: '/sticker-packs/$stickerPackId/success',
+        params: { stickerPackId },
         search: {
-          nft,
-          tier,
+          executionId,
         },
       });
     }

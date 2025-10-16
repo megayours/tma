@@ -30,8 +30,8 @@ function SelectedNFTDisplay({
   return (
     <div>
       <h2
-        className={`text-center text-lg font-semibold transition-all duration-500 ${
-          isSelectorOpen ? 'mb-4 opacity-0' : 'mb-6 opacity-100'
+        className={`text-tg-text text-center font-semibold transition-all duration-500 ${
+          isSelectorOpen ? 'mb-0 h-0 overflow-hidden opacity-0' : 'mb-6 h-auto opacity-100'
         }`}
       >
         Selected NFT
@@ -40,7 +40,7 @@ function SelectedNFTDisplay({
         className={`flex items-center justify-center transition-all duration-500`}
       >
         {selectedNFTs.map((nft, index) => (
-          <div key="selected-nft" className="flex flex-col items-center gap-3">
+          <div key="selected-nft" className="flex flex-col items-center">
             {/* NFT Image - Circular with Edit Icon */}
             <div
               className="relative cursor-pointer transition-all duration-500 ease-in-out"
@@ -111,7 +111,10 @@ function RouteComponent() {
   const { session } = useSession();
 
   // Fetch sticker pack data
-  const { data: stickerPack, isLoading: isLoadingStickerPack } = useStickerPack(stickerPackId, session);
+  const { data: stickerPack, isLoading: isLoadingStickerPack } = useStickerPack(
+    stickerPackId,
+    session
+  );
 
   const { data: collections } = useGetSupportedCollections();
   const { selectedFavorite } = useSelectedNFTsSafe();
@@ -282,7 +285,7 @@ function RouteComponent() {
     <div className="mx-auto max-w-4xl p-4">
       {/* <StepProgressIndicator currentStep={1} /> */}
 
-      <div className="space-y-4">
+      <div className="">
         {/* NFT Selection - Unified */}
         <div className="rounded-lg">
           {/* Display Selected NFT if available */}
@@ -294,7 +297,7 @@ function RouteComponent() {
           {/* NFT Selection - Collapsible */}
           {isSelectorOpen && (
             <div>
-              <h2 className="mb-4 text-lg font-semibold">
+              <h2 className="text-lg font-semibold">
                 {selectedNFTs.length === 0 ? 'Select Your NFT' : 'Change NFT'}
               </h2>
               <NFTSelector
@@ -309,11 +312,12 @@ function RouteComponent() {
 
         {/* Navigation Buttons */}
         {isSelectorOpen && selectedNFTs.length > 0 ? (
-          // Show Cancel button when selector is open and an NFT is already selected
+          // Hide button when selector is open and an NFT is already selected
           <TelegramMainButton
-            text="Cancel"
-            onClick={() => setIsSelectorOpen(false)}
-            visible={true}
+            text="Proceed"
+            onClick={handleContinue}
+            disabled={!canContinue || isSelectorOpen}
+            visible={false}
           />
         ) : (
           // Show Proceed button when selector is closed or no NFT selected

@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { Button, Card } from '@telegram-apps/telegram-ui';
 import type { SupportedCollection } from '@/hooks/useCollections';
 import { useGetNFTByCollectionAndTokenId } from '@/hooks/useCollections';
@@ -16,6 +17,9 @@ export function DisplayNFT({
   className = '',
   onClick,
 }: DisplayNFTProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
+
   const {
     data: nftData,
     isLoading: isNFTLoading,
@@ -25,6 +29,16 @@ export function DisplayNFT({
     collection.address,
     tokenId
   );
+
+  // Scroll into view only after image has loaded
+  const handleImageLoad = () => {
+    if (containerRef.current) {
+      containerRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+      });
+    }
+  };
 
   if (isNFTLoading) return <div>Loading...</div>;
 
@@ -41,13 +55,15 @@ export function DisplayNFT({
   }
 
   return (
-    <div className={`flex flex-col gap-4 p-4 ${className}`}>
+    <div ref={containerRef} className={`flex flex-col gap-4 p-4 ${className}`}>
       {nftData?.image && (
         <div className="flex justify-center">
           <img
+            ref={imageRef}
             src={nftData.image}
             alt={`${collection.name} #${tokenId}`}
             className="max-h-64 w-auto rounded-lg object-contain"
+            onLoad={handleImageLoad}
           />
         </div>
       )}

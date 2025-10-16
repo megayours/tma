@@ -8,7 +8,7 @@ interface StickerCollectionHeaderProps {
 
 export function StickerCollectionHeader({
   stickerPack,
-  endDate = '22d',
+  endDate = undefined,
 }: StickerCollectionHeaderProps) {
   return (
     <div className="relative rounded-lg p-2">
@@ -26,12 +26,14 @@ export function StickerCollectionHeader({
                   Animated
                 </Badge>
               )}
-              <Badge
-                type="number"
-                mode={stickerPack.is_active ? 'secondary' : 'critical'}
-              >
-                {stickerPack.is_active ? `Ends in ${endDate}` : `Inactive`}
-              </Badge>
+              {endDate && (
+                <Badge
+                  type="number"
+                  mode={stickerPack.is_active ? 'secondary' : 'critical'}
+                >
+                  {stickerPack.is_active ? `Ends in ${endDate}` : `Inactive`}
+                </Badge>
+              )}
             </div>
           </div>
         </div>

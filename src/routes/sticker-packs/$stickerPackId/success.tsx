@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { Button } from '@telegram-apps/telegram-ui';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+import type { DotLottie } from '@lottiefiles/dotlottie-web';
 import { hapticFeedback } from '@telegram-apps/sdk-react';
 import { useSession } from '@/auth/SessionProvider';
 import { useStickerPack } from '@/hooks/useStickerPacks';
@@ -25,13 +26,16 @@ function SuccessPage() {
   const { session } = useSession();
   const { isTelegram } = useTelegramTheme();
   const [showConfetti, setShowConfetti] = useState(true);
+  const [dotLottieInstance, setDotLottieInstance] = useState<DotLottie | null>(
+    null
+  );
 
-  const {
-    data: stickerPack,
-    isLoading,
-  } = useStickerPack(stickerPackId, session);
+  const { data: stickerPack, isLoading } = useStickerPack(
+    stickerPackId,
+    session
+  );
 
-  // Success haptic feedback and hide confetti after 3 seconds
+  // Success haptic feedback
   useEffect(() => {
     // Trigger success haptic feedback
     if (isTelegram) {
@@ -43,25 +47,27 @@ function SuccessPage() {
         console.warn('SuccessPage: Haptic feedback not available:', error);
       }
     }
-
-    // Hide confetti after 3 seconds
-    const timer = setTimeout(() => {
-      setShowConfetti(false);
-    }, 3000);
-    return () => clearTimeout(timer);
   }, [isTelegram]);
 
-  const handleBackToStickerPack = () => {
-    navigate({
-      to: '/sticker-packs/$stickerPackId',
-      params: { stickerPackId },
-      search: { executionId },
-    });
-  };
+  // Listen for animation complete event
+  useEffect(() => {
+    if (!dotLottieInstance) return;
+
+    const handleComplete = () => {
+      console.log('Confetti animation completed');
+      setShowConfetti(false);
+    };
+
+    dotLottieInstance.addEventListener('complete', handleComplete);
+
+    return () => {
+      dotLottieInstance.removeEventListener('complete', handleComplete);
+    };
+  }, [dotLottieInstance]);
 
   const handleViewMyPacks = () => {
     navigate({
-      to: '/profile/my-sticker-packs',
+      to: '/profile',
     });
   };
 
@@ -80,10 +86,11 @@ function SuccessPage() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl p-4 min-h-screen flex flex-col items-center justify-center">
+    <div className="mx-auto flex min-h-screen max-w-4xl flex-col items-center justify-center p-4">
       {/* Confetti animation */}
       {showConfetti && (
         <DotLottieReact
+          dotLottieRefCallback={setDotLottieInstance}
           className="pointer-events-none fixed bottom-0 left-1/2 z-50 h-2/3 w-[150vw] -translate-x-1/2"
           src="/lotties/confetti-full.lottie"
           loop={false}
@@ -91,17 +98,15 @@ function SuccessPage() {
         />
       )}
 
-      <div className="text-center space-y-6">
+      <div className="space-y-6 text-center">
         {/* Success Icon */}
-        <div className="text-6xl mb-4">🎉</div>
+        <div className="mb-4 text-6xl">🎉</div>
 
         {/* Success Message */}
-        <h1 className="text-3xl font-bold text-tg-text">
-          Payment Successful!
-        </h1>
+        <h1 className="text-tg-text text-3xl font-bold">Payment Successful!</h1>
 
         <div className="space-y-2">
-          <p className="text-lg text-tg-text">
+          <p className="text-tg-text text-lg">
             Your sticker pack is being generated
           </p>
           {stickerPack && (
@@ -112,27 +117,18 @@ function SuccessPage() {
         </div>
 
         {executionId && (
-          <div className="bg-tg-secondary-bg rounded-lg p-4 mt-6">
-            <p className="text-sm text-tg-hint mb-2">Order ID:</p>
-            <code className="text-xs font-mono bg-tg-hint/10 px-2 py-1 rounded">
+          <div className="bg-tg-secondary-bg mt-6 rounded-lg p-4">
+            <p className="text-tg-hint mb-2 text-sm">Order ID:</p>
+            <code className="bg-tg-hint/10 rounded px-2 py-1 font-mono text-xs">
               {executionId}
             </code>
           </div>
         )}
 
         {/* Action Buttons */}
-        <div className="flex flex-col space-y-3 mt-8">
+        <div className="mt-8 flex flex-col space-y-3">
           <Button
             mode="filled"
-            size="l"
-            onClick={handleBackToStickerPack}
-            className="w-full"
-          >
-            View Generation Progress
-          </Button>
-
-          <Button
-            mode="outline"
             size="l"
             onClick={handleViewMyPacks}
             className="w-full"
@@ -152,7 +148,7 @@ function SuccessPage() {
 
         {/* Additional Info */}
         <div className="mt-8 text-center">
-          <p className="text-sm text-tg-hint">
+          <p className="text-tg-hint text-sm">
             You'll be notified when your stickers are ready!
           </p>
         </div>

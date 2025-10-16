@@ -138,7 +138,6 @@ export const NFTCloud = ({
             <SelectCollection
               collections={collections || []}
               onCollectionSelect={handleCollectionSelect}
-              size="s"
             />
           )}
         </div>

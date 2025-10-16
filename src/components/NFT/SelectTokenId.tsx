@@ -1,4 +1,4 @@
-import { Button, Input } from '@telegram-apps/telegram-ui';
+import { Button } from '@telegram-apps/telegram-ui';
 import type { SupportedCollection } from '@/hooks/useCollections';
 import { useState, useEffect, useRef } from 'react';
 
@@ -60,27 +60,26 @@ export function SelectTokenId({
   };
 
   return (
-    <div className={`flex flex-col p-2 ${className}`}>
-      <div>
-        <Button mode="plain" size="s" onClick={onBack} className="w-fit">
-          ←
-        </Button>
+    <div className={`flex flex-col ${className}`}>
+      <div className="flex flex-row">
+        <div>
+          <Button mode="plain" size="s" onClick={onBack} className="w-fit">
+            ←
+          </Button>
+        </div>
+        <h1 className="text-tg-text text-xl">{collection.name}</h1>
       </div>
-      <h1 className="text-tg-text text-xl">{collection.name}</h1>
-      <div className="relative flex flex-col gap-4">
-        <Input
+      <div className="relative flex flex-col gap-2 p-4">
+        <label className="text-tg-hint text-sm">Token Id</label>
+        <input
           ref={inputRef}
-          header="Token Id"
           placeholder="#..."
           type="text"
           inputMode="numeric"
           value={searchToken}
           onChange={handleTokenChange}
           onFocus={handleInputFocus}
-          className="h-15 text-6xl"
-          style={{
-            fontSize: '2rem',
-          }}
+          className="bg-tg-bg text-tg-text placeholder:text-tg-hint focus:border-tg-link w-full rounded-xl border-2 border-transparent px-4 py-3 text-4xl transition-colors outline-none"
         />
       </div>
     </div>

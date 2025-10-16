@@ -46,6 +46,10 @@ export function useRequiredFavoriteRedirect() {
 
     if (needsRedirect) {
       hasRedirected.current = true;
+      // TODO:
+      // get the current path, if it has a param in query called "group", passit to /profile/favorites/new
+      // make it a function to make it more clear
+
       console.log(
         'Redirecting user to create favorites - no selectedFavorite or favorites found'
       );

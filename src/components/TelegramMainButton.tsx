@@ -34,9 +34,26 @@ export const TelegramMainButton: React.FC<TelegramMainButtonProps> = ({
     loadingRef.current = loading;
   }, [disabled, loading]);
 
-  // Only render in Telegram environment
+  // Render a normal button when not in Telegram
   if (!isTelegram) {
-    return null;
+    return visible ? (
+      <div className="fixed bottom-0 left-0 right-0 z-50 p-4">
+        <button
+          onClick={onClick}
+          disabled={disabled || loading}
+          className="bg-tg-button text-tg-button-text w-full rounded-lg px-6 py-3 text-center font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90"
+        >
+          {loading ? (
+            <span className="flex items-center justify-center gap-2">
+              <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+              Processing...
+            </span>
+          ) : (
+            text
+          )}
+        </button>
+      </div>
+    ) : null;
   }
 
   // Mount main button and set up click handler
@@ -57,7 +74,11 @@ export const TelegramMainButton: React.FC<TelegramMainButtonProps> = ({
     if (mainButton.onClick.isAvailable()) {
       clickHandlerRef.current = onClick;
       const offClick = mainButton.onClick(() => {
-        if (clickHandlerRef.current && !disabledRef.current && !loadingRef.current) {
+        if (
+          clickHandlerRef.current &&
+          !disabledRef.current &&
+          !loadingRef.current
+        ) {
           clickHandlerRef.current();
         }
       });
@@ -68,9 +89,11 @@ export const TelegramMainButton: React.FC<TelegramMainButtonProps> = ({
         if (mainButton.setParams && mainButton.setParams.isAvailable()) {
           try {
             mainButton.setParams({ isVisible: false });
-            console.log('TelegramMainButton: Hidden from main useEffect');
           } catch (error) {
-            console.error('TelegramMainButton: Error hiding main button:', error);
+            console.error(
+              'TelegramMainButton: Error hiding main button:',
+              error
+            );
           }
         }
       };
@@ -90,9 +113,9 @@ export const TelegramMainButton: React.FC<TelegramMainButtonProps> = ({
       const params: any = {
         text: loading ? 'Processing...' : text,
         isEnabled: !disabled && !loading,
-        isVisible: visible,
         isLoaderVisible: loading,
         isProgressVisible: loading,
+        isVisible: visible && !disabled,
         hasShineEffect,
       };
 
@@ -108,16 +131,28 @@ export const TelegramMainButton: React.FC<TelegramMainButtonProps> = ({
     } catch (error) {
       console.error('TelegramMainButton: Error updating params:', error);
     }
-  }, [isTelegram, text, disabled, loading, visible, backgroundColor, textColor, hasShineEffect]);
+  }, [
+    isTelegram,
+    text,
+    disabled,
+    loading,
+    visible,
+    backgroundColor,
+    textColor,
+    hasShineEffect,
+  ]);
 
   // Dedicated cleanup useEffect to ensure button is hidden on component unmount
   useEffect(() => {
     return () => {
       // Always try to hide the button when component unmounts
-      if (isTelegram && mainButton.setParams && mainButton.setParams.isAvailable()) {
+      if (
+        isTelegram &&
+        mainButton.setParams &&
+        mainButton.setParams.isAvailable()
+      ) {
         try {
           mainButton.setParams({ isVisible: false });
-          console.log('TelegramMainButton: Hidden on component cleanup');
         } catch (error) {
           console.error('TelegramMainButton: Error during cleanup:', error);
         }

@@ -5,6 +5,7 @@ import { IoArrowBackOutline } from 'react-icons/io5';
 import type { Prompt } from '../../types/prompt';
 import { usePromptMutation } from '../../hooks/usePrompts';
 import { useSession } from '@/auth/SessionProvider';
+import { SelectImageModal } from './forms/SelectImageModal';
 
 export const SelectNFT = ({
   prompt,
@@ -123,10 +124,6 @@ export const SelectPrompt = ({ prompt: _prompt }: { prompt: Prompt }) => {
   return <div>Select Prompt</div>;
 };
 
-export const SelectImage = ({ prompt: _prompt }: { prompt: Prompt }) => {
-  return <div>Select Image</div>;
-};
-
 export function AddInputButton({
   prompt,
   promptTextareaRef,
@@ -212,7 +209,9 @@ export function AddInputButton({
               <SelectNFT prompt={prompt} onClose={handleCloseModal} />
             )}
             {selectedContent === 'prompt' && <SelectPrompt prompt={prompt} />}
-            {selectedContent === 'image' && <SelectImage prompt={prompt} />}
+            {selectedContent === 'image' && (
+              <SelectImageModal prompt={prompt} onClose={handleCloseModal} />
+            )}
           </div>
         </div>
       )}

@@ -452,3 +452,35 @@ export const useRevealAllContent = (session: Session | null | undefined) => {
     },
   });
 };
+
+export const useUploadContent = (session: Session | null | undefined) => {
+  return useMutation({
+    mutationFn: async (content: string) => {
+      if (!session) {
+        throw new Error('Session required');
+      }
+
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/content/upload`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: session.authToken,
+          },
+          body: JSON.stringify({ content }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.message || `Failed to upload content: ${response.status}`
+        );
+      }
+
+      const data = await response.json();
+      return data as { id: string; type: string; url: string };
+    },
+  });
+};

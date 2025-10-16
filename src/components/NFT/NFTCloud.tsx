@@ -19,7 +19,7 @@ interface NFTCloudProps {
 }
 
 /**
- * Cloud tooltip component that appears above NFTs when long pressed
+ * Cloud tooltip component that appears above NFTs when clicked
  * Shows additional options or information for the selected NFT
  * Now keyboard-aware and positions itself properly when keyboard opens
  */
@@ -37,7 +37,8 @@ export const NFTCloud = ({
   const [selectionMode, setSelectionMode] = useState<
     'favorites' | 'collections'
   >('favorites');
-  const { updateCompulsoryNFTInSet, updateOptionalNFTInSet } = useNFTSetsContext();
+  const { updateCompulsoryNFTInSet, updateOptionalNFTInSet } =
+    useNFTSetsContext();
 
   const handleCollectionSelect = (collection: SupportedCollection) => {
     // Remove focus from any active textarea to prevent keyboard from opening
@@ -137,7 +138,6 @@ export const NFTCloud = ({
             <SelectCollection
               collections={collections || []}
               onCollectionSelect={handleCollectionSelect}
-              size="s"
             />
           )}
         </div>

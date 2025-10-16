@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { StickerPacksList } from '@/components/StickerPack/StickerPacksList';
+import { Landing } from '@/routes/landing';
 
 export const Route = createFileRoute('/')({
   component: Index,
@@ -8,7 +8,7 @@ export const Route = createFileRoute('/')({
 function Index() {
   return (
     <div className="bg-tg-bg text-tg-text">
-      <StickerPacksList />
+      <Landing />
     </div>
   );
 }

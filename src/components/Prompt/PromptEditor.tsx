@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect } from 'react';
 import type { Token } from '@/types/response';
 import { Button, Divider } from '@telegram-apps/telegram-ui';
+import { viewport, useSignal } from '@telegram-apps/sdk-react';
 
 import { AddInputButton } from '@/components/ui';
 import { IoSend } from 'react-icons/io5';
@@ -24,6 +25,7 @@ const PromptEditorContent = ({
   const [hasChanges, setHasChanges] = useState(false);
   const [isTextareaFocused, setIsTextareaFocused] = useState(false);
   const promptTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const isViewportMounted = useSignal(viewport.isMounted);
 
   // Use React Query to get the prompt data
   const { data: prompt, isLoading, error } = useGetPrompt(promptId, session);
@@ -61,7 +63,8 @@ const PromptEditorContent = ({
       addToast({
         type: 'error',
         title: 'Error',
-        message: error.message || 'Failed to generate preview. Please try again.',
+        message:
+          error.message || 'Failed to generate preview. Please try again.',
       });
     },
   });
@@ -102,7 +105,7 @@ const PromptEditorContent = ({
   return (
     <div className="bg-tg-bg">
       {/* Main content area */}
-      <div className="h-screen pb-60">
+      <div className={`h-screen ${isViewportMounted ? 'pb-80' : 'pb-60'}`}>
         {/* Your main content goes here */}
         {selectedVersion && (
           <div className="h-full">
@@ -115,7 +118,7 @@ const PromptEditorContent = ({
       </div>
 
       {/* Portal container for AddContentButton and NFTCloud */}
-      <div className="bg-tg-bg pointer-events-none fixed right-0 bottom-20 left-0 z-29 overflow-y-scroll pb-10">
+      <div className="bg-tg-bg pointer-events-none fixed right-0 bottom-20 left-0 z-29 overflow-y-scroll pb-16">
         <div id="custom-input-container"></div>
       </div>
 
@@ -153,7 +156,9 @@ const PromptEditorContent = ({
                 mode="filled"
                 size="m"
                 onClick={handleGenerate}
-                disabled={isGenerating || promptMutation.isPending || !promptText.trim()}
+                disabled={
+                  isGenerating || promptMutation.isPending || !promptText.trim()
+                }
                 loading={isGenerating || promptMutation.isPending}
               >
                 <IoSend className="text-tg-button-text" />

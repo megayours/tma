@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import type { Session } from '@/auth/useAuth';
 import type { Token } from '../types/response';
 import { getCachedFavorite, setCachedFavorite } from '@/utils/favoriteCache';
-import { useSelectedNFTs } from '@/contexts/SelectedNFTsContext';
+import { useSelectedNFTsSafe } from '@/contexts/SelectedNFTsContext';
 
 export type Favorite = {
   token: Token;
@@ -12,7 +12,7 @@ export type Favorite = {
 };
 
 export function useGetFavorites(session: Session | null) {
-  const { selectedFavorite, setSelectedFavorite: setSelectedFavoriteGlobal } = useSelectedNFTs();
+  const { selectedFavorite, setSelectedFavorite: setSelectedFavoriteGlobal } = useSelectedNFTsSafe();
   const [isLoadingSelected, setIsLoadingSelected] = useState(true);
 
   const { data, isLoading } = useQuery({

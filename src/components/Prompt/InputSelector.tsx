@@ -26,7 +26,7 @@ export const InputSelector = ({
   setIndex: number;
 }) => {
   const [longPressedIndex, setLongPressedIndex] = useState<number | null>(null);
-  const { removeNFTSet } = useNFTSetsContext();
+  const { removeNFTSet, removeOptionalNFT } = useNFTSetsContext();
   // Enhanced onCloudClose that resets longPressed state
   const handleCloudClose = () => {
     setLongPressedIndex(null);
@@ -89,6 +89,7 @@ export const InputSelector = ({
           onCloudClose={handleCloudClose}
           setIndex={setIndex}
           isCompulsory={false}
+          onRemove={() => removeOptionalNFT(setIndex, index)}
         />
       ))}
 

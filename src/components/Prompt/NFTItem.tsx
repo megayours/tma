@@ -1,6 +1,5 @@
 import type { Token } from '@/types/response';
 import { Avatar } from '@telegram-apps/telegram-ui';
-import { useLongPress } from 'use-long-press';
 import { NFTCloud } from '../NFT';
 import type { Prompt } from '../../types/prompt';
 
@@ -18,6 +17,7 @@ export const NFTItem = ({
   onCloudClose,
   setIndex,
   isCompulsory,
+  onRemove,
 }: {
   token: Token;
   index: number;
@@ -28,15 +28,20 @@ export const NFTItem = ({
   onCloudClose: () => void;
   setIndex: number;
   isCompulsory: boolean;
+  onRemove?: () => void;
 }) => {
-  const longPressBind = useLongPress(() => onLongPress(index), {
-    threshold: 500, // 500ms threshold for long press
-    cancelOnMovement: true, // Cancel if finger moves
-  });
+  const handleClick = () => {
+    onLongPress(index);
+  };
+
+  const handleRemove = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onRemove?.();
+  };
 
   return (
     <>
-      {/* Show cloud tooltip when any NFT is long pressed */}
+      {/* Show cloud tooltip when NFT is clicked */}
       {longPressedIndex === index && (
         <NFTCloud
           setIndex={setIndex}
@@ -48,8 +53,8 @@ export const NFTItem = ({
       )}
       <div
         key={index}
-        className="bg-tg-secondary-bg relative flex h-8 flex-row items-center gap-2 rounded-full p-2 select-none"
-        {...longPressBind()}
+        className="bg-tg-secondary-bg flex h-8 cursor-pointer flex-row items-center gap-2 rounded-full p-2 select-none"
+        onClick={handleClick}
         onContextMenu={e => e.preventDefault()}
       >
         {/* Show NFT label when in modification mode */}
@@ -71,6 +76,29 @@ export const NFTItem = ({
           src={token.image || '/nfts/not-available.png'}
           size={20}
         />
+
+        {/* X button to remove optional NFT - only show for optional items */}
+        {!isCompulsory && onRemove && isModifyingNFTs && (
+          <button
+            onClick={handleRemove}
+            className="text-tg-hint hover:text-tg-destructive-text border-tg-hint flex h-4 w-4 items-center justify-center rounded-full border transition-colors"
+            aria-label="Remove optional NFT"
+          >
+            <svg
+              className="h-3 w-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2.5}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        )}
       </div>
     </>
   );

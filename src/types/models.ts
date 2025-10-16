@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const ModelCapabilitySchema = z.object({
-  type: z.enum(['image', 'video', 'sticker']),
+  type: z.enum(['image', 'video', 'sticker', 'animated_sticker']),
   maxTokens: z.number().optional(),
   maxImages: z.number().optional(),
   supportedSizes: z.array(z.string()).optional(),

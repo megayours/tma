@@ -13,7 +13,6 @@ const tierDisplayNames = {
   legendary: 'Platinum',
 };
 
-
 function TierCard({
   tier,
   displayName,
@@ -34,61 +33,87 @@ function TierCard({
     tier.sold_supply !== undefined &&
     tier.sold_supply >= tier.supply;
 
-  // Color schemes for each tier
+  // Format supply text
+  const getSupplyText = () => {
+    if (tier.max_supply === null || tier.max_supply === undefined) {
+      return '(Open Edition)';
+    }
+    const purchaseCount = tier.purchase_count ?? 0;
+    return `(${purchaseCount}/${tier.max_supply})`;
+  };
+
+  // Enhanced color schemes for each tier
   const getTierColors = (tierKey: string, isSelected: boolean) => {
     const baseColors = {
       basic: isSelected
-        ? 'border-slate-300 bg-slate-50 text-slate-900 shadow-sm'
-        : 'border-slate-200 hover:border-slate-300 bg-white text-slate-700 hover:shadow-sm',
+        ? 'border-slate-500 bg-gradient-to-br from-slate-700 to-slate-800 shadow-xl shadow-slate-500/50'
+        : 'border-slate-600 bg-gradient-to-br from-slate-800 to-slate-900 hover:border-slate-500 hover:shadow-lg hover:shadow-slate-500/30',
       gold: isSelected
-        ? 'border-amber-300 bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-900 shadow-sm shadow-amber-200'
-        : 'border-amber-200 hover:border-amber-300 bg-gradient-to-r from-amber-25 to-yellow-25 text-amber-700 hover:shadow-sm',
+        ? 'border-amber-500 bg-gradient-to-br from-amber-600 via-yellow-600 to-amber-700 shadow-xl shadow-amber-500/60'
+        : 'border-amber-600 bg-gradient-to-br from-amber-700 via-yellow-700 to-amber-800 hover:border-amber-500 hover:shadow-lg hover:shadow-amber-500/40',
       legendary: isSelected
-        ? 'border-violet-300 bg-gradient-to-r from-violet-50 to-purple-50 text-violet-900 shadow-sm shadow-violet-200'
-        : 'border-violet-200 hover:border-violet-300 bg-gradient-to-r from-violet-25 to-purple-25 text-violet-700 hover:shadow-sm'
+        ? 'border-violet-500 bg-gradient-to-br from-violet-600 via-purple-600 to-violet-700 shadow-xl shadow-violet-500/60'
+        : 'border-violet-600 bg-gradient-to-br from-violet-700 via-purple-700 to-violet-800 hover:border-violet-500 hover:shadow-lg hover:shadow-violet-500/40',
     };
     return baseColors[tierKey as keyof typeof baseColors] || baseColors.basic;
   };
 
-  const tierKey = Object.keys(tierDisplayNames).find(key =>
-    tierDisplayNames[key as keyof typeof tierDisplayNames] === displayName
-  ) || 'basic';
-
-  // Get price color based on tier
-  const getPriceColor = (tierKey: string) => {
-    const colors = {
-      basic: 'text-slate-800',
-      gold: 'text-amber-800',
-      legendary: 'text-violet-800'
-    };
-    return colors[tierKey as keyof typeof colors] || colors.basic;
-  };
+  const tierKey =
+    Object.keys(tierDisplayNames).find(
+      key =>
+        tierDisplayNames[key as keyof typeof tierDisplayNames] === displayName
+    ) || 'basic';
 
   return (
     <div
-      className={`cursor-pointer rounded-xl border-2 p-4 transition-all duration-200 ${getTierColors(tierKey, isSelected)} ${
-        !isAvailable || isSoldOut || disabled ? 'opacity-50' : ''
-      } ${isSelected ? 'scale-[1.02] ring-2 ring-offset-2' : 'hover:scale-[1.01]'}`}
+      className={`cursor-pointer rounded-2xl border-3 p-6 transition-all duration-300 ease-out ${getTierColors(tierKey, isSelected)} text-white ${
+        !isAvailable || isSoldOut || disabled
+          ? 'cursor-not-allowed opacity-50'
+          : ''
+      } ${isSelected ? 'ring-opacity-50 scale-105 ring-4 ring-offset-4' : 'hover:scale-[1.02]'} ${
+        tierKey === 'basic'
+          ? 'ring-slate-300'
+          : tierKey === 'gold'
+            ? 'ring-amber-300'
+            : 'ring-violet-300'
+      }`}
       onClick={!disabled && isAvailable && !isSoldOut ? onClick : undefined}
     >
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          {/* Tier Icon */}
-          <div className={`w-2 h-2 rounded-full ${
-            tierKey === 'basic' ? 'bg-slate-400' :
-            tierKey === 'gold' ? 'bg-amber-400' :
-            'bg-violet-400'
-          }`}></div>
-          <h3 className="font-semibold text-base">
-            {displayName}
-          </h3>
-          {isSelected && (
-            <div className="flex h-4 w-4 items-center justify-center rounded-full bg-current">
-              <div className="h-2 w-2 rounded-full bg-white"></div>
+        <div className="flex items-center gap-4">
+          {/* Enhanced Tier Icon */}
+          <div className="relative flex items-center justify-center">
+            <div
+              className={`h-6 w-6 rounded-full transition-all duration-300 ${
+                tierKey === 'basic'
+                  ? 'bg-gradient-to-br from-slate-300 to-slate-400 shadow-lg shadow-slate-300/80'
+                  : tierKey === 'gold'
+                    ? 'bg-gradient-to-br from-amber-300 to-yellow-400 shadow-lg shadow-amber-300/80'
+                    : 'bg-gradient-to-br from-violet-300 to-purple-400 shadow-lg shadow-violet-300/80'
+              } ${isSelected ? 'scale-110' : ''}`}
+            >
+              {/* Inner glow */}
+              <div
+                className={`absolute inset-0 rounded-full blur-sm ${
+                  tierKey === 'basic'
+                    ? 'bg-slate-200'
+                    : tierKey === 'gold'
+                      ? 'bg-amber-200'
+                      : 'bg-violet-200'
+                } opacity-70`}
+              ></div>
             </div>
-          )}
+          </div>
+
+          <div className="flex flex-col gap-0.5">
+            <h3 className="text-lg font-bold tracking-tight">{displayName}</h3>
+            <span className="text-xs font-medium opacity-60">
+              {getSupplyText()}
+            </span>
+          </div>
         </div>
-        <div className={`text-lg font-bold ${getPriceColor(tierKey)}`}>
+
+        <div className={`text-xl font-bold tracking-tight`}>
           {tier.formatted_price || 'Free'}
         </div>
       </div>
@@ -102,11 +127,7 @@ export function TierSelector({
   onTierSelect,
   disabled,
 }: TierSelectorProps) {
-  const {
-    data: stickerPack,
-    isLoading,
-    error,
-  } = useStickerPack(stickerPackId);
+  const { data: stickerPack, isLoading, error } = useStickerPack(stickerPackId);
 
   // Debug logging
   console.log('TierSelector Debug:', {
@@ -114,23 +135,20 @@ export function TierSelector({
     isLoading,
     error: error?.message,
     stickerPack: stickerPack ? 'loaded' : 'null',
-    pricing: stickerPack?.pricing
+    pricing: stickerPack?.pricing,
   });
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        <h2 className="text-lg font-semibold">Select Tier</h2>
-        <div className="grid gap-4 md:grid-cols-3">
-          {[1, 2, 3].map(i => (
-            <div key={i} className="animate-pulse rounded-lg border p-4">
-              <div className="mb-2 h-4 rounded bg-gray-200"></div>
-              <div className="mb-3 h-6 rounded bg-gray-200"></div>
-              <div className="mb-3 h-3 rounded bg-gray-200"></div>
-              <div className="h-8 rounded bg-gray-200"></div>
-            </div>
-          ))}
-        </div>
+      <div className="grid gap-4 md:grid-cols-3">
+        {[1, 2, 3].map(i => (
+          <div key={i} className="animate-pulse rounded-lg border p-4">
+            <div className="mb-2 h-4 rounded bg-gray-200"></div>
+            <div className="mb-3 h-6 rounded bg-gray-200"></div>
+            <div className="mb-3 h-3 rounded bg-gray-200"></div>
+            <div className="h-8 rounded bg-gray-200"></div>
+          </div>
+        ))}
       </div>
     );
   }
@@ -138,17 +156,15 @@ export function TierSelector({
   if (error || !stickerPack) {
     return (
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold">Select Tier</h2>
+        <h2 className="text-tg-text text-lg font-semibold">Select Tier</h2>
         <div className="rounded-lg border border-red-200 bg-red-50 p-4">
           <p className="text-sm text-red-600">
             Failed to load pricing information. Please try again.
           </p>
           {error && (
-            <p className="text-xs text-red-500 mt-2">
-              Error: {error.message}
-            </p>
+            <p className="mt-2 text-xs text-red-500">Error: {error.message}</p>
           )}
-          <p className="text-xs text-gray-500 mt-2">
+          <p className="mt-2 text-xs text-gray-500">
             Sticker Pack ID: {stickerPackId}
           </p>
         </div>
@@ -157,9 +173,12 @@ export function TierSelector({
   }
 
   // Dynamically generate tiers based on what's available in the pricing data
-  const availableTiers = Object.entries(stickerPack.pricing).filter(([_, tierData]) =>
-    // Include tier if it has pricing info or is available for free
-    tierData.stripe_price_id !== null || tierData.amount_cents !== null || tierData.formatted_price !== null
+  const availableTiers = Object.entries(stickerPack.pricing).filter(
+    ([_, tierData]) =>
+      // Include tier if it has pricing info or is available for free
+      tierData.stripe_price_id !== null ||
+      tierData.amount_cents !== null ||
+      tierData.formatted_price !== null
   );
 
   const tiers: Array<{
@@ -172,58 +191,32 @@ export function TierSelector({
     tier: tierData,
   }));
 
-  if (tiers.length === 0) {
-    return (
-      <div className="space-y-6">
-        <div className="text-center">
-          <h2 className="text-xl font-bold text-gray-900 mb-1">Select Tier</h2>
-          <p className="text-sm text-gray-600">Choose your preferred quality level</p>
-        </div>
-        <div className="grid gap-3 grid-cols-1">
-          <div className="cursor-pointer rounded-xl border-2 p-4 transition-all duration-200 border-slate-300 bg-slate-50 text-slate-900 shadow-sm scale-[1.02] ring-2 ring-offset-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 rounded-full bg-slate-400"></div>
-                <h3 className="font-semibold text-base">Basic</h3>
-                <div className="flex h-4 w-4 items-center justify-center rounded-full bg-current">
-                  <div className="h-2 w-2 rounded-full bg-white"></div>
-                </div>
-              </div>
-              <div className="text-lg font-bold text-slate-800">Free</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   // Adjust grid columns based on number of available tiers
-  const gridCols = tiers.length === 1 ? 'grid-cols-1' : tiers.length === 2 ? 'md:grid-cols-2' : 'md:grid-cols-3';
+  const gridCols =
+    tiers.length === 1
+      ? 'grid-cols-1'
+      : tiers.length === 2
+        ? 'md:grid-cols-2'
+        : 'md:grid-cols-3';
 
   return (
-    <div className="space-y-6">
-      <div className="text-center">
-        <h2 className="text-xl font-bold text-gray-900 mb-1">Select Tier</h2>
-        <p className="text-sm text-gray-600">Choose your preferred quality level</p>
-      </div>
-      <div className={`grid gap-3 ${gridCols}`}>
-        {tiers.map(({ key, displayName, tier }) => {
-          const isAvailable =
-            tier.stripe_price_id !== null || tier.amount_cents === null;
+    <div className={`grid gap-3 ${gridCols}`}>
+      {tiers.map(({ key, displayName, tier }) => {
+        const isAvailable =
+          tier.stripe_price_id !== null || tier.amount_cents === null;
 
-          return (
-            <TierCard
-              key={key}
-              tier={tier}
-              displayName={displayName}
-              isSelected={selectedTier === key}
-              isAvailable={isAvailable}
-              onClick={() => onTierSelect(key)}
-              disabled={disabled}
-            />
-          );
-        })}
-      </div>
+        return (
+          <TierCard
+            key={key}
+            tier={tier}
+            displayName={displayName}
+            isSelected={selectedTier === key}
+            isAvailable={isAvailable}
+            onClick={() => onTierSelect(key)}
+            disabled={disabled}
+          />
+        );
+      })}
     </div>
   );
 }

@@ -11,8 +11,8 @@ interface CheckoutSearch {
   executionId?: string;
   clientSecret?: string;
   publishableKey?: string;
-  selectedTier?: 'basic' | 'gold' | 'legendary';
-  selectedTokens?: string; // JSON stringified Token[]
+  nft?: string; // Encoded NFT string (chain:contract:tokenId)
+  tier?: 'basic' | 'gold' | 'legendary';
 }
 
 export const Route = createFileRoute('/sticker-packs/$stickerPackId/checkout')({
@@ -20,8 +20,8 @@ export const Route = createFileRoute('/sticker-packs/$stickerPackId/checkout')({
     executionId: search.executionId as string,
     clientSecret: search.clientSecret as string,
     publishableKey: search.publishableKey as string,
-    selectedTier: search.selectedTier as 'basic' | 'gold' | 'legendary',
-    selectedTokens: search.selectedTokens as string,
+    nft: search.nft as string,
+    tier: search.tier as 'basic' | 'gold' | 'legendary',
   }),
   component: CheckoutPage,
 });
@@ -32,8 +32,8 @@ function CheckoutPage() {
     executionId,
     clientSecret,
     publishableKey,
-    selectedTier,
-    selectedTokens,
+    nft,
+    tier,
   } = Route.useSearch();
   const navigate = useNavigate();
   const { session } = useSession();
@@ -45,7 +45,7 @@ function CheckoutPage() {
     error,
   } = useStickerPack(stickerPackId, session);
 
-  // Parse selected tokens from URL param
+  // Log checkout params
   useEffect(() => {
     console.log('Checkout: URL search params:', {
       executionId,
@@ -55,19 +55,10 @@ function CheckoutPage() {
       publishableKey: publishableKey
         ? `${publishableKey.substring(0, 20)}...`
         : 'undefined',
-      selectedTier,
-      selectedTokensLength: selectedTokens?.length || 0,
+      nft,
+      tier,
     });
-
-    if (selectedTokens) {
-      try {
-        const tokens = JSON.parse(decodeURIComponent(selectedTokens));
-        console.log('Checkout: Parsed tokens:', tokens.length, 'tokens');
-      } catch (err) {
-        console.error('Checkout: Failed to parse selected tokens:', err);
-      }
-    }
-  }, [selectedTokens, executionId, clientSecret, publishableKey, selectedTier]);
+  }, [executionId, clientSecret, publishableKey, nft, tier]);
 
   const handlePaymentComplete = () => {
     console.log('Checkout: Payment completed, redirecting to success page');
@@ -83,11 +74,16 @@ function CheckoutPage() {
       }
     }
 
-    // Navigate to purchases page
-    navigate({
-      to: '/profile/purchases',
-      search: { execution_id: executionId },
-    });
+    // Navigate to success/confetti page after payment
+    if (executionId) {
+      navigate({
+        to: '/sticker-packs/$stickerPackId/success',
+        params: { stickerPackId },
+        search: {
+          executionId,
+        },
+      });
+    }
   };
 
   // Note: onError removed as it's not supported by Stripe EmbeddedCheckout

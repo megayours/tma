@@ -10,16 +10,16 @@ jobs:
     # Run only on branches that match v{number}.{number}.{number} (e.g., v1.2.3, v2.0.0-rc1)
     if: ${{ github.ref_type == 'branch' && startsWith(github.ref_name, 'v') && contains(github.ref_name, '.') }}
     runs-on: ubuntu-latest
+    environment: production
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Use Node 20
-        uses: actions/setup-node@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: "20"
-          cache: "npm"
+          bun-version: latest
 
       - name: Write .env.production from secret
         run: |
@@ -28,25 +28,56 @@ jobs:
         env:
           PRODUCTION_ENV_FILE: ${{ secrets.PRODUCTION_ENV_FILE }}
 
+      # print the secret
+      - name: Print secret
+        run: |
+          echo .env
+          echo ${{ secrets.PRODUCTION_ENV_FILE }}
+          cat .env
+
       - name: Install Firebase CLI
-        run: npm i -g firebase-tools
+        run: bun i -g firebase-tools
 
       - name: Install deps
-        run: npm ci
+        run: bun install --frozen-lockfile
 
       - name: Build (prod)
         env:
           NODE_ENV: production
         run: |
           if [ -f package.json ] && jq -e '.scripts.build' package.json >/dev/null 2>&1; then
-            npm run build
+            echo "Building project..."
+            bun run build
+            echo "Build completed successfully"
+            echo "Build output:"
+            ls -lah dist/
           else
             echo "No build script. Skipping."
           fi
-      - name: Deploy to Firebase (token)
-        if: ${{ env.DEPLOY_WITH_TOKEN == 'true' }}
+
+      - name: Check Firebase config
+        run: |
+          echo "Checking Firebase configuration..."
+          if [ -f .firebaserc ]; then
+            echo "Firebase config found:"
+            cat .firebaserc
+          else
+            echo "WARNING: .firebaserc not found"
+          fi
+          if [ -f firebase.json ]; then
+            echo "Firebase hosting config:"
+            cat firebase.json
+          else
+            echo "WARNING: firebase.json not found"
+          fi
+
+      - name: Deploy to Firebase
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-          # Optional: if you set "production" alias in .firebaserc, pass --project production
         run: |
-          firebase deploy --non-interactive --project production
+          echo "Starting Firebase deployment..."
+          echo "Firebase CLI version:"
+          firebase --version
+          echo "Deploying to Firebase..."
+          firebase deploy --non-interactive --debug
+          echo "Deployment completed successfully!"

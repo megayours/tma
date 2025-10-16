@@ -1,4 +1,4 @@
-import React from 'react';
+import { useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Pagination } from '../types/requests';
 import type { Token } from '../types/response';
@@ -10,6 +10,7 @@ export type SupportedCollection = {
   chain: string;
   name: string;
   image: string;
+  id?: string;
 };
 
 export function useGetSupportedCollections() {
@@ -55,7 +56,7 @@ export function useGetCollectionsWithPrompt(prompt?: {
     error,
   } = useGetSupportedCollections();
 
-  const collections = React.useMemo(() => {
+  const collections = useMemo(() => {
     // Create a lookup map for supported collections (chain + address -> collection)
     const supportedCollectionsMap = new Map(
       supportedCollections?.map(collection => [

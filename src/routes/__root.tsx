@@ -187,7 +187,10 @@ function AppContent() {
   const isViewportMounting = useSignal(viewport.isMounting);
   const shouldHaveNavBar = location.pathname.startsWith('/feed');
   const shouldHaveTopBar =
-    location.pathname.startsWith('/landing') || location.pathname === '/';
+    (location.pathname.startsWith('/landing') ||
+      location.pathname.startsWith('/profile') ||
+      location.pathname === '/') &&
+    !location.pathname.startsWith('/profile/prompt/edit/');
   const isViewportMounted = useSignal(viewport.isMounted);
   const contentSafeAreaInsets = useSignal(viewport.contentSafeAreaInsets);
   const viewportSafeAreaInsets = useSignal(viewport.safeAreaInsets);
@@ -213,9 +216,9 @@ function AppContent() {
           </div>
         )}
 
-        {shouldHaveTopBar && (
+        {!isViewportMounted && shouldHaveTopBar && (
           <div
-            className="bg-tg-secondary-bg fixed top-0 right-0 left-0 z-20 flex h-15 items-center justify-end p-4"
+            className="flex h-12 items-center justify-end p-4"
             style={{
               marginTop:
                 contentSafeAreaInsets.top + viewportSafeAreaInsets.top + 5,
@@ -231,7 +234,7 @@ function AppContent() {
             <FavoriteNFT />
           </div>
         )}
-        <main className={`h-full ${shouldHaveTopBar ? 'pt-16' : ''}`}>
+        <main className={`h-full`}>
           <Outlet />
         </main>
         {shouldHaveNavBar && (

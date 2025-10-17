@@ -14,7 +14,7 @@ export function FavoriteNFT() {
   return (
     <Link
       to="/profile"
-      className="border-tg-hint hover:border-tg-link flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border-2 transition-all active:scale-95"
+      className="border-tg-hint hover:border-tg-link flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border-2 transition-all active:scale-95"
     >
       <img
         src={selectedFavorite.token.image || '/nfts/not-available.png'}

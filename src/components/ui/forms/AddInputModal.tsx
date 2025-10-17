@@ -43,12 +43,12 @@ export const AddInputModal = ({
             {selectedContent === 'nft' && (
               <SelectNFTModal prompt={prompt} onClose={onClose} />
             )}
-            {/* {selectedContent === 'prompt' && (
+            {selectedContent === 'prompt' && (
               <SelectPromptModal prompt={prompt} />
             )}
             {selectedContent === 'image' && (
               <SelectImageModal prompt={prompt} />
-            )} */}
+            )}
           </div>
         </Section>
       )}

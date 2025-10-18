@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { useAuthContext } from './AuthProvider';
 import { Link } from '@tanstack/react-router';
+import { SpinnerFullPage } from '@/components/ui';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -13,7 +14,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   // For now, just render children
 
   if (isAuthenticating) {
-    return <div>Loading... isTelegram: {isTelegram ? 'true' : 'false'}</div>;
+    return <SpinnerFullPage text={`Loading... isTelegram: ${isTelegram ? 'true' : 'false'}`} />;
   }
 
   if (!isAuthenticated && !isTelegram) {

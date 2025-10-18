@@ -4,6 +4,7 @@ import { useGetPreviewContent } from '../../hooks/useContents';
 import type { Content } from '@/types/response';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { DisplayContent } from '../DisplayContent';
+import { Spinner } from '@/components/ui';
 
 export const ContentPreviews = ({
   prompt,
@@ -156,7 +157,7 @@ export const ContentPreviews = ({
 
             {isLoadingMore && (
               <div className="flex flex-shrink-0 items-center justify-center p-2">
-                <div className="text-tg-hint text-xs">Loading...</div>
+                <Spinner size="sm" />
               </div>
             )}
           </div>

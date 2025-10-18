@@ -19,6 +19,7 @@ import {
   Badge,
   Alert,
   AlertDescription,
+  SpinnerFullPage,
 } from '@/components/ui';
 
 interface MyGenerationsListProps {
@@ -63,16 +64,7 @@ export function MyGenerationsList({
   const revealAllMutation = useRevealAllContent(session);
 
   if (isLoading) {
-    return (
-      <Section>
-        <div className="flex items-center justify-center py-12">
-          <div className="text-center">
-            <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-gray-900"></div>
-            <p className="mt-2">Loading your generations...</p>
-          </div>
-        </div>
-      </Section>
-    );
+    return <SpinnerFullPage text="Loading your generations..." />;
   }
 
   if (error) {

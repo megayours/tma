@@ -7,6 +7,7 @@ import { useMemo, useState } from 'react';
 import { decodeNFT } from '@/utils/nftEncoding';
 import { useStickerPack } from '@/hooks/useStickerPacks';
 import { useGetNFTByCollectionAndTokenId } from '@/hooks/useCollections';
+import { SpinnerFullPage } from '@/components/ui';
 
 const reviewSearchSchema = z.object({
   nft: z.string(),
@@ -93,13 +94,7 @@ function RouteComponent() {
 
   // Loading or error states
   if (isLoadingStickerPack || isLoadingNFT || !stickerPack) {
-    return (
-      <div className="mx-auto max-w-4xl p-4">
-        <div className="flex items-center justify-center p-8">
-          <div className="text-lg">Loading...</div>
-        </div>
-      </div>
-    );
+    return <SpinnerFullPage text="Loading..." />;
   }
 
   if (!nftData || !selectedToken) {

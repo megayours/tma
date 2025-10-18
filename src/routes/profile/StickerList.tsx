@@ -4,6 +4,7 @@ import {
   type StickerPackExecution,
 } from '@/hooks/useStickerPack';
 import { useState } from 'react';
+import { SpinnerFullPage } from '@/components/ui';
 
 // Loading dots animation component
 function LoadingDots() {
@@ -93,11 +94,7 @@ export function StickerList() {
   );
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <div className="text-lg">Loading your sticker packs...</div>
-      </div>
-    );
+    return <SpinnerFullPage text="Loading your sticker packs..." />;
   }
 
   if (error) {

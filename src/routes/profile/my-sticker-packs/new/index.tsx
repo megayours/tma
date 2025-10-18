@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useGetPrompts } from '@/hooks/usePrompts';
 import { useSession } from '../../../../auth/SessionProvider';
 import { useState } from 'react';
-import { StickerPromptCard, StickerCollectionBar } from '@/components/ui';
+import { StickerPromptCard, StickerCollectionBar, SpinnerFullPage } from '@/components/ui';
 import type { Prompt } from '@/types/prompt';
 
 export const Route = createFileRoute('/profile/my-sticker-packs/new/')({
@@ -36,7 +36,7 @@ function StickerPacks({
   console.log('PROMPTS', prompts);
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <SpinnerFullPage text="Loading prompts..." />;
   }
   if (!prompts) {
     return <div>No prompts available</div>;

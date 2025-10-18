@@ -4,6 +4,7 @@ import { useGetRecommendedPromptsWithDetails } from '@/hooks/usePrompts';
 import type { PromptWithContent } from '@/types/content';
 import { ShowContent } from '@/components/Feed/ShowContent';
 import { useSession } from '@/auth/SessionProvider';
+import { Spinner } from '@/components/ui';
 
 // Debug toggle - set to false to disable all debug functionality
 const DEBUG_MODE = false;
@@ -373,11 +374,8 @@ export function Feed() {
         ))}
 
         {(isFetchingMore || isInitialLoading) && (
-          <section className="flex snap-start items-center justify-center">
-            <div className="text-center">
-              <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-gray-900"></div>
-              <p className="mt-2">Loading more prompts...</p>
-            </div>
+          <section className="flex snap-start items-center justify-center py-8">
+            <Spinner text="Loading more prompts..." size="lg" />
           </section>
         )}
 

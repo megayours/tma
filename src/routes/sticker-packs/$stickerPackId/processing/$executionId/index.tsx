@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { useStickerPack } from '@/hooks/useStickerPacks';
 import { decodeNFT } from '@/utils/nftEncoding';
 import { useGetNFTByCollectionAndTokenId } from '@/hooks/useCollections';
+import { SpinnerFullPage } from '@/components/ui';
 
 const processingSearchSchema = z.object({
   nft: z.string().optional(),
@@ -77,13 +78,7 @@ function RouteComponent() {
 
   // Loading states
   if (isLoadingStickerPack || !stickerPack || !executionId) {
-    return (
-      <div className="mx-auto max-w-4xl p-4">
-        <div className="flex items-center justify-center p-8">
-          <div className="text-lg">Loading...</div>
-        </div>
-      </div>
-    );
+    return <SpinnerFullPage text="Loading..." />;
   }
 
   return (

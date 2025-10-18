@@ -2,12 +2,13 @@ import '@telegram-apps/telegram-ui/dist/styles.css';
 import { Card } from '@telegram-apps/telegram-ui';
 import type { ImageStatus } from '@/types/image';
 import { useGetImage } from '@/hooks/useImages';
+import { Spinner } from '@/components/ui';
 
 export function DisplayImage({ imageStatus }: { imageStatus: ImageStatus }) {
   const { image, isLoading } = useGetImage(imageStatus.id);
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <Spinner text="Loading image..." centered />;
   }
 
   return (

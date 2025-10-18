@@ -6,7 +6,7 @@ import {
 } from '@/hooks/useCollections';
 import type { SupportedCollection } from '@/hooks/useCollections';
 import { Button, Card, Input } from '@telegram-apps/telegram-ui';
-import { CriticalButton, createButtonContent } from '@/components/ui';
+import { CriticalButton, createButtonContent, Spinner } from '@/components/ui';
 import { useState } from 'react';
 import { useGetNFTByCollectionAndTokenId } from '@/hooks/useCollections';
 import { Section } from '@telegram-apps/telegram-ui';
@@ -125,7 +125,7 @@ function RouteComponent() {
       tokenId
     );
 
-    if (isNFTLoading) return <div>Loading...</div>;
+    if (isNFTLoading) return <Spinner text="Loading NFT..." centered />;
 
     if (error) return <div>Error: {error.message}</div>;
 

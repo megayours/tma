@@ -4,6 +4,7 @@ import { useStickerPack } from '@/hooks/useStickerPacks';
 import { StickerPackContentList } from '@/components/StickerPack/StickerPackContentList';
 import { StickerCollectionHeader } from '@/components/StickerPack/StickerCollectionHeader';
 import { TelegramMainButton } from '@/components/TelegramMainButton';
+import { SpinnerFullPage } from '@/components/ui';
 
 export const Route = createFileRoute('/sticker-packs/$stickerPackId/details/')({
   component: RouteComponent,
@@ -79,13 +80,7 @@ function RouteComponent() {
   };
 
   if (isLoading) {
-    return (
-      <div className="mx-auto max-w-4xl p-4">
-        <div className="flex items-center justify-center p-8">
-          <div className="text-lg">Loading sticker pack...</div>
-        </div>
-      </div>
-    );
+    return <SpinnerFullPage text="Loading sticker pack..." />;
   }
 
   if (error) {

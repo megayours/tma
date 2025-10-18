@@ -10,6 +10,7 @@ import {
   Badge,
   Alert,
   AlertDescription,
+  SpinnerFullPage,
 } from '@/components/ui';
 
 export const Route = createFileRoute('/profile/favorites/')({
@@ -22,7 +23,7 @@ function RouteComponent() {
   const { favorites, isLoadingFavorites } = useGetFavorites(session);
 
   if (isLoadingFavorites) {
-    return <Section>Loading...</Section>;
+    return <SpinnerFullPage text="Loading favorites..." />;
   }
 
   if (favorites && favorites.length === 0) {

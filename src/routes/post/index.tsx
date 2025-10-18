@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { usePosts } from '../../lib/queries';
+import { SpinnerFullPage } from '@/components/ui';
 
 export const Route = createFileRoute('/post/')({
   component: RouteComponent,
@@ -9,11 +10,7 @@ function RouteComponent() {
   const { data: posts, isLoading, error } = usePosts();
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <div className="text-lg">Loading posts...</div>
-      </div>
-    );
+    return <SpinnerFullPage text="Loading posts..." />;
   }
 
   if (error) {

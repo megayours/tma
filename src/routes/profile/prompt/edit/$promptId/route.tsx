@@ -8,6 +8,7 @@ import {
 } from '@/contexts/SelectedNFTsContext';
 import { useSettings } from '@/contexts/SettingsContext';
 import { PromptContext } from '@/contexts/PromptContext';
+import { SpinnerFullPage } from '@/components/ui';
 
 export const Route = createFileRoute('/profile/prompt/edit/$promptId')({
   component: RouteComponent,
@@ -28,7 +29,7 @@ function RouteContent() {
   const { selectedNFTs, setSelectedNFTs } = useSelectedNFTs();
   const { settingsOpen, setSettingsOpen } = useSettings();
 
-  if (isLoading) return <div>Loading prompt...</div>;
+  if (isLoading) return <SpinnerFullPage text="Loading prompt..." />;
 
   if (error) {
     const errorMessage = error.message;

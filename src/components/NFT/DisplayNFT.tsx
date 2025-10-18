@@ -3,6 +3,7 @@ import { Button, Card } from '@telegram-apps/telegram-ui';
 import type { SupportedCollection } from '@/hooks/useCollections';
 import { useGetNFTByCollectionAndTokenId } from '@/hooks/useCollections';
 import type { Token } from '../../types/response';
+import { Spinner } from '@/components/ui';
 
 interface DisplayNFTProps {
   collection: SupportedCollection;
@@ -40,7 +41,7 @@ export function DisplayNFT({
     }
   };
 
-  if (isNFTLoading) return <div>Loading...</div>;
+  if (isNFTLoading) return <Spinner text="Loading NFT..." centered />;
 
   if (error) return <div>Error: {error.message}</div>;
 

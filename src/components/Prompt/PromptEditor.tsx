@@ -3,7 +3,7 @@ import type { Token } from '@/types/response';
 import { Button, Divider } from '@telegram-apps/telegram-ui';
 import { viewport, useSignal } from '@telegram-apps/sdk-react';
 
-import { AddInputButton } from '@/components/ui';
+import { AddInputButton, SpinnerFullPage } from '@/components/ui';
 import { IoSend } from 'react-icons/io5';
 import { InputsEditor } from './InputsEditor';
 import { usePromptPreviewGeneration } from '@/hooks/usePromptPreviewGeneration';
@@ -98,7 +98,7 @@ const PromptEditorContent = ({
     }
   };
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) return <SpinnerFullPage text="Loading prompt..." />;
   if (error) return <div>Error loading prompt: {error.message}</div>;
   if (!prompt) return <div>Prompt not found</div>;
 

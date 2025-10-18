@@ -181,7 +181,25 @@ export const PromptSettings = ({
 
   // Handle field updates
   const updateField = (field: keyof Prompt, value: any) => {
-    setEditedPrompt(prev => ({ ...prev, [field]: value }));
+    setEditedPrompt(prev => {
+      // Special handling for fields that exist at both prompt and version levels
+      // Update both prompt-level and version[0]-level
+      if (
+        (field === 'model' || field === 'minTokens' || field === 'maxTokens') &&
+        prev.versions &&
+        prev.versions.length > 0
+      ) {
+        return {
+          ...prev,
+          [field]: value,
+          versions: prev.versions.map((version, index) =>
+            // Update the first version (version 0) with the new value
+            index === 0 ? { ...version, [field]: value } : version
+          ),
+        };
+      }
+      return { ...prev, [field]: value };
+    });
     setHasChanges(true);
   };
 

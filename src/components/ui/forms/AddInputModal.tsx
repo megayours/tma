@@ -4,6 +4,8 @@ import { IoArrowBackOutline } from 'react-icons/io5';
 import type { Prompt } from '@/types/prompt';
 import { AddInputMenu } from '../navigation/AddInputMenu';
 import { SelectNFTModal } from './SelectNFTModal';
+import { SelectPromptModal } from './SelectPromptModal';
+import { SelectImageModal } from './SelectImageModal';
 
 interface AddInputModalProps {
   isOpen: boolean;

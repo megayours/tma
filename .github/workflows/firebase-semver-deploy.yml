@@ -71,13 +71,6 @@ jobs:
             echo "WARNING: firebase.json not found"
           fi
 
-      - name: Setup Firebase Service Account (if available)
-        if: ${{ secrets.FIREBASE_SERVICE_ACCOUNT != '' }}
-        run: |
-          echo "Setting up service account authentication..."
-          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > $HOME/gcp-key.json
-          echo "GOOGLE_APPLICATION_CREDENTIALS=$HOME/gcp-key.json" >> $GITHUB_ENV
-
       - name: Deploy to Firebase
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
@@ -85,17 +78,6 @@ jobs:
           echo "Starting Firebase deployment..."
           echo "Firebase CLI version:"
           firebase --version
-
-          if [ -n "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
-            echo "Using service account authentication..."
-            firebase deploy --non-interactive --debug
-          elif [ -n "$FIREBASE_TOKEN" ]; then
-            echo "Using FIREBASE_TOKEN authentication (deprecated)..."
-            firebase deploy --non-interactive --debug
-          else
-            echo "ERROR: No authentication method available!"
-            echo "Please set either FIREBASE_SERVICE_ACCOUNT or FIREBASE_TOKEN in GitHub secrets"
-            exit 1
-          fi
-
+          echo "Deploying to Firebase..."
+          firebase deploy --non-interactive --debug
           echo "Deployment completed successfully!"

@@ -6,6 +6,7 @@ import { viewport, useSignal } from '@telegram-apps/sdk-react';
 import { AddInputButton, SpinnerFullPage } from '@/components/ui';
 import { IoSend } from 'react-icons/io5';
 import { InputsEditor } from './InputsEditor';
+import { AdditionalContentDisplay } from './AdditionalContentDisplay';
 import { usePromptPreviewGeneration } from '@/hooks/usePromptPreviewGeneration';
 import { useSession } from '@/auth/SessionProvider';
 import { ContentPreviews } from './ContentPreview';
@@ -125,6 +126,9 @@ const PromptEditorContent = ({
       {/* Bottom toolbar */}
       <div className="bg-tg-secondary-bg border-tg-hint/20 safe-area-inset-bottom fixed right-0 bottom-0 left-0 z-30 border-t">
         <div className="flex h-full flex-col pb-4">
+          <AdditionalContentDisplay
+            contentIds={prompt.additionalContentIds}
+          />
           <div className="h-15">
             <InputsEditor prompt={prompt} />
           </div>

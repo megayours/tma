@@ -4,6 +4,7 @@ import type { Prompt } from '@/types/prompt';
 import { useUploadContent } from '@/hooks/useContents';
 import { usePromptMutation } from '@/hooks/usePrompts';
 import { useSession } from '@/auth/SessionProvider';
+import { useToast } from '@/components/ui/toast';
 
 interface SelectImageModalProps {
   prompt: Prompt;
@@ -12,6 +13,7 @@ interface SelectImageModalProps {
 
 export const SelectImageModal = ({ prompt, onClose }: SelectImageModalProps) => {
   const { session } = useSession();
+  const { addToast } = useToast();
   const { mutateAsync: uploadContent, isPending: isUploading } = useUploadContent(session);
   const { mutateAsync: updatePrompt, isPending: isUpdatingPrompt } = usePromptMutation(session);
   const [step, setStep] = useState<'select' | 'uploading' | 'completed' | 'error'>('select');
@@ -57,6 +59,7 @@ export const SelectImageModal = ({ prompt, onClose }: SelectImageModalProps) => 
 
         // Upload the image
         const uploadResult = await uploadContent(dataUrl);
+        console.log('📤 Upload completed:', uploadResult);
 
         // Update the prompt with the new content ID
         const updatedPrompt = {
@@ -67,7 +70,20 @@ export const SelectImageModal = ({ prompt, onClose }: SelectImageModalProps) => 
           ],
         };
 
+        console.log('📝 Updating prompt with new content ID:', {
+          promptId: prompt.id,
+          newContentId: uploadResult.id,
+          updatedAdditionalContentIds: updatedPrompt.additionalContentIds,
+        });
+
         await updatePrompt({ prompt: updatedPrompt });
+        console.log('✅ Prompt updated successfully');
+
+        addToast({
+          type: 'success',
+          title: 'Success',
+          message: 'Image uploaded and added to prompt successfully!',
+        });
 
         setStep('completed');
         // Close modal after a short delay to show feedback
@@ -76,8 +92,18 @@ export const SelectImageModal = ({ prompt, onClose }: SelectImageModalProps) => 
         }, 1000);
       } catch (error) {
         console.error('Failed to upload image:', error);
-        setErrorMessage(error instanceof Error ? error.message : 'Failed to upload image');
+
+        // Get error message from the error object
+        const errorMsg = error instanceof Error ? error.message : 'Failed to upload image';
+
+        setErrorMessage(errorMsg);
         setStep('error');
+
+        addToast({
+          type: 'error',
+          title: 'Upload Failed',
+          message: errorMsg,
+        });
       }
     };
 

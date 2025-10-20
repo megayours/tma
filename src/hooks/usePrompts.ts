@@ -480,6 +480,24 @@ export const usePromptMutation = (session: Session | null | undefined) => {
         throw new Error('No session available');
       }
 
+      const requestBody = {
+        name: prompt.name,
+        description: prompt.description,
+        versions: prompt.versions,
+        prompt: prompt.prompt,
+        additional_content_ids: prompt.additionalContentIds,
+        contracts: prompt.contracts,
+        max_tokens: prompt.maxTokens,
+        min_tokens: prompt.minTokens,
+        model: prompt.model,
+        published: prompt.published! > 0 ? true : false,
+      };
+
+      console.log('🔄 PUT /prompts request:', {
+        url: `${import.meta.env.VITE_PUBLIC_API_URL}/prompts/${prompt.id}`,
+        body: requestBody,
+      });
+
       const response = await fetch(
         `${import.meta.env.VITE_PUBLIC_API_URL}/prompts/${prompt.id}`,
         {
@@ -488,29 +506,25 @@ export const usePromptMutation = (session: Session | null | undefined) => {
             'Content-Type': 'application/json',
             Authorization: session.authToken,
           },
-          body: JSON.stringify({
-            name: prompt.name,
-            description: prompt.description,
-            versions: prompt.versions,
-            prompt: prompt.prompt,
-            additionalContentIds: prompt.additionalContentIds,
-            contracts: prompt.contracts,
-            max_tokens: prompt.maxTokens,
-            min_tokens: prompt.minTokens,
-            model: prompt.model,
-            published: prompt.published! > 0 ? true : false,
-          }),
+          body: JSON.stringify(requestBody),
         }
       );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(
-          errorData.message || `Failed to update prompt: ${response.status}`
-        );
+        console.error('❌ PUT /prompts failed:', {
+          status: response.status,
+          error: errorData,
+        });
+
+        // Extract the actual error message from the response
+        const errorMessage = errorData.error || errorData.message || `Failed to update prompt: ${response.status}`;
+        throw new Error(errorMessage);
       }
 
-      return (await response.json()) as Prompt;
+      const responseData = (await response.json()) as Prompt;
+      console.log('✅ PUT /prompts response:', responseData);
+      return responseData;
     },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['my-prompts'] });

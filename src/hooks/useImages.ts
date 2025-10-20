@@ -85,3 +85,29 @@ export function useGetImage(imageId: string) {
 
   return { image: data, isLoading };
 }
+
+export function useGetPublicImage(imageId: string) {
+  const { data, isLoading } = useQuery({
+    queryKey: ['public-image', imageId],
+    queryFn: async (): Promise<string> => {
+      try {
+        const response = await apiGet<any>(
+          `${import.meta.env.VITE_PUBLIC_API_URL}/images/public/${imageId}`
+        );
+
+        if (!response) {
+          throw new Error('No data received from API');
+        }
+
+        // Return the actual image data (base64 or URL)
+        return response.image || response;
+      } catch (error) {
+        console.error('Error fetching public image:', error);
+        throw error;
+      }
+    },
+    enabled: !!imageId,
+  });
+
+  return { imageData: data, isLoading };
+}

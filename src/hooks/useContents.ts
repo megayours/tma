@@ -480,6 +480,7 @@ export const useUploadContent = (session: Session | null | undefined) => {
       }
 
       const data = await response.json();
+      console.log('Content uploaded successfully:', data);
       return data as { id: string; type: string; url: string };
     },
   });

@@ -330,13 +330,31 @@ export const PromptSettings = ({
               value={editedPrompt.name || ''}
               onChange={e => updateField('name', e.target.value)}
             />
-            <Textarea
-              header="Description"
-              placeholder="Enter prompt description"
-              value={editedPrompt.description || ''}
-              onChange={e => updateField('description', e.target.value)}
-              rows={3}
-            />
+            <div className="relative">
+              <Textarea
+                header="Description"
+                placeholder="Enter prompt description"
+                value={editedPrompt.description || ''}
+                onChange={e => {
+                  const value = e.target.value;
+                  // Only update if within character limit
+                  if (value.length <= 100) {
+                    updateField('description', value);
+                  }
+                }}
+                rows={3}
+                maxLength={100}
+              />
+              <div
+                className={`mt-1 text-right text-xs ${
+                  (editedPrompt.description || '').length >= 100
+                    ? 'text-red-500'
+                    : 'text-tg-hint'
+                }`}
+              >
+                {(editedPrompt.description || '').length}/100
+              </div>
+            </div>
           </Section>
 
           {/* Publication Status Section */}

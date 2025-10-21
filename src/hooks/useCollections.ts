@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { z } from 'zod';
 import type { Pagination } from '../types/requests';
 import type { Token } from '../types/response';
 import { useSession } from '@/auth/SessionProvider';
@@ -12,6 +13,25 @@ export type SupportedCollection = {
   image: string;
   id?: string;
 };
+
+// Schema for supported collections - converts API response to SupportedCollection type
+export const SupportedCollectionSchema = z
+  .object({
+    id: z.number(),
+    chain: z.string(),
+    address: z.string(),
+    name: z.string(),
+    image: z.string(),
+  })
+  .transform(
+    (data): SupportedCollection => ({
+      id: data.id.toString(),
+      chain: data.chain,
+      address: data.address,
+      name: data.name,
+      image: data.image,
+    })
+  );
 
 export function useGetSupportedCollections() {
   const { session } = useSession();

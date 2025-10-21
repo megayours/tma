@@ -2,7 +2,7 @@ import { Link } from '@tanstack/react-router';
 import { useGetFavorites } from '@/hooks/useFavorites';
 import { useSession } from '@/auth/SessionProvider';
 
-export function FavoriteNFT() {
+export function FavoriteNFT({ size = 40 }: { size?: number }) {
   const { session } = useSession();
   const { selectedFavorite } = useGetFavorites(session!);
 
@@ -14,7 +14,8 @@ export function FavoriteNFT() {
   return (
     <Link
       to="/profile"
-      className="border-tg-hint hover:border-tg-link flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border-2 transition-all active:scale-95"
+      className="border-tg-hint hover:border-tg-link flex items-center justify-center overflow-hidden rounded-full border-2 transition-all active:scale-95"
+      style={{ width: size, height: size }}
     >
       <img
         src={selectedFavorite.token.image || '/nfts/not-available.png'}

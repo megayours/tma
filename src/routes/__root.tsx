@@ -17,7 +17,6 @@ import {
 } from '@telegram-apps/sdk-react';
 import { useEffect, useState } from 'react';
 import { AppRoot } from '@telegram-apps/telegram-ui';
-import { NavBar } from '@/components/lib/auth/NavBar';
 import { FavoriteNFT } from '@/components/lib/auth/FavoriteNFT';
 import { useTelegramTheme } from '@/auth/useTelegram';
 import { ToastProvider } from '@/components/ui';
@@ -185,12 +184,10 @@ function AppContent() {
   const location = useLocation();
   const { isAuthenticated } = useSession();
   const isViewportMounting = useSignal(viewport.isMounting);
-  const shouldHaveNavBar = location.pathname.startsWith('/feed');
-  const shouldHaveTopBar =
-    (location.pathname.startsWith('/landing') ||
-      location.pathname.startsWith('/profile') ||
-      location.pathname === '/') &&
-    !location.pathname.startsWith('/profile/prompt/edit/');
+  const shouldHaveNavBar =
+    location.pathname.startsWith('/feed') ||
+    location.pathname.startsWith('/profile') ||
+    location.pathname === '/';
   const isViewportMounted = useSignal(viewport.isMounted);
   const contentSafeAreaInsets = useSignal(viewport.contentSafeAreaInsets);
   const viewportSafeAreaInsets = useSignal(viewport.safeAreaInsets);
@@ -207,7 +204,9 @@ function AppContent() {
               height: contentSafeAreaInsets.top,
             }}
           >
-            <div className={`flex h-full items-center justify-center`}>
+            <div
+              className={`flex h-full flex-row items-center justify-center gap-4`}
+            >
               {/* <AddToHomeScreenButton /> */}
               <Link to="/">
                 <h1 className="text-tg-text text-xl font-bold">Yours.fun</h1>
@@ -216,7 +215,7 @@ function AppContent() {
           </div>
         )}
 
-        {!isViewportMounted && shouldHaveTopBar && (
+        {!isViewportMounted && (
           <div
             className="flex h-12 items-center justify-end p-4"
             style={{
@@ -231,7 +230,6 @@ function AppContent() {
                 </Link>
               </div>
             )}
-            <FavoriteNFT />
           </div>
         )}
         <main className={`h-full`}>
@@ -239,14 +237,16 @@ function AppContent() {
         </main>
         {shouldHaveNavBar && (
           <div
-            className="fixed right-0 bottom-0 left-0 z-10 flex h-16 items-center"
+            className="fixed right-0 bottom-0"
             style={{
-              paddingBottom: `${contentSafeAreaInsets.bottom} px`,
-              paddingLeft: `${contentSafeAreaInsets.left} px`,
-              paddingRight: `${contentSafeAreaInsets.right} px`,
+              paddingBottom: `${contentSafeAreaInsets.bottom}px`,
+              paddingRight: `${contentSafeAreaInsets.right}px`,
+              paddingLeft: `${contentSafeAreaInsets.left}px`,
             }}
           >
-            <NavBar />
+            <div className="border-tg-bg rounded-full p-5">
+              <FavoriteNFT size={60} />
+            </div>
           </div>
         )}
         {/* <TanStackRouterDevtools /> */}

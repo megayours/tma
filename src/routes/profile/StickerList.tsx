@@ -170,7 +170,7 @@ export function StickerList() {
                     href={execution.telegram_pack_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block rounded-lg bg-blue-500 py-2.5 text-center text-sm font-semibold text-white transition-colors hover:bg-blue-600"
+                    className="bg-tg-button text-tg-button-text block rounded-lg py-2.5 text-center text-sm font-semibold transition-colors"
                   >
                     Add to Telegram
                   </a>

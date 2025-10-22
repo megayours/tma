@@ -3,13 +3,8 @@ import { ProtectedRoute } from '../../auth/ProtectedRoute';
 import { StickerList } from './StickerList';
 import { useSession } from '../../auth/SessionProvider';
 import { Blockquote, Button } from '@telegram-apps/telegram-ui';
-import {
-  requestWriteAccess,
-  isRequestingWriteAccess,
-  requestWriteAccessPromise,
-  requestWriteAccessError,
-} from '@telegram-apps/sdk-react';
-import { useSignal, useLaunchParams } from '@telegram-apps/sdk-react';
+import { requestWriteAccess } from '@telegram-apps/sdk-react';
+import { useLaunchParams } from '@telegram-apps/sdk-react';
 import { useStickerPackExecutions } from '../../hooks/useStickerPack';
 
 export const Route = createFileRoute('/profile/')({
@@ -30,9 +25,8 @@ function CreatePromptDropdownButton() {
 }
 
 function AuthorizeBotMessages() {
-  const isRequesting = useSignal(isRequestingWriteAccess);
-  const writeAccessPromise = useSignal(requestWriteAccessPromise);
-  const error = useSignal(requestWriteAccessError);
+  // const isRequesting = useSignal(isRequestingWriteAccess);
+  // const writeAccessPromise = useSignal(requestWriteAccessPromise);
   const launchParams = useLaunchParams(true);
   const allowsWriteToPm = launchParams?.tgWebAppData?.user?.allowsWriteToPm;
   const { session } = useSession();

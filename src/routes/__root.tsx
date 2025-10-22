@@ -18,11 +18,11 @@ import {
 import { useEffect, useState } from 'react';
 import { AppRoot } from '@telegram-apps/telegram-ui';
 import { FavoriteNFT } from '@/components/lib/auth/FavoriteNFT';
+import { Header } from '@/components/Header';
 import { useTelegramTheme } from '@/auth/useTelegram';
 import { ToastProvider } from '@/components/ui';
 import { SelectedNFTsProvider } from '@/contexts/SelectedNFTsContext';
 import { useSession } from '@/auth/SessionProvider';
-import { Link } from '@tanstack/react-router';
 // import { AddToHomeScreenButton } from '@/components/AddToHomeScreenButton';
 
 function TelegramAppHandler() {
@@ -183,55 +183,16 @@ function TelegramAppHandler() {
 function AppContent() {
   const location = useLocation();
   const { isAuthenticated } = useSession();
-  const isViewportMounting = useSignal(viewport.isMounting);
   const shouldHaveNavBar =
     location.pathname.startsWith('/feed') ||
     location.pathname.startsWith('/profile') ||
     location.pathname === '/';
-  const isViewportMounted = useSignal(viewport.isMounted);
   const contentSafeAreaInsets = useSignal(viewport.contentSafeAreaInsets);
-  const viewportSafeAreaInsets = useSignal(viewport.safeAreaInsets);
   const content = (
     <>
       <TelegramAppHandler />
       <AppRoot>
-        {isViewportMounted && !isViewportMounting && (
-          // Optimistically take the space
-          <div
-            className="w-full"
-            style={{
-              marginTop: viewportSafeAreaInsets.top,
-              height: contentSafeAreaInsets.top,
-            }}
-          >
-            <div
-              className={`flex h-full flex-row items-center justify-center gap-4`}
-            >
-              {/* <AddToHomeScreenButton /> */}
-              <Link to="/">
-                <h1 className="text-tg-text text-xl font-bold">Yours.fun</h1>
-              </Link>
-            </div>
-          </div>
-        )}
-
-        {!isViewportMounted && (
-          <div
-            className="flex h-12 items-center justify-end p-4"
-            style={{
-              marginTop:
-                contentSafeAreaInsets.top + viewportSafeAreaInsets.top + 5,
-            }}
-          >
-            {!isViewportMounted && (
-              <div className="absolute left-1/2 -translate-x-1/2">
-                <Link to="/">
-                  <h1 className="text-tg-text text-xl font-bold">Yours.fun</h1>
-                </Link>
-              </div>
-            )}
-          </div>
-        )}
+        <Header />
         <main className={`h-full`}>
           <Outlet />
         </main>

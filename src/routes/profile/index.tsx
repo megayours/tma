@@ -2,7 +2,15 @@ import { createFileRoute, Link } from '@tanstack/react-router';
 import { ProtectedRoute } from '../../auth/ProtectedRoute';
 import { StickerList } from './StickerList';
 import { useSession } from '../../auth/SessionProvider';
-import { Button } from '@telegram-apps/telegram-ui';
+import { Blockquote, Button } from '@telegram-apps/telegram-ui';
+import {
+  requestWriteAccess,
+  isRequestingWriteAccess,
+  requestWriteAccessPromise,
+  requestWriteAccessError,
+} from '@telegram-apps/sdk-react';
+import { useSignal, useLaunchParams } from '@telegram-apps/sdk-react';
+import { useStickerPackExecutions } from '../../hooks/useStickerPack';
 
 export const Route = createFileRoute('/profile/')({
   component: ProfileLayout,
@@ -21,17 +29,91 @@ function CreatePromptDropdownButton() {
   );
 }
 
+function AuthorizeBotMessages() {
+  const isRequesting = useSignal(isRequestingWriteAccess);
+  const writeAccessPromise = useSignal(requestWriteAccessPromise);
+  const error = useSignal(requestWriteAccessError);
+  const launchParams = useLaunchParams(true);
+  const allowsWriteToPm = launchParams?.tgWebAppData?.user?.allowsWriteToPm;
+  const { session } = useSession();
+  const { data: processingExecutions } = useStickerPackExecutions(
+    { status: 'processing', pagination: { page: 1, size: 1 } },
+    session
+  );
+
+  const handleRequestAccess = async () => {
+    if (requestWriteAccess.isAvailable()) {
+      try {
+        const result = await requestWriteAccess();
+        console.log('Write access result:', result);
+      } catch (err) {
+        console.error('Write access error:', err);
+      }
+    } else {
+      console.log('requestWriteAccess is not available');
+    }
+  };
+
+  if (
+    allowsWriteToPm &&
+    processingExecutions?.data?.length &&
+    processingExecutions.data.length > 0
+  ) {
+    return (
+      <Blockquote type="text">
+        <h1 className="text-tg-accent-text text-sm font-semibold">
+          Generation in progress
+        </h1>
+        <span className="text-tg-button text-xs">
+          You'll receive notifications in the{' '}
+          <a
+            href={import.meta.env.VITE_PUBLIC_BOT_URL}
+            className="text-tg-link underline"
+          >
+            chat
+          </a>{' '}
+          when ready.
+        </span>
+      </Blockquote>
+    );
+  }
+
+  if (!allowsWriteToPm) {
+    return (
+      <Blockquote type="text">
+        <span className="text-tg-button">
+          Authorize Bot Messages Allowed: {allowsWriteToPm ? 'Yes' : 'No'}
+        </span>
+        <Button mode="filled" size="s" onClick={handleRequestAccess}>
+          Request Access
+        </Button>
+      </Blockquote>
+    );
+  }
+
+  return (
+    <Blockquote type="text">
+      <span className="text-tg-button">
+        Authorize Bot Messages Allowed: {allowsWriteToPm ? 'Yes' : 'No'}
+      </span>
+    </Blockquote>
+  );
+}
+
 function ProfileLayout() {
   return (
     <ProtectedRoute>
       <div className="profile-layout h-screen">
         {/* This renders the index content when at /profile */}
-        <main className="flex h-full flex-col gap-4 p-4">
+        <main className="flex h-full flex-col gap-4 p-6">
           <div className="flex flex-row items-center justify-between gap-2">
             <h1 className="text-tg-text text-2xl font-bold">
               My Sticker Packs
             </h1>
             <CreatePromptDropdownButton />
+          </div>
+          <div>
+            <AuthorizeBotMessages />
           </div>
           <StickerList />
         </main>

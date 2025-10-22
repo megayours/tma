@@ -99,7 +99,7 @@ export function StickerList() {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center p-8">
+      <div className="flex items-center justify-center">
         <div className="text-red-600">
           Error loading sticker packs: {error.message}
         </div>
@@ -109,7 +109,7 @@ export function StickerList() {
 
   if (!data || data.data.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-8">
+      <div className="flex flex-col items-center justify-center">
         <div className="text-tg-hint text-center text-lg">
           No sticker packs yet
         </div>
@@ -121,13 +121,13 @@ export function StickerList() {
   }
 
   return (
-    <div className="space-y-4 p-4">
+    <div className="space-y-4">
       {/* Executions List */}
       <div className="space-y-2">
         {data.data.map(execution => (
           <div key={execution.id} className="overflow-hidden rounded-xl">
             {/* Header */}
-            <div className="flex items-start justify-between gap-2 px-4 pt-4 pb-2">
+            <div className="flex items-start justify-between gap-2 pt-4">
               <div className="min-w-0 flex-1">
                 <h3 className="text-tg-text text-base leading-tight font-semibold">
                   {execution.bundle.name} (
@@ -158,14 +158,14 @@ export function StickerList() {
             </div>
 
             {/* Sticker Grid Visualization */}
-            <div className="px-4 py-2">
+            <div className="py-2">
               <StickerPackVisualization execution={execution} />
             </div>
 
             {/* Telegram Link for completed */}
             {execution.status === 'completed' &&
               execution.telegram_pack_url && (
-                <div className="px-4 pb-4">
+                <div className="pb-4">
                   <a
                     href={execution.telegram_pack_url}
                     target="_blank"

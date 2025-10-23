@@ -8,6 +8,7 @@ import { decodeNFT } from '@/utils/nftEncoding';
 import { useGetNFTByCollectionAndTokenId } from '@/hooks/useCollections';
 import { SpinnerFullPage } from '@/components/ui';
 import { StickerPackVisualization } from '@/components/StickerPack/StickerPackVisualization';
+import { useLaunchParams, requestWriteAccess } from '@telegram-apps/sdk-react';
 
 const processingSearchSchema = z.object({
   nft: z.string().optional(),
@@ -27,6 +28,14 @@ function RouteComponent() {
   const { session } = useSession();
   const { triggerAnimation } = useStickerPackAnimationContext();
   const navigate = useNavigate();
+  const launchParams = useLaunchParams(true);
+  const allowsWriteToPm = launchParams?.tgWebAppData?.user?.allowsWriteToPm;
+
+  const handleEnableNotifications = () => {
+    if (requestWriteAccess.isAvailable()) {
+      requestWriteAccess();
+    }
+  };
 
   // Fetch execution data by execution ID
   const { data: execution, isLoading: isLoadingExecution } =
@@ -103,74 +112,27 @@ function RouteComponent() {
             )}
 
             {/* Divider */}
-            <div className="border-tg-hint/20 my-6 border-t" />
-
-            {/* Sticker Pack Details */}
-            <div className="mb-6 space-y-2">
-              <div>
-                <span className="text-tg-hint text-sm font-medium">
-                  Sticker Pack:{' '}
-                </span>
-                <span className="text-tg-text text-sm font-semibold">
-                  {stickerPack.name}
-                </span>
-              </div>
-              {stickerPack.description && (
-                <div>
-                  <span className="text-tg-hint text-sm font-medium">
-                    Description:{' '}
-                  </span>
-                  <span className="text-tg-text text-sm">
-                    {stickerPack.description}
-                  </span>
-                </div>
-              )}
-              {execution?.effect_style && (
-                <div>
-                  <span className="text-tg-hint text-sm font-medium">
-                    Tier:{' '}
-                  </span>
-                  <span className="text-tg-text text-sm capitalize">
-                    {execution.effect_style}
-                  </span>
-                </div>
-              )}
-            </div>
+            <div className="border-tg-hint/20 my-2 border-t" />
 
             {/* Status Message */}
             <div className="text-center">
-              <p className="text-tg-hint mb-4 text-sm">
+              <p className="text-tg-hint text-sm">
                 We're creating your stickers! This usually takes a few minutes.
               </p>
-              <p className="text-tg-hint mb-3 text-sm font-semibold">
-                To receive notifications when ready:
-              </p>
-              <div className="text-tg-text mb-3 flex items-center justify-center gap-2 text-sm">
-                <span>📱</span>
-                <span>
-                  Send{' '}
-                  <code className="bg-tg-bg rounded px-1.5 py-0.5 font-mono text-xs">
-                    /status
-                  </code>{' '}
-                  in our{' '}
-                  <a
-                    href={import.meta.env.VITE_PUBLIC_BOT_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-tg-link hover:underline"
-                  >
-                    Telegram bot
-                  </a>
-                </span>
-              </div>
-              <div className="text-tg-hint mb-2 text-xs italic">
-                (Required to get notified via Telegram)
-              </div>
-              <div className="text-tg-text flex items-center justify-center gap-2 text-sm">
-                <span>👤</span>
-                <span>Or check your profile's "My Generations" section</span>
-              </div>
             </div>
+
+            {/* Notification CTA */}
+            {!allowsWriteToPm && (
+              <div className="bg-tg-secondary-bg mx-auto max-w-md rounded-xl p-4">
+                <div className="mb-3 flex items-center justify-center gap-2"></div>
+                <button
+                  onClick={handleEnableNotifications}
+                  className="bg-tg-button text-tg-button-text w-full rounded-lg px-4 py-2.5 text-sm font-semibold transition-all hover:brightness-110 active:scale-95"
+                >
+                  Enable Notifications <span className="text-sm">🔔</span>
+                </button>
+              </div>
+            )}
 
             {/* Show execution items during processing */}
             <div className="mt-6">

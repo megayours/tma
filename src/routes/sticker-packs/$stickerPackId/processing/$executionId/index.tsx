@@ -1,13 +1,13 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useEffect, useRef, useMemo } from 'react';
 import { useSession } from '@/auth/SessionProvider';
-import { useExecutionStatus } from '@/hooks/useExecutionStatus';
 import { useStickerPackAnimationContext } from '@/contexts/StickerPackAnimationContext';
 import { z } from 'zod';
-import { useStickerPack } from '@/hooks/useStickerPacks';
+import { useStickerPackExecutionById } from '@/hooks/useStickerPack';
 import { decodeNFT } from '@/utils/nftEncoding';
 import { useGetNFTByCollectionAndTokenId } from '@/hooks/useCollections';
 import { SpinnerFullPage } from '@/components/ui';
+import { StickerPackVisualization } from '@/components/StickerPack/StickerPackVisualization';
 
 const processingSearchSchema = z.object({
   nft: z.string().optional(),
@@ -28,13 +28,17 @@ function RouteComponent() {
   const { triggerAnimation } = useStickerPackAnimationContext();
   const navigate = useNavigate();
 
-  // Fetch sticker pack data
-  const { data: stickerPack, isLoading: isLoadingStickerPack } = useStickerPack(
-    stickerPackId,
+  // Fetch execution data by execution ID
+  const { data: execution, isLoading: isLoadingExecution } = useStickerPackExecutionById(
+    executionId,
     session
   );
 
-  // Decode NFT from URL
+  // Extract sticker pack and NFT from execution
+  const stickerPack = execution?.bundle;
+  const nftToken = execution?.nft_token;
+
+  // Decode NFT from URL (fallback if not in execution)
   const nftData = useMemo(() => {
     if (!search.nft) return null;
     try {
@@ -45,28 +49,20 @@ function RouteComponent() {
     }
   }, [search.nft]);
 
-  // Fetch full NFT data from API
+  // Fetch full NFT data from API (fallback if not in execution)
   const { data: selectedNFT } = useGetNFTByCollectionAndTokenId(
-    nftData?.chain || '',
-    nftData?.contractAddress || '',
-    nftData?.tokenId || ''
+    nftData?.chain || nftToken?.contract?.chain || '',
+    nftData?.contractAddress || nftToken?.contract?.address || '',
+    nftData?.tokenId || nftToken?.id || ''
   );
 
   // Track if animations have been triggered to ensure they only run once
   const hasTriggeredProcessing = useRef(false);
 
-  const {
-    status: executionStatus,
-    isCompleted,
-    isProcessing,
-  } = useExecutionStatus({
-    session,
-    executionId,
-    pollingInterval: 5000, // Poll every 5 seconds
-    onError: status => {
-      console.error('Execution error:', status);
-    },
-  });
+  // Derive status flags from execution
+  const isProcessing = execution?.status === 'processing';
+  const isCompleted = execution?.status === 'completed';
+  const isError = execution?.status === 'failed';
 
   // Trigger animation when processing starts
   useEffect(() => {
@@ -77,7 +73,7 @@ function RouteComponent() {
   }, [isProcessing, triggerAnimation]);
 
   // Loading states
-  if (isLoadingStickerPack || !stickerPack || !executionId) {
+  if (isLoadingExecution || !execution || !executionId) {
     return <SpinnerFullPage text="Loading..." />;
   }
 
@@ -85,7 +81,7 @@ function RouteComponent() {
     <div className="mx-auto max-w-4xl p-4">
       <div className="space-y-4">
         {/* Unified Information Card */}
-        {isProcessing && executionStatus && stickerPack && (
+        {isProcessing && execution && stickerPack && (
           <div className="bg-tg-secondary-bg rounded-lg p-6">
             <h2 className="text-tg-text mb-6 text-center text-xl font-semibold">
               Creating Your Stickers
@@ -131,13 +127,13 @@ function RouteComponent() {
                   </span>
                 </div>
               )}
-              {executionStatus?.effect_style && (
+              {execution?.effect_style && (
                 <div>
                   <span className="text-tg-hint text-sm font-medium">
                     Tier:{' '}
                   </span>
                   <span className="text-tg-text text-sm capitalize">
-                    {executionStatus.effect_style}
+                    {execution.effect_style}
                   </span>
                 </div>
               )}
@@ -177,6 +173,14 @@ function RouteComponent() {
                 <span>Or check your profile's "My Generations" section</span>
               </div>
             </div>
+
+            {/* Show execution items during processing */}
+            <div className="mt-6">
+              <h3 className="text-tg-text mb-4 text-lg font-semibold">
+                Generated Stickers ({execution.completed_prompts}/{execution.total_prompts})
+              </h3>
+              <StickerPackVisualization execution={execution} />
+            </div>
           </div>
         )}
         {isProcessing && (
@@ -190,20 +194,20 @@ function RouteComponent() {
           </div>
         )}
 
-        {isCompleted && executionStatus && (
+        {isCompleted && execution && (
           <div className="bg-tg-secondary-bg rounded-lg p-6 text-center">
             <h2 className="text-tg-text mb-4 text-2xl font-semibold">
               🎉 Your Sticker Pack is Ready!
             </h2>
             <p className="text-tg-hint mb-6 text-sm">
-              All {executionStatus.total_prompts} stickers have been generated
+              All {execution.total_prompts} stickers have been generated
               successfully.
             </p>
 
             {/* Telegram Link */}
-            {executionStatus.telegram_pack_url && (
+            {execution.telegram_pack_url && (
               <a
-                href={executionStatus.telegram_pack_url}
+                href={execution.telegram_pack_url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="bg-tg-button inline-block rounded-lg px-6 py-3 font-semibold text-white transition-colors hover:bg-blue-600"
@@ -213,31 +217,23 @@ function RouteComponent() {
             )}
 
             {/* show the stickers */}
-            {/* {executionStatus.items && (
-              <div className="grid grid-cols-5 gap-2">
-                {executionStatus.items.map((sticker, index) => (
-                  <img
-                    key={index}
-                    src={
-                      sticker.generated_content_url ||
-                      sticker.bundle_item.preview_url
-                    }
-                    alt={sticker.bundle_item.prompt.name}
-                  />
-                ))}
-              </div>
-            )} */}
+            <div className="mt-6">
+              <h3 className="text-tg-text mb-4 text-lg font-semibold">
+                All Stickers
+              </h3>
+              <StickerPackVisualization execution={execution} />
+            </div>
           </div>
         )}
 
         {/* Error State */}
-        {executionStatus?.status === 'error' && (
+        {isError && execution && (
           <div className="bg-tg-secondary-bg rounded-lg p-6 text-center">
             <h2 className="mb-4 text-xl font-semibold text-red-600">
               Generation Failed
             </h2>
             <p className="text-tg-hint mb-4 text-sm">
-              {executionStatus.error_message ||
+              {execution.error_message ||
                 'Something went wrong while generating your sticker pack.'}
             </p>
             <button

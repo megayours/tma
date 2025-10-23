@@ -153,3 +153,41 @@ export const useStickerPackExecutions = (
     refetchIntervalInBackground: true, // Continue polling even when tab is not active
   });
 };
+
+export const useStickerPackExecutionById = (
+  executionId: string | null,
+  session: Session | null
+) => {
+  return useQuery({
+    queryKey: ['sticker-pack-execution', executionId, session?.authToken],
+    queryFn: async (): Promise<StickerPackExecution> => {
+      if (!session || !executionId) {
+        throw new Error('Session and execution ID required');
+      }
+
+      const url = `${import.meta.env.VITE_PUBLIC_API_URL}/sticker-pack/executions/${executionId}/status`;
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: session.authToken,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data: StickerPackExecution = await response.json();
+      return data;
+    },
+    enabled: !!session && !!executionId,
+    // Poll every 5 seconds if status is processing
+    refetchInterval: (query) => {
+      const status = query.state.data?.status;
+      return status === 'processing' ? 5000 : false;
+    },
+    refetchIntervalInBackground: true,
+  });
+};

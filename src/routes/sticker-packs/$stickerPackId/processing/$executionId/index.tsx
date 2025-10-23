@@ -22,17 +22,15 @@ export const Route = createFileRoute(
 });
 
 function RouteComponent() {
-  const { stickerPackId, executionId } = Route.useParams();
+  const { executionId } = Route.useParams();
   const search = Route.useSearch();
   const { session } = useSession();
   const { triggerAnimation } = useStickerPackAnimationContext();
   const navigate = useNavigate();
 
   // Fetch execution data by execution ID
-  const { data: execution, isLoading: isLoadingExecution } = useStickerPackExecutionById(
-    executionId,
-    session
-  );
+  const { data: execution, isLoading: isLoadingExecution } =
+    useStickerPackExecutionById(executionId, session);
 
   // Extract sticker pack and NFT from execution
   const stickerPack = execution?.bundle;
@@ -177,7 +175,8 @@ function RouteComponent() {
             {/* Show execution items during processing */}
             <div className="mt-6">
               <h3 className="text-tg-text mb-4 text-lg font-semibold">
-                Generated Stickers ({execution.completed_prompts}/{execution.total_prompts})
+                Generated Stickers ({execution.completed_prompts}/
+                {execution.total_prompts})
               </h3>
               <StickerPackVisualization execution={execution} />
             </div>

@@ -121,7 +121,6 @@ export const useStickerPacks = (params: UseStickerPacksParams) => {
           size: size.toString(),
         });
 
-        console.log('tokenCollections', tokenCollections);
         // Add token_collection_ids if provided
         if (tokenCollections && tokenCollections.length > 0) {
           tokenCollections.forEach(collection => {

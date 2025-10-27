@@ -9,6 +9,7 @@ import { useGetNFTByCollectionAndTokenId } from '@/hooks/useCollections';
 import { SpinnerFullPage } from '@/components/ui';
 import { StickerPackVisualization } from '@/components/StickerPack/StickerPackVisualization';
 import { useLaunchParams, requestWriteAccess } from '@telegram-apps/sdk-react';
+import { useTelegramTheme } from '@/auth/useTelegram';
 
 const processingSearchSchema = z.object({
   nft: z.string().optional(),
@@ -22,12 +23,7 @@ export const Route = createFileRoute(
   component: RouteComponent,
 });
 
-function RouteComponent() {
-  const { executionId } = Route.useParams();
-  const search = Route.useSearch();
-  const { session } = useSession();
-  const { triggerAnimation } = useStickerPackAnimationContext();
-  const navigate = useNavigate();
+const EnableNotifications = () => {
   const launchParams = useLaunchParams(true);
   const allowsWriteToPm = launchParams?.tgWebAppData?.user?.allowsWriteToPm;
 
@@ -35,7 +31,30 @@ function RouteComponent() {
     if (requestWriteAccess.isAvailable()) {
       requestWriteAccess();
     }
+    if (!allowsWriteToPm) {
+      return (
+        <div className="bg-tg-secondary-bg mx-auto max-w-md rounded-xl p-4">
+          <div className="mb-3 flex items-center justify-center gap-2"></div>
+          <button
+            onClick={handleEnableNotifications}
+            className="bg-tg-button text-tg-button-text w-full rounded-lg px-4 py-2.5 text-sm font-semibold transition-all hover:brightness-110 active:scale-95"
+          >
+            Enable Notifications <span className="text-sm">🔔</span>
+          </button>
+        </div>
+      );
+    }
   };
+  return null;
+};
+
+function RouteComponent() {
+  const { executionId } = Route.useParams();
+  const search = Route.useSearch();
+  const { session } = useSession();
+  const { triggerAnimation } = useStickerPackAnimationContext();
+  const { isTelegram } = useTelegramTheme();
+  const navigate = useNavigate();
 
   // Fetch execution data by execution ID
   const { data: execution, isLoading: isLoadingExecution } =
@@ -121,18 +140,7 @@ function RouteComponent() {
               </p>
             </div>
 
-            {/* Notification CTA */}
-            {!allowsWriteToPm && (
-              <div className="bg-tg-secondary-bg mx-auto max-w-md rounded-xl p-4">
-                <div className="mb-3 flex items-center justify-center gap-2"></div>
-                <button
-                  onClick={handleEnableNotifications}
-                  className="bg-tg-button text-tg-button-text w-full rounded-lg px-4 py-2.5 text-sm font-semibold transition-all hover:brightness-110 active:scale-95"
-                >
-                  Enable Notifications <span className="text-sm">🔔</span>
-                </button>
-              </div>
-            )}
+            {isTelegram && <EnableNotifications />}
 
             {/* Show execution items during processing */}
             <div className="mt-6">

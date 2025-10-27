@@ -97,7 +97,7 @@ export default function MyPrompts() {
               }}
               className={deletingPromptId === prompt.id ? 'opacity-50' : ''}
             >
-              <Card.Chip readOnly>{prompt.type}</Card.Chip>
+              {/* <Card.Chip readOnly>{prompt.type}</Card.Chip> */}
               <RenderPreview prompt={prompt} />
 
               <Card.Cell

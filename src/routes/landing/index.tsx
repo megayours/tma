@@ -14,7 +14,6 @@ function RouteComponent() {
 export function Landing() {
   // ✅ Call the hook only ONCE and store the result
   const webAppStartParam = useWebAppStartParam();
-
   const { data: stickerPacks } = useStickerPacks({
     pagination: {
       page: 1,

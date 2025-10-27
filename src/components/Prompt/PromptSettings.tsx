@@ -72,8 +72,6 @@ export const PromptSettings = ({
     )
   );
 
-  console.log('filteredModels', filteredModels, models, prompt.type);
-
   // Local state for form fields
   const [editedPrompt, setEditedPrompt] = useState<Prompt>(() => {
     // Set the model from version[0] if available, otherwise use prompt.model
@@ -86,7 +84,6 @@ export const PromptSettings = ({
     };
   });
 
-  console.log('current model:', editedPrompt.model, 'from prompt:', prompt.model, 'from version[0]:', prompt.versions?.[0]?.model);
   const [hasChanges, setHasChanges] = useState(false);
   const [selectedContracts, setSelectedContracts] = useState<Set<string>>(
     new Set()

@@ -6,6 +6,7 @@ import { Blockquote, Button } from '@telegram-apps/telegram-ui';
 import { requestWriteAccess } from '@telegram-apps/sdk-react';
 import { useLaunchParams } from '@telegram-apps/sdk-react';
 import { useStickerPackExecutions } from '../../hooks/useStickerPack';
+import { useTelegramTheme } from '../../auth/useTelegram';
 
 export const Route = createFileRoute('/profile/')({
   component: ProfileLayout,
@@ -95,6 +96,7 @@ function AuthorizeBotMessages() {
 }
 
 function ProfileLayout() {
+  const { isTelegram } = useTelegramTheme();
   return (
     <ProtectedRoute>
       <div className="profile-layout h-screen">
@@ -106,9 +108,11 @@ function ProfileLayout() {
             </h1>
             <CreatePromptDropdownButton />
           </div>
-          <div>
-            <AuthorizeBotMessages />
-          </div>
+          {isTelegram && (
+            <div>
+              <AuthorizeBotMessages />
+            </div>
+          )}
           <StickerList />
         </main>
       </div>

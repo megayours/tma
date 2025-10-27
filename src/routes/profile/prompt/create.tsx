@@ -106,9 +106,6 @@ function CreatePromptComponent() {
                 <span className="text-6xl">🖼️</span>
                 <div className="text-center">
                   <h3 className="text-tg-text text-xl font-semibold">Image</h3>
-                  <p className="text-tg-hint mt-1 text-sm">
-                    Create static images
-                  </p>
                 </div>
               </button>
 
@@ -119,9 +116,6 @@ function CreatePromptComponent() {
                 <span className="text-6xl">🎬</span>
                 <div className="text-center">
                   <h3 className="text-tg-text text-xl font-semibold">GIF</h3>
-                  <p className="text-tg-hint mt-1 text-sm">
-                    Create animated GIFs
-                  </p>
                 </div>
               </button>
 
@@ -134,9 +128,6 @@ function CreatePromptComponent() {
                   <h3 className="text-tg-text text-xl font-semibold">
                     Sticker
                   </h3>
-                  <p className="text-tg-hint mt-1 text-sm">
-                    Create static stickers
-                  </p>
                 </div>
               </button>
 
@@ -149,9 +140,6 @@ function CreatePromptComponent() {
                   <h3 className="text-tg-text text-xl font-semibold">
                     Animated Sticker
                   </h3>
-                  <p className="text-tg-hint mt-1 text-sm">
-                    Create animated stickers
-                  </p>
                 </div>
               </button>
             </div>

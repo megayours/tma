@@ -168,8 +168,8 @@ export const useGetPrompt = (promptId: string, session: Session | null) => {
           text: version.text,
           version: version.version,
           createdAt: version.created_at,
+          additionalContentIds: version.additional_content_ids,
         })),
-        additionalContentIds: data.additional_content_ids,
       };
       return prompt;
     },
@@ -518,7 +518,10 @@ export const usePromptMutation = (session: Session | null | undefined) => {
         });
 
         // Extract the actual error message from the response
-        const errorMessage = errorData.error || errorData.message || `Failed to update prompt: ${response.status}`;
+        const errorMessage =
+          errorData.error ||
+          errorData.message ||
+          `Failed to update prompt: ${response.status}`;
         throw new Error(errorMessage);
       }
 

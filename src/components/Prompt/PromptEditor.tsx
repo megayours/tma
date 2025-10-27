@@ -35,16 +35,22 @@ const PromptEditorContent = ({
   const promptMutation = usePromptMutation(session);
 
   const [promptText, setPromptText] = useState('');
-
+  const [currentAdditionalContentIds, setCurrentAdditionalContentIds] =
+    useState<string[]>([]);
   // Update promptText when prompt data loads/changes
   useEffect(() => {
     if (prompt?.versions?.[0]?.text) {
       setPromptText(prompt.versions[0].text);
+      setCurrentAdditionalContentIds(
+        prompt.versions[0].additionalContentIds || []
+      );
     }
   }, [prompt?.versions]);
   const [selectedVersion, setSelectedVersion] = useState(
-    prompt?.versions?.[(prompt.versions?.length ?? 0) - 1]
+    prompt?.versions?.sort((a, b) => b.version - a.version)[0]
   );
+
+  console.log('selectedVersion', selectedVersion);
 
   // Custom hook for prompt generation logic
   const { isGenerating, generatePromptPreview } = usePromptPreviewGeneration({
@@ -91,7 +97,8 @@ const PromptEditorContent = ({
         promptText,
         prompt,
         hasChanges,
-        setSelectedVersion
+        setSelectedVersion,
+        currentAdditionalContentIds
       );
     } catch (error) {
       // Error handling is now done in the usePromptPreviewGeneration hook
@@ -126,11 +133,21 @@ const PromptEditorContent = ({
       {/* Bottom toolbar */}
       <div className="bg-tg-secondary-bg border-tg-hint/20 safe-area-inset-bottom fixed right-0 bottom-0 left-0 z-30 border-t">
         <div className="flex h-full flex-col pb-4">
-          <AdditionalContentDisplay
-            contentIds={prompt.additionalContentIds}
-          />
-          <div className="h-15">
-            <InputsEditor prompt={prompt} />
+          <div className="justify-startgap-2 flex flex-row items-center">
+            {selectedVersion && (
+              <AdditionalContentDisplay
+                contentIds={currentAdditionalContentIds || []}
+                removeContent={contentId => {
+                  setCurrentAdditionalContentIds(
+                    currentAdditionalContentIds.filter(id => id !== contentId)
+                  );
+                  setHasChanges(true);
+                }}
+              />
+            )}
+            <div className="h-15">
+              <InputsEditor prompt={prompt} />
+            </div>
           </div>
           <Divider />
           <div className="flex flex-row items-center gap-2 px-2 py-2">

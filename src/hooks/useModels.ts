@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { apiGet } from '@/lib/api';
-import type { Model, ModelsResponse } from '@/types/models';
+import type { ModelsResponse } from '@/types/models';
 
 export const useModels = () => {
   const { data, isLoading, error } = useQuery({

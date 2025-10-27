@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { apiGet } from '@/lib/api';
-import type { ModelsResponse } from '@/types/models';
+import type { Model, ModelsResponse } from '@/types/models';
 
 export const useModels = () => {
   const { data, isLoading, error } = useQuery({
@@ -17,6 +17,18 @@ export const useModels = () => {
 
   return {
     models: data?.models || [],
+    isLoading,
+    error,
+  };
+};
+
+export const useGetModel = (modelId: string) => {
+  const { models, isLoading, error } = useModels();
+
+  const model = models.find(m => m.id === modelId);
+
+  return {
+    model,
     isLoading,
     error,
   };

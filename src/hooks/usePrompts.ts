@@ -159,6 +159,11 @@ export const useGetPrompt = (promptId: string, session: Session | null) => {
         ownerId: data.owner_id,
         published: data.published_at,
         usageCount: data.usage_count,
+        animatedStickers: data.animated_stickers,
+        stickers: data.stickers,
+        videos: data.videos,
+        images: data.images,
+        gifs: data.gifs,
         versions: data.versions.map((version: any) => ({
           ...version,
           id: Number(version.id),
@@ -530,11 +535,9 @@ export const usePromptMutation = (session: Session | null | undefined) => {
       return responseData;
     },
     onSuccess: (_data, variables) => {
+      // Invalidate all prompts lists
       queryClient.invalidateQueries({ queryKey: ['my-prompts'] });
       queryClient.invalidateQueries({ queryKey: ['prompts'] });
-      queryClient.invalidateQueries({
-        queryKey: ['prompts'],
-      });
 
       // Invalidate the specific prompt query using pattern matching
       queryClient.invalidateQueries({

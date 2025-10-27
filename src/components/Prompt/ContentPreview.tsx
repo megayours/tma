@@ -71,16 +71,22 @@ export const ContentPreviews = ({
       .sort((a, b) => b.version - a.version);
   }, [allContent]);
 
-  // Preselect the first item in grouped content when content loads
+  // Auto-select the first item when content loads or when new content arrives
   useEffect(() => {
-    if (
-      groupedContent.length > 0 &&
-      groupedContent[0].items.length > 0 &&
-      !selectedContent
-    ) {
-      setSelectedContent(groupedContent[0].items[0]);
+    if (groupedContent.length > 0 && groupedContent[0].items.length > 0) {
+      const newestContent = groupedContent[0].items[0];
+
+      // Select if no content is selected yet, or if the newest content is newer than selected
+      // OR if the selected content's status has changed (e.g., from processing to completed)
+      if (
+        !selectedContent ||
+        (newestContent.created_at > (selectedContent.created_at || 0)) ||
+        (selectedContent && newestContent.id === selectedContent.id && newestContent.status !== selectedContent.status)
+      ) {
+        setSelectedContent(newestContent);
+      }
     }
-  }, [groupedContent, selectedContent]);
+  }, [groupedContent]);
 
   return (
     <div className="flex h-full w-full flex-col">

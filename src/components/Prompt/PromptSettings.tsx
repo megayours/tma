@@ -303,11 +303,17 @@ export const PromptSettings = ({
   if (!isOpen) return null;
 
   return (
-    <div className="bg-tg-bg z-40 flex h-screen w-full flex-col bg-[var(--tgui--secondary_bg_color)] pb-20">
+    <div className="bg-tg-bg z-40 flex h-screen w-full flex-col pb-20">
       {/* Header */}
       <div className="flex flex-shrink-0 items-center justify-center px-5 py-4">
         <img
-          src={editedPrompt.images?.[0]}
+          src={
+            editedPrompt.images?.[0] ||
+            editedPrompt.videos?.[0] ||
+            editedPrompt.stickers?.[0] ||
+            editedPrompt.animatedStickers?.[0] ||
+            '/lib/image_not_set.png'
+          }
           alt="Prompt Image"
           className="h-10 w-10 rounded-full"
         />

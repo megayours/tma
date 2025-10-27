@@ -65,7 +65,7 @@ export const PromptBar = ({
 
   return (
     <TopBar
-      title={`${prompt.name} (${prompt.published ? 'published' : 'unpublished'})`}
+      title={`${prompt.name} - ${prompt.type} (${prompt.published ? 'published' : 'unpublished'})`}
       actions={
         <div className="flex items-center justify-center gap-3">
           <IconButton

@@ -3,19 +3,23 @@ import { useGetPublicImage } from '@/hooks/useImages';
 interface AdditionalContentItemProps {
   contentId: string;
   removeContent: (contentId: string) => void;
+  isMutating?: boolean;
+  index: number;
 }
 
 const AdditionalContentItem = ({
   contentId,
   removeContent,
+  isMutating = false,
+  index,
 }: AdditionalContentItemProps) => {
   console.log('contentId', contentId);
   const { imageData, isLoading } = useGetPublicImage(contentId);
   console.log('imageData', imageData);
   if (isLoading) {
     return (
-      <div className="flex h-10 w-10 items-center justify-center rounded-full">
-        <div className="text-xs text-gray-500">Loading...</div>
+      <div className="bg-tg-secondary-bg flex h-8 flex-row items-center gap-2 rounded-full p-2">
+        <div className="text-tg-hint text-xs">Loading...</div>
       </div>
     );
   }
@@ -25,17 +29,38 @@ const AdditionalContentItem = ({
   }
 
   return (
-    <div className="relative h-10 w-10 flex-shrink-0 rounded-full">
-      <img
-        src={imageData}
-        alt={`Additional content ${contentId}`}
-        className="h-full w-full rounded-full object-cover object-center"
-      />
+    <div className="flex flex-row items-center gap-1 rounded-xl bg-white px-2 py-1">
+      <h1 className="text-xs font-medium text-gray-700 select-none">Image {index + 1}</h1>
+      <div className="relative h-8 w-8 flex-shrink-0 rounded-md">
+        <img
+          src={imageData}
+          alt={`Additional content ${contentId}`}
+          className={`h-full w-full rounded-md object-contain object-center ${isMutating ? 'opacity-50' : ''}`}
+        />
+        {isMutating && (
+          <div className="absolute inset-0 flex items-center justify-center rounded-md bg-black/20">
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+          </div>
+        )}
+      </div>
       <button
         onClick={() => removeContent(contentId)}
-        className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600"
+        className="flex h-4 w-4 items-center justify-center rounded-full border border-gray-300 text-gray-500 transition-colors hover:border-red-500 hover:text-red-500"
+        disabled={isMutating}
       >
-        <span className="text-xs font-bold">×</span>
+        <svg
+          className="h-3 w-3"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2.5}
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
       </button>
     </div>
   );
@@ -44,11 +69,13 @@ const AdditionalContentItem = ({
 interface AdditionalContentDisplayProps {
   contentIds?: string[];
   removeContent: (contentId: string) => void;
+  isMutating?: boolean;
 }
 
 export const AdditionalContentDisplay = ({
   contentIds,
   removeContent,
+  isMutating = false,
 }: AdditionalContentDisplayProps) => {
   console.log('contentIds', contentIds);
   if (!contentIds || contentIds.length === 0) {
@@ -57,11 +84,13 @@ export const AdditionalContentDisplay = ({
 
   return (
     <div className="flex gap-2 overflow-x-auto px-2 py-2">
-      {contentIds.map(contentId => (
+      {contentIds.map((contentId, index) => (
         <AdditionalContentItem
           key={contentId}
           contentId={contentId}
+          index={index}
           removeContent={removeContent}
+          isMutating={isMutating}
         />
       ))}
     </div>

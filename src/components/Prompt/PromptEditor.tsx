@@ -137,14 +137,27 @@ const PromptEditorContent = ({
             {selectedVersion && (
               <AdditionalContentDisplay
                 contentIds={currentAdditionalContentIds || []}
-                removeContent={contentId => {
+                isMutating={promptMutation.isPending}
+                removeContent={async contentId => {
                   setCurrentAdditionalContentIds(
                     currentAdditionalContentIds.filter(id => id !== contentId)
                   );
+
+                  // update prompt with the new additional content ids
+                  await promptMutation.mutateAsync({
+                    prompt: {
+                      ...prompt,
+                      additionalContentIds: currentAdditionalContentIds.filter(
+                        id => id !== contentId
+                      ),
+                    },
+                  });
+
                   setHasChanges(true);
                 }}
               />
             )}
+            <div className="border-tg-section-separator h-12 border-1"></div>
             <div className="h-15">
               <InputsEditor prompt={prompt} />
             </div>

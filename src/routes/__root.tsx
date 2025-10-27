@@ -191,7 +191,7 @@ function AppContent() {
   const content = (
     <>
       <TelegramAppHandler />
-      <AppRoot>
+      <AppRoot className="bg-tg-bg">
         <Header />
         <main className={`h-full`}>
           <Outlet />

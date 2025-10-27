@@ -3,6 +3,7 @@ import { viewport, useSignal } from '@telegram-apps/sdk-react';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import { useStickerPackExecutions } from '../hooks/useStickerPack';
 import { useSession } from '../auth/SessionProvider';
+import { useTelegramTheme } from '../auth/useTelegram';
 
 const ProcessingBadge = () => {
   const { session } = useSession();
@@ -60,10 +61,18 @@ const ProcessingBadge = () => {
 };
 
 const HeaderBrand = () => {
+  const { isDark } = useTelegramTheme();
+
   return (
     <div className="flex flex-row items-center gap-2">
       <Link to="/">
-        <h1 className="text-tg-text text-xl font-bold">Yours.fun</h1>
+        <h1
+          className={`text-xl font-bold ${
+            isDark ? 'text-[#03FFC2]' : 'text-black'
+          }`}
+        >
+          Yours.fun
+        </h1>
       </Link>
       <ProcessingBadge />
     </div>

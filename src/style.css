@@ -85,7 +85,7 @@
 
 /* Telegram dark theme vars */
 .dark {
-  --tg-bg-color: #212d3b;
+  --tg-bg-color: #000000;
   --tg-text-color: #ffffff;
   --tg-hint-color: #aaaaaa;
   --tg-link-color: #64baf0;

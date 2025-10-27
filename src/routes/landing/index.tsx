@@ -23,7 +23,7 @@ export function Landing() {
   });
 
   return (
-    <div className="bg-tg-secondary-bg scrollbar-hide flex h-screen snap-y snap-mandatory flex-col gap-2 overflow-y-scroll">
+    <div className="bg-tg-bg scrollbar-hide flex h-screen snap-y snap-mandatory flex-col gap-2 overflow-y-scroll">
       {stickerPacks?.data.map(stickerPack => (
         <Link
           key={stickerPack.id}

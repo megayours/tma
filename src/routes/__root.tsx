@@ -14,10 +14,11 @@ import {
   miniApp,
   swipeBehavior,
   useSignal,
+  secondaryButton,
 } from '@telegram-apps/sdk-react';
 import { useEffect, useState } from 'react';
 import { AppRoot } from '@telegram-apps/telegram-ui';
-import { FavoriteNFT } from '@/components/lib/auth/FavoriteNFT';
+import { UserMenuComponent } from '@/components/lib/auth/FavoriteNFT';
 import { Header } from '@/components/Header';
 import { useTelegramTheme } from '@/auth/useTelegram';
 import { ToastProvider } from '@/components/ui';
@@ -181,13 +182,7 @@ function TelegramAppHandler() {
 }
 
 function AppContent() {
-  const location = useLocation();
   const { isAuthenticated } = useSession();
-  const shouldHaveNavBar =
-    location.pathname.startsWith('/feed') ||
-    location.pathname.startsWith('/profile') ||
-    location.pathname === '/';
-  const contentSafeAreaInsets = useSignal(viewport.contentSafeAreaInsets);
   const content = (
     <>
       <TelegramAppHandler />
@@ -196,20 +191,8 @@ function AppContent() {
         <main className={`h-full`}>
           <Outlet />
         </main>
-        {shouldHaveNavBar && (
-          <div
-            className="fixed right-0 bottom-0"
-            style={{
-              paddingBottom: `${contentSafeAreaInsets.bottom}px`,
-              paddingRight: `${contentSafeAreaInsets.right}px`,
-              paddingLeft: `${contentSafeAreaInsets.left}px`,
-            }}
-          >
-            <div className="border-tg-bg rounded-full p-5">
-              <FavoriteNFT size={60} />
-            </div>
-          </div>
-        )}
+
+        {/* <UserMenuComponent size={35} /> */}
         {/* <TanStackRouterDevtools /> */}
         {/* <ReactQueryDevtools initialIsOpen={false} /> */}
       </AppRoot>

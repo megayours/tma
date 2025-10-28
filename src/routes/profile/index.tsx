@@ -95,7 +95,7 @@ function AuthorizeBotMessages() {
   );
 }
 
-function ProfileLayout() {
+export function ProfileLayout() {
   const { isTelegram } = useTelegramTheme();
   return (
     <ProtectedRoute>

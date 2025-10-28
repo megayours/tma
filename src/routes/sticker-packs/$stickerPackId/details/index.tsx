@@ -135,17 +135,11 @@ function RouteComponent() {
 
         {/* Sticker Pack Content List */}
         {stickerPack.items && stickerPack.items.length > 0 && (
-          // <div className="bg-tg-secondary-bg rounded-lg p-6">
-          //   <h2 className="mb-4 text-lg font-semibold">
-          //     Included in this pack
-          //   </h2>
-          //   <p>
-          //     Example of stickers included in this pack from other users. You
-          //     will receive {stickerPack.item_count} personalized stickers.
-          //   </p>
           <div>
             <Banner
-              header="Included in this pack"
+              header={
+                <h2 className="text-tg-text text-lg">Included in this pack</h2>
+              }
               description={
                 <div>
                   <p className="text-xs">
@@ -157,6 +151,9 @@ function RouteComponent() {
                   </p>
                 </div>
               }
+              style={{
+                backgroundColor: 'var(--tg-secondary-bg)',
+              }}
             >
               <Fragment>
                 <StickerPackContentList

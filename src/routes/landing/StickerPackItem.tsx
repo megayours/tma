@@ -1,3 +1,4 @@
+import { Divider } from '@telegram-apps/telegram-ui';
 import type { StickerBundles } from '../../hooks/useStickerPacks';
 
 export function StickerPackItem({
@@ -23,9 +24,10 @@ export function StickerPackItem({
   };
 
   return (
-    <div className="border-tg-section-separator flex w-full flex-col rounded-lg border-2 p-2 py-4">
-      <div className="flex items-center justify-between gap-3 px-4 pb-3">
-        <div className="text-xl font-bold">{stickerPack.name}</div>
+    <div className="shado flex w-full flex-col rounded-lg p-2 py-4">
+      <Divider />
+      <div className="flex items-center justify-between gap-3 px-4 py-3">
+        <div className="text-xl font-semibold">{stickerPack.name}</div>
         <button className="bg-tg-button shrink-0 rounded-full px-6 py-2.5 text-sm font-semibold text-white transition-colors">
           {getLowestPrice()}
         </button>

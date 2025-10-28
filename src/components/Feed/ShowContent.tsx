@@ -225,8 +225,8 @@ export function ShowContent({ prompt }: ShowContentProps) {
                 </div>
               )}
               {generateContent.isSuccess && (
-                <div className="mt-2 text-sm text-green-500">
-                  Content generated successfully!
+                <div className="text-tg-hint mt-2 text-sm">
+                  Content in the queue for generation!
                 </div>
               )}
             </div>

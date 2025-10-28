@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useEffect, useRef, useMemo } from 'react';
+import { useEffect, useRef, useMemo, useState } from 'react';
 import { useSession } from '@/auth/SessionProvider';
 import { useStickerPackAnimationContext } from '@/contexts/StickerPackAnimationContext';
 import { z } from 'zod';
@@ -8,8 +8,14 @@ import { decodeNFT } from '@/utils/nftEncoding';
 import { useGetNFTByCollectionAndTokenId } from '@/hooks/useCollections';
 import { SpinnerFullPage } from '@/components/ui';
 import { StickerPackVisualization } from '@/components/StickerPack/StickerPackVisualization';
-import { useLaunchParams, requestWriteAccess } from '@telegram-apps/sdk-react';
+import {
+  useLaunchParams,
+  requestWriteAccess,
+  hapticFeedback,
+} from '@telegram-apps/sdk-react';
 import { useTelegramTheme } from '@/auth/useTelegram';
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+import type { DotLottie } from '@lottiefiles/dotlottie-web';
 
 const processingSearchSchema = z.object({
   nft: z.string().optional(),
@@ -56,6 +62,10 @@ function RouteComponent() {
   const { isTelegram } = useTelegramTheme();
   const navigate = useNavigate();
 
+  // Confetti state
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [dotLottieInstance, setDotLottieInstance] = useState<DotLottie | null>(null);
+
   // Fetch execution data by execution ID
   const { data: execution, isLoading: isLoadingExecution } =
     useStickerPackExecutionById(executionId, session);
@@ -84,6 +94,7 @@ function RouteComponent() {
 
   // Track if animations have been triggered to ensure they only run once
   const hasTriggeredProcessing = useRef(false);
+  const hasTriggeredCompletion = useRef(false);
 
   // Derive status flags from execution
   const isProcessing = execution?.status === 'processing';
@@ -98,6 +109,41 @@ function RouteComponent() {
     }
   }, [isProcessing, triggerAnimation]);
 
+  // Trigger confetti and haptic feedback when completed
+  useEffect(() => {
+    if (isCompleted && !hasTriggeredCompletion.current) {
+      hasTriggeredCompletion.current = true;
+      setShowConfetti(true);
+
+      // Trigger success haptic feedback
+      if (isTelegram) {
+        try {
+          if (hapticFeedback && hapticFeedback.notificationOccurred) {
+            hapticFeedback.notificationOccurred('success');
+          }
+        } catch (error) {
+          console.warn('Haptic feedback not available:', error);
+        }
+      }
+    }
+  }, [isCompleted, isTelegram]);
+
+  // Listen for confetti animation complete event
+  useEffect(() => {
+    if (!dotLottieInstance) return;
+
+    const handleComplete = () => {
+      console.log('Confetti animation completed');
+      setShowConfetti(false);
+    };
+
+    dotLottieInstance.addEventListener('complete', handleComplete);
+
+    return () => {
+      dotLottieInstance.removeEventListener('complete', handleComplete);
+    };
+  }, [dotLottieInstance]);
+
   // Loading states
   if (isLoadingExecution || !execution || !executionId) {
     return <SpinnerFullPage text="Loading..." />;
@@ -105,6 +151,17 @@ function RouteComponent() {
 
   return (
     <div className="mx-auto max-w-4xl p-4">
+      {/* Confetti animation */}
+      {showConfetti && (
+        <DotLottieReact
+          dotLottieRefCallback={setDotLottieInstance}
+          className="pointer-events-none fixed bottom-0 left-1/2 z-50 h-2/3 w-[150vw] -translate-x-1/2"
+          src="/lotties/confetti-full.lottie"
+          loop={false}
+          autoplay
+        />
+      )}
+
       <div className="space-y-4">
         {/* Unified Information Card */}
         {isProcessing && execution && stickerPack && (

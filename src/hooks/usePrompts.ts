@@ -212,7 +212,7 @@ export const useGetRecommendedPromptsWithDetails = ({
       session?.authToken,
     ],
     queryFn: async () => {
-      if (!session || !recommendedQuery.data?.prompts?.length) return [];
+      // if (!session || !recommendedQuery.data?.prompts?.length) return [];
 
       const detailPromises = recommendedQuery.data.prompts.map(async prompt => {
         try {
@@ -222,7 +222,7 @@ export const useGetRecommendedPromptsWithDetails = ({
               method: 'GET',
               headers: {
                 'Content-Type': 'application/json',
-                Authorization: session.authToken,
+                ...(session && { Authorization: session.authToken }),
               },
             }
           );
@@ -260,7 +260,7 @@ export const useGetRecommendedPromptsWithDetails = ({
 
       return Promise.all(detailPromises);
     },
-    enabled: !!session && !!recommendedQuery.data?.prompts?.length && enabled,
+    enabled: !!recommendedQuery.data?.prompts?.length && enabled,
   });
 
   return {

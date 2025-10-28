@@ -6,9 +6,6 @@ import { ShowContent } from '@/components/Feed/ShowContent';
 import { useSession } from '@/auth/SessionProvider';
 import { Spinner } from '@/components/ui';
 
-// Debug toggle - set to false to disable all debug functionality
-const DEBUG_MODE = false;
-
 export const Route = createFileRoute('/feed/')({
   component: Feed,
 });
@@ -21,15 +18,6 @@ export function Feed() {
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const triggerRef = useRef<HTMLDivElement>(null);
 
-  if (DEBUG_MODE) {
-    console.log('Feed render:', {
-      currentPage,
-      totalPrompts: allPrompts.length,
-      hasMorePages,
-      isFetchingMore,
-    });
-  }
-
   // Only auto-fetch the first page
   const initialQueryParams = {
     type: 'all' as const,
@@ -41,39 +29,16 @@ export function Feed() {
     session,
   };
 
-  if (DEBUG_MODE) {
-    console.log('🚀 Feed Component Loaded');
-    console.log('📋 Initial API Query params:', initialQueryParams);
-    console.log('🌍 Environment check:', {
-      NODE_ENV: import.meta.env.NODE_ENV,
-      MODE: import.meta.env.MODE,
-      API_URL: import.meta.env.VITE_PUBLIC_API_URL,
-      BASE_URL: import.meta.env.BASE_URL,
-      PROD: import.meta.env.PROD,
-      DEV: import.meta.env.DEV,
-    });
-    console.log(
-      '🔗 Full API endpoint will be:',
-      `${import.meta.env.VITE_PUBLIC_API_URL}/discovery/prompts/recommended`
-    );
-  }
-
   const {
     data: initialData,
     isLoading: isInitialLoading,
     error,
   } = useGetRecommendedPromptsWithDetails(initialQueryParams);
 
+  console.log('DATA', initialData);
+
   // Handle initial data
   useEffect(() => {
-    if (DEBUG_MODE) {
-      console.log('Initial data received:', {
-        promptsLength: initialData.prompts.length,
-        pagination: initialData.pagination,
-        error: error?.message,
-      });
-    }
-
     if (initialData.prompts.length > 0) {
       setAllPrompts(initialData.prompts);
 
@@ -81,13 +46,6 @@ export function Feed() {
       const hasMore = initialData.pagination
         ? initialData.pagination.page < initialData.pagination.totalPages
         : false;
-      if (DEBUG_MODE) {
-        console.log('Initial pagination check:', {
-          currentPageFromData: initialData.pagination?.page,
-          totalPages: initialData.pagination?.totalPages,
-          hasMore,
-        });
-      }
 
       setHasMorePages(hasMore);
     } else {
@@ -98,26 +56,10 @@ export function Feed() {
   // Manual fetch function for pagination
   const fetchNextPage = async () => {
     if (isFetchingMore || !hasMorePages || isInitialLoading) {
-      if (DEBUG_MODE) {
-        console.log('Skipping fetch:', {
-          isFetchingMore,
-          hasMorePages,
-          isInitialLoading,
-          currentPage,
-        });
-      }
       return;
     }
 
     const nextPageNum = currentPage + 1;
-    if (DEBUG_MODE) {
-      console.log(
-        'Manually fetching page:',
-        nextPageNum,
-        'current page was:',
-        currentPage
-      );
-    }
 
     setIsFetchingMore(true);
     setCurrentPage(nextPageNum); // Update page immediately
@@ -136,9 +78,6 @@ export function Feed() {
       }
 
       const rawData = await response.json();
-      if (DEBUG_MODE) {
-        console.log('Manual fetch response:', rawData);
-      }
 
       if (rawData && rawData.data && rawData.data.length > 0) {
         // Map the raw data to the expected format and fetch details for each prompt
@@ -219,14 +158,6 @@ export function Feed() {
         }
 
         setAllPrompts(prev => {
-          if (DEBUG_MODE) {
-            console.log(
-              'Adding prompts. Previous count:',
-              prev.length,
-              'Adding:',
-              mappedPrompts.length
-            );
-          }
           return [...prev, ...mappedPrompts];
         });
 
@@ -249,30 +180,12 @@ export function Feed() {
   useEffect(() => {
     const trigger = triggerRef.current;
     if (!trigger) {
-      if (DEBUG_MODE) {
-        console.log('No trigger element found');
-      }
       return;
-    }
-
-    if (DEBUG_MODE) {
-      console.log('Setting up intersection observer with trigger element');
     }
 
     const observer = new IntersectionObserver(
       entries => {
         const [entry] = entries;
-        if (DEBUG_MODE) {
-          console.log('Intersection observer triggered:', {
-            isIntersecting: entry.isIntersecting,
-            intersectionRatio: entry.intersectionRatio,
-            hasMorePages,
-            isFetchingMore,
-            isInitialLoading,
-            currentPage,
-            totalPrompts: allPrompts.length,
-          });
-        }
 
         if (
           entry.isIntersecting &&
@@ -280,9 +193,6 @@ export function Feed() {
           !isFetchingMore &&
           !isInitialLoading
         ) {
-          if (DEBUG_MODE) {
-            console.log('Trigger element is visible - calling fetchNextPage');
-          }
           fetchNextPage();
         }
       },
@@ -294,14 +204,8 @@ export function Feed() {
     );
 
     observer.observe(trigger);
-    if (DEBUG_MODE) {
-      console.log('Observer attached to trigger element');
-    }
 
     return () => {
-      if (DEBUG_MODE) {
-        console.log('Cleaning up observer');
-      }
       observer.unobserve(trigger);
     };
   }, [
@@ -333,6 +237,8 @@ export function Feed() {
     );
   }
 
+  console.log('All prompts', allPrompts);
+
   return (
     <>
       <style>{`
@@ -357,28 +263,21 @@ export function Feed() {
             className={`flex snap-start flex-col overflow-y-hidden pb-20`}
           >
             <ShowContent prompt={prompt} isLoading={isInitialLoading} />
-
             {/* Place trigger element at the 5th-to-last item */}
             {index === allPrompts.length - 5 && (
               <div
                 ref={triggerRef}
-                className={`flex h-4 w-full items-center justify-center text-xs ${
-                  DEBUG_MODE ? 'bg-red-500 opacity-20' : 'opacity-0'
-                }`}
+                className={`flex h-4 w-full items-center justify-center text-xs opacity-0`}
                 style={{ pointerEvents: 'none' }}
-              >
-                {DEBUG_MODE && `TRIGGER (${index + 1}/${allPrompts.length})`}
-              </div>
+              ></div>
             )}
           </section>
         ))}
-
         {(isFetchingMore || isInitialLoading) && (
           <section className="flex snap-start items-center justify-center py-8">
             <Spinner text="Loading more prompts..." size="lg" />
           </section>
         )}
-
         {error && allPrompts.length > 0 && (
           <section className="flex snap-start items-center justify-center">
             <div className="p-6 text-center">

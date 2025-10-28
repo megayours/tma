@@ -5,6 +5,7 @@ import { useState, type ReactNode } from 'react';
 import { Feed } from '@/routes/feed';
 import { UserMenuComponent } from '@/components/lib/auth/FavoriteNFT';
 import { ProfileLayout } from '@/routes/profile/index';
+import { useSession } from '@/auth/SessionProvider';
 
 export const Route = createFileRoute('/')({
   component: Index,
@@ -45,15 +46,13 @@ function ContentMenu(props: ContentMenuProps) {
 
 function Index() {
   const [selectedContentType, setSelectedContentType] = useState('Stickers');
-  return (
-    <div className="bg-tg-bg text-tg-text">
-      {selectedContentType == 'Stickers' && <Landing />}
-      {selectedContentType == 'Feed' && <Feed />}
-      {selectedContentType == 'UserMenu' && <ProfileLayout />}
-      <ContentMenu
-        contentTypes={[
-          'Stickers',
-          'Feed',
+  const { session } = useSession();
+
+  const contentTypes: ContentType[] = [
+    'Stickers',
+    'Feed',
+    ...(session
+      ? [
           {
             id: 'UserMenu',
             content: (
@@ -62,7 +61,17 @@ function Index() {
               </div>
             ),
           },
-        ]}
+        ]
+      : []),
+  ];
+
+  return (
+    <div className="bg-tg-bg text-tg-text">
+      {selectedContentType == 'Stickers' && <Landing />}
+      {selectedContentType == 'Feed' && <Feed />}
+      {selectedContentType == 'UserMenu' && <ProfileLayout />}
+      <ContentMenu
+        contentTypes={contentTypes}
         selectedContentTye={selectedContentType}
         setSelectedContentType={setSelectedContentType}
       />

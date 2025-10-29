@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { useRef, useEffect } from 'react';
 import { gsap } from 'gsap';
+import { hapticFeedback } from '@telegram-apps/sdk-react';
 
 type ContentType = string | { id: string; content: ReactNode };
 
@@ -14,6 +15,14 @@ export function ContentMenu(props: ContentMenuProps) {
   const bubbleRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const handleItemClick = (id: string) => {
+    // Trigger haptic feedback
+    if (hapticFeedback.impactOccurred.isAvailable()) {
+      hapticFeedback.impactOccurred('medium');
+    }
+    props.setSelectedContentType(id);
+  };
 
   useEffect(() => {
     const selectedElement = itemRefs.current[props.selectedContentType];
@@ -61,8 +70,8 @@ export function ContentMenu(props: ContentMenuProps) {
               ref={el => {
                 itemRefs.current[id] = el;
               }}
-              onClick={() => props.setSelectedContentType(id)}
-              className="text-tg-button-text relative z-10 flex h-full w-full items-center justify-center p-3"
+              onClick={() => handleItemClick(id)}
+              className={`${props.selectedContentType == id ? 'text-tg-button-text' : 'text-tg-text'} relative z-10 flex h-full w-full items-center justify-center p-3`}
               style={{ zIndex: 1 }}
             >
               {content}

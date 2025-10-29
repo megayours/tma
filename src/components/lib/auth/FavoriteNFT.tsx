@@ -1,4 +1,3 @@
-import { Link } from '@tanstack/react-router';
 import { useState, useRef, useEffect } from 'react';
 import { useGetFavorites } from '@/hooks/useFavorites';
 import { useSession } from '@/auth/SessionProvider';
@@ -27,7 +26,8 @@ export function UserMenuComponent({ size = 40 }: { size?: number }) {
 
     if (isMenuOpen) {
       document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
+      return () =>
+        document.removeEventListener('mousedown', handleClickOutside);
     }
   }, [isMenuOpen]);
 
@@ -46,7 +46,9 @@ export function UserMenuComponent({ size = 40 }: { size?: number }) {
       >
         <img
           src={selectedFavorite.token.image || '/nfts/not-available.png'}
-          alt={selectedFavorite.token.name || `NFT #${selectedFavorite.token.id}`}
+          alt={
+            selectedFavorite.token.name || `NFT #${selectedFavorite.token.id}`
+          }
           className="h-full w-full object-cover"
         />
       </div>
@@ -54,7 +56,7 @@ export function UserMenuComponent({ size = 40 }: { size?: number }) {
       {isMenuOpen && (
         <div
           ref={menuRef}
-          className="bg-tg-section-bg border-tg-section-separator absolute left-0 top-full z-50 mt-2 min-w-[200px] rounded-lg border shadow-lg"
+          className="bg-tg-section-bg border-tg-section-separator absolute top-full left-0 z-50 mt-2 min-w-[200px] rounded-lg border shadow-lg"
         >
           <div className="py-1">
             <button

@@ -1,12 +1,11 @@
-import { useDeletePromptMutation, useGetMyPrompts } from '@/hooks/usePrompts';
+import { useGetMyPrompts } from '@/hooks/usePrompts';
 import { useEffect, useState } from 'react';
 import { Pagination } from '@/components/ui';
 import type { Pagination as PaginationType } from '@/types/pagination';
 import { useSession } from '@/auth/SessionProvider';
 import type { Prompt } from '@/types/prompt';
-import { Button, Card } from '@telegram-apps/telegram-ui';
+import { Button } from '@telegram-apps/telegram-ui';
 import { useNavigate } from '@tanstack/react-router';
-import { IoTrashBinOutline } from 'react-icons/io5';
 import { useGetPreviewContent } from '../hooks/useContents';
 
 export const RenderPreview = ({ prompt }: { prompt: Prompt }) => {
@@ -46,17 +45,10 @@ export default function MyPrompts() {
     size: 5,
   });
   const [totalPages, setTotalPages] = useState(1);
-  const [deletingPromptId, setDeletingPromptId] = useState<number | null>(null);
 
   const { data } = useGetMyPrompts(session!, pagination, {
     sortBy: 'created_at',
     sortOrder: 'desc',
-  });
-  const { mutateAsync: deletePrompt } = useDeletePromptMutation(session!, {
-    onSettled: () => {
-      // Clear the deleting state after mutation settles (success or error) and query refetch completes
-      setDeletingPromptId(null);
-    },
   });
 
   useEffect(() => {
@@ -75,11 +67,7 @@ export default function MyPrompts() {
       {data && (
         <div className="grid grid-cols-2 gap-2">
           {data?.data.map((prompt: Prompt) => (
-            <div
-              key={prompt.id}
-              className={deletingPromptId === prompt.id ? 'opacity-50' : ''}
-            >
-              {/* <Card.Chip readOnly>{prompt.type}</Card.Chip> */}
+            <div key={prompt.id}>
               <div className="border-tg-section-separator flex flex-col rounded-lg border p-2">
                 <RenderPreview prompt={prompt} />
                 <h1 className="text-sm font-bold">{prompt.name}</h1>

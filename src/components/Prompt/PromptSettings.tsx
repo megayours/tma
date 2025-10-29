@@ -23,7 +23,13 @@ import {
   IoStatsChartOutline,
   IoInformationCircleOutline,
   IoDocumentTextOutline,
+  IoTrashOutline,
+  IoWarningOutline,
 } from 'react-icons/io5';
+import { useDeletePromptMutation } from '@/hooks/usePrompts';
+import { useSession } from '@/auth/SessionProvider';
+import { useNavigate } from '@tanstack/react-router';
+import { popup } from '@telegram-apps/sdk-react';
 
 interface PromptSettingsProps {
   prompt: Prompt;
@@ -46,9 +52,25 @@ export const PromptSettings = ({
   isOpen,
   promptMutation,
 }: PromptSettingsProps) => {
+  const { session } = useSession();
+  const navigate = useNavigate();
   const { models, isLoading: modelsLoading } = useModels();
   const { data: supportedCollections, isLoading: collectionsLoading } =
     useGetSupportedCollections();
+
+  const [deletingPromptId, setDeletingPromptId] = useState<number | null>(null);
+
+  const deletePrompt = useDeletePromptMutation(session!, {
+    onSuccess: () => {
+      navigate({ to: '/profile/admin' });
+    },
+    onError: error => {
+      console.error('Failed to delete prompt:', error);
+    },
+    onSettled: () => {
+      setDeletingPromptId(null);
+    },
+  });
 
   // Map prompt types to capability types
   const getCapabilityType = (promptType: string): string => {
@@ -298,6 +320,49 @@ export const PromptSettings = ({
     setSelectedContracts(new Set());
     setEditedPrompt(prev => ({ ...prev, contracts: [] }));
     setHasChanges(true);
+  };
+
+  // Handle prompt deletion
+  const handleDeletePrompt = async (promptId: number) => {
+    // Show Telegram confirmation popup
+    try {
+      const result = await popup.open({
+        title: 'Delete Prompt',
+        message: 'Are you sure you want to delete this prompt? This action cannot be undone.',
+        buttons: [
+          {
+            id: 'delete',
+            type: 'destructive',
+            text: 'Delete',
+          },
+          {
+            id: 'cancel',
+            type: 'cancel',
+          },
+        ],
+      });
+
+      // If user confirmed deletion
+      if (result === 'delete') {
+        setDeletingPromptId(promptId);
+        try {
+          await deletePrompt.mutateAsync({ promptId });
+          // Don't clear deletingPromptId here - let mutation onSettled callback handle it after refetch
+        } catch (error) {
+          console.error('Failed to delete prompt:', error);
+          // Error case is handled by mutation onError callback, onSettled will still clear the state
+        }
+      }
+    } catch (error) {
+      console.error('Failed to show popup:', error);
+      // Fallback: proceed with deletion if popup fails
+      setDeletingPromptId(promptId);
+      try {
+        await deletePrompt.mutateAsync({ promptId });
+      } catch (error) {
+        console.error('Failed to delete prompt:', error);
+      }
+    }
   };
 
   if (!isOpen) return null;
@@ -596,6 +661,45 @@ export const PromptSettings = ({
               }
             >
               Last Used
+            </Cell>
+          </Section>
+
+          {/* Danger Zone Section */}
+          <Section
+            header="Danger Zone"
+            footer="Deleting a prompt is permanent and cannot be undone."
+          >
+            <Cell
+              before={
+                <IconContainer>
+                  <IoWarningOutline className="text-red-500" />
+                </IconContainer>
+              }
+              className="border-l-4 border-l-red-500 bg-red-50/10"
+            >
+              <div className="flex w-full flex-col gap-3">
+                <div className="flex w-full flex-col">
+                  <span className="font-semibold text-red-500">
+                    Delete Prompt
+                  </span>
+                  <p className="text-tg-hint mt-1 whitespace-normal break-words text-sm">
+                    This action cannot be undone. All data associated with this prompt will be permanently deleted.
+                  </p>
+                </div>
+                <Button
+                  mode="filled"
+                  size="s"
+                  onClick={() => handleDeletePrompt(prompt.id!)}
+                  loading={deletingPromptId === prompt.id}
+                  disabled={deletingPromptId === prompt.id}
+                  className="bg-red-500 hover:bg-red-600"
+                >
+                  <div className="text-tg-button-text flex flex-row items-center">
+                    <IoTrashOutline className="mr-2" />
+                    Delete Prompt
+                  </div>
+                </Button>
+              </div>
             </Cell>
           </Section>
         </List>

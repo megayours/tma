@@ -86,13 +86,7 @@ function AuthorizeBotMessages() {
     );
   }
 
-  return (
-    <Blockquote type="text">
-      <span className="text-tg-button">
-        Authorize Bot Messages Allowed: {allowsWriteToPm ? 'Yes' : 'No'}
-      </span>
-    </Blockquote>
-  );
+  return null;
 }
 
 export function ProfileLayout() {

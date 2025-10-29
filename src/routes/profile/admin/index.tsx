@@ -1,10 +1,11 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { ProtectedRoute } from '../../auth/ProtectedRoute';
+import { ProtectedRoute } from '../../../auth/ProtectedRoute';
 import MyPrompts from '@/components/MyPrompts';
 import { useSession } from '@/auth/SessionProvider';
 import { Button } from '@telegram-apps/telegram-ui';
+import { PreviewContent } from './PreviewContent';
 
-export const Route = createFileRoute('/profile/admin')({
+export const Route = createFileRoute('/profile/admin/')({
   component: ProfileLayout,
 });
 
@@ -18,7 +19,9 @@ function RenderAdmin() {
   }
   return (
     <div className="flex flex-col gap-4 p-4">
-      <div className="flex flex-row items-center justify-between gap-2">
+      <h1 className="text-2xl">Latest Prompt Creations</h1>
+      <PreviewContent />
+      <div className="flex flex-row justify-between">
         <h1 className="text-tg-text text-2xl font-bold">Your prompts</h1>
         <Link to="/profile/prompt/create">
           <Button mode="filled" size="s">

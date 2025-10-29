@@ -21,7 +21,6 @@ import { Route as FeedIndexRouteImport } from './routes/feed/index'
 import { Route as Demo3IndexRouteImport } from './routes/demo3/index'
 import { Route as Demo2IndexRouteImport } from './routes/demo2/index'
 import { Route as StickerPacksStickerPackIdRouteImport } from './routes/sticker-packs/$stickerPackId'
-import { Route as ProfileAdminRouteImport } from './routes/profile/admin'
 import { Route as AuthRefreshRouteImport } from './routes/auth/refresh'
 import { Route as StickerPacksStickerPackIdIndexRouteImport } from './routes/sticker-packs/$stickerPackId/index'
 import { Route as ProfilePurchasesIndexRouteImport } from './routes/profile/purchases/index'
@@ -29,6 +28,7 @@ import { Route as ProfilePromptIndexRouteImport } from './routes/profile/prompt/
 import { Route as ProfileMyStickerPacksIndexRouteImport } from './routes/profile/my-sticker-packs/index'
 import { Route as ProfileMyGenerationsIndexRouteImport } from './routes/profile/my-generations/index'
 import { Route as ProfileFavoritesIndexRouteImport } from './routes/profile/favorites/index'
+import { Route as ProfileAdminIndexRouteImport } from './routes/profile/admin/index'
 import { Route as PostCreateIndexRouteImport } from './routes/post/create/index'
 import { Route as PostPostIdIndexRouteImport } from './routes/post/$postId/index'
 import { Route as Demo2ItemIndexRouteImport } from './routes/demo2/item/index'
@@ -111,11 +111,6 @@ const StickerPacksStickerPackIdRoute =
     path: '/$stickerPackId',
     getParentRoute: () => StickerPacksRoute,
   } as any)
-const ProfileAdminRoute = ProfileAdminRouteImport.update({
-  id: '/profile/admin',
-  path: '/profile/admin',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthRefreshRoute = AuthRefreshRouteImport.update({
   id: '/auth/refresh',
   path: '/auth/refresh',
@@ -152,6 +147,11 @@ const ProfileMyGenerationsIndexRoute =
 const ProfileFavoritesIndexRoute = ProfileFavoritesIndexRouteImport.update({
   id: '/profile/favorites/',
   path: '/profile/favorites/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileAdminIndexRoute = ProfileAdminIndexRouteImport.update({
+  id: '/profile/admin/',
+  path: '/profile/admin/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PostCreateIndexRoute = PostCreateIndexRouteImport.update({
@@ -272,7 +272,6 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/sticker-packs': typeof StickerPacksRouteWithChildren
   '/auth/refresh': typeof AuthRefreshRoute
-  '/profile/admin': typeof ProfileAdminRoute
   '/sticker-packs/$stickerPackId': typeof StickerPacksStickerPackIdRouteWithChildren
   '/demo2': typeof Demo2IndexRoute
   '/demo3': typeof Demo3IndexRoute
@@ -289,6 +288,7 @@ export interface FileRoutesByFullPath {
   '/demo2/item': typeof Demo2ItemIndexRoute
   '/post/$postId': typeof PostPostIdIndexRoute
   '/post/create': typeof PostCreateIndexRoute
+  '/profile/admin': typeof ProfileAdminIndexRoute
   '/profile/favorites': typeof ProfileFavoritesIndexRoute
   '/profile/my-generations': typeof ProfileMyGenerationsIndexRoute
   '/profile/my-sticker-packs': typeof ProfileMyStickerPacksIndexRoute
@@ -313,7 +313,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/auth/refresh': typeof AuthRefreshRoute
-  '/profile/admin': typeof ProfileAdminRoute
   '/demo2': typeof Demo2IndexRoute
   '/demo3': typeof Demo3IndexRoute
   '/feed': typeof FeedIndexRoute
@@ -329,6 +328,7 @@ export interface FileRoutesByTo {
   '/demo2/item': typeof Demo2ItemIndexRoute
   '/post/$postId': typeof PostPostIdIndexRoute
   '/post/create': typeof PostCreateIndexRoute
+  '/profile/admin': typeof ProfileAdminIndexRoute
   '/profile/favorites': typeof ProfileFavoritesIndexRoute
   '/profile/my-generations': typeof ProfileMyGenerationsIndexRoute
   '/profile/my-sticker-packs': typeof ProfileMyStickerPacksIndexRoute
@@ -354,7 +354,6 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/sticker-packs': typeof StickerPacksRouteWithChildren
   '/auth/refresh': typeof AuthRefreshRoute
-  '/profile/admin': typeof ProfileAdminRoute
   '/sticker-packs/$stickerPackId': typeof StickerPacksStickerPackIdRouteWithChildren
   '/demo2/': typeof Demo2IndexRoute
   '/demo3/': typeof Demo3IndexRoute
@@ -371,6 +370,7 @@ export interface FileRoutesById {
   '/demo2/item/': typeof Demo2ItemIndexRoute
   '/post/$postId/': typeof PostPostIdIndexRoute
   '/post/create/': typeof PostCreateIndexRoute
+  '/profile/admin/': typeof ProfileAdminIndexRoute
   '/profile/favorites/': typeof ProfileFavoritesIndexRoute
   '/profile/my-generations/': typeof ProfileMyGenerationsIndexRoute
   '/profile/my-sticker-packs/': typeof ProfileMyStickerPacksIndexRoute
@@ -398,7 +398,6 @@ export interface FileRouteTypes {
     | '/about'
     | '/sticker-packs'
     | '/auth/refresh'
-    | '/profile/admin'
     | '/sticker-packs/$stickerPackId'
     | '/demo2'
     | '/demo3'
@@ -415,6 +414,7 @@ export interface FileRouteTypes {
     | '/demo2/item'
     | '/post/$postId'
     | '/post/create'
+    | '/profile/admin'
     | '/profile/favorites'
     | '/profile/my-generations'
     | '/profile/my-sticker-packs'
@@ -439,7 +439,6 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/auth/refresh'
-    | '/profile/admin'
     | '/demo2'
     | '/demo3'
     | '/feed'
@@ -455,6 +454,7 @@ export interface FileRouteTypes {
     | '/demo2/item'
     | '/post/$postId'
     | '/post/create'
+    | '/profile/admin'
     | '/profile/favorites'
     | '/profile/my-generations'
     | '/profile/my-sticker-packs'
@@ -479,7 +479,6 @@ export interface FileRouteTypes {
     | '/about'
     | '/sticker-packs'
     | '/auth/refresh'
-    | '/profile/admin'
     | '/sticker-packs/$stickerPackId'
     | '/demo2/'
     | '/demo3/'
@@ -496,6 +495,7 @@ export interface FileRouteTypes {
     | '/demo2/item/'
     | '/post/$postId/'
     | '/post/create/'
+    | '/profile/admin/'
     | '/profile/favorites/'
     | '/profile/my-generations/'
     | '/profile/my-sticker-packs/'
@@ -522,7 +522,6 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   StickerPacksRoute: typeof StickerPacksRouteWithChildren
   AuthRefreshRoute: typeof AuthRefreshRoute
-  ProfileAdminRoute: typeof ProfileAdminRoute
   Demo2IndexRoute: typeof Demo2IndexRoute
   Demo3IndexRoute: typeof Demo3IndexRoute
   FeedIndexRoute: typeof FeedIndexRoute
@@ -535,6 +534,7 @@ export interface RootRouteChildren {
   Demo2ItemIndexRoute: typeof Demo2ItemIndexRoute
   PostPostIdIndexRoute: typeof PostPostIdIndexRoute
   PostCreateIndexRoute: typeof PostCreateIndexRoute
+  ProfileAdminIndexRoute: typeof ProfileAdminIndexRoute
   ProfileFavoritesIndexRoute: typeof ProfileFavoritesIndexRoute
   ProfileMyGenerationsIndexRoute: typeof ProfileMyGenerationsIndexRoute
   ProfileMyStickerPacksIndexRoute: typeof ProfileMyStickerPacksIndexRoute
@@ -634,13 +634,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StickerPacksStickerPackIdRouteImport
       parentRoute: typeof StickerPacksRoute
     }
-    '/profile/admin': {
-      id: '/profile/admin'
-      path: '/profile/admin'
-      fullPath: '/profile/admin'
-      preLoaderRoute: typeof ProfileAdminRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/auth/refresh': {
       id: '/auth/refresh'
       path: '/auth/refresh'
@@ -688,6 +681,13 @@ declare module '@tanstack/react-router' {
       path: '/profile/favorites'
       fullPath: '/profile/favorites'
       preLoaderRoute: typeof ProfileFavoritesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile/admin/': {
+      id: '/profile/admin/'
+      path: '/profile/admin'
+      fullPath: '/profile/admin'
+      preLoaderRoute: typeof ProfileAdminIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/post/create/': {
@@ -916,7 +916,6 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   StickerPacksRoute: StickerPacksRouteWithChildren,
   AuthRefreshRoute: AuthRefreshRoute,
-  ProfileAdminRoute: ProfileAdminRoute,
   Demo2IndexRoute: Demo2IndexRoute,
   Demo3IndexRoute: Demo3IndexRoute,
   FeedIndexRoute: FeedIndexRoute,
@@ -929,6 +928,7 @@ const rootRouteChildren: RootRouteChildren = {
   Demo2ItemIndexRoute: Demo2ItemIndexRoute,
   PostPostIdIndexRoute: PostPostIdIndexRoute,
   PostCreateIndexRoute: PostCreateIndexRoute,
+  ProfileAdminIndexRoute: ProfileAdminIndexRoute,
   ProfileFavoritesIndexRoute: ProfileFavoritesIndexRoute,
   ProfileMyGenerationsIndexRoute: ProfileMyGenerationsIndexRoute,
   ProfileMyStickerPacksIndexRoute: ProfileMyStickerPacksIndexRoute,

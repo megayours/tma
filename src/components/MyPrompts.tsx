@@ -13,7 +13,7 @@ export const RenderPreview = ({ prompt }: { prompt: Prompt }) => {
   const { session } = useSession();
   const { data } = useGetPreviewContent(session, prompt.id, {
     page: 1,
-    size: 8,
+    size: 1,
   });
   console.log(data);
   return (
@@ -65,77 +65,40 @@ export default function MyPrompts() {
     }
   }, [data]);
 
-  const handleDeletePrompt = async (promptId: number) => {
-    setDeletingPromptId(promptId);
-    try {
-      await deletePrompt({ promptId });
-      // Don't clear deletingPromptId here - let mutation onSettled callback handle it after refetch
-    } catch (error) {
-      console.error('Failed to delete prompt:', error);
-      // Error case is handled by mutation onError callback, onSettled will still clear the state
-    }
-  };
-
   if (!session) {
     return <div>No session available</div>;
   }
 
+  console.log('prompt', data?.data[1]);
   return (
     <div>
       {data && (
-        <div className="flex flex-col gap-2">
+        <div className="grid grid-cols-2 gap-2">
           {data?.data.map((prompt: Prompt) => (
-            <Card
+            <div
               key={prompt.id}
-              type="plain"
-              onClick={() => {
-                navigate({
-                  // TODO, change to Feed kind of view
-                  // to: '/profile/prompt/edit/$promptId',
-                  // params: { promptId: prompt.id?.toString() ?? '' },
-                });
-              }}
               className={deletingPromptId === prompt.id ? 'opacity-50' : ''}
             >
               {/* <Card.Chip readOnly>{prompt.type}</Card.Chip> */}
-              <RenderPreview prompt={prompt} />
-
-              <Card.Cell
-                readOnly
-                subtitle={prompt.type}
-                className="relative w-full"
-              >
-                <div className="flex w-full flex-row items-center justify-between">
-                  <h1 className="flex-1 text-sm font-bold">{prompt.name}</h1>
-                  <div className="absolute top-1/2 right-0 flex -translate-y-1/2 flex-row gap-2">
-                    <Button
-                      before={<IoTrashBinOutline />}
-                      mode="plain"
-                      size="s"
-                      onClick={event => {
-                        // stop propagation to the card
-                        event.stopPropagation();
-                        handleDeletePrompt(prompt.id!);
-                      }}
-                      loading={deletingPromptId === prompt.id}
-                    >
-                      <span className="">Delete</span>
-                    </Button>
-                    <Button
-                      before={'Modify'}
-                      mode="filled"
-                      size="s"
-                      onClick={() => {
-                        navigate({
-                          to: '/profile/prompt/edit/$promptId',
-                          params: { promptId: prompt.id?.toString() ?? '' },
-                        });
-                      }}
-                    ></Button>
-                  </div>
-                </div>
-              </Card.Cell>
-            </Card>
+              <div className="border-tg-section-separator flex flex-col rounded-lg border p-2">
+                <RenderPreview prompt={prompt} />
+                <h1 className="text-sm font-bold">{prompt.name}</h1>
+                <h2 className="text-sm font-medium">
+                  {prompt.type?.replaceAll('_', ' ')}
+                </h2>
+                <Button
+                  before={'Modify'}
+                  mode="filled"
+                  size="s"
+                  onClick={() => {
+                    navigate({
+                      to: '/profile/prompt/edit/$promptId',
+                      params: { promptId: prompt.id?.toString() ?? '' },
+                    });
+                  }}
+                ></Button>
+              </div>
+            </div>
           ))}
         </div>
       )}

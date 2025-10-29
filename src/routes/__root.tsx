@@ -15,7 +15,6 @@ import {
   swipeBehavior,
 } from '@telegram-apps/sdk-react';
 import { useEffect, useState, useRef } from 'react';
-import { AppRoot } from '@telegram-apps/telegram-ui';
 import { Header } from '@/components/Header';
 import { useTelegramTheme } from '@/auth/useTelegram';
 import { ToastProvider } from '@/components/ui';
@@ -216,7 +215,7 @@ function AppContent() {
       ) : (
         <WebEnvironmentHandler />
       )}
-      <AppRoot className="bg-tg-bg">
+      <div className="bg-tg-bg">
         <Header />
         <main className={`h-full`}>
           <Outlet />
@@ -225,7 +224,7 @@ function AppContent() {
         {/* <UserMenuComponent size={35} /> */}
         {/* <TanStackRouterDevtools /> */}
         {/* <ReactQueryDevtools initialIsOpen={false} /> */}
-      </AppRoot>
+      </div>
     </>
   );
 

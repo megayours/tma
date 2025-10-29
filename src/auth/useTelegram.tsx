@@ -20,7 +20,13 @@ export function useTelegramRawInitData():
   }
 }
 export function useTelegramTheme() {
-  const [isDark, setIsDark] = useState(false);
+  // Initialize from DOM to match pre-React theme detection
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof document !== 'undefined') {
+      return document.documentElement.classList.contains('dark');
+    }
+    return false;
+  });
   const [themeParams, setThemeParams] = useState<any>(null);
   const rawInitData = useTelegramRawInitData();
 
@@ -75,8 +81,8 @@ export function useTelegramTheme() {
           );
         }
       });
-    } else {
-      // When not in Telegram, check for system preference or localStorage
+    } else if (!isTMA()) {
+      // ONLY use system preference when definitively NOT in Telegram
       const savedTheme = localStorage.getItem('theme');
       const systemPrefersDark = window.matchMedia(
         '(prefers-color-scheme: dark)'
@@ -90,6 +96,8 @@ export function useTelegramTheme() {
       // Apply theme to document
       document.documentElement.classList.toggle('dark', shouldUseDark);
     }
+    // else: We're in Telegram but theme params aren't ready yet
+    // Keep the existing theme from pre-React detection, don't override
   }, [rawInitData]);
 
   const toggleTheme = useCallback(() => {

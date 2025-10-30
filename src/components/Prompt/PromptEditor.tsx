@@ -113,7 +113,7 @@ const PromptEditorContent = ({
       <div className={`h-full`}>
         {/* Your main content goes here */}
         {selectedVersion && (
-          <div className="h-full">
+          <div className="h-full pb-36">
             <ContentPreviews
               prompt={prompt}
               selectedVersion={selectedVersion}

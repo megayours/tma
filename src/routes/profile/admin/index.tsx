@@ -3,7 +3,6 @@ import { ProtectedRoute } from '../../../auth/ProtectedRoute';
 import MyPrompts from '@/components/MyPrompts';
 import { useSession } from '@/auth/SessionProvider';
 import { Button } from '@telegram-apps/telegram-ui';
-import { PreviewContent } from './PreviewContent';
 
 export const Route = createFileRoute('/profile/admin/')({
   component: ProfileLayout,

@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 import { ProtectedRoute } from '@/auth/ProtectedRoute';
 import { useSession } from '@/auth/SessionProvider';
 import { useCreatePromptMutation } from '@/hooks/usePrompts';
-import { Button, Cell, Section, Input } from '@telegram-apps/telegram-ui';
+import { Button, Section, Input } from '@telegram-apps/telegram-ui';
 
 export const Route = createFileRoute('/profile/prompt/create')({
   component: CreatePromptComponent,
@@ -98,43 +98,50 @@ function CreatePromptComponent() {
               </p>
             </div>
 
-            <Section header="MEMEs" className="mx-4">
-              <Cell
+            <div className="text-tg-text mx-4 pt-4">
+              <h1 className="text-sm">MEMEs</h1>
+              <div
                 onClick={() => handleTypeSelect('images')}
-                before={<span className="text-5xl">🖼️</span>}
-                subtitle=""
-                className="py-4"
+                className="cursor-pointer py-4"
               >
-                <span className="text-lg">Image</span>
-              </Cell>
-              <Cell
+                <div className="flex flex-row items-center gap-2 overflow-hidden rounded-2xl border border-white/20 bg-white/10 p-4 shadow-lg backdrop-blur-lg transition-all hover:brightness-110 active:scale-95">
+                  <span className="text-5xl">🖼️</span>
+                  <span className="text-lg">Image</span>
+                  <span className="text-tg-hint">(Coming Soon)</span>
+                </div>
+              </div>
+              <div
                 onClick={() => handleTypeSelect('videos')}
-                before={<span className="text-5xl">🎬</span>}
-                subtitle=""
-                className="py-4"
+                className="cursor-pointer py-4"
               >
-                <span className="text-lg">GIF</span>
-              </Cell>
-            </Section>
+                <div className="flex flex-row items-center gap-2 overflow-hidden rounded-2xl border border-white/20 bg-white/10 p-4 shadow-lg backdrop-blur-lg transition-all hover:brightness-110 active:scale-95">
+                  <span className="text-5xl">🎬</span>
+                  <span className="text-lg">GIF</span>
+                </div>
+              </div>
+            </div>
 
-            <Section header="Stickers" className="mx-4">
-              <Cell
+            <div className="text-tg-text mx-4 pt-4">
+              <h1 className="text-sm">Stickers</h1>
+              <div
                 onClick={() => handleTypeSelect('stickers')}
-                before={<span className="text-5xl">😊</span>}
-                subtitle=""
-                className="py-4"
+                className="cursor-pointer py-4"
               >
-                <span className="text-lg">Sticker</span>
-              </Cell>
-              <Cell
+                <div className="flex flex-row items-center gap-2 overflow-hidden rounded-2xl border border-white/20 bg-white/10 p-4 shadow-lg backdrop-blur-lg transition-all hover:brightness-110 active:scale-95">
+                  <span className="text-5xl">😊</span>
+                  <span className="text-lg">Sticker</span>
+                </div>
+              </div>
+              <div
                 onClick={() => handleTypeSelect('animated_stickers')}
-                before={<span className="text-5xl">✨</span>}
-                subtitle=""
-                className="py-4"
+                className="cursor-pointer py-4"
               >
-                <span className="text-lg">Animated Sticker</span>
-              </Cell>
-            </Section>
+                <div className="flex flex-row items-center gap-2 overflow-hidden rounded-2xl border border-white/20 bg-white/10 p-4 shadow-lg backdrop-blur-lg transition-all hover:brightness-110 active:scale-95">
+                  <span className="text-5xl">✨</span>
+                  <span className="text-lg">Animated Sticker</span>
+                </div>
+              </div>
+            </div>
           </>
         ) : (
           <>

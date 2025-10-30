@@ -53,7 +53,7 @@ export const NFTItem = ({
       )}
       <div
         key={index}
-        className="bg-tg-secondary-bg flex h-8 cursor-pointer flex-row items-center gap-2 rounded-full p-2 select-none"
+        className="flex h-8 cursor-pointer flex-row items-center gap-2 rounded-full p-2 select-none bg-white/10 backdrop-blur-lg border border-white/20 shadow-lg"
         onClick={handleClick}
         onContextMenu={e => e.preventDefault()}
       >

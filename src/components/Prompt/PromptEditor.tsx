@@ -128,7 +128,7 @@ const PromptEditorContent = ({
       </div>
 
       {/* Bottom toolbar */}
-      <div className="safe-area-inset-bottom fixed right-0 bottom-0 left-0 z-30 border-t border-white/20 bg-white/10 backdrop-blur-lg">
+      <div className="safe-area-inset-bottom fixed right-0 bottom-0 left-0 z-30 border-t border-white/20">
         <div className="flex h-full flex-col pb-4">
           <div className="justify-startgap-2 flex flex-row items-center">
             {selectedVersion && (
@@ -169,8 +169,8 @@ const PromptEditorContent = ({
             </div>
             <div className="flex flex-1 flex-col">
               <textarea
-                placeholder="Enter your prompt..."
-                className={`text-tg-text resize-none rounded-2xl border border-gray-300 bg-gray-100 px-4 py-3 placeholder-gray-500 transition-all duration-200 outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-400 ${getTextareaHeight()} scrollbar-hide`}
+                placeholder="Example: The NFT1 in a futuristic cityscape, vibrant colors, high detail"
+                className={`text-tg-text border-tg-button/20 resize-none rounded-2xl border px-4 py-3 shadow-lg backdrop-blur-lg transition-all duration-200 outline-none ${getTextareaHeight()} scrollbar-hide`}
                 ref={promptTextareaRef}
                 value={promptText}
                 onChange={e => {

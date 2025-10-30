@@ -18,7 +18,7 @@ const AdditionalContentItem = ({
   console.log('imageData', imageData);
   if (isLoading) {
     return (
-      <div className="bg-tg-secondary-bg flex h-8 flex-row items-center gap-2 rounded-full p-2">
+      <div className="flex h-8 flex-row items-center gap-2 rounded-full bg-white/10 p-2 backdrop-blur-lg">
         <div className="text-tg-hint text-xs">Loading...</div>
       </div>
     );
@@ -29,8 +29,10 @@ const AdditionalContentItem = ({
   }
 
   return (
-    <div className="flex flex-row items-center gap-1 rounded-xl bg-white px-2 py-1">
-      <h1 className="text-xs font-medium text-gray-700 select-none">Image {index + 1}</h1>
+    <div className="flex flex-row items-center gap-1 rounded-xl bg-white/10 px-2 py-1 backdrop-blur-lg">
+      <h1 className="text-tg-text text-xs font-medium select-none">
+        Image {index + 1}
+      </h1>
       <div className="relative h-8 w-8 flex-shrink-0 rounded-md">
         <img
           src={imageData}

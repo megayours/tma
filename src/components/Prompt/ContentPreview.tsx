@@ -80,8 +80,10 @@ export const ContentPreviews = ({
       // OR if the selected content's status has changed (e.g., from processing to completed)
       if (
         !selectedContent ||
-        (newestContent.created_at > (selectedContent.created_at || 0)) ||
-        (selectedContent && newestContent.id === selectedContent.id && newestContent.status !== selectedContent.status)
+        newestContent.created_at > (selectedContent.created_at || 0) ||
+        (selectedContent &&
+          newestContent.id === selectedContent.id &&
+          newestContent.status !== selectedContent.status)
       ) {
         setSelectedContent(newestContent);
       }
@@ -112,7 +114,7 @@ export const ContentPreviews = ({
         {groupedContent.length > 0 && (
           <div
             ref={scrollContainerRef}
-            className="bg-tg-secondary-bg flex max-h-20 w-full flex-shrink-0 flex-row items-center gap-4 overflow-x-auto p-2"
+            className="flex max-h-20 w-full flex-shrink-0 flex-row items-center gap-4 overflow-x-auto border border-white/20 bg-white/10 p-2 shadow-lg backdrop-blur-lg"
           >
             {groupedContent.flatMap((group, groupIndex) => {
               const items = [

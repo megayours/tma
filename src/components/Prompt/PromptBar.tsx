@@ -71,7 +71,7 @@ export const PromptBar = ({
           <h1 className="text-tg-text text-lg font-bold">{prompt.name}</h1>
 
           {/* Row 2: Type, Status, and Edit Button */}
-          <div className="flex items-center justify-center gap-2">
+          <div className="text-tg-text flex items-center justify-center gap-2">
             <div className="overflow-hidden rounded-4xl border border-white/20 bg-white/10 px-3 py-1 shadow-sm backdrop-blur-lg">
               <span className="text-xs font-medium">{prompt.type}</span>
             </div>

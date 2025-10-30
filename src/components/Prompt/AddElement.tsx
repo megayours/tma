@@ -98,7 +98,7 @@ export const AddElement = ({ prompt, setIndex }: AddElementProps) => {
       <div
         className={`flex h-8 flex-row items-center justify-center gap-2 rounded-full px-2 transition-colors ${
           canAddOptionalNFT
-            ? 'bg-tg-secondary-bg hover:bg-tg-section-separator cursor-pointer'
+            ? 'bg-white/10 backdrop-blur-lg border border-white/20 shadow-lg hover:brightness-110 cursor-pointer'
             : 'bg-tg-hint/20 cursor-not-allowed opacity-50'
         }`}
         onClick={handleAddClick}

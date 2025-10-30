@@ -42,7 +42,7 @@ export default function MyPrompts() {
   const { session } = useSession();
   const [pagination, setPagination] = useState<PaginationType>({
     page: 1,
-    size: 5,
+    size: 6,
   });
   const [totalPages, setTotalPages] = useState(1);
 

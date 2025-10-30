@@ -4,6 +4,7 @@ import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import { useStickerPackExecutions } from '../hooks/useStickerPack';
 import { useSession } from '../auth/SessionProvider';
 import { useTelegramTheme } from '../auth/useTelegram';
+import { useCommunityId } from '../hooks/useCommunities';
 
 const ProcessingBadge = () => {
   const { session } = useSession();
@@ -62,6 +63,10 @@ const ProcessingBadge = () => {
 
 const HeaderBrand = () => {
   const { isDark } = useTelegramTheme();
+  const communityId = useCommunityId();
+  console.log('HeaderBrand render, communityId:', communityId);
+  // TODO: Use communityId for community-specific logic
+  void communityId;
 
   return (
     <div className="flex flex-row items-center gap-2">

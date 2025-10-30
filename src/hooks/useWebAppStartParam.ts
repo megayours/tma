@@ -56,8 +56,9 @@ export const useWebAppStartParam = () => {
 
     return {
       collections: data.collections,
+      communityId,
     };
-  }, [isTelegram, data?.collections]);
+  }, [isTelegram, data?.collections, communityId]);
 
   return result;
 };

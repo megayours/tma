@@ -6,6 +6,7 @@ import { UserMenuComponent } from '@/components/lib/auth/FavoriteNFT';
 import { ProfileLayout } from '@/routes/profile/index';
 import { useSession } from '@/auth/SessionProvider';
 import { ContentMenu } from '@/components/ContentMenu';
+import { FaUser } from 'react-icons/fa';
 
 export const Route = createFileRoute('/')({
   component: Index,
@@ -19,19 +20,15 @@ function Index() {
 
   const contentTypes: ContentType[] = [
     'Stickers',
-    'Feed',
-    ...(session
-      ? [
-          {
-            id: 'UserMenu',
-            content: (
-              <div className="flex w-full items-center justify-center">
-                <UserMenuComponent size={35} />
-              </div>
-            ),
-          },
-        ]
-      : []),
+    // 'Feed',
+    {
+      id: 'UserMenu',
+      content: (
+        <div className="flex w-full items-center justify-center">
+          {session ? <UserMenuComponent size={35} /> : <FaUser />}
+        </div>
+      ),
+    },
   ];
 
   return (

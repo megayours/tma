@@ -9,6 +9,8 @@ import {
 import { useSettings } from '@/contexts/SettingsContext';
 import { PromptContext } from '@/contexts/PromptContext';
 import { SpinnerFullPage } from '@/components/ui';
+import { useSignal } from '@telegram-apps/sdk-react';
+import { viewport } from '@telegram-apps/sdk-react';
 
 export const Route = createFileRoute('/profile/prompt/edit/$promptId')({
   component: RouteComponent,
@@ -28,6 +30,7 @@ function RouteContent() {
   const { data: prompt, isLoading, error } = useGetPrompt(promptId, session);
   const { selectedNFTs, setSelectedNFTs } = useSelectedNFTs();
   const { settingsOpen, setSettingsOpen } = useSettings();
+  const isViewportMounted = useSignal(viewport.isMounted);
 
   if (isLoading) return <SpinnerFullPage text="Loading prompt..." />;
 
@@ -59,7 +62,7 @@ function RouteContent() {
   };
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden">
+    <div className="flex h-full flex-col overflow-hidden">
       <PromptBar
         prompt={prompt}
         selectedNFTs={selectedNFTs}
@@ -67,7 +70,9 @@ function RouteContent() {
         settingsOpen={settingsOpen}
         setSettingsOpen={setSettingsOpen}
       />
-      <div className="flex-1 overflow-y-hidden">
+      <div
+        className={`${isViewportMounted ? 'h-[calc(100vh-11rem)]' : 'h-[calc(100vh-9rem)]'} overflow-y-hidden`}
+      >
         <PromptContext.Provider value={promptContextValue}>
           <Outlet />
         </PromptContext.Provider>

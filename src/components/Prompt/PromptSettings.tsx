@@ -328,7 +328,8 @@ export const PromptSettings = ({
     try {
       const result = await popup.open({
         title: 'Delete Prompt',
-        message: 'Are you sure you want to delete this prompt? This action cannot be undone.',
+        message:
+          'Are you sure you want to delete this prompt? This action cannot be undone.',
         buttons: [
           {
             id: 'delete',
@@ -368,7 +369,7 @@ export const PromptSettings = ({
   if (!isOpen) return null;
 
   return (
-    <div className="bg-tg-bg z-40 flex h-screen w-full flex-col pb-20">
+    <div className="scrollbar-hide z-50 flex h-screen w-full flex-col pb-60">
       {/* Header */}
       <div className="flex flex-shrink-0 items-center justify-center px-5 py-4">
         <img
@@ -385,8 +386,8 @@ export const PromptSettings = ({
       </div>
 
       {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto">
-        <List className="bg-tg-secondary-bg m-0 p-5">
+      <div className="scrollbar-hide flex-1 overflow-y-auto">
+        <List className="bg-tg-secondary m-0 p-5">
           {/* Basic Information Section */}
           <Section
             header="Basic Information"
@@ -682,8 +683,9 @@ export const PromptSettings = ({
                   <span className="font-semibold text-red-500">
                     Delete Prompt
                   </span>
-                  <p className="text-tg-hint mt-1 whitespace-normal break-words text-sm">
-                    This action cannot be undone. All data associated with this prompt will be permanently deleted.
+                  <p className="text-tg-hint mt-1 text-sm break-words whitespace-normal">
+                    This action cannot be undone. All data associated with this
+                    prompt will be permanently deleted.
                   </p>
                 </div>
                 <Button

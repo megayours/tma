@@ -1,8 +1,6 @@
 import { useRef, useState, useEffect } from 'react';
 import type { Token } from '@/types/response';
-import { Button, Divider } from '@telegram-apps/telegram-ui';
-import { viewport, useSignal } from '@telegram-apps/sdk-react';
-
+import { Divider } from '@telegram-apps/telegram-ui';
 import { AddInputButton, SpinnerFullPage } from '@/components/ui';
 import { IoSend } from 'react-icons/io5';
 import { InputsEditor } from './InputsEditor';
@@ -26,7 +24,6 @@ const PromptEditorContent = ({
   const [hasChanges, setHasChanges] = useState(false);
   const [isTextareaFocused, setIsTextareaFocused] = useState(false);
   const promptTextareaRef = useRef<HTMLTextAreaElement>(null);
-  const isViewportMounted = useSignal(viewport.isMounted);
 
   // Use React Query to get the prompt data
   const { data: prompt, isLoading, error } = useGetPrompt(promptId, session);
@@ -111,9 +108,9 @@ const PromptEditorContent = ({
   if (!prompt) return <div>Prompt not found</div>;
 
   return (
-    <div className="bg-tg-bg">
+    <div className={`bg-tg-bg h-full`}>
       {/* Main content area */}
-      <div className={`h-screen ${isViewportMounted ? 'pb-80' : 'pb-60'}`}>
+      <div className={`h-full`}>
         {/* Your main content goes here */}
         {selectedVersion && (
           <div className="h-full">
@@ -131,7 +128,7 @@ const PromptEditorContent = ({
       </div>
 
       {/* Bottom toolbar */}
-      <div className="bg-tg-secondary-bg border-tg-hint/20 safe-area-inset-bottom fixed right-0 bottom-0 left-0 z-30 border-t">
+      <div className="safe-area-inset-bottom fixed right-0 bottom-0 left-0 z-30 border-t border-white/20 bg-white/10 backdrop-blur-lg">
         <div className="flex h-full flex-col pb-4">
           <div className="justify-startgap-2 flex flex-row items-center">
             {selectedVersion && (
@@ -164,7 +161,7 @@ const PromptEditorContent = ({
           </div>
           <Divider />
           <div className="flex flex-row items-center gap-2 px-2 py-2">
-            <div className="flex items-center justify-center">
+            <div className="bg-tg-button text-tg-button-text flex items-center justify-center overflow-hidden rounded-4xl shadow-lg">
               <AddInputButton
                 prompt={prompt}
                 promptTextareaRef={promptTextareaRef}
@@ -173,7 +170,7 @@ const PromptEditorContent = ({
             <div className="flex flex-1 flex-col">
               <textarea
                 placeholder="Enter your prompt..."
-                className={`resize-none rounded-2xl border border-gray-300 bg-gray-100 px-4 py-3 text-gray-900 placeholder-gray-500 transition-all duration-200 outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-400 ${getTextareaHeight()}`}
+                className={`text-tg-text resize-none rounded-2xl border border-gray-300 bg-gray-100 px-4 py-3 placeholder-gray-500 transition-all duration-200 outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-400 ${getTextareaHeight()} scrollbar-hide`}
                 ref={promptTextareaRef}
                 value={promptText}
                 onChange={e => {
@@ -185,18 +182,27 @@ const PromptEditorContent = ({
                 disabled={isGenerating || promptMutation.isPending}
               />
             </div>
-            <div className="flex flex-col items-center justify-start gap-2">
-              <Button
-                mode="filled"
-                size="m"
-                onClick={handleGenerate}
-                disabled={
-                  isGenerating || promptMutation.isPending || !promptText.trim()
+            <div
+              onClick={() => {
+                if (
+                  !isGenerating &&
+                  !promptMutation.isPending &&
+                  promptText.trim()
+                ) {
+                  handleGenerate();
                 }
-                loading={isGenerating || promptMutation.isPending}
-              >
-                <IoSend className="text-tg-button-text" />
-              </Button>
+              }}
+              className={`bg-tg-button text-tg-button-text flex cursor-pointer items-center justify-center rounded-4xl p-4 shadow-lg transition-all ${
+                isGenerating || promptMutation.isPending || !promptText.trim()
+                  ? 'cursor-not-allowed opacity-50'
+                  : 'hover:brightness-110 active:scale-95'
+              }`}
+            >
+              {isGenerating || promptMutation.isPending ? (
+                <div className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
+              ) : (
+                <IoSend className="h-3 w-3" />
+              )}
             </div>
           </div>
         </div>

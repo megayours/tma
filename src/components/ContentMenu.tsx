@@ -46,7 +46,7 @@ export function ContentMenu(props: ContentMenuProps) {
   }, [props.selectedContentType, props.contentTypes]);
 
   return (
-    <div className="fixed right-10 bottom-5 left-10 px-4 text-xs">
+    <div className="fixed right-10 bottom-5 left-10 px-4">
       <div
         ref={containerRef}
         className="relative flex h-11 flex-row items-center overflow-hidden rounded-4xl border border-white/20 bg-white/10 shadow-lg backdrop-blur-lg"

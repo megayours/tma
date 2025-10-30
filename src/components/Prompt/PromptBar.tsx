@@ -65,21 +65,38 @@ export const PromptBar = ({
 
   return (
     <TopBar
-      title={`${prompt.name} - ${prompt.type} (${prompt.published ? 'published' : 'unpublished'})`}
-      actions={
-        <div className="flex items-center justify-center gap-3">
-          <IconButton
-            mode="plain"
-            size="s"
-            className="text-tg-hint hover:text-tg-text flex h-12 items-center justify-center"
-            onClick={toggleSettings}
-            disabled={promptMutation.isPending}
-          >
-            {promptMutation.isPending && (
-              <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
-            )}
-            {getButtonText()}
-          </IconButton>
+      title={
+        <div className="flex flex-col items-center justify-center gap-2">
+          {/* Row 1: Prompt Name */}
+          <h1 className="text-tg-text text-lg font-bold">{prompt.name}</h1>
+
+          {/* Row 2: Type, Status, and Edit Button */}
+          <div className="flex items-center justify-center gap-2">
+            <div className="overflow-hidden rounded-4xl border border-white/20 bg-white/10 px-3 py-1 shadow-sm backdrop-blur-lg">
+              <span className="text-xs font-medium">{prompt.type}</span>
+            </div>
+            <div className="overflow-hidden rounded-4xl border border-white/20 bg-white/10 px-3 py-1 shadow-sm backdrop-blur-lg">
+              <span className="text-xs font-medium">
+                {prompt.published ? 'published' : 'unpublished'}
+              </span>
+            </div>
+            <div className="bg-tg-button text-tg-button-text overflow-hidden rounded-4xl border border-white/20 px-4 py-1 shadow-lg backdrop-blur-lg">
+              <IconButton
+                mode="plain"
+                size="s"
+                className="hover:text-tg-text flex h-6 items-center justify-center"
+                onClick={toggleSettings}
+                disabled={promptMutation.isPending}
+              >
+                {promptMutation.isPending && (
+                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
+                )}
+                <span className="text-tg-button-text text-xs">
+                  {getButtonText()}
+                </span>
+              </IconButton>
+            </div>
+          </div>
         </div>
       }
     >

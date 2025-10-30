@@ -19,8 +19,8 @@ function RenderAdmin() {
   }
   return (
     <div className="flex flex-col gap-4 p-4">
-      <h1 className="text-2xl">Latest Prompt Creations</h1>
-      <PreviewContent />
+      {/* <h1 className="text-2xl">Latest Prompt Creations</h1>
+      <PreviewContent /> */}
       <div className="flex flex-row justify-between">
         <h1 className="text-tg-text text-2xl font-bold">Your prompts</h1>
         <Link to="/profile/prompt/create">

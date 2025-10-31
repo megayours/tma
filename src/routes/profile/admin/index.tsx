@@ -2,7 +2,6 @@ import { createFileRoute, Link } from '@tanstack/react-router';
 import { ProtectedRoute } from '../../../auth/ProtectedRoute';
 import MyPrompts from '@/components/MyPrompts';
 import { useSession } from '@/auth/SessionProvider';
-import { Button } from '@telegram-apps/telegram-ui';
 
 export const Route = createFileRoute('/profile/admin/')({
   component: ProfileLayout,
@@ -23,9 +22,9 @@ function RenderAdmin() {
       <div className="flex flex-row justify-between">
         <h1 className="text-tg-text text-2xl font-bold">Your prompts</h1>
         <Link to="/profile/prompt/create">
-          <Button mode="filled" size="s">
+          <div className="bg-tg-button flex cursor-pointer items-center justify-center rounded-full px-4 py-2 text-sm font-semibold">
             <span className="text-tg-button-text">Create</span>
-          </Button>
+          </div>
         </Link>
       </div>
       <MyPrompts />

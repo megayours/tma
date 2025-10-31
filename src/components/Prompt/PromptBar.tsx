@@ -5,6 +5,8 @@ import { TopBar } from '@/components/ui';
 import { PromptSettings } from './PromptSettings';
 import { usePromptMutation } from '@/hooks/usePrompts';
 import { useSession } from '@/auth/SessionProvider';
+import { Link } from '@tanstack/react-router';
+import { FaChevronDown } from 'react-icons/fa';
 
 interface PromptBarProps {
   prompt: Prompt;
@@ -68,7 +70,14 @@ export const PromptBar = ({
       title={
         <div className="flex flex-col items-center justify-center gap-2">
           {/* Row 1: Prompt Name */}
-          <h1 className="text-tg-text text-lg font-bold">{prompt.name}</h1>
+          <div className="flex flex-row gap-2">
+            <div className="flex flex-row items-center">
+              <Link to={`/profile/admin`}>
+                <FaChevronDown />
+              </Link>
+            </div>
+            <h1 className="text-tg-text text-lg font-bold">{prompt.name}</h1>
+          </div>
 
           {/* Row 2: Type, Status, and Edit Button */}
           <div className="text-tg-text flex items-center justify-center gap-2">

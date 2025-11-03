@@ -1,9 +1,9 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { ProtectedRoute } from '../../../auth/ProtectedRoute';
+import { ProtectedRoute } from '@/auth/ProtectedRoute';
 import MyPrompts from '@/components/MyPrompts';
 import { useSession } from '@/auth/SessionProvider';
 
-export const Route = createFileRoute('/profile/admin/')({
+export const Route = createFileRoute('/_main/profile/admin/')({
   component: ProfileLayout,
 });
 

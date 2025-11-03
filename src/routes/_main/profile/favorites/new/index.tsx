@@ -11,7 +11,7 @@ import { useState } from 'react';
 import { useGetNFTByCollectionAndTokenId } from '@/hooks/useCollections';
 import { Section } from '@telegram-apps/telegram-ui';
 
-export const Route = createFileRoute('/profile/favorites/new/')({
+export const Route = createFileRoute('/_main/profile/favorites/new/')({
   component: RouteComponent,
 });
 
@@ -99,7 +99,7 @@ function RouteComponent() {
           </>
         )}
       </div>
-    );
+    )
   };
 
   const DisplayNFT = ({

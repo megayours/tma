@@ -1,9 +1,9 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { StickerPackItem } from '@/routes/landing/StickerPackItem';
+import { StickerPackItem } from '@/routes/_main/stickers/StickerPackItem';
 import { useStickerPacks } from '@/hooks/useStickerPacks';
 import { useWebAppStartParam } from '@/hooks/useWebAppStartParam';
 
-export const Route = createFileRoute('/landing/')({
+export const Route = createFileRoute('/_main/stickers/')({
   component: RouteComponent,
 });
 
@@ -31,11 +31,6 @@ export function Landing() {
           className="bg-tg-section-bg flex shrink-0 snap-start flex-col"
         >
           <StickerPackItem stickerPack={stickerPack} />
-          {/* <div className="flex h-20 bg-blue-500">
-            <div className="flex flex-1">
-              <span className="font-bold text-white">Button</span>
-            </div>
-          </div> */}
         </Link>
       ))}
 

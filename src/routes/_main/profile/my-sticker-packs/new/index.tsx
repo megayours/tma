@@ -1,11 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useGetPrompts } from '@/hooks/usePrompts';
-import { useSession } from '../../../../auth/SessionProvider';
+import { useSession } from '@/auth/SessionProvider';
 import { useState } from 'react';
 import { StickerPromptCard, StickerCollectionBar, SpinnerFullPage } from '@/components/ui';
 import type { Prompt } from '@/types/prompt';
 
-export const Route = createFileRoute('/profile/my-sticker-packs/new/')({
+export const Route = createFileRoute('/_main/profile/my-sticker-packs/new/')({
   component: RouteComponent,
 });
 

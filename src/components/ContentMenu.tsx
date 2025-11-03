@@ -2,30 +2,56 @@ import type { ReactNode } from 'react';
 import { useRef, useEffect } from 'react';
 import { gsap } from 'gsap';
 import { hapticFeedback } from '@telegram-apps/sdk-react';
+import { useNavigate, useLocation } from '@tanstack/react-router';
 
 type ContentType = string | { id: string; content: ReactNode };
 
 interface ContentMenuProps {
   contentTypes: ContentType[];
-  selectedContentType: string;
-  setSelectedContentType: (contentType: string) => void;
 }
 
 export function ContentMenu(props: ContentMenuProps) {
+  const navigate = useNavigate();
+  const location = useLocation();
   const bubbleRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Derive selected content type from current route
+  const getSelectedContentType = (): string => {
+    const path = location.pathname;
+    if (path.startsWith('/stickers')) return 'Stickers';
+    if (path.startsWith('/feed')) return 'Feed';
+    if (path.startsWith('/profile')) return 'UserMenu';
+    return 'Stickers';
+  };
+
+  const selectedContentType = getSelectedContentType();
+
+  // Map content type to route
+  const getRouteForContentType = (id: string): string => {
+    switch (id) {
+      case 'Stickers':
+        return '/stickers';
+      case 'Feed':
+        return '/feed';
+      case 'UserMenu':
+        return '/profile';
+      default:
+        return '/stickers';
+    }
+  };
 
   const handleItemClick = (id: string) => {
     // Trigger haptic feedback
     if (hapticFeedback.impactOccurred.isAvailable()) {
       hapticFeedback.impactOccurred('medium');
     }
-    props.setSelectedContentType(id);
+    navigate({ to: getRouteForContentType(id) });
   };
 
   useEffect(() => {
-    const selectedElement = itemRefs.current[props.selectedContentType];
+    const selectedElement = itemRefs.current[selectedContentType];
     const bubble = bubbleRef.current;
     const container = containerRef.current;
 
@@ -43,7 +69,7 @@ export function ContentMenu(props: ContentMenuProps) {
         ease: 'power2.out',
       });
     }
-  }, [props.selectedContentType, props.contentTypes]);
+  }, [selectedContentType, props.contentTypes]);
 
   return (
     <div className="fixed right-10 bottom-5 left-10 px-4">
@@ -71,7 +97,7 @@ export function ContentMenu(props: ContentMenuProps) {
                 itemRefs.current[id] = el;
               }}
               onClick={() => handleItemClick(id)}
-              className={`${props.selectedContentType == id ? 'text-tg-button-text' : 'text-tg-text'} relative z-10 flex h-full w-full items-center justify-center p-3`}
+              className={`${selectedContentType == id ? 'text-tg-button-text' : 'text-tg-text'} relative z-10 flex h-full w-full items-center justify-center p-3`}
               style={{ zIndex: 1 }}
             >
               {content}

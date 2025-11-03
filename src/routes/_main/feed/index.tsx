@@ -6,7 +6,7 @@ import { ShowContent } from '@/components/Feed/ShowContent';
 import { useSession } from '@/auth/SessionProvider';
 import { Spinner } from '@/components/ui';
 
-export const Route = createFileRoute('/feed/')({
+export const Route = createFileRoute('/_main/feed/')({
   component: Feed,
 });
 

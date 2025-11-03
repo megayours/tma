@@ -1,4 +1,4 @@
-import type { StickerBundles } from '../../hooks/useStickerPacks';
+import type { StickerBundles } from '@/hooks/useStickerPacks';
 
 export function StickerPackItem({
   stickerPack,

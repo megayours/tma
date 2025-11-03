@@ -11,6 +11,7 @@ export const Route = createFileRoute('/profile/prompt/create')({
 
 function CreatePromptComponent() {
   const { session } = useSession();
+  const isMegaAdmin = session && parseInt(session.role) >= 2;
   const navigate = useNavigate();
   const { mutateAsync: createPrompt, isPending } = useCreatePromptMutation();
   const [selectedType, setSelectedType] = useState<
@@ -89,7 +90,7 @@ function CreatePromptComponent() {
       <div className="flex h-screen flex-col">
         {!selectedType ? (
           <>
-            <div className="p-6">
+            <div className="p-4">
               <h1 className="text-tg-text text-2xl font-bold">
                 Create New Prompt
               </h1>
@@ -98,45 +99,58 @@ function CreatePromptComponent() {
               </p>
             </div>
 
-            <div className="text-tg-text mx-4 pt-4">
-              <h1 className="text-sm">MEMEs</h1>
+            <div className="text-tg-text mx-4 flex flex-col gap-2">
+              <h1 className="text-sm">MEMEs {isMegaAdmin && 'Admin'}</h1>
               <div
-                onClick={() => handleTypeSelect('images')}
-                className="cursor-pointer py-4"
+                onClick={() =>
+                  !isMegaAdmin ? null : handleTypeSelect('images')
+                }
+                className="cursor-pointer"
               >
-                <div className="flex flex-row items-center gap-2 overflow-hidden rounded-2xl border border-white/20 bg-white/10 p-4 shadow-lg backdrop-blur-lg transition-all hover:brightness-110 active:scale-95">
+                <div
+                  className={`border-tg-section-separator flex flex-row items-center gap-2 overflow-hidden rounded-2xl border p-4 ${!isMegaAdmin && 'bg-tg-secondary-bg'}`}
+                >
                   <span className="text-5xl">🖼️</span>
                   <span className="text-lg">Image</span>
-                  <span className="text-tg-hint">(Coming Soon)</span>
+                  {!isMegaAdmin && (
+                    <span className="text-tg-hint">(Coming Soon)</span>
+                  )}
                 </div>
               </div>
               <div
-                onClick={() => handleTypeSelect('videos')}
-                className="cursor-pointer py-4"
+                onClick={() =>
+                  !isMegaAdmin ? null : handleTypeSelect('videos')
+                }
+                className="cursor-pointer"
               >
-                <div className="flex flex-row items-center gap-2 overflow-hidden rounded-2xl border border-white/20 bg-white/10 p-4 shadow-lg backdrop-blur-lg transition-all hover:brightness-110 active:scale-95">
+                <div
+                  className={`border-tg-section-separator flex flex-row items-center gap-2 overflow-hidden rounded-2xl border p-4 ${!isMegaAdmin && 'bg-tg-secondary-bg'}`}
+                >
                   <span className="text-5xl">🎬</span>
                   <span className="text-lg">GIF</span>
+                  {!isMegaAdmin && (
+                    <span className="text-tg-hint">(Coming Soon)</span>
+                  )}
                 </div>
               </div>
             </div>
 
-            <div className="text-tg-text mx-4 pt-4">
+            <div className="text-tg-text mx-4 flex flex-col gap-2 pt-4">
               <h1 className="text-sm">Stickers</h1>
               <div
                 onClick={() => handleTypeSelect('stickers')}
-                className="cursor-pointer py-4"
+                className="cursor-pointer"
               >
-                <div className="flex flex-row items-center gap-2 overflow-hidden rounded-2xl border border-white/20 bg-white/10 p-4 shadow-lg backdrop-blur-lg transition-all hover:brightness-110 active:scale-95">
+                <div className="border-tg-section-separator flex flex-row items-center gap-2 overflow-hidden rounded-2xl border p-4">
                   <span className="text-5xl">😊</span>
                   <span className="text-lg">Sticker</span>
                 </div>
               </div>
               <div
                 onClick={() => handleTypeSelect('animated_stickers')}
-                className="cursor-pointer py-4"
+                className="cursor-pointer"
               >
-                <div className="flex flex-row items-center gap-2 overflow-hidden rounded-2xl border border-white/20 bg-white/10 p-4 shadow-lg backdrop-blur-lg transition-all hover:brightness-110 active:scale-95">
+                <div className="border-tg-section-separator flex flex-row items-center gap-2 overflow-hidden rounded-2xl border p-4">
                   <span className="text-5xl">✨</span>
                   <span className="text-lg">Animated Sticker</span>
                 </div>

@@ -12,7 +12,7 @@ function RenderAdmin() {
   if (!session) {
     return <div>No session available</div>;
   }
-  if (parseInt(session.role) < 1) {
+  if (isNaN(parseInt(session.role)) || parseInt(session.role) < 1) {
     return <div>You are not an admin</div>;
   }
   return (

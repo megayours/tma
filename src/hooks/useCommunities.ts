@@ -11,6 +11,7 @@ type Community = {
   name: string;
   owner: string;
   type: 'discord';
+  image: string | null;
   plan_id: number;
   last_token_topup_at: number | null;
   collections: SupportedCollection[];
@@ -76,42 +77,86 @@ export function useCommunityId(): string | undefined {
   }, [isTelegram, tgWebAppStartParam]);
 }
 
-export function useGetCommunityCollections(communityId: string) {
+export function useGetCommunityCollections(communityId?: string) {
   const { session } = useSession();
+
+  const isEnabled = !!communityId && communityId !== '' && !!session;
+
   const { data, isLoading, error } = useQuery({
     queryKey: ['communityCollections', communityId],
     queryFn: async () => {
-      if (!session) return;
-      const response = await fetch(
-        `${import.meta.env.VITE_PUBLIC_API_URL}/communities/${communityId}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: session.authToken,
-          },
+      if (!session || !communityId) return;
+
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_PUBLIC_API_URL}/communities/${communityId}`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: session.authToken,
+            },
+          }
+        );
+        if (!response.ok) {
+          // Provide more specific error messages based on status code
+          if (response.status === 404) {
+            throw new Error(`Community '${communityId}' not found`);
+          } else if (response.status === 401 || response.status === 403) {
+            throw new Error('Unauthorized access to community');
+          } else if (response.status >= 500) {
+            throw new Error('Server error. Please try again later');
+          } else {
+            throw new Error(`Failed to fetch community: ${response.status}`);
+          }
         }
-      );
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+        let data;
+        try {
+          data = await response.json();
+        } catch (parseError) {
+          console.error('Failed to parse community response:', parseError);
+          throw new Error('Invalid response from server');
+        }
 
-      const data = await response.json();
-      // Normalize collections to have 'address' property and remove 'contract_address'
-      if (data.collections) {
-        data.collections = data.collections.map((c: any) => {
-          const { contract_address, ...rest } = c;
-          return {
-            ...rest,
-            address: contract_address,
-          };
-        });
+        // Normalize collections to have 'address' property and remove 'contract_address'
+        if (data.collections) {
+          data.collections = data.collections.map((c: any) => {
+            const { contract_address, ...rest } = c;
+            return {
+              ...rest,
+              address: contract_address,
+            };
+          });
+        }
+
+        return data as Community;
+      } catch (error) {
+        // Re-throw if it's already our custom error
+        if (error instanceof Error) {
+          throw error;
+        }
+        // Handle network errors or other unknown errors
+        console.error('Error fetching community collections:', error);
+        throw new Error('Network error. Please check your connection');
       }
-      return data as Community;
     },
-    enabled: !!communityId && communityId !== '' && !!session,
+    enabled: isEnabled,
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes to prevent unnecessary refetches
+    retry: (failureCount, error) => {
+      // Don't retry on 404 or auth errors
+      if (error instanceof Error) {
+        if (
+          error.message.includes('not found') ||
+          error.message.includes('Unauthorized')
+        ) {
+          return false;
+        }
+      }
+      // Retry up to 2 times for other errors
+      return failureCount < 2;
+    },
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 
   return { data, isLoading, error };

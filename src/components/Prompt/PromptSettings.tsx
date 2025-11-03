@@ -370,21 +370,6 @@ export const PromptSettings = ({
 
   return (
     <div className="scrollbar-hide z-50 flex h-screen w-full flex-col pb-60">
-      {/* Header */}
-      <div className="flex flex-shrink-0 items-center justify-center px-5 py-4">
-        <img
-          src={
-            editedPrompt.images?.[0] ||
-            editedPrompt.videos?.[0] ||
-            editedPrompt.stickers?.[0] ||
-            editedPrompt.animatedStickers?.[0] ||
-            '/lib/image_not_set.png'
-          }
-          alt="Prompt Image"
-          className="h-10 w-10 rounded-full"
-        />
-      </div>
-
       {/* Scrollable Content */}
       <div className="scrollbar-hide flex-1 overflow-y-auto">
         <List className="bg-tg-secondary m-0 p-5">

@@ -14,7 +14,6 @@ export const Route = createFileRoute('/profile/')({
 
 function CreatePromptDropdownButton() {
   const { session } = useSession();
-  console.log('session', session);
   if (session?.role && parseInt(session.role) < 1) return null;
   return (
     <Link to="/profile/admin">

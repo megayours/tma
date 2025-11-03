@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useSession } from '@/auth/SessionProvider';
 import { MyGenerationsList } from './MyGenerationsList';
 
-export const Route = createFileRoute('/profile/my-generations/')({
+export const Route = createFileRoute('/_main/profile/my-generations/')({
   component: RouteComponent,
 });
 

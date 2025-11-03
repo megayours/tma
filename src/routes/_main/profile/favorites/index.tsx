@@ -13,7 +13,7 @@ import {
   SpinnerFullPage,
 } from '@/components/ui';
 
-export const Route = createFileRoute('/profile/favorites/')({
+export const Route = createFileRoute('/_main/profile/favorites/')({
   component: RouteComponent,
 });
 

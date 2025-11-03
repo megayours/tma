@@ -1,14 +1,14 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { ProtectedRoute } from '../../auth/ProtectedRoute';
+import { ProtectedRoute } from '@/auth/ProtectedRoute';
 import { StickerList } from './StickerList';
-import { useSession } from '../../auth/SessionProvider';
+import { useSession } from '@/auth/SessionProvider';
 import { Blockquote, Button } from '@telegram-apps/telegram-ui';
 import { requestWriteAccess } from '@telegram-apps/sdk-react';
 import { useLaunchParams } from '@telegram-apps/sdk-react';
-import { useStickerPackExecutions } from '../../hooks/useStickerPack';
-import { useTelegramTheme } from '../../auth/useTelegram';
+import { useStickerPackExecutions } from '@/hooks/useStickerPack';
+import { useTelegramTheme } from '@/auth/useTelegram';
 
-export const Route = createFileRoute('/profile/')({
+export const Route = createFileRoute('/_main/profile/')({
   component: ProfileLayout,
 });
 

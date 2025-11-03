@@ -8,7 +8,7 @@ interface PurchasesSearch {
   execution_id?: string;
 }
 
-export const Route = createFileRoute('/profile/purchases/')({
+export const Route = createFileRoute('/_main/profile/purchases/')({
   validateSearch: (search): PurchasesSearch => ({
     execution_id: search.execution_id as string,
   }),

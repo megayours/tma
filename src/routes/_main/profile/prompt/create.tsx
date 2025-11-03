@@ -5,7 +5,7 @@ import { useSession } from '@/auth/SessionProvider';
 import { useCreatePromptMutation } from '@/hooks/usePrompts';
 import { Button, Section, Input } from '@telegram-apps/telegram-ui';
 
-export const Route = createFileRoute('/profile/prompt/create')({
+export const Route = createFileRoute('/_main/profile/prompt/create')({
   component: CreatePromptComponent,
 });
 

@@ -1,234 +1,181 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useState, useEffect, useRef } from 'react';
-import { useGetRecommendedPromptsWithDetails } from '@/hooks/usePrompts';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { useGetRecommendedPrompts } from '@/hooks/usePrompts';
 import type { PromptWithContent } from '@/types/content';
-import { ShowContent } from '@/components/Feed/ShowContent';
-import { useSession } from '@/auth/SessionProvider';
 import { Spinner } from '@/components/ui';
+import { useSession } from '@/auth/SessionProvider';
+import { useGetFavorites } from '@/hooks/useFavorites';
+import { useGenerateContentMutation } from '@/hooks/useContents';
 
 export const Route = createFileRoute('/_main/feed/')({
   component: Feed,
 });
 
+type ContentTypeFilter = 'images' | 'videos' | 'gifs' | 'stickers' | 'animated_stickers';
+
 export function Feed() {
   const { session } = useSession();
+  const { selectedFavorite, isLoadingSelected } = useGetFavorites(session);
+  const generateContent = useGenerateContentMutation(session);
+
   const [allPrompts, setAllPrompts] = useState<PromptWithContent[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [hasMorePages, setHasMorePages] = useState(true);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const [selectedTypes, setSelectedTypes] = useState<ContentTypeFilter[]>([]);
+  const loadedPagesRef = useRef<Set<number>>(new Set());
   const triggerRef = useRef<HTMLDivElement>(null);
 
-  // Only auto-fetch the first page
-  const initialQueryParams = {
-    type: 'all' as const,
+  // Determine query type based on selections
+  const queryType: ContentTypeFilter | 'all' =
+    selectedTypes.length === 0 ? 'all' : selectedTypes[0];
+
+  // Fetch current page using the hook
+  const {
+    data,
+    isLoading,
+    error,
+  } = useGetRecommendedPrompts({
+    type: queryType,
     excludeUsed: false,
     pagination: {
-      page: 1,
+      page: currentPage,
       size: 10,
     },
-    session,
+    enabled: true,
+  });
+
+  // Toggle content type selection
+  const toggleType = (type: ContentTypeFilter) => {
+    setSelectedTypes(prev => {
+      if (prev.includes(type)) {
+        return prev.filter(t => t !== type);
+      } else {
+        // For now, only allow one selection since API doesn't support multiple
+        return [type];
+      }
+    });
+    // Reset pagination when filter changes
+    setCurrentPage(1);
+    setAllPrompts([]);
+    loadedPagesRef.current.clear();
   };
 
-  const {
-    data: initialData,
-    isLoading: isInitialLoading,
-    error,
-  } = useGetRecommendedPromptsWithDetails(initialQueryParams);
+  // Generate content handler
+  const handleGenerate = (prompt: PromptWithContent) => {
+    if (!selectedFavorite || !session) return;
 
-  console.log('DATA', initialData);
+    // Map prompt type to API type
+    let apiType: 'image' | 'video' | 'sticker' | 'animated_sticker';
+    switch (prompt.type) {
+      case 'images':
+        apiType = 'image';
+        break;
+      case 'videos':
+        apiType = 'video';
+        break;
+      case 'stickers':
+        apiType = 'sticker';
+        break;
+      case 'animated_stickers':
+        apiType = 'animated_sticker';
+        break;
+      case 'gifs':
+        apiType = 'image'; // GIFs use image type
+        break;
+      default:
+        console.error('Unsupported prompt type:', prompt.type);
+        return;
+    }
 
-  // Handle initial data
+    // Convert selectedFavorite to inputs array format
+    const inputs = [
+      {
+        chain: selectedFavorite.token.contract.chain,
+        contract_address: selectedFavorite.token.contract.address,
+        token_id: selectedFavorite.token.id,
+      },
+    ];
+
+    generateContent.mutate({
+      promptId: prompt.id.toString(),
+      type: apiType,
+      inputs: inputs,
+    });
+  };
+
+  // Accumulate prompts as new pages load
   useEffect(() => {
-    if (initialData.prompts.length > 0) {
-      setAllPrompts(initialData.prompts);
-
-      // Update pagination info
-      const hasMore = initialData.pagination
-        ? initialData.pagination.page < initialData.pagination.totalPages
-        : false;
-
-      setHasMorePages(hasMore);
-    } else {
-      setHasMorePages(false);
-    }
-  }, [initialData.prompts, initialData.pagination, error]);
-
-  // Manual fetch function for pagination
-  const fetchNextPage = async () => {
-    if (isFetchingMore || !hasMorePages || isInitialLoading) {
-      return;
-    }
-
-    const nextPageNum = currentPage + 1;
-
-    setIsFetchingMore(true);
-    setCurrentPage(nextPageNum); // Update page immediately
-
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_PUBLIC_API_URL}/discovery/prompts/recommended?type=all&exclude_used=false&page=${nextPageNum}&size=10`,
-        {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const rawData = await response.json();
-
-      if (rawData && rawData.data && rawData.data.length > 0) {
-        // Map the raw data to the expected format and fetch details for each prompt
-        const basePrompts: PromptWithContent[] = rawData.data.map(
-          (rawPrompt: any): PromptWithContent => ({
-            id: rawPrompt.id,
-            name: rawPrompt.name ?? 'Untitled',
-            description: rawPrompt.description ?? '',
-            image: rawPrompt.image ?? '',
-            type: rawPrompt.type as
-              | 'images'
-              | 'videos'
-              | 'stickers'
-              | 'gifs'
-              | 'animated_stickers',
-            published: rawPrompt.published ?? false,
-            owner: rawPrompt.owner_id,
-            ownerName: rawPrompt.owner_name ?? '',
-            hasUserGenerated: rawPrompt.has_generated ?? false,
-            publishedAt: rawPrompt.published_at ?? 0,
-            generationCount: rawPrompt.generation_count ?? 0,
-            latestContentUrl: rawPrompt.latest_content_url,
-            minTokens: rawPrompt.min_tokens,
-            maxTokens: rawPrompt.max_tokens,
-            // Add other required fields with defaults
-            additionalContentIds: [],
-            lastUsed: 0,
-            createdAt: rawPrompt.created_at,
-            updatedAt: rawPrompt.updated_at ?? rawPrompt.created_at,
-            usageCount: rawPrompt.usage_count ?? 0,
-            contracts: [],
-            images: [],
-            videos: [],
-            gifs: [],
-            versions: undefined,
-            contentId: undefined,
-          })
-        );
-
-        // Fetch detailed data for each prompt if session exists
-        let mappedPrompts = basePrompts;
-        if (session) {
-          const detailPromises = basePrompts.map(async prompt => {
-            try {
-              const detailResponse = await fetch(
-                `${import.meta.env.VITE_PUBLIC_API_URL}/prompts/${prompt.id}`,
-                {
-                  method: 'GET',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: session.authToken,
-                  },
-                }
-              );
-
-              if (!detailResponse.ok) {
-                console.warn(`Failed to fetch details for prompt ${prompt.id}`);
-                return prompt;
-              }
-
-              const detailData = await detailResponse.json();
-              return {
-                ...prompt,
-                minTokens: detailData.min_tokens,
-                maxTokens: detailData.max_tokens,
-                contracts: detailData.contracts || [],
-              };
-            } catch (error) {
-              console.warn(
-                `Error fetching details for prompt ${prompt.id}:`,
-                error
-              );
-              return prompt;
-            }
-          });
-
-          mappedPrompts = await Promise.all(detailPromises);
-        }
-
-        setAllPrompts(prev => {
-          return [...prev, ...mappedPrompts];
-        });
-
-        // Check if there are more pages
-        const hasMore = rawData.pagination
-          ? rawData.pagination.page < rawData.pagination.totalPages
-          : false;
-        setHasMorePages(hasMore);
-      } else {
-        setHasMorePages(false);
-      }
-    } catch (err) {
-      console.error('Failed to fetch next page:', err);
-    } finally {
+    if (data && data.prompts.length > 0 && !loadedPagesRef.current.has(currentPage)) {
+      console.log('Loading page:', currentPage);
+      setAllPrompts(prev => {
+        // Avoid duplicates by checking if page was already added
+        const existingIds = new Set(prev.map(p => p.id));
+        const newPrompts = data.prompts.filter(p => !existingIds.has(p.id));
+        if (newPrompts.length === 0) return prev; // Don't update if no new prompts
+        return [...prev, ...newPrompts];
+      });
+      loadedPagesRef.current.add(currentPage);
       setIsFetchingMore(false);
     }
-  };
+  }, [data, currentPage]);
+
+  // Check if there are more pages
+  const hasMorePages = data?.pagination
+    ? data.pagination.page < data.pagination.totalPages
+    : false;
+
+  // Fetch next page when triggered
+  const fetchNextPage = useCallback(() => {
+    if (!isLoading && !isFetchingMore && hasMorePages) {
+      setIsFetchingMore(true);
+      setCurrentPage(prev => prev + 1);
+    }
+  }, [isLoading, isFetchingMore, hasMorePages]);
 
   // Intersection Observer for infinite scroll
   useEffect(() => {
     const trigger = triggerRef.current;
-    if (!trigger) {
-      return;
-    }
+    if (!trigger) return;
 
     const observer = new IntersectionObserver(
       entries => {
         const [entry] = entries;
-
-        if (
-          entry.isIntersecting &&
-          hasMorePages &&
-          !isFetchingMore &&
-          !isInitialLoading
-        ) {
+        if (entry.isIntersecting) {
           fetchNextPage();
         }
       },
       {
-        root: null, // Use viewport as root
-        rootMargin: '100px', // Trigger 100px before the element is visible
-        threshold: 0.1, // Trigger when 10% of the element is visible
+        root: null,
+        rootMargin: '100px',
+        threshold: 0.1,
       }
     );
 
     observer.observe(trigger);
+    return () => observer.unobserve(trigger);
+  }, [fetchNextPage]);
 
-    return () => {
-      observer.unobserve(trigger);
-    };
-  }, [
-    hasMorePages,
-    isFetchingMore,
-    isInitialLoading,
-    currentPage,
-    allPrompts.length,
-  ]);
+  const contentTypes: { value: ContentTypeFilter; label: string }[] = [
+    { value: 'images', label: 'Images' },
+    { value: 'stickers', label: 'Stickers' },
+    { value: 'gifs', label: 'GIFs' },
+    { value: 'videos', label: 'Videos' },
+    { value: 'animated_stickers', label: 'Animated' },
+  ];
 
   // Show error state if there's an error and no data
   if (error && allPrompts.length === 0) {
     return (
-      <div className="flex h-full items-center justify-center">
+      <div className="flex h-screen items-center justify-center">
         <div className="text-center">
           <div className="mb-2 text-xl text-red-500">⚠️</div>
           <h2 className="mb-2 text-lg font-semibold">
             Failed to load recommendations
           </h2>
-          <p className="mb-4 text-gray-600">{error.message}</p>
+          <p className="text-tg-hint">{error.message}</p>
           <button
             onClick={() => window.location.reload()}
-            className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
+            className="mt-4 rounded bg-tg-button px-4 py-2 text-white"
           >
             Retry
           </button>
@@ -237,61 +184,116 @@ export function Feed() {
     );
   }
 
-  console.log('All prompts', allPrompts);
-
   return (
-    <>
-      <style>{`
-        .scroller {
-          overflow-y: auto;
-          scrollbar-width: none;
-          scroll-snap-type: y mandatory;
-          height: 100vh;
-          max-height: 100vh;
-        }
-
-        .scroller section {
-          scroll-snap-align: start;
-          height: calc(100vh-2em);
-          max-height: calc(100vh - 5em);
-        }
-      `}</style>
-      <article className={`scroller h-screen max-h-screen overflow-y-hidden`}>
-        {allPrompts.map((prompt: PromptWithContent, index: number) => (
-          <section
-            key={prompt.id}
-            className={`flex snap-start flex-col overflow-y-hidden pb-20`}
+    <div className="flex h-screen flex-col pb-24">
+      {/* Content type filter */}
+      <div className="scrollbar-hide sticky top-0 z-10 flex shrink-0 gap-2 overflow-x-auto border-b border-tg-section-separator bg-tg-bg px-2 py-3">
+        {contentTypes.map(({ value, label }) => (
+          <button
+            key={value}
+            onClick={() => toggleType(value)}
+            className={`shrink-0 rounded-full px-3 py-1 text-sm font-medium transition-colors ${
+              selectedTypes.includes(value)
+                ? 'bg-tg-button text-tg-button-text'
+                : 'border border-tg-section-separator text-tg-text hover:bg-tg-section-bg'
+            }`}
           >
-            <ShowContent prompt={prompt} isLoading={isInitialLoading} />
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {/* Scrollable content area */}
+      <div className="scrollbar-hide flex-1 overflow-y-auto">
+
+      <div className="grid grid-cols-2 gap-2 p-2 md:grid-cols-3 lg:grid-cols-4">
+        {allPrompts.map((prompt: PromptWithContent, index: number) => (
+          <div key={prompt.id} className="group relative flex flex-col">
+            <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-white">
+              <div className="flex h-full w-full items-center justify-center p-4">
+                {prompt.latestContentUrl ? (
+                  <img
+                    src={prompt.latestContentUrl}
+                    alt={prompt.name}
+                    className="h-full w-full object-contain"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-tg-hint">
+                    No preview
+                  </div>
+                )}
+              </div>
+
+              {/* Gradient overlay with info */}
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
+                <h3 className="text-sm font-semibold text-white line-clamp-1">
+                  {prompt.name}
+                </h3>
+                <p className="text-xs text-white/80">{prompt.ownerName}</p>
+
+                {/* Generate button */}
+                {session && selectedFavorite && (
+                  <button
+                    onClick={() => handleGenerate(prompt)}
+                    disabled={isLoadingSelected || generateContent.isPending}
+                    className="mt-2 w-full rounded-full bg-tg-button px-3 py-1.5 text-xs font-medium text-tg-button-text transition-all hover:opacity-90 disabled:opacity-50"
+                  >
+                    {generateContent.isPending ? (
+                      'Generating...'
+                    ) : (
+                      <div className="flex items-center justify-center gap-1">
+                        <span>Make it You</span>
+                        {selectedFavorite.token.image && (
+                          <img
+                            src={selectedFavorite.token.image}
+                            alt=""
+                            className="h-4 w-4 rounded-full"
+                          />
+                        )}
+                      </div>
+                    )}
+                  </button>
+                )}
+              </div>
+            </div>
             {/* Place trigger element at the 5th-to-last item */}
             {index === allPrompts.length - 5 && (
               <div
                 ref={triggerRef}
-                className={`flex h-4 w-full items-center justify-center text-xs opacity-0`}
+                className="flex h-4 w-full items-center justify-center text-xs opacity-0"
                 style={{ pointerEvents: 'none' }}
-              ></div>
+              />
             )}
-          </section>
+          </div>
         ))}
-        {(isFetchingMore || isInitialLoading) && (
-          <section className="flex snap-start items-center justify-center py-8">
-            <Spinner text="Loading more prompts..." size="lg" />
-          </section>
-        )}
-        {error && allPrompts.length > 0 && (
-          <section className="flex snap-start items-center justify-center">
-            <div className="p-6 text-center">
-              <div className="mb-2 text-sm text-orange-500">⚠️ Warning</div>
-              <p className="text-sm text-gray-600">
-                Failed to load more content: {error.message}
-              </p>
-            </div>
-          </section>
-        )}
-      </article>
+      </div>
 
-      {/* Portal container for TokenSelectionCloud */}
-      <div id="token-selection-container"></div>
-    </>
+      {(isLoading || isFetchingMore) && currentPage > 1 && (
+        <div className="flex items-center justify-center py-8">
+          <Spinner text="Loading more prompts..." size="lg" />
+        </div>
+      )}
+
+      {error && allPrompts.length > 0 && (
+        <div className="flex items-center justify-center">
+          <div className="p-6 text-center">
+            <div className="mb-2 text-sm text-orange-500">⚠️ Warning</div>
+            <p className="text-sm text-tg-hint">
+              Failed to load more content: {error.message}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {allPrompts.length === 0 && !isLoading && (
+        <div className="flex flex-1 items-center justify-center">
+          <div className="text-center text-tg-hint">No prompts found</div>
+        </div>
+      )}
+
+        {/* Portal container for TokenSelectionCloud */}
+        <div id="token-selection-container" />
+      </div>
+    </div>
   );
 }

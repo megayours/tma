@@ -1,4 +1,3 @@
-import { Divider } from '@telegram-apps/telegram-ui';
 import type { StickerBundles } from '../../hooks/useStickerPacks';
 
 export function StickerPackItem({
@@ -6,7 +5,6 @@ export function StickerPackItem({
 }: {
   stickerPack: StickerBundles;
 }) {
-  // Determine the lowest non-null price
   const getLowestPrice = () => {
     const prices = [
       stickerPack.pricing.basic.formatted_price,
@@ -15,25 +13,23 @@ export function StickerPackItem({
     ].filter(price => price !== null);
 
     if (prices.length === 0) return 'Free';
-
-    // If there's only one price, return it
     if (prices.length === 1) return prices[0];
-
-    // If multiple prices, return the first one with "Starting from"
     return `From ${prices[0]}`;
   };
 
   return (
-    <div className="shado flex w-full flex-col rounded-lg p-2 py-4">
-      <Divider />
-      <div className="flex items-center justify-between gap-3 px-4 py-3">
-        <div className="text-xl font-semibold">{stickerPack.name}</div>
-        <button className="bg-tg-button shrink-0 rounded-full px-6 py-2.5 text-sm font-semibold text-white transition-colors">
+    <div className="flex w-full flex-col rounded-lg bg-tg-section-bg">
+      {/* Header with title and price button */}
+      <div className="flex items-center justify-between gap-3 px-4 py-2">
+        <h2 className="text-xl font-semibold">{stickerPack.name}</h2>
+        <button className="shrink-0 rounded-full px-6 py-2 text-sm font-semibold text-white transition-colors bg-tg-button">
           {getLowestPrice()}
         </button>
       </div>
-      <div className="flex items-center justify-center px-4">
-        <div className="grid w-full max-w-2xl grid-cols-5 gap-1.5">
+
+      {/* Sticker preview grid */}
+      <div className="flex items-center justify-center px-4 pb-4">
+        <div className="grid w-full max-w-2xl grid-cols-3 gap-1">
           {stickerPack.preview_items.map((item, index) => (
             <div
               key={item.content_id || index}
@@ -42,7 +38,7 @@ export function StickerPackItem({
               <img
                 src={item.preview_url}
                 alt={`${stickerPack.name} preview ${index + 1}`}
-                className="h-full w-full object-contain p-1"
+                className="h-full w-full p-1 object-contain"
               />
             </div>
           ))}

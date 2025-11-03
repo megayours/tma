@@ -12,7 +12,6 @@ function RouteComponent() {
 }
 
 export function Landing() {
-  // ✅ Call the hook only ONCE and store the result
   const webAppStartParam = useWebAppStartParam();
   const { data: stickerPacks } = useStickerPacks({
     pagination: {
@@ -23,7 +22,7 @@ export function Landing() {
   });
 
   return (
-    <div className="bg-tg-bg scrollbar-hide flex h-screen snap-y snap-mandatory flex-col gap-2 overflow-y-scroll">
+    <div className="bg-tg-secondary-bg scrollbar-hide flex h-screen flex-col gap-2 overflow-y-scroll pt-2">
       {stickerPacks?.data.map(stickerPack => (
         <Link
           key={stickerPack.id}
@@ -39,6 +38,7 @@ export function Landing() {
           </div> */}
         </Link>
       ))}
+
       {!import.meta.env.PROD && (
         <div className="flex flex-col gap-2">
           <Link to="/sticker-packs">Link to Sticker Packs</Link>

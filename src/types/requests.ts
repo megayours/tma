@@ -15,7 +15,7 @@ export const ContentSortOrderSchema = z.enum(['asc', 'desc']);
 export type ContentSortOrder = z.infer<typeof ContentSortOrderSchema>;
 
 export const FilterSchema = z.object({
-  sortBy: z.enum(['last_used', 'created_at']).optional(),
+  sortBy: z.enum(['last_used', 'created_at', 'updated_at']).optional(),
   sortOrder: z.enum(['asc', 'desc']).optional(),
 });
 export type Filter = z.infer<typeof FilterSchema>;
@@ -65,8 +65,19 @@ export const ContentRequestSchema = z.object({
 export type ContentRequest = z.infer<typeof ContentRequestSchema>;
 
 export const MyRecentGenerationsRequestSchema = z.object({
-  type: z.enum(['all', 'sticker_packs', 'images', 'videos', 'stickers', 'animated_stickers']).default('all'),
+  type: z
+    .enum([
+      'all',
+      'sticker_packs',
+      'images',
+      'videos',
+      'stickers',
+      'animated_stickers',
+    ])
+    .default('all'),
   pagination: PaginationSchema.optional(),
   days: z.string().default('30'),
 });
-export type MyRecentGenerationsRequest = z.infer<typeof MyRecentGenerationsRequestSchema>;
+export type MyRecentGenerationsRequest = z.infer<
+  typeof MyRecentGenerationsRequestSchema
+>;

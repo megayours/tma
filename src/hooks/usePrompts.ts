@@ -400,18 +400,27 @@ export const useGetMyPrompts = (
   session: Session,
   pagination: Pagination,
   _filtering: Filter,
-  type?: 'images' | 'videos' | 'stickers' | 'animated_stickers'
+  type?: 'images' | 'videos' | 'stickers' | 'animated_stickers',
+  sortBy: 'created_at' | 'last_used' | 'updated_at' = 'created_at',
+  sortOrder: 'asc' | 'desc' = 'desc'
 ) => {
   return useQuery({
-    queryKey: ['my-prompts', session?.authToken, pagination, type],
+    queryKey: [
+      'my-prompts',
+      session?.authToken,
+      pagination,
+      type,
+      sortBy,
+      sortOrder,
+    ],
     queryFn: async () => {
       if (!session) return;
       const params = new URLSearchParams({
         account: session.id,
         page: pagination.page?.toString() ?? '1',
         size: pagination.size?.toString() ?? '10',
-        sort_by: 'created_at',
-        sort_order: 'desc',
+        sort_by: sortBy,
+        sort_order: sortOrder,
         ...(type && { type }),
       });
       const response = await fetch(

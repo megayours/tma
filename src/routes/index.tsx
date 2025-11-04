@@ -5,5 +5,5 @@ export const Route = createFileRoute('/')({
 });
 
 function Index() {
-  return <Navigate to="/stickers" />;
+  return <Navigate to="/landing" />;
 }

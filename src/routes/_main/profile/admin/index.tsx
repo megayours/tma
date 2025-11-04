@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { ProtectedRoute } from '@/auth/ProtectedRoute';
 import MyPrompts from '@/components/MyPrompts';
+import { RecentlyUsedPrompts } from '@/components/RecentlyUsedPrompts';
 import { useSession } from '@/auth/SessionProvider';
 
 export const Route = createFileRoute('/_main/profile/admin/')({
@@ -17,8 +18,10 @@ function RenderAdmin() {
   }
   return (
     <div className="flex flex-col gap-4 p-4">
-      {/* <h1 className="text-2xl">Latest Prompt Creations</h1>
-      <PreviewContent /> */}
+      {/* Recently Used Section */}
+      <RecentlyUsedPrompts />
+
+      {/* Your Prompts Section */}
       <div className="flex flex-row justify-between">
         <h1 className="text-tg-text text-2xl font-bold">Your prompts</h1>
         <Link to="/profile/prompt/create">

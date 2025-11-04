@@ -34,18 +34,29 @@ const PromptEditorContent = ({
   const [promptText, setPromptText] = useState('');
   const [currentAdditionalContentIds, setCurrentAdditionalContentIds] =
     useState<string[]>([]);
-  // Update promptText when prompt data loads/changes
-  useEffect(() => {
-    if (prompt?.versions?.[0]?.text) {
-      setPromptText(prompt.versions[0].text);
-      setCurrentAdditionalContentIds(
-        prompt.versions[0].additionalContentIds || []
-      );
-    }
-  }, [prompt?.versions]);
   const [selectedVersion, setSelectedVersion] = useState(
     prompt?.versions?.sort((a, b) => b.version - a.version)[0]
   );
+
+  // Update selectedVersion when prompt data changes (after refetch)
+  useEffect(() => {
+    if (prompt?.versions) {
+      const latestVersion = prompt.versions.sort((a, b) => b.version - a.version)[0];
+      setSelectedVersion(latestVersion);
+    }
+  }, [prompt]);
+
+  // Update promptText and Additional Content IDs when prompt data loads/changes
+  useEffect(() => {
+    if (selectedVersion?.text) {
+      setPromptText(selectedVersion.text);
+    }
+    if (selectedVersion?.additionalContentIds) {
+      setCurrentAdditionalContentIds(
+        selectedVersion.additionalContentIds || []
+      );
+    }
+  }, [selectedVersion]);
 
   console.log('selectedVersion', selectedVersion);
 

@@ -6,6 +6,7 @@ import { useSession } from '@/auth/SessionProvider';
 import type { Prompt } from '@/types/prompt';
 import { useNavigate } from '@tanstack/react-router';
 import { useGetPreviewContent } from '../hooks/useContents';
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 
 const SkeletonBlock = () => (
   <div className="h-full w-full animate-pulse rounded-md bg-gray-300 dark:bg-zinc-700" />
@@ -34,11 +35,15 @@ export const RenderPreview = ({ prompt }: { prompt: Prompt }) => {
     >
       {data?.content.map(content => (
         <div key={content.id} className="h-full w-full">
-          <img
-            src={content.image || content.gif || '/public/gifs/loadings.gif'}
-            alt={content.id}
-            className="block h-full w-full object-contain"
-          />
+          {content.status == 'processing' ? (
+            <DotLottieReact src={'/lotties/loader.lottie'} loop autoplay />
+          ) : (
+            <img
+              src={content.image || content.gif || '/public/gifs/loadings.gif'}
+              alt={content.id}
+              className="block h-full w-full object-contain"
+            />
+          )}
         </div>
       ))}
 
@@ -60,10 +65,17 @@ export default function MyPrompts() {
   });
   const [totalPages, setTotalPages] = useState(1);
 
-  const { data, isLoading } = useGetMyPrompts(session!, pagination, {
-    sortBy: 'created_at',
-    sortOrder: 'desc',
-  });
+  const { data, isLoading } = useGetMyPrompts(
+    session!,
+    pagination,
+    {
+      sortBy: 'created_at',
+      sortOrder: 'desc',
+    },
+    undefined,
+    'created_at',
+    'desc'
+  );
 
   useEffect(() => {
     if (data?.pagination.totalPages !== totalPages) {

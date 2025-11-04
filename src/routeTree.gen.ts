@@ -19,14 +19,16 @@ import { Route as PostIndexRouteImport } from './routes/post/index'
 import { Route as Demo3IndexRouteImport } from './routes/demo3/index'
 import { Route as Demo2IndexRouteImport } from './routes/demo2/index'
 import { Route as StickerPacksStickerPackIdRouteImport } from './routes/sticker-packs/$stickerPackId'
+import { Route as ContentPromptIdRouteImport } from './routes/content/$promptId'
 import { Route as AuthRefreshRouteImport } from './routes/auth/refresh'
 import { Route as StickerPacksStickerPackIdIndexRouteImport } from './routes/sticker-packs/$stickerPackId/index'
 import { Route as PostCreateIndexRouteImport } from './routes/post/create/index'
 import { Route as PostPostIdIndexRouteImport } from './routes/post/$postId/index'
 import { Route as Demo2ItemIndexRouteImport } from './routes/demo2/item/index'
+import { Route as ContentPromptIdIndexRouteImport } from './routes/content/$promptId/index'
 import { Route as MainStickersIndexRouteImport } from './routes/_main/stickers/index'
 import { Route as MainProfileIndexRouteImport } from './routes/_main/profile/index'
-import { Route as MainFeed_oldIndexRouteImport } from './routes/_main/feed_old/index'
+import { Route as MainLandingIndexRouteImport } from './routes/_main/landing/index'
 import { Route as MainFeedIndexRouteImport } from './routes/_main/feed/index'
 import { Route as StickerPacksStickerPackIdSuccessRouteImport } from './routes/sticker-packs/$stickerPackId/success'
 import { Route as StickerPacksStickerPackIdCheckoutRouteImport } from './routes/sticker-packs/$stickerPackId/checkout'
@@ -37,12 +39,17 @@ import { Route as StickerPacksStickerPackIdDetailsIndexRouteImport } from './rou
 import { Route as PostCreateVideoIndexRouteImport } from './routes/post/create/video/index'
 import { Route as PostCreateStickerIndexRouteImport } from './routes/post/create/sticker/index'
 import { Route as PostCreateImageIndexRouteImport } from './routes/post/create/image/index'
+import { Route as ContentPromptIdSuccessIndexRouteImport } from './routes/content/$promptId/success/index'
+import { Route as ContentPromptIdSelectNftsIndexRouteImport } from './routes/content/$promptId/select-nfts/index'
+import { Route as ContentPromptIdReviewIndexRouteImport } from './routes/content/$promptId/review/index'
+import { Route as ContentPromptIdDetailsIndexRouteImport } from './routes/content/$promptId/details/index'
 import { Route as MainProfilePurchasesIndexRouteImport } from './routes/_main/profile/purchases/index'
 import { Route as MainProfilePromptIndexRouteImport } from './routes/_main/profile/prompt/index'
 import { Route as MainProfileMyStickerPacksIndexRouteImport } from './routes/_main/profile/my-sticker-packs/index'
 import { Route as MainProfileMyGenerationsIndexRouteImport } from './routes/_main/profile/my-generations/index'
 import { Route as MainProfileFavoritesIndexRouteImport } from './routes/_main/profile/favorites/index'
 import { Route as MainProfileAdminIndexRouteImport } from './routes/_main/profile/admin/index'
+import { Route as ContentPromptIdProcessingExecutionIdRouteImport } from './routes/content/$promptId/processing.$executionId'
 import { Route as MainProfilePromptCreateRouteImport } from './routes/_main/profile/prompt/create'
 import { Route as MainProfilePromptEditRouteRouteImport } from './routes/_main/profile/prompt/edit/route'
 import { Route as StickerPacksStickerPackIdProcessingExecutionIdIndexRouteImport } from './routes/sticker-packs/$stickerPackId/processing/$executionId/index'
@@ -102,6 +109,11 @@ const StickerPacksStickerPackIdRoute =
     path: '/$stickerPackId',
     getParentRoute: () => StickerPacksRoute,
   } as any)
+const ContentPromptIdRoute = ContentPromptIdRouteImport.update({
+  id: '/content/$promptId',
+  path: '/content/$promptId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRefreshRoute = AuthRefreshRouteImport.update({
   id: '/auth/refresh',
   path: '/auth/refresh',
@@ -128,6 +140,11 @@ const Demo2ItemIndexRoute = Demo2ItemIndexRouteImport.update({
   path: '/demo2/item/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ContentPromptIdIndexRoute = ContentPromptIdIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ContentPromptIdRoute,
+} as any)
 const MainStickersIndexRoute = MainStickersIndexRouteImport.update({
   id: '/stickers/',
   path: '/stickers/',
@@ -138,9 +155,9 @@ const MainProfileIndexRoute = MainProfileIndexRouteImport.update({
   path: '/profile/',
   getParentRoute: () => MainRoute,
 } as any)
-const MainFeed_oldIndexRoute = MainFeed_oldIndexRouteImport.update({
-  id: '/feed_old/',
-  path: '/feed_old/',
+const MainLandingIndexRoute = MainLandingIndexRouteImport.update({
+  id: '/landing/',
+  path: '/landing/',
   getParentRoute: () => MainRoute,
 } as any)
 const MainFeedIndexRoute = MainFeedIndexRouteImport.update({
@@ -199,6 +216,30 @@ const PostCreateImageIndexRoute = PostCreateImageIndexRouteImport.update({
   path: '/post/create/image/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ContentPromptIdSuccessIndexRoute =
+  ContentPromptIdSuccessIndexRouteImport.update({
+    id: '/success/',
+    path: '/success/',
+    getParentRoute: () => ContentPromptIdRoute,
+  } as any)
+const ContentPromptIdSelectNftsIndexRoute =
+  ContentPromptIdSelectNftsIndexRouteImport.update({
+    id: '/select-nfts/',
+    path: '/select-nfts/',
+    getParentRoute: () => ContentPromptIdRoute,
+  } as any)
+const ContentPromptIdReviewIndexRoute =
+  ContentPromptIdReviewIndexRouteImport.update({
+    id: '/review/',
+    path: '/review/',
+    getParentRoute: () => ContentPromptIdRoute,
+  } as any)
+const ContentPromptIdDetailsIndexRoute =
+  ContentPromptIdDetailsIndexRouteImport.update({
+    id: '/details/',
+    path: '/details/',
+    getParentRoute: () => ContentPromptIdRoute,
+  } as any)
 const MainProfilePurchasesIndexRoute =
   MainProfilePurchasesIndexRouteImport.update({
     id: '/profile/purchases/',
@@ -233,6 +274,12 @@ const MainProfileAdminIndexRoute = MainProfileAdminIndexRouteImport.update({
   path: '/profile/admin/',
   getParentRoute: () => MainRoute,
 } as any)
+const ContentPromptIdProcessingExecutionIdRoute =
+  ContentPromptIdProcessingExecutionIdRouteImport.update({
+    id: '/processing/$executionId',
+    path: '/processing/$executionId',
+    getParentRoute: () => ContentPromptIdRoute,
+  } as any)
 const MainProfilePromptCreateRoute = MainProfilePromptCreateRouteImport.update({
   id: '/profile/prompt/create',
   path: '/profile/prompt/create',
@@ -286,6 +333,7 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/sticker-packs': typeof StickerPacksRouteWithChildren
   '/auth/refresh': typeof AuthRefreshRoute
+  '/content/$promptId': typeof ContentPromptIdRouteWithChildren
   '/sticker-packs/$stickerPackId': typeof StickerPacksStickerPackIdRouteWithChildren
   '/demo2': typeof Demo2IndexRoute
   '/demo3': typeof Demo3IndexRoute
@@ -295,21 +343,27 @@ export interface FileRoutesByFullPath {
   '/sticker-packs/$stickerPackId/checkout': typeof StickerPacksStickerPackIdCheckoutRoute
   '/sticker-packs/$stickerPackId/success': typeof StickerPacksStickerPackIdSuccessRoute
   '/feed': typeof MainFeedIndexRoute
-  '/feed_old': typeof MainFeed_oldIndexRoute
+  '/landing': typeof MainLandingIndexRoute
   '/profile': typeof MainProfileIndexRoute
   '/stickers': typeof MainStickersIndexRoute
+  '/content/$promptId/': typeof ContentPromptIdIndexRoute
   '/demo2/item': typeof Demo2ItemIndexRoute
   '/post/$postId': typeof PostPostIdIndexRoute
   '/post/create': typeof PostCreateIndexRoute
   '/sticker-packs/$stickerPackId/': typeof StickerPacksStickerPackIdIndexRoute
   '/profile/prompt/edit': typeof MainProfilePromptEditRouteRouteWithChildren
   '/profile/prompt/create': typeof MainProfilePromptCreateRoute
+  '/content/$promptId/processing/$executionId': typeof ContentPromptIdProcessingExecutionIdRoute
   '/profile/admin': typeof MainProfileAdminIndexRoute
   '/profile/favorites': typeof MainProfileFavoritesIndexRoute
   '/profile/my-generations': typeof MainProfileMyGenerationsIndexRoute
   '/profile/my-sticker-packs': typeof MainProfileMyStickerPacksIndexRoute
   '/profile/prompt': typeof MainProfilePromptIndexRoute
   '/profile/purchases': typeof MainProfilePurchasesIndexRoute
+  '/content/$promptId/details': typeof ContentPromptIdDetailsIndexRoute
+  '/content/$promptId/review': typeof ContentPromptIdReviewIndexRoute
+  '/content/$promptId/select-nfts': typeof ContentPromptIdSelectNftsIndexRoute
+  '/content/$promptId/success': typeof ContentPromptIdSuccessIndexRoute
   '/post/create/image': typeof PostCreateImageIndexRoute
   '/post/create/sticker': typeof PostCreateStickerIndexRoute
   '/post/create/video': typeof PostCreateVideoIndexRoute
@@ -336,21 +390,27 @@ export interface FileRoutesByTo {
   '/sticker-packs/$stickerPackId/checkout': typeof StickerPacksStickerPackIdCheckoutRoute
   '/sticker-packs/$stickerPackId/success': typeof StickerPacksStickerPackIdSuccessRoute
   '/feed': typeof MainFeedIndexRoute
-  '/feed_old': typeof MainFeed_oldIndexRoute
+  '/landing': typeof MainLandingIndexRoute
   '/profile': typeof MainProfileIndexRoute
   '/stickers': typeof MainStickersIndexRoute
+  '/content/$promptId': typeof ContentPromptIdIndexRoute
   '/demo2/item': typeof Demo2ItemIndexRoute
   '/post/$postId': typeof PostPostIdIndexRoute
   '/post/create': typeof PostCreateIndexRoute
   '/sticker-packs/$stickerPackId': typeof StickerPacksStickerPackIdIndexRoute
   '/profile/prompt/edit': typeof MainProfilePromptEditRouteRouteWithChildren
   '/profile/prompt/create': typeof MainProfilePromptCreateRoute
+  '/content/$promptId/processing/$executionId': typeof ContentPromptIdProcessingExecutionIdRoute
   '/profile/admin': typeof MainProfileAdminIndexRoute
   '/profile/favorites': typeof MainProfileFavoritesIndexRoute
   '/profile/my-generations': typeof MainProfileMyGenerationsIndexRoute
   '/profile/my-sticker-packs': typeof MainProfileMyStickerPacksIndexRoute
   '/profile/prompt': typeof MainProfilePromptIndexRoute
   '/profile/purchases': typeof MainProfilePurchasesIndexRoute
+  '/content/$promptId/details': typeof ContentPromptIdDetailsIndexRoute
+  '/content/$promptId/review': typeof ContentPromptIdReviewIndexRoute
+  '/content/$promptId/select-nfts': typeof ContentPromptIdSelectNftsIndexRoute
+  '/content/$promptId/success': typeof ContentPromptIdSuccessIndexRoute
   '/post/create/image': typeof PostCreateImageIndexRoute
   '/post/create/sticker': typeof PostCreateStickerIndexRoute
   '/post/create/video': typeof PostCreateVideoIndexRoute
@@ -371,6 +431,7 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/sticker-packs': typeof StickerPacksRouteWithChildren
   '/auth/refresh': typeof AuthRefreshRoute
+  '/content/$promptId': typeof ContentPromptIdRouteWithChildren
   '/sticker-packs/$stickerPackId': typeof StickerPacksStickerPackIdRouteWithChildren
   '/demo2/': typeof Demo2IndexRoute
   '/demo3/': typeof Demo3IndexRoute
@@ -380,21 +441,27 @@ export interface FileRoutesById {
   '/sticker-packs/$stickerPackId/checkout': typeof StickerPacksStickerPackIdCheckoutRoute
   '/sticker-packs/$stickerPackId/success': typeof StickerPacksStickerPackIdSuccessRoute
   '/_main/feed/': typeof MainFeedIndexRoute
-  '/_main/feed_old/': typeof MainFeed_oldIndexRoute
+  '/_main/landing/': typeof MainLandingIndexRoute
   '/_main/profile/': typeof MainProfileIndexRoute
   '/_main/stickers/': typeof MainStickersIndexRoute
+  '/content/$promptId/': typeof ContentPromptIdIndexRoute
   '/demo2/item/': typeof Demo2ItemIndexRoute
   '/post/$postId/': typeof PostPostIdIndexRoute
   '/post/create/': typeof PostCreateIndexRoute
   '/sticker-packs/$stickerPackId/': typeof StickerPacksStickerPackIdIndexRoute
   '/_main/profile/prompt/edit': typeof MainProfilePromptEditRouteRouteWithChildren
   '/_main/profile/prompt/create': typeof MainProfilePromptCreateRoute
+  '/content/$promptId/processing/$executionId': typeof ContentPromptIdProcessingExecutionIdRoute
   '/_main/profile/admin/': typeof MainProfileAdminIndexRoute
   '/_main/profile/favorites/': typeof MainProfileFavoritesIndexRoute
   '/_main/profile/my-generations/': typeof MainProfileMyGenerationsIndexRoute
   '/_main/profile/my-sticker-packs/': typeof MainProfileMyStickerPacksIndexRoute
   '/_main/profile/prompt/': typeof MainProfilePromptIndexRoute
   '/_main/profile/purchases/': typeof MainProfilePurchasesIndexRoute
+  '/content/$promptId/details/': typeof ContentPromptIdDetailsIndexRoute
+  '/content/$promptId/review/': typeof ContentPromptIdReviewIndexRoute
+  '/content/$promptId/select-nfts/': typeof ContentPromptIdSelectNftsIndexRoute
+  '/content/$promptId/success/': typeof ContentPromptIdSuccessIndexRoute
   '/post/create/image/': typeof PostCreateImageIndexRoute
   '/post/create/sticker/': typeof PostCreateStickerIndexRoute
   '/post/create/video/': typeof PostCreateVideoIndexRoute
@@ -416,6 +483,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/sticker-packs'
     | '/auth/refresh'
+    | '/content/$promptId'
     | '/sticker-packs/$stickerPackId'
     | '/demo2'
     | '/demo3'
@@ -425,21 +493,27 @@ export interface FileRouteTypes {
     | '/sticker-packs/$stickerPackId/checkout'
     | '/sticker-packs/$stickerPackId/success'
     | '/feed'
-    | '/feed_old'
+    | '/landing'
     | '/profile'
     | '/stickers'
+    | '/content/$promptId/'
     | '/demo2/item'
     | '/post/$postId'
     | '/post/create'
     | '/sticker-packs/$stickerPackId/'
     | '/profile/prompt/edit'
     | '/profile/prompt/create'
+    | '/content/$promptId/processing/$executionId'
     | '/profile/admin'
     | '/profile/favorites'
     | '/profile/my-generations'
     | '/profile/my-sticker-packs'
     | '/profile/prompt'
     | '/profile/purchases'
+    | '/content/$promptId/details'
+    | '/content/$promptId/review'
+    | '/content/$promptId/select-nfts'
+    | '/content/$promptId/success'
     | '/post/create/image'
     | '/post/create/sticker'
     | '/post/create/video'
@@ -466,21 +540,27 @@ export interface FileRouteTypes {
     | '/sticker-packs/$stickerPackId/checkout'
     | '/sticker-packs/$stickerPackId/success'
     | '/feed'
-    | '/feed_old'
+    | '/landing'
     | '/profile'
     | '/stickers'
+    | '/content/$promptId'
     | '/demo2/item'
     | '/post/$postId'
     | '/post/create'
     | '/sticker-packs/$stickerPackId'
     | '/profile/prompt/edit'
     | '/profile/prompt/create'
+    | '/content/$promptId/processing/$executionId'
     | '/profile/admin'
     | '/profile/favorites'
     | '/profile/my-generations'
     | '/profile/my-sticker-packs'
     | '/profile/prompt'
     | '/profile/purchases'
+    | '/content/$promptId/details'
+    | '/content/$promptId/review'
+    | '/content/$promptId/select-nfts'
+    | '/content/$promptId/success'
     | '/post/create/image'
     | '/post/create/sticker'
     | '/post/create/video'
@@ -500,6 +580,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/sticker-packs'
     | '/auth/refresh'
+    | '/content/$promptId'
     | '/sticker-packs/$stickerPackId'
     | '/demo2/'
     | '/demo3/'
@@ -509,21 +590,27 @@ export interface FileRouteTypes {
     | '/sticker-packs/$stickerPackId/checkout'
     | '/sticker-packs/$stickerPackId/success'
     | '/_main/feed/'
-    | '/_main/feed_old/'
+    | '/_main/landing/'
     | '/_main/profile/'
     | '/_main/stickers/'
+    | '/content/$promptId/'
     | '/demo2/item/'
     | '/post/$postId/'
     | '/post/create/'
     | '/sticker-packs/$stickerPackId/'
     | '/_main/profile/prompt/edit'
     | '/_main/profile/prompt/create'
+    | '/content/$promptId/processing/$executionId'
     | '/_main/profile/admin/'
     | '/_main/profile/favorites/'
     | '/_main/profile/my-generations/'
     | '/_main/profile/my-sticker-packs/'
     | '/_main/profile/prompt/'
     | '/_main/profile/purchases/'
+    | '/content/$promptId/details/'
+    | '/content/$promptId/review/'
+    | '/content/$promptId/select-nfts/'
+    | '/content/$promptId/success/'
     | '/post/create/image/'
     | '/post/create/sticker/'
     | '/post/create/video/'
@@ -545,6 +632,7 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   StickerPacksRoute: typeof StickerPacksRouteWithChildren
   AuthRefreshRoute: typeof AuthRefreshRoute
+  ContentPromptIdRoute: typeof ContentPromptIdRouteWithChildren
   Demo2IndexRoute: typeof Demo2IndexRoute
   Demo3IndexRoute: typeof Demo3IndexRoute
   PostIndexRoute: typeof PostIndexRoute
@@ -630,6 +718,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StickerPacksStickerPackIdRouteImport
       parentRoute: typeof StickerPacksRoute
     }
+    '/content/$promptId': {
+      id: '/content/$promptId'
+      path: '/content/$promptId'
+      fullPath: '/content/$promptId'
+      preLoaderRoute: typeof ContentPromptIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth/refresh': {
       id: '/auth/refresh'
       path: '/auth/refresh'
@@ -665,6 +760,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Demo2ItemIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/content/$promptId/': {
+      id: '/content/$promptId/'
+      path: '/'
+      fullPath: '/content/$promptId/'
+      preLoaderRoute: typeof ContentPromptIdIndexRouteImport
+      parentRoute: typeof ContentPromptIdRoute
+    }
     '/_main/stickers/': {
       id: '/_main/stickers/'
       path: '/stickers'
@@ -679,11 +781,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MainProfileIndexRouteImport
       parentRoute: typeof MainRoute
     }
-    '/_main/feed_old/': {
-      id: '/_main/feed_old/'
-      path: '/feed_old'
-      fullPath: '/feed_old'
-      preLoaderRoute: typeof MainFeed_oldIndexRouteImport
+    '/_main/landing/': {
+      id: '/_main/landing/'
+      path: '/landing'
+      fullPath: '/landing'
+      preLoaderRoute: typeof MainLandingIndexRouteImport
       parentRoute: typeof MainRoute
     }
     '/_main/feed/': {
@@ -756,6 +858,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PostCreateImageIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/content/$promptId/success/': {
+      id: '/content/$promptId/success/'
+      path: '/success'
+      fullPath: '/content/$promptId/success'
+      preLoaderRoute: typeof ContentPromptIdSuccessIndexRouteImport
+      parentRoute: typeof ContentPromptIdRoute
+    }
+    '/content/$promptId/select-nfts/': {
+      id: '/content/$promptId/select-nfts/'
+      path: '/select-nfts'
+      fullPath: '/content/$promptId/select-nfts'
+      preLoaderRoute: typeof ContentPromptIdSelectNftsIndexRouteImport
+      parentRoute: typeof ContentPromptIdRoute
+    }
+    '/content/$promptId/review/': {
+      id: '/content/$promptId/review/'
+      path: '/review'
+      fullPath: '/content/$promptId/review'
+      preLoaderRoute: typeof ContentPromptIdReviewIndexRouteImport
+      parentRoute: typeof ContentPromptIdRoute
+    }
+    '/content/$promptId/details/': {
+      id: '/content/$promptId/details/'
+      path: '/details'
+      fullPath: '/content/$promptId/details'
+      preLoaderRoute: typeof ContentPromptIdDetailsIndexRouteImport
+      parentRoute: typeof ContentPromptIdRoute
+    }
     '/_main/profile/purchases/': {
       id: '/_main/profile/purchases/'
       path: '/profile/purchases'
@@ -797,6 +927,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/profile/admin'
       preLoaderRoute: typeof MainProfileAdminIndexRouteImport
       parentRoute: typeof MainRoute
+    }
+    '/content/$promptId/processing/$executionId': {
+      id: '/content/$promptId/processing/$executionId'
+      path: '/processing/$executionId'
+      fullPath: '/content/$promptId/processing/$executionId'
+      preLoaderRoute: typeof ContentPromptIdProcessingExecutionIdRouteImport
+      parentRoute: typeof ContentPromptIdRoute
     }
     '/_main/profile/prompt/create': {
       id: '/_main/profile/prompt/create'
@@ -889,7 +1026,7 @@ const MainProfilePromptEditRouteRouteWithChildren =
 
 interface MainRouteChildren {
   MainFeedIndexRoute: typeof MainFeedIndexRoute
-  MainFeed_oldIndexRoute: typeof MainFeed_oldIndexRoute
+  MainLandingIndexRoute: typeof MainLandingIndexRoute
   MainProfileIndexRoute: typeof MainProfileIndexRoute
   MainStickersIndexRoute: typeof MainStickersIndexRoute
   MainProfilePromptEditRouteRoute: typeof MainProfilePromptEditRouteRouteWithChildren
@@ -906,7 +1043,7 @@ interface MainRouteChildren {
 
 const MainRouteChildren: MainRouteChildren = {
   MainFeedIndexRoute: MainFeedIndexRoute,
-  MainFeed_oldIndexRoute: MainFeed_oldIndexRoute,
+  MainLandingIndexRoute: MainLandingIndexRoute,
   MainProfileIndexRoute: MainProfileIndexRoute,
   MainStickersIndexRoute: MainStickersIndexRoute,
   MainProfilePromptEditRouteRoute: MainProfilePromptEditRouteRouteWithChildren,
@@ -973,12 +1110,36 @@ const StickerPacksRouteWithChildren = StickerPacksRoute._addFileChildren(
   StickerPacksRouteChildren,
 )
 
+interface ContentPromptIdRouteChildren {
+  ContentPromptIdIndexRoute: typeof ContentPromptIdIndexRoute
+  ContentPromptIdProcessingExecutionIdRoute: typeof ContentPromptIdProcessingExecutionIdRoute
+  ContentPromptIdDetailsIndexRoute: typeof ContentPromptIdDetailsIndexRoute
+  ContentPromptIdReviewIndexRoute: typeof ContentPromptIdReviewIndexRoute
+  ContentPromptIdSelectNftsIndexRoute: typeof ContentPromptIdSelectNftsIndexRoute
+  ContentPromptIdSuccessIndexRoute: typeof ContentPromptIdSuccessIndexRoute
+}
+
+const ContentPromptIdRouteChildren: ContentPromptIdRouteChildren = {
+  ContentPromptIdIndexRoute: ContentPromptIdIndexRoute,
+  ContentPromptIdProcessingExecutionIdRoute:
+    ContentPromptIdProcessingExecutionIdRoute,
+  ContentPromptIdDetailsIndexRoute: ContentPromptIdDetailsIndexRoute,
+  ContentPromptIdReviewIndexRoute: ContentPromptIdReviewIndexRoute,
+  ContentPromptIdSelectNftsIndexRoute: ContentPromptIdSelectNftsIndexRoute,
+  ContentPromptIdSuccessIndexRoute: ContentPromptIdSuccessIndexRoute,
+}
+
+const ContentPromptIdRouteWithChildren = ContentPromptIdRoute._addFileChildren(
+  ContentPromptIdRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   MainRoute: MainRouteWithChildren,
   AboutRoute: AboutRoute,
   StickerPacksRoute: StickerPacksRouteWithChildren,
   AuthRefreshRoute: AuthRefreshRoute,
+  ContentPromptIdRoute: ContentPromptIdRouteWithChildren,
   Demo2IndexRoute: Demo2IndexRoute,
   Demo3IndexRoute: Demo3IndexRoute,
   PostIndexRoute: PostIndexRoute,

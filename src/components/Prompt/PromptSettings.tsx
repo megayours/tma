@@ -124,13 +124,18 @@ export const PromptSettings = ({
     const versionZeroModel = prompt.versions?.[0]?.model;
     const initialModel = versionZeroModel || prompt.model;
 
-    setEditedPrompt({
+    const newPrompt = {
       ...prompt,
       model: initialModel,
-    });
-    setHasChanges(false);
-    setContractsError('');
-  }, [prompt]);
+    };
+
+    // Only update editedPrompt if we don't have unsaved changes
+    // This preserves user edits when the prompt is refetched (e.g., after generation)
+    if (!hasChanges) {
+      setEditedPrompt(newPrompt);
+      setContractsError('');
+    }
+  }, [prompt, hasChanges]);
 
   // Initialize selected contracts when supportedCollections loads
   useEffect(() => {

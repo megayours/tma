@@ -2,8 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Filter, Pagination } from '@/types/requests';
-import { type RawPromptsResponse, type RawPrompt } from '@/types/response';
-import { apiGet } from '@/lib/api';
+import { type RawPrompt } from '@/types/response';
 import type { PromptWithContent } from '@/types/content';
 import type { Session } from '@/auth/useAuth';
 import type { Prompt } from '@/types/prompt';
@@ -55,35 +54,60 @@ export const useGetRecommendedPrompts = ({
   type = 'all',
   excludeUsed = true,
   pagination,
+  tokenCollections,
   enabled = true,
 }: {
   type: 'images' | 'videos' | 'gifs' | 'stickers' | 'animated_stickers' | 'all';
   excludeUsed: boolean;
   pagination: Pagination;
+  tokenCollections?: Array<{ id?: string }>;
   enabled?: boolean;
 }) => {
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['recommended-prompts', type, excludeUsed, pagination],
+    queryKey: ['recommended-prompts', type, excludeUsed, pagination, tokenCollections],
     enabled,
     queryFn: async () => {
       try {
-        const response = await apiGet<RawPromptsResponse>(
-          `${import.meta.env.VITE_PUBLIC_API_URL}/discovery/prompts/recommended`,
-          {
-            type,
-            exclude_used: excludeUsed,
-            page: pagination.page,
-            size: pagination.size,
-          }
-        );
+        // Build query parameters manually to support multiple token_collection_ids
+        const queryParams = new URLSearchParams({
+          type,
+          exclude_used: String(excludeUsed),
+          page: String(pagination.page),
+          size: String(pagination.size),
+        });
 
-        if (!response || !response.data) {
-          console.error('Invalid response format:', response);
+        // Add token_collection_ids if provided
+        if (tokenCollections && tokenCollections.length > 0) {
+          tokenCollections.forEach(collection => {
+            if (collection.id) {
+              queryParams.append('token_collection_ids', collection.id);
+            }
+          });
+        }
+
+        const queryString = queryParams.toString();
+        const url = `${import.meta.env.VITE_PUBLIC_API_URL}/discovery/prompts/recommended${queryString ? `?${queryString}` : ''}`;
+
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const rawResponse = await response.json();
+
+        if (!rawResponse || !rawResponse.data) {
+          console.error('Invalid response format:', rawResponse);
           throw new Error('Invalid response format: missing data');
         }
 
-        const mappedPrompts: PromptWithContent[] = response.data.map(
-          rawPrompt => {
+        const mappedPrompts: PromptWithContent[] = rawResponse.data.map(
+          (rawPrompt: RawPrompt) => {
             const mapped = mapRawPromptToPromptWithContent(rawPrompt);
             return mapped;
           }
@@ -91,7 +115,7 @@ export const useGetRecommendedPrompts = ({
 
         const result = {
           prompts: mappedPrompts,
-          pagination: response.pagination || {
+          pagination: rawResponse.pagination || {
             page: 1,
             size: 10,
             total: 0,

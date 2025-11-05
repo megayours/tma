@@ -4,6 +4,7 @@ import { useGetRecommendedPrompts } from '@/hooks/usePrompts';
 import type { PromptWithContent } from '@/types/content';
 import { Spinner } from '@/components/ui';
 import { useSession } from '@/auth/SessionProvider';
+import { useGetUsedCollections, type SupportedCollection } from '@/hooks/useCollections';
 
 export const Route = createFileRoute('/_main/feed/')({
   component: Feed,
@@ -44,8 +45,12 @@ export function Feed() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const [selectedTypes, setSelectedTypes] = useState<ContentTypeFilter[]>([]);
+  const [selectedCollections, setSelectedCollections] = useState<SupportedCollection[]>([]);
   const loadedPagesRef = useRef<Set<number>>(new Set());
   const triggerRef = useRef<HTMLDivElement>(null);
+
+  // Fetch used collections
+  const { data: usedCollections, isLoading: isLoadingCollections } = useGetUsedCollections(6);
 
   // Determine query type based on selections
   const queryType: ContentTypeFilter | 'all' =
@@ -59,6 +64,7 @@ export function Feed() {
       page: currentPage,
       size: 10,
     },
+    tokenCollections: selectedCollections.length > 0 ? selectedCollections : undefined,
     enabled: true,
   });
 
@@ -77,6 +83,22 @@ export function Feed() {
         }
       });
     }
+    // Reset pagination when filter changes
+    setCurrentPage(1);
+    setAllPrompts([]);
+    loadedPagesRef.current.clear();
+  };
+
+  // Toggle collection selection
+  const toggleCollection = (collection: SupportedCollection) => {
+    setSelectedCollections(prev => {
+      const isSelected = prev.some(c => c.id === collection.id);
+      if (isSelected) {
+        return prev.filter(c => c.id !== collection.id);
+      } else {
+        return [...prev, collection];
+      }
+    });
     // Reset pagination when filter changes
     setCurrentPage(1);
     setAllPrompts([]);
@@ -178,8 +200,9 @@ export function Feed() {
 
   return (
     <div className="flex h-screen flex-col pb-24">
-      {/* Content type filter */}
-      <div className="scrollbar-hide border-tg-section-separator bg-tg-bg sticky top-0 z-10 flex shrink-0 gap-2 overflow-x-auto border-b px-2 py-3">
+      {/* Content type and collection filters */}
+      <div className="scrollbar-hide border-tg-section-separator backdrop-blur-md bg-tg-bg/80 sticky top-0 z-10 flex shrink-0 gap-2 overflow-x-auto border-b px-2 py-3">
+        {/* Content type filters */}
         {contentTypes.map(({ value, label }) => {
           const isActive =
             value === 'all'
@@ -191,11 +214,56 @@ export function Feed() {
               onClick={() => toggleType(value)}
               className={`shrink-0 rounded-full px-3 py-1 text-sm font-medium transition-colors ${
                 isActive
-                  ? 'bg-tg-button text-tg-button-text'
-                  : 'border-tg-section-separator text-tg-text hover:bg-tg-section-bg border'
+                  ? 'backdrop-blur-sm bg-tg-button text-tg-button-text shadow-md'
+                  : 'backdrop-blur-sm border-tg-section-separator text-tg-text bg-tg-bg/60 hover:bg-tg-section-bg/80 border'
               }`}
             >
               {label}
+            </button>
+          );
+        })}
+
+        {/* Separator */}
+        {(usedCollections.length > 0 || isLoadingCollections) && (
+          <div className="border-tg-section-separator h-8 w-px shrink-0 border-l" />
+        )}
+
+        {/* Collection filters loading placeholders */}
+        {isLoadingCollections && (
+          <>
+            {[1, 2, 3, 4, 5, 6].map(index => (
+              <div
+                key={`placeholder-${index}`}
+                className="flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1 backdrop-blur-sm border-tg-section-separator bg-tg-bg/60 border"
+              >
+                <div className="h-4 w-4 animate-pulse rounded-full bg-gray-300 dark:bg-gray-600" />
+                <div className="h-4 w-16 animate-pulse rounded bg-gray-300 dark:bg-gray-600" />
+              </div>
+            ))}
+          </>
+        )}
+
+        {/* Collection filters */}
+        {!isLoadingCollections && usedCollections.map(collection => {
+          const isActive = selectedCollections.some(c => c.id === collection.id);
+          return (
+            <button
+              key={collection.id}
+              onClick={() => toggleCollection(collection)}
+              className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium transition-colors ${
+                isActive
+                  ? 'backdrop-blur-sm bg-tg-button text-tg-button-text shadow-md'
+                  : 'backdrop-blur-sm border-tg-section-separator text-tg-text bg-tg-bg/60 hover:bg-tg-section-bg/80 border'
+              }`}
+            >
+              {collection.image && (
+                <img
+                  src={collection.image}
+                  alt={collection.name}
+                  className="h-4 w-4 rounded-full object-cover"
+                />
+              )}
+              <span className="line-clamp-1">{collection.name}</span>
             </button>
           );
         })}
@@ -203,13 +271,13 @@ export function Feed() {
 
       {/* Scrollable content area */}
       <div className="scrollbar-hide flex-1 overflow-y-auto">
-        <div className="grid grid-cols-2 gap-2 p-2 md:grid-cols-3 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 p-4 md:grid-cols-3 lg:grid-cols-4">
           {allPrompts.map((prompt: PromptWithContent, index: number) => (
             <div key={prompt.id} className="group flex flex-col gap-2">
-              <div className="bg-tg-bg relative aspect-square w-full overflow-hidden rounded-lg">
+              <div className="border-tg-section-separator/50 relative aspect-square w-full overflow-hidden rounded-2xl border shadow-sm bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900">
                 {/* Type Badge */}
                 <div className="absolute top-2 right-2 z-10">
-                  <span className="bg-tg-button text-tg-button-text rounded-full px-2 py-0.5 text-xs font-semibold shadow-md">
+                  <span className="backdrop-blur-md bg-black/60 rounded-full px-3 py-1 text-xs font-medium text-white shadow-lg">
                     {getTypeLabel(prompt.type)}
                   </span>
                 </div>
@@ -232,17 +300,17 @@ export function Feed() {
               {/* Info below image */}
               <div className="flex flex-col gap-2">
                 <div>
-                  <h3 className="text-tg-text line-clamp-1 text-sm font-semibold">
+                  <h3 className="text-tg-text line-clamp-1 text-base font-semibold">
                     {prompt.name}
                   </h3>
-                  <p className="text-tg-hint text-xs">{prompt.ownerName}</p>
+                  <p className="text-tg-hint text-sm">{prompt.ownerName}</p>
                 </div>
 
                 {/* Make it Yours button */}
                 {session && (
                   <button
                     onClick={() => handleMakeItYours(prompt)}
-                    className="bg-tg-button text-tg-button-text w-full rounded-full px-3 py-1.5 text-xs font-medium transition-all hover:opacity-90"
+                    className="bg-tg-button text-tg-button-text w-full rounded-xl px-4 py-2.5 text-sm font-semibold shadow-md transition-all active:scale-95"
                   >
                     Make it Yours
                   </button>

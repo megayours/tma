@@ -203,6 +203,50 @@ export function useGetNFTByCollectionAndTokenId(
   return { data, isLoading, error };
 }
 
+export function useGetUsedCollections(limit: number = 6) {
+  const { session } = useSession();
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['usedCollections', limit],
+    queryFn: async () => {
+      if (!session) return [];
+
+      const searchParams = new URLSearchParams({
+        limit: limit.toString(),
+      });
+
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/tokens/used-collections?${searchParams.toString()}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: session.authToken,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      // Transform to SupportedCollection format
+      return data.map((item: any) => ({
+        id: item.id.toString(),
+        chain: item.chain,
+        address: item.address,
+        name: item.name,
+        image: item.image,
+        usage_count: item.usage_count,
+      })) as (SupportedCollection & { usage_count: number })[];
+    },
+    enabled: !!session,
+  });
+
+  return { data: data || [], isLoading, error };
+}
+
 export function useAddToFavoritesMutation(
   collection: SupportedCollection | null,
   tokenId: string

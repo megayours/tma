@@ -205,7 +205,7 @@ export function Feed() {
       <div className="scrollbar-hide flex-1 overflow-y-auto">
         <div className="grid grid-cols-2 gap-2 p-2 md:grid-cols-3 lg:grid-cols-4">
           {allPrompts.map((prompt: PromptWithContent, index: number) => (
-            <div key={prompt.id} className="group relative flex flex-col">
+            <div key={prompt.id} className="group flex flex-col gap-2">
               <div className="bg-tg-bg relative aspect-square w-full overflow-hidden rounded-lg">
                 {/* Type Badge */}
                 <div className="absolute top-2 right-2 z-10">
@@ -227,24 +227,26 @@ export function Feed() {
                     </div>
                   )}
                 </div>
+              </div>
 
-                {/* Gradient overlay with info */}
-                <div className="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black/80 to-transparent p-2">
-                  <h3 className="line-clamp-1 text-sm font-semibold text-white">
+              {/* Info below image */}
+              <div className="flex flex-col gap-2">
+                <div>
+                  <h3 className="text-tg-text line-clamp-1 text-sm font-semibold">
                     {prompt.name}
                   </h3>
-                  <p className="text-xs text-white/80">{prompt.ownerName}</p>
-
-                  {/* Make it Yours button */}
-                  {session && (
-                    <button
-                      onClick={() => handleMakeItYours(prompt)}
-                      className="bg-tg-button text-tg-button-text mt-2 w-full rounded-full px-3 py-1.5 text-xs font-medium transition-all hover:opacity-90"
-                    >
-                      Make it Yours
-                    </button>
-                  )}
+                  <p className="text-tg-hint text-xs">{prompt.ownerName}</p>
                 </div>
+
+                {/* Make it Yours button */}
+                {session && (
+                  <button
+                    onClick={() => handleMakeItYours(prompt)}
+                    className="bg-tg-button text-tg-button-text w-full rounded-full px-3 py-1.5 text-xs font-medium transition-all hover:opacity-90"
+                  >
+                    Make it Yours
+                  </button>
+                )}
               </div>
               {/* Place trigger element at the 5th-to-last item */}
               {index === allPrompts.length - 5 && (

@@ -18,26 +18,6 @@ export const Route = createFileRoute('/content/$promptId/review/')({
   component: ReviewPage,
 });
 
-// Helper function to get display label for prompt type
-const getTypeLabel = (
-  type: 'images' | 'videos' | 'stickers' | 'gifs' | 'animated_stickers'
-): string => {
-  switch (type) {
-    case 'images':
-      return 'Image';
-    case 'videos':
-      return 'GIF';
-    case 'stickers':
-      return 'Sticker';
-    case 'gifs':
-      return 'GIF';
-    case 'animated_stickers':
-      return 'Animated Sticker';
-    default:
-      return type;
-  }
-};
-
 // Helper function to map prompt type to API content type
 const getContentType = (
   promptType: string

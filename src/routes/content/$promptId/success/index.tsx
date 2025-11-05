@@ -15,7 +15,6 @@ export const Route = createFileRoute('/content/$promptId/success/')({
 });
 
 function SuccessPage() {
-  const { promptId } = Route.useParams();
   const search = Route.useSearch();
   const navigate = useNavigate();
   const { session } = useSession();

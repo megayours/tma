@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useGetPrompt } from '@/hooks/usePrompts';
 import { useSession } from '@/auth/SessionProvider';
 import { SpinnerFullPage } from '@/components/ui';
-import { Badge, Banner, Divider } from '@telegram-apps/telegram-ui';
+import { Banner, Divider } from '@telegram-apps/telegram-ui';
 import { TelegramMainButton } from '../../../../components/TelegramMainButton';
 import { Fragment } from 'react/jsx-runtime';
 

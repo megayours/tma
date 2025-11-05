@@ -2,7 +2,9 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useGetPrompt } from '@/hooks/usePrompts';
 import { useSession } from '@/auth/SessionProvider';
 import { SpinnerFullPage } from '@/components/ui';
-import { Button } from '@telegram-apps/telegram-ui';
+import { Badge, Banner, Divider } from '@telegram-apps/telegram-ui';
+import { TelegramMainButton } from '../../../../components/TelegramMainButton';
+import { Fragment } from 'react/jsx-runtime';
 
 export const Route = createFileRoute('/content/$promptId/details/')({
   component: ContentDetails,
@@ -48,115 +50,131 @@ function ContentDetails() {
 
   if (error || !prompt) {
     return (
-      <div className="flex h-screen items-center justify-center p-6">
-        <div className="text-center">
-          <div className="mb-4 text-4xl">⚠️</div>
-          <h2 className="text-tg-text mb-2 text-xl font-bold">
-            Failed to load prompt
-          </h2>
-          <p className="text-tg-hint mb-4">
-            {error?.message || 'Prompt not found'}
-          </p>
-          <Button
-            mode="filled"
-            size="m"
-            onClick={() => navigate({ to: '/feed' })}
-          >
-            Back to Feed
-          </Button>
+      <div className="mx-auto max-w-4xl p-4">
+        <div className="flex items-center justify-center p-8">
+          <div className="text-center">
+            <div className="mb-4 text-4xl">⚠️</div>
+            <h2 className="text-tg-text mb-2 text-xl font-bold">
+              Failed to load prompt
+            </h2>
+            <p className="text-tg-hint mb-4">
+              {error?.message || 'Prompt not found'}
+            </p>
+          </div>
         </div>
       </div>
     );
   }
 
-  // Get the first available content URL for preview
-  const getPreviewUrl = () => {
-    if (prompt.stickers && prompt.stickers.length > 0) return prompt.stickers[0];
-    if (prompt.gifs && prompt.gifs.length > 0) return prompt.gifs[0];
-    if (prompt.images && prompt.images.length > 0) return prompt.images[0];
-    if (prompt.videos && prompt.videos.length > 0) return prompt.videos[0];
-    return null;
+  // Get all preview images
+  const getPreviewImages = () => {
+    if (prompt.stickers && prompt.stickers.length > 0) return prompt.stickers;
+    if (prompt.gifs && prompt.gifs.length > 0) return prompt.gifs;
+    if (prompt.images && prompt.images.length > 0) return prompt.images;
+    if (prompt.videos && prompt.videos.length > 0) return prompt.videos;
+    if (prompt.animatedStickers && prompt.animatedStickers.length > 0)
+      return prompt.animatedStickers;
+    return [];
   };
 
-  const previewUrl = getPreviewUrl();
+  const previewImages = getPreviewImages();
 
   return (
-    <div className="flex h-screen flex-col">
-      {/* Content Area */}
-      <div className="flex-1 overflow-y-auto p-6">
-        <div className="mx-auto max-w-2xl">
-          {/* Type Badge */}
-          <div className="mb-4">
-            <span className="bg-tg-button text-tg-button-text inline-block rounded-full px-3 py-1 text-sm font-semibold">
-              {getTypeLabel(
-                prompt.type as
-                  | 'images'
-                  | 'videos'
-                  | 'stickers'
-                  | 'gifs'
-                  | 'animated_stickers'
-              )}
-            </span>
-          </div>
-
-          {/* Prompt Name */}
-          <h1 className="text-tg-text mb-3 text-3xl font-bold">
-            {prompt.name || 'Untitled Prompt'}
-          </h1>
-
-          {/* Description */}
-          {prompt.description && (
-            <p className="text-tg-hint mb-6 text-base">{prompt.description}</p>
-          )}
-
-          {/* Preview Content */}
-          {previewUrl && (
-            <div className="bg-tg-section-bg mb-6 overflow-hidden rounded-lg">
-              <div className="flex items-center justify-center p-8">
-                <img
-                  src={previewUrl}
-                  alt={prompt.name || 'Prompt preview'}
-                  className="max-h-96 w-auto object-contain"
-                />
+    <div className="mx-auto max-w-4xl p-2">
+      <div className="">
+        {/* Pack Header */}
+        <div className="rounded-lg">
+          <div className="relative rounded-lg p-2">
+            <div className="flex w-full flex-col items-center">
+              {/* Collection Info */}
+              <div className="w-full">
+                <div className="flex flex-col items-center">
+                  <h1 className="text-2xl font-bold">
+                    {prompt.name || 'Untitled Prompt'}
+                  </h1>
+                </div>
               </div>
             </div>
-          )}
-
-          {/* Info Cards */}
-          <div className="bg-tg-section-bg rounded-lg p-4">
-            <h3 className="text-tg-text mb-2 font-semibold">
-              What you'll create:
-            </h3>
-            <ul className="text-tg-hint space-y-1 text-sm">
-              <li>
-                ✨ Personalized{' '}
-                {getTypeLabel(
-                  prompt.type as
-                    | 'images'
-                    | 'videos'
-                    | 'stickers'
-                    | 'gifs'
-                    | 'animated_stickers'
-                ).toLowerCase()}
-              </li>
-              <li>🎨 Using your own NFT</li>
-              <li>⚡ Generated in minutes</li>
-              <li>💯 100% unique to you</li>
-            </ul>
           </div>
         </div>
-      </div>
 
-      {/* Bottom Button */}
-      <div className="border-tg-section-separator border-t p-4">
-        <Button
-          mode="filled"
-          size="l"
+        {/* Description */}
+        {prompt.description && (
+          <div className="p-6">
+            <p className="text-tg-hint text-sm">{prompt.description}</p>
+          </div>
+        )}
+
+        <Divider />
+
+        {/* Content List */}
+        {previewImages.length > 0 && (
+          <div>
+            <Banner
+              header={
+                <h2 className="text-tg-text text-lg">
+                  Generations from other users
+                </h2>
+              }
+              description={
+                <div>
+                  <p className="text-xs">
+                    Example of{' '}
+                    {getTypeLabel(
+                      prompt.type as
+                        | 'images'
+                        | 'videos'
+                        | 'stickers'
+                        | 'gifs'
+                        | 'animated_stickers'
+                    ).toLowerCase()}{' '}
+                    included in this pack from other users.
+                  </p>
+                  <p className="text-tg-accent-text text-xs">
+                    You will 1 receive personalized{' '}
+                    {getTypeLabel(
+                      prompt.type as
+                        | 'images'
+                        | 'videos'
+                        | 'stickers'
+                        | 'gifs'
+                        | 'animated_stickers'
+                    ).toLowerCase()}
+                  </p>
+                </div>
+              }
+              style={{
+                backgroundColor: 'var(--tg-secondary-bg)',
+              }}
+            >
+              <Fragment>
+                <div className="grid grid-cols-3 gap-2 md:gap-4">
+                  {previewImages.map((imageUrl, index) => (
+                    <div
+                      key={index}
+                      className="bg-tg-hint/10 relative aspect-square overflow-hidden rounded-lg"
+                    >
+                      <img
+                        src={imageUrl}
+                        alt={`${prompt.name || 'Content'} ${index + 1}`}
+                        className="h-full w-full object-cover"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </Fragment>
+            </Banner>
+          </div>
+        )}
+
+        {/* Get Started Button */}
+        <TelegramMainButton
+          text={`Get ${getTypeLabel(prompt.type as 'images' | 'videos' | 'stickers' | 'gifs' | 'animated_stickers').toLowerCase()} with your PFP`}
           onClick={handleContinue}
-          className="w-full"
-        >
-          Select Your NFT
-        </Button>
+          visible={true}
+        />
       </div>
     </div>
   );

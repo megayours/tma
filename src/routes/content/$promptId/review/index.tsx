@@ -116,9 +116,7 @@ function ReviewPage() {
   useEffect(() => {
     if (generateMutation.isError) {
       console.error('Generation failed:', generateMutation.error);
-      alert(
-        `Generation failed: ${(generateMutation.error as Error).message}`
-      );
+      alert(`Generation failed: ${(generateMutation.error as Error).message}`);
       setIsConfirming(false);
     }
   }, [generateMutation.isError, generateMutation.error]);
@@ -154,84 +152,47 @@ function ReviewPage() {
       <div className="flex h-screen items-center justify-center p-6">
         <div className="text-center">
           <div className="mb-4 text-4xl">⚠️</div>
-          <h2 className="text-tg-text mb-2 text-xl font-bold">Invalid NFT data</h2>
-          <p className="text-tg-hint mb-4">
-            Please go back and select an NFT.
-          </p>
+          <h2 className="text-tg-text mb-2 text-xl font-bold">
+            Invalid NFT data
+          </h2>
+          <p className="text-tg-hint mb-4">Please go back and select an NFT.</p>
         </div>
       </div>
     );
   }
 
-  // Get preview URL
-  const getPreviewUrl = () => {
-    if (prompt.stickers && prompt.stickers.length > 0) return prompt.stickers[0];
-    if (prompt.gifs && prompt.gifs.length > 0) return prompt.gifs[0];
-    if (prompt.images && prompt.images.length > 0) return prompt.images[0];
-    if (prompt.videos && prompt.videos.length > 0) return prompt.videos[0];
-    return null;
-  };
-
-  const previewUrl = getPreviewUrl();
-
   return (
     <div className="flex h-screen flex-col">
       {/* Content */}
-      <div className="scrollbar-hide flex-1 overflow-y-auto p-6">
-        <div className="mx-auto max-w-2xl">
+      <div className="scrollbar-hide flex-1 overflow-y-auto">
+        <div className="mx-auto max-w-md p-4">
           <h1 className="text-tg-text mb-6 text-center text-2xl font-bold">
-            Review Your Selection
+            Confirm Details
           </h1>
 
-          {/* Prompt Preview */}
-          <div className="bg-tg-section-bg mb-6 overflow-hidden rounded-lg">
-            <div className="border-tg-section-separator border-b p-4">
-              <div className="mb-2 flex items-center justify-between">
-                <h3 className="text-tg-text font-semibold">Prompt</h3>
-                <span className="bg-tg-button text-tg-button-text rounded-full px-2 py-0.5 text-xs font-semibold">
-                  {getTypeLabel(
-                    prompt.type as
-                      | 'images'
-                      | 'videos'
-                      | 'stickers'
-                      | 'gifs'
-                      | 'animated_stickers'
-                  )}
-                </span>
-              </div>
-              <p className="text-tg-text text-lg font-medium">
-                {prompt.name || 'Untitled'}
-              </p>
-              {prompt.description && (
-                <p className="text-tg-hint mt-1 text-sm">{prompt.description}</p>
-              )}
-            </div>
-            {previewUrl && (
-              <div className="flex items-center justify-center bg-white p-6">
-                <img
-                  src={previewUrl}
-                  alt={prompt.name || 'Prompt preview'}
-                  className="h-48 w-auto object-contain"
-                />
-              </div>
-            )}
+          {/* Prompt Section */}
+          <div className="mb-4">
+            <p className="text-tg-hint mb-2 text-sm font-medium">Prompt</p>
+            <p className="text-tg-text text-xl font-bold">
+              {prompt.name || 'Untitled'}
+            </p>
           </div>
 
-          {/* NFT Selection */}
-          <div className="bg-tg-section-bg mb-6 overflow-hidden rounded-lg">
-            <div className="border-tg-section-separator border-b p-4">
-              <h3 className="text-tg-text font-semibold">Your NFT</h3>
-            </div>
-            <div className="flex items-center gap-4 p-4">
+          {/* Selected NFT Section */}
+          <div className="mb-4">
+            <p className="text-tg-hint mb-2 text-sm font-medium">
+              Selected NFT
+            </p>
+            <div className="bg-tg-bg flex items-center gap-4 rounded-lg p-4">
               {selectedToken.image && (
                 <img
                   src={selectedToken.image}
                   alt={selectedToken.name || 'Selected NFT'}
-                  className="h-20 w-20 rounded-lg object-cover"
+                  className="h-16 w-16 rounded-lg object-cover"
                 />
               )}
-              <div>
-                <p className="text-tg-text font-medium">
+              <div className="flex-1">
+                <p className="text-tg-text font-semibold">
                   {selectedToken.name || `#${selectedToken.id}`}
                 </p>
                 <p className="text-tg-hint text-sm">
@@ -239,29 +200,6 @@ function ReviewPage() {
                 </p>
               </div>
             </div>
-          </div>
-
-          {/* Info Box */}
-          <div className="bg-tg-accent-text/10 border-tg-accent-text rounded-lg border p-4">
-            <h4 className="text-tg-text mb-2 font-semibold">
-              What happens next?
-            </h4>
-            <ul className="text-tg-hint space-y-1 text-sm">
-              <li>✨ Your personalized content will be generated</li>
-              <li>⏱️ This usually takes 1-3 minutes</li>
-              <li>
-                🎨 You'll receive a unique{' '}
-                {getTypeLabel(
-                  prompt.type as
-                    | 'images'
-                    | 'videos'
-                    | 'stickers'
-                    | 'gifs'
-                    | 'animated_stickers'
-                ).toLowerCase()}
-              </li>
-              <li>💯 Completely free!</li>
-            </ul>
           </div>
         </div>
       </div>
@@ -271,7 +209,7 @@ function ReviewPage() {
         text={
           generateMutation.isPending || isConfirming
             ? 'Generating...'
-            : 'Generate'
+            : 'Confirm & Generate'
         }
         onClick={handleConfirm}
         disabled={generateMutation.isPending || isConfirming}

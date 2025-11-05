@@ -29,13 +29,6 @@ function SuccessPage() {
     }
   );
 
-  const handleGenerateAnother = () => {
-    navigate({
-      to: '/content/$promptId/select-nfts',
-      params: { promptId },
-    });
-  };
-
   const handleBackToFeed = () => {
     navigate({ to: '/feed' });
   };
@@ -49,57 +42,46 @@ function SuccessPage() {
   return (
     <div className="flex h-screen flex-col">
       {/* Content */}
-      <div className="scrollbar-hide flex-1 overflow-y-auto p-6">
-        <div className="mx-auto max-w-2xl text-center">
-          {/* Success Icon */}
-          <div className="mb-6 text-6xl">🎉</div>
-
-          {/* Title */}
-          <h1 className="text-tg-text mb-3 text-3xl font-bold">
-            Your Content is Ready!
-          </h1>
-
-          <p className="text-tg-hint mb-8 text-base">
-            Your personalized content has been generated successfully
-          </p>
+      <div className="scrollbar-hide flex-1 overflow-y-auto">
+        <div className="px-2">
+          {/* Success Title */}
+          <div className="pb-2 text-center">
+            <h1 className="text-tg-text mb-2 text-2xl font-bold">
+              Content Generated!
+            </h1>
+            <p className="text-tg-hint text-sm">
+              Your personalized content is ready
+            </p>
+          </div>
 
           {/* Generated Content Display */}
           {contentUrl ? (
-            <div className="bg-tg-section-bg mb-8 overflow-hidden rounded-lg">
-              <div className="flex items-center justify-center bg-white p-8">
+            <div className="bg-tg-bg mb-6 overflow-hidden rounded-2xl">
+              <div className="flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900">
                 <img
                   src={contentUrl}
                   alt="Generated content"
-                  className="max-h-96 w-auto object-contain"
+                  className="w-full object-contain"
                 />
               </div>
             </div>
           ) : (
-            <div className="bg-tg-section-bg text-tg-hint mb-8 flex h-64 items-center justify-center rounded-lg">
+            <div className="bg-tg-bg text-tg-hint mb-6 flex h-64 items-center justify-center rounded-2xl">
               Content preview not available
             </div>
           )}
 
           {/* Action Buttons */}
-          <div className="space-y-3">
+          <div className="space-y-3 px-2">
             {contentUrl && (
               <a
                 href={contentUrl}
                 download
-                className="bg-tg-button text-tg-button-text block w-full rounded-lg px-6 py-3 font-semibold transition-opacity hover:opacity-90"
+                className="bg-tg-button text-tg-button-text block w-full rounded-xl px-6 py-3 text-center font-semibold shadow-md transition-all active:scale-95"
               >
-                Download
+                Download Content
               </a>
             )}
-
-            <Button
-              mode="outline"
-              size="l"
-              onClick={handleGenerateAnother}
-              className="w-full"
-            >
-              Generate Another
-            </Button>
 
             <Button
               mode="plain"

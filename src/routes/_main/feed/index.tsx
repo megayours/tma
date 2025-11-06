@@ -359,7 +359,7 @@ export function Feed() {
         <div className="grid grid-cols-2 gap-4 p-4 md:grid-cols-3 lg:grid-cols-4">
           {allPrompts.map((prompt: PromptWithContent, index: number) => (
             <div key={prompt.id} className="group flex flex-col gap-2">
-              <div className="border-tg-section-separator/50 relative aspect-square w-full overflow-hidden rounded-2xl border bg-gradient-to-br from-gray-50 to-gray-100 shadow-sm dark:from-gray-800 dark:to-gray-900">
+              <div className="border-tg-section-separator/50 bg-tg-secondary-bg relative aspect-square w-full overflow-hidden rounded-2xl border">
                 {/* Type Badge */}
                 <div className="absolute top-2 right-2 z-10">
                   <span className="rounded-full bg-black/60 px-3 py-1 text-xs font-medium text-white shadow-lg backdrop-blur-md">

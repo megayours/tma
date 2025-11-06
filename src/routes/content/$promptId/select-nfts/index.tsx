@@ -5,14 +5,33 @@ import { useGetSupportedCollections } from '@/hooks/useCollections';
 import { NFTSelector } from '@/routes/sticker-packs/$stickerPackId/select-nfts/NFTSelector';
 import type { Token } from '@/types/response';
 import { useSelectedNFTsSafe } from '@/contexts/SelectedNFTsContext';
-import { encodeNFT } from '@/utils/nftEncoding';
 import { useGetPrompt } from '@/hooks/usePrompts';
 import { useSession } from '@/auth/SessionProvider';
 import { SpinnerFullPage } from '@/components/ui';
+import { useGenerateContentMutation } from '@/hooks/useContents';
 
 export const Route = createFileRoute('/content/$promptId/select-nfts/')({
   component: SelectNFTsPage,
 });
+
+// Helper function to convert prompt type to content type
+const getContentType = (
+  promptType: string
+): 'image' | 'video' | 'sticker' | 'animated_sticker' => {
+  switch (promptType) {
+    case 'images':
+      return 'image';
+    case 'videos':
+    case 'gifs':
+      return 'video';
+    case 'stickers':
+      return 'sticker';
+    case 'animated_stickers':
+      return 'animated_sticker';
+    default:
+      return 'image';
+  }
+};
 
 // Selected NFT Display Component
 function SelectedNFTDisplay({
@@ -136,6 +155,30 @@ function SelectNFTsPage() {
     setIsSelectorOpen(selectedNFTs.length === 0);
   }, [selectedNFTs.length]);
 
+  // Generation mutation
+  const generateMutation = useGenerateContentMutation(session);
+
+  // Auto-navigate to processing when generation succeeds
+  useEffect(() => {
+    if (generateMutation.isSuccess && generateMutation.data) {
+      navigate({
+        to: '/content/$promptId/processing/$executionId',
+        params: {
+          promptId,
+          executionId: generateMutation.data.id,
+        },
+      });
+    }
+  }, [generateMutation.isSuccess, generateMutation.data, promptId, navigate]);
+
+  // Handle generation errors
+  useEffect(() => {
+    if (generateMutation.isError && generateMutation.error) {
+      console.error('Generation failed:', generateMutation.error);
+      alert(`Generation failed: ${generateMutation.error.message}`);
+    }
+  }, [generateMutation.isError, generateMutation.error]);
+
   const handleTokenSelect = useCallback((token: Token) => {
     setSelectedNFTs(token ? [token] : []);
     setIsSelectorOpen(false);
@@ -145,17 +188,26 @@ function SelectNFTsPage() {
     setIsSelectorOpen(prev => !prev);
   };
 
-  const handleContinue = () => {
-    if (!selectedNFTs) return;
+  const handleGenerate = () => {
+    if (!selectedNFTs.length || !prompt) {
+      alert('Please select an NFT to continue');
+      return;
+    }
 
-    // Encode the selected NFT
-    const encodedNFT = encodeNFT(selectedNFTs[0]);
+    const selectedToken = selectedNFTs[0];
 
-    // Navigate to review page with encoded NFT
-    navigate({
-      to: '/content/$promptId/review',
-      params: { promptId },
-      search: { nft: encodedNFT },
+    // Generate content using the selected NFT
+    generateMutation.mutate({
+      promptId: promptId,
+      type: getContentType(prompt.type || 'images'),
+      inputs: [
+        {
+          prompt_id: promptId,
+          chain: selectedToken.contract.chain,
+          contract_address: selectedToken.contract.address,
+          token_id: selectedToken.id,
+        },
+      ],
     });
   };
 
@@ -209,9 +261,9 @@ function SelectNFTsPage() {
 
       {/* Bottom Button */}
       <TelegramMainButton
-        text="Continue to Review"
-        onClick={handleContinue}
-        disabled={!selectedNFTs.length}
+        text={generateMutation.isPending ? 'Generating...' : 'Generate'}
+        onClick={handleGenerate}
+        disabled={!selectedNFTs.length || generateMutation.isPending}
       />
     </div>
   );

@@ -96,9 +96,7 @@ export function ProfileLayout() {
         {/* This renders the index content when at /profile */}
         <main className="flex h-full flex-col gap-4 p-6">
           <div className="flex flex-row items-center justify-between gap-2">
-            <h1 className="text-tg-text text-2xl font-bold">
-              My Sticker Packs
-            </h1>
+            <h1 className="text-tg-text text-2xl font-bold">My Artworks</h1>
             <CreatePromptDropdownButton />
           </div>
           {isTelegram && (

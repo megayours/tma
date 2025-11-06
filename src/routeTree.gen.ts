@@ -41,7 +41,6 @@ import { Route as PostCreateStickerIndexRouteImport } from './routes/post/create
 import { Route as PostCreateImageIndexRouteImport } from './routes/post/create/image/index'
 import { Route as ContentPromptIdSuccessIndexRouteImport } from './routes/content/$promptId/success/index'
 import { Route as ContentPromptIdSelectNftsIndexRouteImport } from './routes/content/$promptId/select-nfts/index'
-import { Route as ContentPromptIdReviewIndexRouteImport } from './routes/content/$promptId/review/index'
 import { Route as ContentPromptIdDetailsIndexRouteImport } from './routes/content/$promptId/details/index'
 import { Route as MainProfilePurchasesIndexRouteImport } from './routes/_main/profile/purchases/index'
 import { Route as MainProfilePromptIndexRouteImport } from './routes/_main/profile/prompt/index'
@@ -228,12 +227,6 @@ const ContentPromptIdSelectNftsIndexRoute =
     path: '/select-nfts/',
     getParentRoute: () => ContentPromptIdRoute,
   } as any)
-const ContentPromptIdReviewIndexRoute =
-  ContentPromptIdReviewIndexRouteImport.update({
-    id: '/review/',
-    path: '/review/',
-    getParentRoute: () => ContentPromptIdRoute,
-  } as any)
 const ContentPromptIdDetailsIndexRoute =
   ContentPromptIdDetailsIndexRouteImport.update({
     id: '/details/',
@@ -361,7 +354,6 @@ export interface FileRoutesByFullPath {
   '/profile/prompt': typeof MainProfilePromptIndexRoute
   '/profile/purchases': typeof MainProfilePurchasesIndexRoute
   '/content/$promptId/details': typeof ContentPromptIdDetailsIndexRoute
-  '/content/$promptId/review': typeof ContentPromptIdReviewIndexRoute
   '/content/$promptId/select-nfts': typeof ContentPromptIdSelectNftsIndexRoute
   '/content/$promptId/success': typeof ContentPromptIdSuccessIndexRoute
   '/post/create/image': typeof PostCreateImageIndexRoute
@@ -408,7 +400,6 @@ export interface FileRoutesByTo {
   '/profile/prompt': typeof MainProfilePromptIndexRoute
   '/profile/purchases': typeof MainProfilePurchasesIndexRoute
   '/content/$promptId/details': typeof ContentPromptIdDetailsIndexRoute
-  '/content/$promptId/review': typeof ContentPromptIdReviewIndexRoute
   '/content/$promptId/select-nfts': typeof ContentPromptIdSelectNftsIndexRoute
   '/content/$promptId/success': typeof ContentPromptIdSuccessIndexRoute
   '/post/create/image': typeof PostCreateImageIndexRoute
@@ -459,7 +450,6 @@ export interface FileRoutesById {
   '/_main/profile/prompt/': typeof MainProfilePromptIndexRoute
   '/_main/profile/purchases/': typeof MainProfilePurchasesIndexRoute
   '/content/$promptId/details/': typeof ContentPromptIdDetailsIndexRoute
-  '/content/$promptId/review/': typeof ContentPromptIdReviewIndexRoute
   '/content/$promptId/select-nfts/': typeof ContentPromptIdSelectNftsIndexRoute
   '/content/$promptId/success/': typeof ContentPromptIdSuccessIndexRoute
   '/post/create/image/': typeof PostCreateImageIndexRoute
@@ -511,7 +501,6 @@ export interface FileRouteTypes {
     | '/profile/prompt'
     | '/profile/purchases'
     | '/content/$promptId/details'
-    | '/content/$promptId/review'
     | '/content/$promptId/select-nfts'
     | '/content/$promptId/success'
     | '/post/create/image'
@@ -558,7 +547,6 @@ export interface FileRouteTypes {
     | '/profile/prompt'
     | '/profile/purchases'
     | '/content/$promptId/details'
-    | '/content/$promptId/review'
     | '/content/$promptId/select-nfts'
     | '/content/$promptId/success'
     | '/post/create/image'
@@ -608,7 +596,6 @@ export interface FileRouteTypes {
     | '/_main/profile/prompt/'
     | '/_main/profile/purchases/'
     | '/content/$promptId/details/'
-    | '/content/$promptId/review/'
     | '/content/$promptId/select-nfts/'
     | '/content/$promptId/success/'
     | '/post/create/image/'
@@ -872,13 +859,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContentPromptIdSelectNftsIndexRouteImport
       parentRoute: typeof ContentPromptIdRoute
     }
-    '/content/$promptId/review/': {
-      id: '/content/$promptId/review/'
-      path: '/review'
-      fullPath: '/content/$promptId/review'
-      preLoaderRoute: typeof ContentPromptIdReviewIndexRouteImport
-      parentRoute: typeof ContentPromptIdRoute
-    }
     '/content/$promptId/details/': {
       id: '/content/$promptId/details/'
       path: '/details'
@@ -1114,7 +1094,6 @@ interface ContentPromptIdRouteChildren {
   ContentPromptIdIndexRoute: typeof ContentPromptIdIndexRoute
   ContentPromptIdProcessingExecutionIdRoute: typeof ContentPromptIdProcessingExecutionIdRoute
   ContentPromptIdDetailsIndexRoute: typeof ContentPromptIdDetailsIndexRoute
-  ContentPromptIdReviewIndexRoute: typeof ContentPromptIdReviewIndexRoute
   ContentPromptIdSelectNftsIndexRoute: typeof ContentPromptIdSelectNftsIndexRoute
   ContentPromptIdSuccessIndexRoute: typeof ContentPromptIdSuccessIndexRoute
 }
@@ -1124,7 +1103,6 @@ const ContentPromptIdRouteChildren: ContentPromptIdRouteChildren = {
   ContentPromptIdProcessingExecutionIdRoute:
     ContentPromptIdProcessingExecutionIdRoute,
   ContentPromptIdDetailsIndexRoute: ContentPromptIdDetailsIndexRoute,
-  ContentPromptIdReviewIndexRoute: ContentPromptIdReviewIndexRoute,
   ContentPromptIdSelectNftsIndexRoute: ContentPromptIdSelectNftsIndexRoute,
   ContentPromptIdSuccessIndexRoute: ContentPromptIdSuccessIndexRoute,
 }

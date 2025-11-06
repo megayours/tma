@@ -204,6 +204,8 @@ export function Feed() {
       const shouldBeVisible = isExpanded || isActive;
 
       if (shouldBeVisible) {
+        // Set display before expanding
+        gsap.set(button, { display: 'block' });
         // Expand: animate to auto width and full opacity
         gsap.to(button, {
           width: 'auto',
@@ -227,6 +229,10 @@ export function Feed() {
           duration: 0.45,
           ease: 'power2.inOut',
           delay: (contentTypes.length - 1 - index) * 0.05,
+          onComplete: () => {
+            // Set display none after animation completes
+            gsap.set(button, { display: 'none' });
+          },
         });
       }
     });

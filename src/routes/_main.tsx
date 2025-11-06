@@ -25,7 +25,7 @@ function MainLayout() {
   ];
 
   return (
-    <div className="bg-tg-bg text-tg-text">
+    <div className="text-tg-text">
       <Outlet />
       <ContentMenu contentTypes={contentTypes} />
     </div>

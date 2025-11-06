@@ -4,7 +4,10 @@ import { useGetRecommendedPrompts } from '@/hooks/usePrompts';
 import type { PromptWithContent } from '@/types/content';
 import { Spinner } from '@/components/ui';
 import { useSession } from '@/auth/SessionProvider';
-import { useGetUsedCollections, type SupportedCollection } from '@/hooks/useCollections';
+import {
+  useGetUsedCollections,
+  type SupportedCollection,
+} from '@/hooks/useCollections';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 
@@ -47,14 +50,19 @@ export function Feed() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const [selectedTypes, setSelectedTypes] = useState<ContentTypeFilter[]>([]);
-  const [selectedCollections, setSelectedCollections] = useState<SupportedCollection[]>([]);
+  const [selectedCollections, setSelectedCollections] = useState<
+    SupportedCollection[]
+  >([]);
   const [isExpanded, setIsExpanded] = useState(true);
   const loadedPagesRef = useRef<Set<number>>(new Set());
   const triggerRef = useRef<HTMLDivElement>(null);
-  const typeButtonsRef = useRef<{ [key: string]: HTMLButtonElement | null }>({});
+  const typeButtonsRef = useRef<{ [key: string]: HTMLButtonElement | null }>(
+    {}
+  );
 
   // Fetch used collections
-  const { data: usedCollections, isLoading: isLoadingCollections } = useGetUsedCollections(6);
+  const { data: usedCollections, isLoading: isLoadingCollections } =
+    useGetUsedCollections(6);
 
   // Determine query type based on selections
   const queryType: ContentTypeFilter | 'all' =
@@ -68,13 +76,15 @@ export function Feed() {
       page: currentPage,
       size: 10,
     },
-    tokenCollections: selectedCollections.length > 0 ? selectedCollections : undefined,
+    tokenCollections:
+      selectedCollections.length > 0 ? selectedCollections : undefined,
     enabled: true,
   });
 
   // Toggle content type selection
   const toggleType = (type: ContentTypeFilter | 'all') => {
-    const currentQueryType = selectedTypes.length === 0 ? 'all' : selectedTypes[0];
+    const currentQueryType =
+      selectedTypes.length === 0 ? 'all' : selectedTypes[0];
 
     // If clicking the currently active type, toggle expanded state
     if (currentQueryType === type) {
@@ -194,7 +204,8 @@ export function Feed() {
 
   // GSAP animation for collapsing/expanding type filters
   useGSAP(() => {
-    const currentQueryType = selectedTypes.length === 0 ? 'all' : selectedTypes[0];
+    const currentQueryType =
+      selectedTypes.length === 0 ? 'all' : selectedTypes[0];
 
     contentTypes.forEach(({ value }, index) => {
       const button = typeButtonsRef.current[value];
@@ -260,9 +271,15 @@ export function Feed() {
   }
 
   return (
-    <div className="flex h-screen flex-col pb-24">
+    <div className="flex h-screen flex-col">
       {/* Content type and collection filters */}
-      <div className="scrollbar-hide border-tg-section-separator backdrop-blur-md bg-tg-bg/80 sticky top-0 z-10 flex shrink-0 gap-1 overflow-x-auto border-b py-3" style={{ paddingLeft: '0.5rem', paddingRight: isExpanded ? '0.5rem' : '0.25rem' }}>
+      <div
+        className="scrollbar-hide border-tg-section-separator bg-tg-bg/80 sticky top-0 z-10 flex shrink-0 gap-1 overflow-x-auto border-b py-3 backdrop-blur-md"
+        style={{
+          paddingLeft: '0.5rem',
+          paddingRight: isExpanded ? '0.5rem' : '0.25rem',
+        }}
+      >
         {/* Content type filters */}
         {contentTypes.map(({ value, label }) => {
           const isActive =
@@ -277,10 +294,10 @@ export function Feed() {
               }}
               onClick={() => toggleType(value)}
               style={{ minWidth: 0 }}
-              className={`shrink-0 overflow-hidden whitespace-nowrap rounded-full px-3 py-1 text-sm font-medium transition-colors ${
+              className={`shrink-0 overflow-hidden rounded-full px-3 py-1 text-sm font-medium whitespace-nowrap transition-colors ${
                 isActive
-                  ? 'backdrop-blur-sm bg-tg-button text-tg-button-text shadow-md'
-                  : 'backdrop-blur-sm border-tg-section-separator text-tg-text bg-tg-bg/60 hover:bg-tg-section-bg/80 border'
+                  ? 'bg-tg-button text-tg-button-text shadow-md backdrop-blur-sm'
+                  : 'border-tg-section-separator text-tg-text bg-tg-bg/60 hover:bg-tg-section-bg/80 border backdrop-blur-sm'
               }`}
             >
               {label}
@@ -299,7 +316,7 @@ export function Feed() {
             {[1, 2, 3, 4, 5, 6].map(index => (
               <div
                 key={`placeholder-${index}`}
-                className="flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1 backdrop-blur-sm border-tg-section-separator bg-tg-bg/60 border"
+                className="border-tg-section-separator bg-tg-bg/60 flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1 backdrop-blur-sm"
               >
                 <div className="h-4 w-4 animate-pulse rounded-full bg-gray-300 dark:bg-gray-600" />
                 <div className="h-4 w-16 animate-pulse rounded bg-gray-300 dark:bg-gray-600" />
@@ -309,29 +326,32 @@ export function Feed() {
         )}
 
         {/* Collection filters */}
-        {!isLoadingCollections && usedCollections.map(collection => {
-          const isActive = selectedCollections.some(c => c.id === collection.id);
-          return (
-            <button
-              key={collection.id}
-              onClick={() => toggleCollection(collection)}
-              className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium transition-colors ${
-                isActive
-                  ? 'backdrop-blur-sm bg-tg-button text-tg-button-text shadow-md'
-                  : 'backdrop-blur-sm border-tg-section-separator text-tg-text bg-tg-bg/60 hover:bg-tg-section-bg/80 border'
-              }`}
-            >
-              {collection.image && (
-                <img
-                  src={collection.image}
-                  alt={collection.name}
-                  className="h-4 w-4 rounded-full object-cover"
-                />
-              )}
-              <span className="line-clamp-1">{collection.name}</span>
-            </button>
-          );
-        })}
+        {!isLoadingCollections &&
+          usedCollections.map(collection => {
+            const isActive = selectedCollections.some(
+              c => c.id === collection.id
+            );
+            return (
+              <button
+                key={collection.id}
+                onClick={() => toggleCollection(collection)}
+                className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium transition-colors ${
+                  isActive
+                    ? 'bg-tg-button text-tg-button-text shadow-md backdrop-blur-sm'
+                    : 'border-tg-section-separator text-tg-text bg-tg-bg/60 hover:bg-tg-section-bg/80 border backdrop-blur-sm'
+                }`}
+              >
+                {collection.image && (
+                  <img
+                    src={collection.image}
+                    alt={collection.name}
+                    className="h-4 w-4 rounded-full object-cover"
+                  />
+                )}
+                <span className="line-clamp-1">{collection.name}</span>
+              </button>
+            );
+          })}
       </div>
 
       {/* Scrollable content area */}
@@ -339,10 +359,10 @@ export function Feed() {
         <div className="grid grid-cols-2 gap-4 p-4 md:grid-cols-3 lg:grid-cols-4">
           {allPrompts.map((prompt: PromptWithContent, index: number) => (
             <div key={prompt.id} className="group flex flex-col gap-2">
-              <div className="border-tg-section-separator/50 relative aspect-square w-full overflow-hidden rounded-2xl border shadow-sm bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900">
+              <div className="border-tg-section-separator/50 relative aspect-square w-full overflow-hidden rounded-2xl border bg-gradient-to-br from-gray-50 to-gray-100 shadow-sm dark:from-gray-800 dark:to-gray-900">
                 {/* Type Badge */}
                 <div className="absolute top-2 right-2 z-10">
-                  <span className="backdrop-blur-md bg-black/60 rounded-full px-3 py-1 text-xs font-medium text-white shadow-lg">
+                  <span className="rounded-full bg-black/60 px-3 py-1 text-xs font-medium text-white shadow-lg backdrop-blur-md">
                     {getTypeLabel(prompt.type)}
                   </span>
                 </div>

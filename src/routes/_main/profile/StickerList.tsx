@@ -47,7 +47,7 @@ export function StickerList() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pb-20">
       {/* Executions List */}
       <div className="space-y-2">
         {data.data.map(execution => (

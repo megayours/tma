@@ -5,7 +5,9 @@ import type { Filter, Pagination } from '@/types/requests';
 import { type RawPrompt } from '@/types/response';
 import type { PromptWithContent } from '@/types/content';
 import type { Session } from '@/auth/useAuth';
-import type { Prompt } from '@/types/prompt';
+import type { Prompt, PromptFeedback, PromptFeedbackSentiment } from '@/types/prompt';
+import { PromptFeedbackSchema } from '@/types/prompt';
+import { safeParse } from '@/utils/validation';
 
 // Helper function to map raw prompt to expected format
 const mapRawPromptToPrompt = (rawPrompt: RawPrompt) => ({
@@ -619,6 +621,80 @@ export const usePublishPromptMutation = (session: Session) => {
       queryClient.invalidateQueries({
         queryKey: ['prompt', promptIdToInvalidate],
       });
+    },
+  });
+};
+
+export const usePromptFeedbackMutation = (
+  session: Session | null | undefined,
+  options?: {
+    onSuccess?: (data: PromptFeedback) => void;
+    onError?: (error: Error) => void;
+  }
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      contentId,
+      sentiment,
+    }: {
+      contentId: string;
+      sentiment: PromptFeedbackSentiment;
+    }) => {
+      if (!session) {
+        throw new Error('Session required to submit feedback');
+      }
+
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/prompts/feedback`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: session.authToken,
+          },
+          body: JSON.stringify({
+            content_id: contentId,
+            sentiment: sentiment,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.message || errorData.error || `Failed to submit feedback: ${response.status}`
+        );
+      }
+
+      const rawData = await response.json();
+      const validatedData = safeParse(PromptFeedbackSchema, rawData);
+
+      if (!validatedData) {
+        throw new Error('Invalid response format from feedback endpoint');
+      }
+
+      // Map snake_case to camelCase
+      const feedback: PromptFeedback = {
+        id: validatedData.id,
+        promptVersionId: validatedData.prompt_version_id,
+        accountId: validatedData.account_id,
+        sentiment: validatedData.sentiment,
+        contentReferenceId: validatedData.content_reference_id,
+        feedbackText: validatedData.feedback_text,
+        createdAt: validatedData.created_at,
+      };
+
+      return feedback;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['prompts'] });
+      queryClient.invalidateQueries({ queryKey: ['content'] });
+      options?.onSuccess?.(data);
+    },
+    onError: (error: Error) => {
+      console.error('Failed to submit prompt feedback:', error);
+      options?.onError?.(error);
     },
   });
 };

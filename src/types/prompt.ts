@@ -60,3 +60,26 @@ export const VersionSchema = z.object({
   version: z.number(),
 });
 export type Version = z.infer<typeof VersionSchema>;
+
+// Prompt Feedback
+export const PromptFeedbackSchema = z.object({
+  id: z.number(),
+  prompt_version_id: z.number(),
+  account_id: z.string(),
+  sentiment: z.enum(['positive', 'negative']),
+  content_reference_id: z.string(),
+  feedback_text: z.string().nullable(),
+  created_at: z.number(),
+});
+
+export type PromptFeedback = {
+  id: number;
+  promptVersionId: number;
+  accountId: string;
+  sentiment: 'positive' | 'negative';
+  contentReferenceId: string;
+  feedbackText: string | null;
+  createdAt: number;
+};
+
+export type PromptFeedbackSentiment = 'positive' | 'negative';

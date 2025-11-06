@@ -1,9 +1,8 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useEffect } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { z } from 'zod';
 import { useSession } from '@/auth/SessionProvider';
 import { useContentExecution } from '@/hooks/useContents';
-import { Spinner } from '@/components/ui';
 import { useLaunchParams, requestWriteAccess } from '@telegram-apps/sdk-react';
 import { useTelegramTheme } from '@/auth/useTelegram';
 
@@ -52,6 +51,39 @@ function ProcessingPage() {
 
   // Poll execution status
   const { data: execution, error } = useContentExecution(executionId, session);
+
+  // Fake timer state
+  const [fakeProgress, setFakeProgress] = useState(0);
+  const startTimeRef = useRef<number>(Date.now());
+
+  // Calculate duration based on content type
+  const getDurationMs = (type?: string): number => {
+    switch (type) {
+      case 'image':
+        return 90000; // 1.5 minutes
+      case 'sticker':
+      case 'animated_sticker':
+        return 180000; // 3 minutes
+      case 'video':
+        return 300000; // 5 minutes
+      default:
+        return 90000; // default to 1.5 minutes
+    }
+  };
+
+  // Fake timer effect
+  useEffect(() => {
+    if (!execution || execution.status !== 'processing') return;
+
+    const duration = getDurationMs(execution.type);
+    const interval = setInterval(() => {
+      const elapsed = Date.now() - startTimeRef.current;
+      const progress = Math.min((elapsed / duration) * 100, 99);
+      setFakeProgress(progress);
+    }, 100); // Update every 100ms for smooth animation
+
+    return () => clearInterval(interval);
+  }, [execution]);
 
   // Auto-navigate to success when completed
   useEffect(() => {
@@ -128,8 +160,8 @@ function ProcessingPage() {
     );
   }
 
-  // Processing state
-  const progressPercentage = execution?.progress_percentage || 0;
+  // Processing state - use real progress if available, otherwise use fake timer
+  const progressPercentage = execution?.progress_percentage ?? fakeProgress;
 
   return (
     <div className="flex h-screen flex-col">
@@ -137,7 +169,7 @@ function ProcessingPage() {
       <div className="scrollbar-hide flex-1 overflow-y-auto">
         <div className="px-2">
           {/* Processing Title */}
-          <div className="pt-6 pb-2 text-center">
+          <div className="pt-6 pb-6 text-center">
             <h1 className="text-tg-text mb-2 text-2xl font-bold">
               Creating Your Content...
             </h1>
@@ -146,26 +178,21 @@ function ProcessingPage() {
             </p>
           </div>
 
-          {/* Spinner */}
-          <div className="my-8 flex justify-center">
-            <Spinner size="lg" />
-          </div>
-
           {/* Progress Bar */}
-          <div className="mb-6 px-2">
-            <div className="bg-tg-section-bg relative mb-3 h-2 overflow-hidden rounded-full">
+          <div className="mb-6 px-4">
+            <div className="bg-tg-section-bg relative h-3 overflow-hidden rounded-full shadow-inner">
               <div
-                className="bg-tg-button h-full transition-all duration-500"
+                className="bg-tg-button h-full transition-all duration-300 ease-out"
                 style={{ width: `${progressPercentage}%` }}
               />
             </div>
-            <p className="text-tg-hint text-center text-sm font-medium">
-              {progressPercentage}%
+            <p className="text-tg-hint mt-3 text-center text-base font-semibold">
+              {Math.round(progressPercentage)}%
             </p>
           </div>
 
           {/* Info Section */}
-          <div className="space-y-4 px-2">
+          <div className="space-y-4 px-4">
             <div className="bg-tg-bg rounded-2xl p-4">
               <p className="text-tg-hint text-center text-sm">
                 We're personalizing your content with your NFT

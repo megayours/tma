@@ -272,7 +272,9 @@ export function Feed() {
           return (
             <button
               key={value}
-              ref={el => (typeButtonsRef.current[value] = el)}
+              ref={el => {
+                typeButtonsRef.current[value] = el;
+              }}
               onClick={() => toggleType(value)}
               style={{ minWidth: 0 }}
               className={`shrink-0 overflow-hidden whitespace-nowrap rounded-full px-3 py-1 text-sm font-medium transition-colors ${

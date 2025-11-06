@@ -35,7 +35,9 @@ function SuccessPage() {
   const [selectedFeedback, setSelectedFeedback] =
     useState<PromptFeedbackSentiment | null>(null);
   const [showAnimation, setShowAnimation] = useState(false);
-  const [dotLottieInstance, setDotLottieInstance] = useState<DotLottie | null>(
+  const [winnerLottieInstance, setWinnerLottieInstance] =
+    useState<DotLottie | null>(null);
+  const [sadLottieInstance, setSadLottieInstance] = useState<DotLottie | null>(
     null
   );
   const hasSubmittedFeedback = useRef(false);
@@ -59,21 +61,37 @@ function SuccessPage() {
     },
   });
 
-  // Listen for animation complete event
+  // Listen for winner animation complete event
   useEffect(() => {
-    if (!dotLottieInstance) return;
+    if (!winnerLottieInstance) return;
 
     const handleComplete = () => {
       console.log('Winner animation completed');
       setShowAnimation(false);
     };
 
-    dotLottieInstance.addEventListener('complete', handleComplete);
+    winnerLottieInstance.addEventListener('complete', handleComplete);
 
     return () => {
-      dotLottieInstance.removeEventListener('complete', handleComplete);
+      winnerLottieInstance.removeEventListener('complete', handleComplete);
     };
-  }, [dotLottieInstance]);
+  }, [winnerLottieInstance]);
+
+  // Listen for sad animation complete event
+  useEffect(() => {
+    if (!sadLottieInstance) return;
+
+    const handleComplete = () => {
+      console.log('Sad animation completed');
+      setShowAnimation(false);
+    };
+
+    sadLottieInstance.addEventListener('complete', handleComplete);
+
+    return () => {
+      sadLottieInstance.removeEventListener('complete', handleComplete);
+    };
+  }, [sadLottieInstance]);
 
   const handleFeedback = (sentiment: PromptFeedbackSentiment) => {
     if (!execution?.id) return;
@@ -162,40 +180,38 @@ function SuccessPage() {
                 {/* Winner Animation */}
                 {showAnimation && selectedFeedback === 'positive' && (
                   <DotLottieReact
-                    dotLottieRefCallback={setDotLottieInstance}
+                    dotLottieRefCallback={setWinnerLottieInstance}
                     className="pointer-events-none absolute top-0 left-0 z-50 h-[120vw] w-[120vw] -translate-x-[35%] -translate-y-[35%]"
-                    src="/lotties/winner.lottie"
+                    src="/lotties/stars4s.lottie"
                     loop={false}
                     autoplay
                   />
                 )}
               </div>
-              <div className="relative flex flex-col">
-                <button
-                  onClick={() => handleFeedback('negative')}
-                  className={`bg-tg-bg z-50 flex h-10 w-20 items-center justify-center rounded-xl border-2 text-2xl transition-all ${
-                    selectedFeedback === 'negative'
-                      ? 'border-tg-button text-tg-button shadow-md'
-                      : 'text-tg-hint border-tg-section-separator hover:bg-tg-section-bg/80 active:scale-95'
-                  }`}
-                  aria-label="Thumbs down"
-                >
-                  <FaThumbsDown className="h-5 w-10" />
-                </button>
-                {/* Sad Animation */}
-                {showAnimation && selectedFeedback === 'negative' && (
-                  <div className="absolute h-20 w-20">
-                    <DotLottieReact
-                      dotLottieRefCallback={setDotLottieInstance}
-                      className="z-20 h-40 w-20"
-                      src="/lotties/sad.lottie"
-                      loop={false}
-                      autoplay
-                    />
-                  </div>
-                )}
-              </div>
+              <button
+                onClick={() => handleFeedback('negative')}
+                className={`bg-tg-bg z-50 flex h-10 w-20 items-center justify-center rounded-xl border-2 text-2xl transition-all ${
+                  selectedFeedback === 'negative'
+                    ? 'border-tg-button text-tg-button shadow-md'
+                    : 'text-tg-hint border-tg-section-separator hover:bg-tg-section-bg/80 active:scale-95'
+                }`}
+                aria-label="Thumbs down"
+              >
+                <FaThumbsDown className="h-5 w-10" />
+              </button>
             </div>
+          )}
+
+          {/* Sad Animation - Full screen from top */}
+          {showAnimation && selectedFeedback === 'negative' && (
+            <DotLottieReact
+              dotLottieRefCallback={setSadLottieInstance}
+              className="pointer-events-none fixed top-0 left-1/2 z-50 h-[100vw] w-[100vw] -translate-x-1/2"
+              src="/lotties/sad.lottie"
+              loop={false}
+              autoplay
+              speed={0.5}
+            />
           )}
 
           {/* Action Buttons */}

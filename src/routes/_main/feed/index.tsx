@@ -5,6 +5,8 @@ import type { PromptWithContent } from '@/types/content';
 import { Spinner } from '@/components/ui';
 import { useSession } from '@/auth/SessionProvider';
 import { useGetUsedCollections, type SupportedCollection } from '@/hooks/useCollections';
+import { useGSAP } from '@gsap/react';
+import gsap from 'gsap';
 
 export const Route = createFileRoute('/_main/feed/')({
   component: Feed,
@@ -46,8 +48,10 @@ export function Feed() {
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const [selectedTypes, setSelectedTypes] = useState<ContentTypeFilter[]>([]);
   const [selectedCollections, setSelectedCollections] = useState<SupportedCollection[]>([]);
+  const [isExpanded, setIsExpanded] = useState(true);
   const loadedPagesRef = useRef<Set<number>>(new Set());
   const triggerRef = useRef<HTMLDivElement>(null);
+  const typeButtonsRef = useRef<{ [key: string]: HTMLButtonElement | null }>({});
 
   // Fetch used collections
   const { data: usedCollections, isLoading: isLoadingCollections } = useGetUsedCollections(6);
@@ -70,9 +74,19 @@ export function Feed() {
 
   // Toggle content type selection
   const toggleType = (type: ContentTypeFilter | 'all') => {
+    const currentQueryType = selectedTypes.length === 0 ? 'all' : selectedTypes[0];
+
+    // If clicking the currently active type, toggle expanded state
+    if (currentQueryType === type) {
+      setIsExpanded(prev => !prev);
+      return;
+    }
+
+    // Otherwise, select the new type and collapse
     if (type === 'all') {
       // Clear all filters to show all content
       setSelectedTypes([]);
+      setIsExpanded(true);
     } else {
       setSelectedTypes(prev => {
         if (prev.includes(type)) {
@@ -82,6 +96,7 @@ export function Feed() {
           return [type];
         }
       });
+      setIsExpanded(false);
     }
     // Reset pagination when filter changes
     setCurrentPage(1);
@@ -177,6 +192,46 @@ export function Feed() {
     { value: 'animated_stickers', label: 'Animated Stickers' },
   ];
 
+  // GSAP animation for collapsing/expanding type filters
+  useGSAP(() => {
+    const currentQueryType = selectedTypes.length === 0 ? 'all' : selectedTypes[0];
+
+    contentTypes.forEach(({ value }, index) => {
+      const button = typeButtonsRef.current[value];
+      if (!button) return;
+
+      const isActive = value === currentQueryType;
+      const shouldBeVisible = isExpanded || isActive;
+
+      if (shouldBeVisible) {
+        // Expand: animate to auto width and full opacity
+        gsap.to(button, {
+          width: 'auto',
+          opacity: 1,
+          paddingLeft: '0.75rem',
+          paddingRight: '0.75rem',
+          marginRight: isExpanded ? '0.25rem' : 0,
+          duration: 0.45,
+          ease: 'power2.inOut',
+          delay: isExpanded ? index * 0.05 : 0,
+        });
+      } else {
+        // Collapse: animate to 0 width and 0 opacity
+        gsap.to(button, {
+          width: 0,
+          opacity: 0,
+          paddingLeft: 0,
+          paddingRight: 0,
+          marginRight: 0,
+          borderWidth: 0,
+          duration: 0.45,
+          ease: 'power2.inOut',
+          delay: (contentTypes.length - 1 - index) * 0.05,
+        });
+      }
+    });
+  }, [isExpanded, selectedTypes]);
+
   // Show error state if there's an error and no data
   if (error && allPrompts.length === 0) {
     return (
@@ -201,7 +256,7 @@ export function Feed() {
   return (
     <div className="flex h-screen flex-col pb-24">
       {/* Content type and collection filters */}
-      <div className="scrollbar-hide border-tg-section-separator backdrop-blur-md bg-tg-bg/80 sticky top-0 z-10 flex shrink-0 gap-2 overflow-x-auto border-b px-2 py-3">
+      <div className="scrollbar-hide border-tg-section-separator backdrop-blur-md bg-tg-bg/80 sticky top-0 z-10 flex shrink-0 gap-1 overflow-x-auto border-b py-3" style={{ paddingLeft: '0.5rem', paddingRight: isExpanded ? '0.5rem' : '0.25rem' }}>
         {/* Content type filters */}
         {contentTypes.map(({ value, label }) => {
           const isActive =
@@ -211,8 +266,10 @@ export function Feed() {
           return (
             <button
               key={value}
+              ref={el => (typeButtonsRef.current[value] = el)}
               onClick={() => toggleType(value)}
-              className={`shrink-0 rounded-full px-3 py-1 text-sm font-medium transition-colors ${
+              style={{ minWidth: 0 }}
+              className={`shrink-0 overflow-hidden whitespace-nowrap rounded-full px-3 py-1 text-sm font-medium transition-colors ${
                 isActive
                   ? 'backdrop-blur-sm bg-tg-button text-tg-button-text shadow-md'
                   : 'backdrop-blur-sm border-tg-section-separator text-tg-text bg-tg-bg/60 hover:bg-tg-section-bg/80 border'

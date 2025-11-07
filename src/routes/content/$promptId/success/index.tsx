@@ -15,6 +15,7 @@ import {
   triggerHapticNotification,
   triggerHapticImpact,
 } from '@/utils/hapticFeedback';
+import { GenerateAgainButton } from '@/components/GenerateAgainButton';
 
 const successSearchSchema = z.object({
   executionId: z.string().optional(),
@@ -27,6 +28,7 @@ export const Route = createFileRoute('/content/$promptId/success/')({
 
 function SuccessPage() {
   const search = Route.useSearch();
+  const { promptId } = Route.useParams();
   const navigate = useNavigate();
   const { session } = useSession();
   const { isTelegram } = useTelegramTheme();
@@ -146,19 +148,21 @@ function SuccessPage() {
           </div>
 
           {/* Generated Content Display */}
-          <div className="bg-tg-bg overflow-hidden rounded-2xl">
-            <div className="flex aspect-square items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900">
-              {contentUrl ? (
-                <img
-                  src={contentUrl}
-                  alt="Generated content"
-                  className="w-full object-contain"
-                />
-              ) : (
-                <div className="text-tg-hint text-sm">
-                  Content preview not available
-                </div>
-              )}
+          <div className="flex justify-center">
+            <div className="bg-tg-bg max-w-150 overflow-hidden rounded-2xl">
+              <div className="flex aspect-square items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900">
+                {contentUrl ? (
+                  <img
+                    src={contentUrl}
+                    alt="Generated content"
+                    className="w-full max-w-100 object-contain"
+                  />
+                ) : (
+                  <div className="text-tg-hint text-sm">
+                    Content preview not available
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -199,19 +203,22 @@ function SuccessPage() {
               >
                 <FaThumbsDown className="h-5 w-10" />
               </button>
+              <GenerateAgainButton execution={execution} promptId={promptId} />
             </div>
           )}
 
           {/* Sad Animation - Full screen from top */}
           {showAnimation && selectedFeedback === 'negative' && (
-            <DotLottieReact
-              dotLottieRefCallback={setSadLottieInstance}
-              className="pointer-events-none fixed top-0 left-1/2 z-50 h-[100vw] w-[100vw] -translate-x-1/2"
-              src="/lotties/sad.lottie"
-              loop={false}
-              autoplay
-              speed={0.5}
-            />
+            <div className="pointer-events-none fixed top-0 left-0 z-50 flex w-full justify-center">
+              <DotLottieReact
+                dotLottieRefCallback={setSadLottieInstance}
+                className="h-[100vw] w-[100vw] max-w-150"
+                src="/lotties/sad.lottie"
+                loop={false}
+                autoplay
+                speed={0.5}
+              />
+            </div>
           )}
 
           {/* Action Buttons */}

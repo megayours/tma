@@ -10,6 +10,7 @@ import {
 } from '@/hooks/useCollections';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
+import { FeedFilters } from './FeedFilters';
 
 export const Route = createFileRoute('/_main/feed/')({
   component: Feed,
@@ -174,7 +175,8 @@ export function Feed() {
   // Intersection Observer for infinite scroll
   useEffect(() => {
     const trigger = triggerRef.current;
-    if (!trigger) return;
+    const scrollContainer = document.querySelector('.feed-scroll-container');
+    if (!trigger || !scrollContainer) return;
 
     const observer = new IntersectionObserver(
       entries => {
@@ -184,7 +186,7 @@ export function Feed() {
         }
       },
       {
-        root: null,
+        root: scrollContainer,
         rootMargin: '100px',
         threshold: 0.1,
       }
@@ -192,7 +194,13 @@ export function Feed() {
 
     observer.observe(trigger);
     return () => observer.unobserve(trigger);
-  }, [fetchNextPage]);
+  }, [
+    fetchNextPage,
+    allPrompts.length,
+    hasMorePages,
+    isFetchingMore,
+    currentPage,
+  ]);
 
   const contentTypes: { value: ContentTypeFilter | 'all'; label: string }[] = [
     { value: 'all', label: 'All' },
@@ -274,94 +282,32 @@ export function Feed() {
     <div className="flex h-screen flex-col">
       {/* Content type and collection filters */}
       <div
-        className="scrollbar-hide border-tg-section-separator bg-tg-bg/80 sticky top-0 z-10 flex shrink-0 gap-1 overflow-x-auto border-b py-3 backdrop-blur-md"
+        className="scrollbar-hide border-tg-section-separator bg-tg-bg/80 sticky top-0 z-10 flex shrink-0 gap-1 overflow-x-hidden border-b py-3 backdrop-blur-md lg:overflow-x-auto"
         style={{
           paddingLeft: '0.5rem',
           paddingRight: isExpanded ? '0.5rem' : '0.25rem',
         }}
       >
-        {/* Content type filters */}
-        {contentTypes.map(({ value, label }) => {
-          const isActive =
-            value === 'all'
-              ? selectedTypes.length === 0
-              : selectedTypes.includes(value as ContentTypeFilter);
-          return (
-            <button
-              key={value}
-              ref={el => {
-                typeButtonsRef.current[value] = el;
-              }}
-              onClick={() => toggleType(value)}
-              style={{ minWidth: 0 }}
-              className={`shrink-0 overflow-hidden rounded-full px-3 py-1 text-sm font-medium whitespace-nowrap transition-colors ${
-                isActive
-                  ? 'bg-tg-button text-tg-button-text shadow-md backdrop-blur-sm'
-                  : 'border-tg-section-separator text-tg-text bg-tg-bg/60 hover:bg-tg-section-bg/80 border backdrop-blur-sm'
-              }`}
-            >
-              {label}
-            </button>
-          );
-        })}
-
-        {/* Separator */}
-        {(usedCollections.length > 0 || isLoadingCollections) && (
-          <div className="border-tg-section-separator h-8 w-px shrink-0 border-l" />
-        )}
-
-        {/* Collection filters loading placeholders */}
-        {isLoadingCollections && (
-          <>
-            {[1, 2, 3, 4, 5, 6].map(index => (
-              <div
-                key={`placeholder-${index}`}
-                className="border-tg-section-separator bg-tg-bg/60 flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1 backdrop-blur-sm"
-              >
-                <div className="h-4 w-4 animate-pulse rounded-full bg-gray-300 dark:bg-gray-600" />
-                <div className="h-4 w-16 animate-pulse rounded bg-gray-300 dark:bg-gray-600" />
-              </div>
-            ))}
-          </>
-        )}
-
-        {/* Collection filters */}
-        {!isLoadingCollections &&
-          usedCollections.map(collection => {
-            const isActive = selectedCollections.some(
-              c => c.id === collection.id
-            );
-            return (
-              <button
-                key={collection.id}
-                onClick={() => toggleCollection(collection)}
-                className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium transition-colors ${
-                  isActive
-                    ? 'bg-tg-button text-tg-button-text shadow-md backdrop-blur-sm'
-                    : 'border-tg-section-separator text-tg-text bg-tg-bg/60 hover:bg-tg-section-bg/80 border backdrop-blur-sm'
-                }`}
-              >
-                {collection.image && (
-                  <img
-                    src={collection.image}
-                    alt={collection.name}
-                    className="h-4 w-4 rounded-full object-cover"
-                  />
-                )}
-                <span className="line-clamp-1">{collection.name}</span>
-              </button>
-            );
-          })}
+        <FeedFilters
+          contentTypes={contentTypes}
+          selectedTypes={selectedTypes}
+          toggleType={toggleType}
+          typeButtonsRef={typeButtonsRef}
+          usedCollections={usedCollections}
+          isLoadingCollections={isLoadingCollections}
+          selectedCollections={selectedCollections}
+          toggleCollection={toggleCollection}
+        />
       </div>
 
       {/* Scrollable content area */}
-      <div className="scrollbar-hide flex-1 overflow-y-auto">
+      <div className="scrollbar-hide feed-scroll-container flex-1 overflow-y-auto">
         <div className="grid grid-cols-2 gap-4 p-4 md:grid-cols-3 lg:grid-cols-4">
           {allPrompts.map((prompt: PromptWithContent, index: number) => (
             <div key={prompt.id} className="group flex flex-col gap-2">
               <div className="border-tg-section-separator/50 bg-tg-secondary-bg relative aspect-square w-full overflow-hidden rounded-2xl border">
                 {/* Type Badge */}
-                <div className="absolute top-2 right-2 z-10">
+                <div className="absolute top-2 right-2 z-5">
                   <span className="rounded-full bg-black/60 px-3 py-1 text-xs font-medium text-white shadow-lg backdrop-blur-md">
                     {getTypeLabel(prompt.type)}
                   </span>
@@ -401,17 +347,18 @@ export function Feed() {
                   </button>
                 )}
               </div>
-              {/* Place trigger element at the 5th-to-last item */}
-              {index === allPrompts.length - 5 && (
-                <div
-                  ref={triggerRef}
-                  className="flex h-4 w-full items-center justify-center text-xs opacity-0"
-                  style={{ pointerEvents: 'none' }}
-                />
-              )}
             </div>
           ))}
         </div>
+
+        {/* Intersection observer trigger */}
+        {allPrompts.length > 0 && (
+          <div
+            ref={triggerRef}
+            className="h-4 w-full"
+            style={{ pointerEvents: 'none' }}
+          />
+        )}
 
         {(isLoading || isFetchingMore) && (
           <div className="flex items-center justify-center py-8">
@@ -442,6 +389,9 @@ export function Feed() {
             <div className="text-tg-hint text-center">No prompts found</div>
           </div>
         )}
+
+        {/* Bottom spacing for ContentMenu */}
+        <div className="h-20"></div>
 
         {/* Portal container for TokenSelectionCloud */}
         <div id="token-selection-container" />

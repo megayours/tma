@@ -22,7 +22,7 @@ export function Landing() {
   });
 
   return (
-    <div className="bg-tg-secondary-bg scrollbar-hide flex h-screen flex-col gap-2 overflow-y-scroll pt-2">
+    <div className="bg-tg-secondary-bg scrollbar-hide flex flex-col gap-2 overflow-y-scroll pt-2">
       {stickerPacks?.data.map(stickerPack => (
         <Link
           key={stickerPack.id}
@@ -33,7 +33,7 @@ export function Landing() {
           <StickerPackItem stickerPack={stickerPack} />
         </Link>
       ))}
-
+      <div className="h-20"></div>
       {!import.meta.env.PROD && (
         <div className="flex flex-col gap-2">
           <Link to="/sticker-packs">Link to Sticker Packs</Link>

@@ -1,0 +1,79 @@
+import { useEffect } from 'react';
+import { useNavigate } from '@tanstack/react-router';
+import { Button } from '@telegram-apps/telegram-ui';
+import { useSession } from '@/auth/SessionProvider';
+import { useGenerateContentMutation } from '@/hooks/useContents';
+import type { ContentExecution } from '@/hooks/useContents';
+import { FaRedo } from 'react-icons/fa';
+
+interface GenerateAgainButtonProps {
+  execution: ContentExecution | undefined;
+  promptId: string;
+}
+
+export function GenerateAgainButton({
+  execution,
+  promptId,
+}: GenerateAgainButtonProps) {
+  const { session } = useSession();
+  const navigate = useNavigate();
+  const generateMutation = useGenerateContentMutation(session);
+
+  // Navigate to processing page on successful generation
+  useEffect(() => {
+    if (generateMutation.isSuccess && generateMutation.data) {
+      navigate({
+        to: '/content/$promptId/processing/$executionId',
+        params: {
+          promptId,
+          executionId: generateMutation.data.id,
+        },
+      });
+    }
+  }, [generateMutation.isSuccess, generateMutation.data, navigate, promptId]);
+
+  const handleGenerateAgain = () => {
+    if (!execution) return;
+
+    // Handle both single token and multiple tokens formats
+    const tokensArray =
+      execution.tokens || (execution.token ? [execution.token] : []);
+
+    if (tokensArray.length === 0) {
+      console.error('No tokens found in execution');
+      return;
+    }
+
+    // Build inputs array from the tokens
+    const inputs = tokensArray.map(token => ({
+      chain: token.contract.chain,
+      contract_address: token.contract.address,
+      token_id: token.id,
+    }));
+
+    generateMutation.mutate({
+      promptId: execution.prompt_id?.toString() || promptId,
+      type: execution.type,
+      inputs: inputs,
+      overrideExisting: true,
+    });
+  };
+
+  return (
+    <div>
+      <Button
+        mode="plain"
+        size="l"
+        onClick={handleGenerateAgain}
+        disabled={!execution || generateMutation.isPending}
+      >
+        <div className="flex flex-row items-center justify-center gap-2">
+          <FaRedo
+            className={generateMutation.isPending ? 'animate-spin' : ''}
+          />
+          {generateMutation.isPending ? 'Generating...' : 'Generate Again'}
+        </div>
+      </Button>
+    </div>
+  );
+}

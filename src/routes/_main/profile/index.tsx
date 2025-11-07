@@ -107,6 +107,7 @@ export function ProfileLayout() {
           <StickerList />
         </main>
       </div>
+      <div className="h-20"></div>
     </ProtectedRoute>
   );
 }

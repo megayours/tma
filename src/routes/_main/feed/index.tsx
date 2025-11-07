@@ -303,7 +303,7 @@ export function Feed() {
       {/* Scrollable content area */}
       <div className="scrollbar-hide feed-scroll-container flex-1 overflow-y-auto">
         <div className="grid grid-cols-2 gap-4 p-4 md:grid-cols-3 lg:grid-cols-4">
-          {allPrompts.map((prompt: PromptWithContent, index: number) => (
+          {allPrompts.map((prompt: PromptWithContent) => (
             <div key={prompt.id} className="group flex flex-col gap-2">
               <div className="border-tg-section-separator/50 bg-tg-secondary-bg relative aspect-square w-full overflow-hidden rounded-2xl border">
                 {/* Type Badge */}

@@ -6,7 +6,7 @@ import { useTelegramTheme } from '@/auth/useTelegram';
 import { retrieveLaunchParams } from '@telegram-apps/sdk';
 import { base64UrlDecode } from '@/utils/base64';
 
-type Community = {
+export type Community = {
   id: string;
   name: string;
   owner: string;
@@ -15,6 +15,7 @@ type Community = {
   plan_id: number;
   last_token_topup_at: number | null;
   collections: SupportedCollection[];
+  default_collection_id: number | null;
 };
 
 /**
@@ -160,4 +161,53 @@ export function useGetCommunityCollections(communityId?: string) {
   });
 
   return { data, isLoading, error };
+}
+
+export function useGetCommunities() {
+  const { session } = useSession();
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['communities'],
+    queryFn: async () => {
+      if (!session) return [];
+
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/communities`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: session.authToken,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      // The API returns { communities: [...] }, extract the array
+      const communities = result.communities || [];
+
+      // Normalize collections to have 'address' property and remove 'contract_address'
+      return communities.map((community: any) => {
+        if (community.collections) {
+          community.collections = community.collections.map((c: any) => {
+            const { contract_address, ...rest } = c;
+            return {
+              ...rest,
+              address: contract_address,
+            };
+          });
+        }
+        return community as Community;
+      });
+    },
+    enabled: !!session,
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
+
+  return { data: data || [], isLoading, error };
 }

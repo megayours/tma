@@ -1,13 +1,10 @@
-import { Link } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { viewport, useSignal } from '@telegram-apps/sdk-react';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import { useStickerPackExecutions } from '../hooks/useStickerPack';
 import { useSession } from '../auth/SessionProvider';
 import { useTelegramTheme } from '../auth/useTelegram';
-import {
-  useCommunityId,
-  useGetCommunityCollections,
-} from '../hooks/useCommunities';
+import { useSelectCommunity } from '../contexts/SelectCommunityContext';
 
 const ProcessingBadge = () => {
   const { session } = useSession();
@@ -66,12 +63,19 @@ const ProcessingBadge = () => {
 
 const HeaderBrand = () => {
   const { isDark } = useTelegramTheme();
-  const communityId = useCommunityId();
-  console.log('community id', communityId);
-  const community = useGetCommunityCollections(communityId);
-  // TODO: Use communityId for community-specific logic
-  void communityId;
-  console.log('COMMUNITY', community);
+  const { selectedCommunity } = useSelectCommunity();
+  const navigate = useNavigate();
+
+  const handleCommunityClick = () => {
+    if (selectedCommunity) {
+      navigate({
+        to: '/selectCommunity',
+        search: {
+          redirectTo: window.location.pathname,
+        },
+      });
+    }
+  };
 
   return (
     <div className="flex flex-row items-center gap-2">
@@ -84,14 +88,29 @@ const HeaderBrand = () => {
           Yours.fun
         </h1>
       </Link>
-      {community?.data?.image && (
+      {selectedCommunity && (
         <>
           <div className="border-tg-text h-6 border-r"></div>
-          <img
-            src={community.data.image}
-            alt="Community"
-            className="h-6 w-6 rounded-md object-cover"
-          />
+          <button
+            onClick={handleCommunityClick}
+            className="flex items-center gap-2 transition-opacity hover:opacity-80 active:opacity-60"
+          >
+            {selectedCommunity.image ? (
+              <img
+                src={selectedCommunity.image}
+                alt={selectedCommunity.name}
+                className="h-6 w-6 rounded-md object-cover"
+              />
+            ) : (
+              <span
+                className={`text-sm font-medium ${
+                  isDark ? 'text-[#03FFC2]' : 'text-black'
+                }`}
+              >
+                {selectedCommunity.name}
+              </span>
+            )}
+          </button>
         </>
       )}
       <ProcessingBadge />

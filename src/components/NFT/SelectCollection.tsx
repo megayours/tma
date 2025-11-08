@@ -1,4 +1,6 @@
 import type { SupportedCollection } from '@/hooks/useCollections';
+import { useSelectCommunity } from '@/contexts/SelectCommunityContext';
+import { useMemo } from 'react';
 
 interface SelectCollectionProps {
   collections: SupportedCollection[];
@@ -12,6 +14,45 @@ export function SelectCollection({
   onCollectionSelect,
   className = '',
 }: SelectCollectionProps) {
+  const { selectedCommunity } = useSelectCommunity();
+
+  // Filter collections by selected community
+  const filteredCollections = useMemo(() => {
+    console.log('[SelectCollection Filter] Computing collections', {
+      totalCollections: collections?.length || 0,
+      selectedCommunity: selectedCommunity
+        ? { id: selectedCommunity.id, name: selectedCommunity.name }
+        : null,
+      communityCollectionsCount: selectedCommunity?.collections?.length || 0,
+    });
+
+    if (!collections) {
+      console.log('[SelectCollection Filter] No collections provided');
+      return [];
+    }
+
+    // If no community selected, show all collections
+    if (!selectedCommunity || !selectedCommunity.collections) {
+      console.log('[SelectCollection Filter] No community selected, showing all collections');
+      return collections;
+    }
+
+    // Filter to only show collections that belong to the selected community
+    const filtered = collections.filter(collection =>
+      selectedCommunity.collections.some(
+        c => c.address === collection.address && c.chain === collection.chain
+      )
+    );
+
+    console.log('[SelectCollection Filter] Filtered collections', {
+      totalCollections: collections.length,
+      filteredCount: filtered.length,
+      communityName: selectedCommunity.name,
+    });
+
+    return filtered;
+  }, [collections, selectedCommunity]);
+
   const handleCardClick = (collection: SupportedCollection) => {
     onCollectionSelect(collection);
   };
@@ -29,7 +70,7 @@ export function SelectCollection({
           overflowY: 'auto',
         }}
       >
-        {collections?.map((collection: SupportedCollection) => (
+        {filteredCollections?.map((collection: SupportedCollection) => (
           <div
             key={collection.address}
             className="bg-tg-secondary hover:bg-tg-secondary/80 border-tg-section-separator flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border p-1 transition-colors"

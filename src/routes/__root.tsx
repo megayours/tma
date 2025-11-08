@@ -19,6 +19,10 @@ import { Header } from '@/components/Header';
 import { useTelegramTheme } from '@/auth/useTelegram';
 import { ToastProvider } from '@/components/ui';
 import { SelectedNFTsProvider } from '@/contexts/SelectedNFTsContext';
+import {
+  SelectCommunityProvider,
+  useSelectCommunity,
+} from '@/contexts/SelectCommunityContext';
 import { useSession } from '@/auth/SessionProvider';
 import { useLaunchParams } from '@telegram-apps/sdk-react';
 import { base64UrlDecode } from '@/utils/base64';
@@ -207,6 +211,73 @@ function WebEnvironmentHandler() {
 function AppContent() {
   const { isAuthenticated } = useSession();
   const isTelegramEnvironment = isTMA();
+  const location = useLocation();
+  const router = useRouter();
+  const { selectedCommunity, isLoading: isCommunityLoading } =
+    useSelectCommunity();
+
+  // Redirect to community selection if authenticated but no community selected
+  useEffect(() => {
+    const pathname = location.pathname;
+
+    console.log('[Community Redirect Debug]', {
+      pathname,
+      isAuthenticated,
+      isCommunityLoading,
+      selectedCommunity: selectedCommunity
+        ? { id: selectedCommunity.id, name: selectedCommunity.name }
+        : null,
+    });
+
+    // Paths that don't require community selection
+    const excludedPaths = ['/selectCommunity'];
+    const isExcludedPath =
+      excludedPaths.includes(pathname) || pathname.startsWith('/auth');
+
+    console.log('[Community Redirect Check]', {
+      excludedPaths,
+      isExcludedPath,
+      selectedCommunity: selectedCommunity
+        ? { id: selectedCommunity.id, name: selectedCommunity.name }
+        : null,
+      hasSelectedCommunity: !!selectedCommunity,
+    });
+
+    const needsCommunitySelection =
+      isAuthenticated &&
+      !isCommunityLoading &&
+      !selectedCommunity &&
+      !isExcludedPath;
+
+    console.log('[Community Redirect Decision]', {
+      needsCommunitySelection,
+      willRedirect: needsCommunitySelection,
+      breakdown: {
+        isAuthenticated,
+        isCommunityLoading,
+        hasSelectedCommunity: !!selectedCommunity,
+        isExcludedPath,
+      },
+    });
+
+    if (needsCommunitySelection) {
+      console.log('[Community Redirect] Redirecting to /selectCommunity', {
+        redirectTo: pathname,
+      });
+      router.navigate({
+        to: '/selectCommunity',
+        search: {
+          redirectTo: pathname,
+        },
+      });
+    }
+  }, [
+    isAuthenticated,
+    selectedCommunity,
+    isCommunityLoading,
+    location.pathname,
+    router,
+  ]);
 
   const content = (
     <>
@@ -245,10 +316,12 @@ export const Route = createRootRoute({
   component: () => {
     return (
       <ToastProvider>
-        {/* <ConsoleLogDevtools initialIsOpen={true} onReady={handleConsoleReady} /> */}
-        {/* {consoleReady && ( */}
-        <AppContent />
-        {/* )} */}
+        <SelectCommunityProvider>
+          {/* <ConsoleLogDevtools initialIsOpen={true} onReady={handleConsoleReady} /> */}
+          {/* {consoleReady && ( */}
+          <AppContent />
+          {/* )} */}
+        </SelectCommunityProvider>
       </ToastProvider>
     );
   },

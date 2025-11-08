@@ -14,6 +14,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as MainRouteImport } from './routes/_main'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as StickerPacksIndexRouteImport } from './routes/sticker-packs/index'
+import { Route as SelectCommunityIndexRouteImport } from './routes/selectCommunity/index'
 import { Route as PrivateIndexRouteImport } from './routes/private/index'
 import { Route as PostIndexRouteImport } from './routes/post/index'
 import { Route as Demo3IndexRouteImport } from './routes/demo3/index'
@@ -81,6 +82,11 @@ const StickerPacksIndexRoute = StickerPacksIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => StickerPacksRoute,
+} as any)
+const SelectCommunityIndexRoute = SelectCommunityIndexRouteImport.update({
+  id: '/selectCommunity/',
+  path: '/selectCommunity/',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const PrivateIndexRoute = PrivateIndexRouteImport.update({
   id: '/private/',
@@ -332,6 +338,7 @@ export interface FileRoutesByFullPath {
   '/demo3': typeof Demo3IndexRoute
   '/post': typeof PostIndexRoute
   '/private': typeof PrivateIndexRoute
+  '/selectCommunity': typeof SelectCommunityIndexRoute
   '/sticker-packs/': typeof StickerPacksIndexRoute
   '/sticker-packs/$stickerPackId/checkout': typeof StickerPacksStickerPackIdCheckoutRoute
   '/sticker-packs/$stickerPackId/success': typeof StickerPacksStickerPackIdSuccessRoute
@@ -378,6 +385,7 @@ export interface FileRoutesByTo {
   '/demo3': typeof Demo3IndexRoute
   '/post': typeof PostIndexRoute
   '/private': typeof PrivateIndexRoute
+  '/selectCommunity': typeof SelectCommunityIndexRoute
   '/sticker-packs': typeof StickerPacksIndexRoute
   '/sticker-packs/$stickerPackId/checkout': typeof StickerPacksStickerPackIdCheckoutRoute
   '/sticker-packs/$stickerPackId/success': typeof StickerPacksStickerPackIdSuccessRoute
@@ -428,6 +436,7 @@ export interface FileRoutesById {
   '/demo3/': typeof Demo3IndexRoute
   '/post/': typeof PostIndexRoute
   '/private/': typeof PrivateIndexRoute
+  '/selectCommunity/': typeof SelectCommunityIndexRoute
   '/sticker-packs/': typeof StickerPacksIndexRoute
   '/sticker-packs/$stickerPackId/checkout': typeof StickerPacksStickerPackIdCheckoutRoute
   '/sticker-packs/$stickerPackId/success': typeof StickerPacksStickerPackIdSuccessRoute
@@ -479,6 +488,7 @@ export interface FileRouteTypes {
     | '/demo3'
     | '/post'
     | '/private'
+    | '/selectCommunity'
     | '/sticker-packs/'
     | '/sticker-packs/$stickerPackId/checkout'
     | '/sticker-packs/$stickerPackId/success'
@@ -525,6 +535,7 @@ export interface FileRouteTypes {
     | '/demo3'
     | '/post'
     | '/private'
+    | '/selectCommunity'
     | '/sticker-packs'
     | '/sticker-packs/$stickerPackId/checkout'
     | '/sticker-packs/$stickerPackId/success'
@@ -574,6 +585,7 @@ export interface FileRouteTypes {
     | '/demo3/'
     | '/post/'
     | '/private/'
+    | '/selectCommunity/'
     | '/sticker-packs/'
     | '/sticker-packs/$stickerPackId/checkout'
     | '/sticker-packs/$stickerPackId/success'
@@ -624,6 +636,7 @@ export interface RootRouteChildren {
   Demo3IndexRoute: typeof Demo3IndexRoute
   PostIndexRoute: typeof PostIndexRoute
   PrivateIndexRoute: typeof PrivateIndexRoute
+  SelectCommunityIndexRoute: typeof SelectCommunityIndexRoute
   Demo2ItemIndexRoute: typeof Demo2ItemIndexRoute
   PostPostIdIndexRoute: typeof PostPostIdIndexRoute
   PostCreateIndexRoute: typeof PostCreateIndexRoute
@@ -669,6 +682,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/sticker-packs/'
       preLoaderRoute: typeof StickerPacksIndexRouteImport
       parentRoute: typeof StickerPacksRoute
+    }
+    '/selectCommunity/': {
+      id: '/selectCommunity/'
+      path: '/selectCommunity'
+      fullPath: '/selectCommunity'
+      preLoaderRoute: typeof SelectCommunityIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/private/': {
       id: '/private/'
@@ -1122,6 +1142,7 @@ const rootRouteChildren: RootRouteChildren = {
   Demo3IndexRoute: Demo3IndexRoute,
   PostIndexRoute: PostIndexRoute,
   PrivateIndexRoute: PrivateIndexRoute,
+  SelectCommunityIndexRoute: SelectCommunityIndexRoute,
   Demo2ItemIndexRoute: Demo2ItemIndexRoute,
   PostPostIdIndexRoute: PostPostIdIndexRoute,
   PostCreateIndexRoute: PostCreateIndexRoute,

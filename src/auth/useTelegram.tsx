@@ -34,11 +34,6 @@ export function useTelegramTheme() {
     if (rawInitData?.isTMA && rawInitData.launchParams?.tgWebAppThemeParams) {
       const tgThemeParams = rawInitData.launchParams.tgWebAppThemeParams;
 
-      // Debug logging to check Telegram theme colors
-      console.log('🎨 Telegram theme params:', tgThemeParams);
-      console.log('📦 secondary_bg_color:', tgThemeParams.secondary_bg_color);
-      console.log('🌈 bg_color:', tgThemeParams.bg_color);
-
       setThemeParams(tgThemeParams);
 
       // Determine if theme is dark based on background color
@@ -46,8 +41,6 @@ export function useTelegramTheme() {
       const bgColor = tgThemeParams.bg_color;
       const isDarkTheme =
         bgColor && parseInt(bgColor.replace('#', ''), 16) < 0x808080;
-
-      console.log('🌙 isDarkTheme:', isDarkTheme);
 
       setIsDark(isDarkTheme);
 

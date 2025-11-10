@@ -220,28 +220,10 @@ function AppContent() {
   useEffect(() => {
     const pathname = location.pathname;
 
-    console.log('[Community Redirect Debug]', {
-      pathname,
-      isAuthenticated,
-      isCommunityLoading,
-      selectedCommunity: selectedCommunity
-        ? { id: selectedCommunity.id, name: selectedCommunity.name }
-        : null,
-    });
-
     // Paths that don't require community selection
     const excludedPaths = ['/selectCommunity'];
     const isExcludedPath =
       excludedPaths.includes(pathname) || pathname.startsWith('/auth');
-
-    console.log('[Community Redirect Check]', {
-      excludedPaths,
-      isExcludedPath,
-      selectedCommunity: selectedCommunity
-        ? { id: selectedCommunity.id, name: selectedCommunity.name }
-        : null,
-      hasSelectedCommunity: !!selectedCommunity,
-    });
 
     const needsCommunitySelection =
       isAuthenticated &&
@@ -249,21 +231,14 @@ function AppContent() {
       !selectedCommunity &&
       !isExcludedPath;
 
-    console.log('[Community Redirect Decision]', {
-      needsCommunitySelection,
-      willRedirect: needsCommunitySelection,
-      breakdown: {
-        isAuthenticated,
-        isCommunityLoading,
-        hasSelectedCommunity: !!selectedCommunity,
-        isExcludedPath,
-      },
-    });
+    console.log(
+      `[Community Redirect] pathname=${pathname}, isAuthenticated=${isAuthenticated}, isCommunityLoading=${isCommunityLoading}, selectedCommunity=${selectedCommunity?.name || 'null'}, isExcludedPath=${isExcludedPath}, needsRedirect=${needsCommunitySelection}`
+    );
 
     if (needsCommunitySelection) {
-      console.log('[Community Redirect] Redirecting to /selectCommunity', {
-        redirectTo: pathname,
-      });
+      console.log(
+        `[Community Redirect] Redirecting to /selectCommunity (redirectTo=${pathname})`
+      );
       router.navigate({
         to: '/selectCommunity',
         search: {

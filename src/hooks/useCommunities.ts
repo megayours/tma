@@ -1,10 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { useSession } from '@/auth/SessionProvider';
 import type { SupportedCollection } from './useCollections';
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import { useTelegramTheme } from '@/auth/useTelegram';
 import { retrieveLaunchParams } from '@telegram-apps/sdk';
 import { base64UrlDecode } from '@/utils/base64';
+import { extractAuthDate } from '@/utils/launchParams';
 
 export type Community = {
   id: string;
@@ -19,63 +20,72 @@ export type Community = {
 };
 
 /**
- * Hook to get communityId from either Telegram start param or URL query params
- * - If in Telegram: decodes base64url start param and extracts communityId
+ * Hook to get communityId and authDate from either Telegram start param or URL query params
+ * - If in Telegram: decodes base64url start param and extracts communityId + authDate from initData
  * - If not in Telegram (web): parses ?communityId from URL
  */
-export function useCommunityId(): string | undefined {
+export function useCommunityId(): {
+  communityId: string | undefined;
+  authDate: number | null;
+} {
   const { isTelegram } = useTelegramTheme();
-  const [tgWebAppStartParam, setTgWebAppStartParam] = useState<
-    string | undefined
-  >();
 
-  useEffect(() => {
-    // Only try to retrieve launch params if we're in Telegram
-    if (isTelegram) {
-      try {
-        const params = retrieveLaunchParams();
-        setTgWebAppStartParam(params.tgWebAppStartParam);
-      } catch (error) {
-        console.warn('Failed to retrieve launch params:', error);
-        setTgWebAppStartParam(undefined);
-      }
+  // Retrieve launch params synchronously (not in useEffect) to ensure they're available on first render
+  const launchParams = useMemo(() => {
+    if (!isTelegram) return null;
+
+    try {
+      return retrieveLaunchParams();
+    } catch (error) {
+      console.warn('Failed to retrieve launch params:', error);
+      return null;
     }
   }, [isTelegram]);
 
   return useMemo(() => {
-    if (isTelegram) {
+    if (isTelegram && launchParams) {
       // In Telegram: decode base64url start param and extract communityId
-      if (!tgWebAppStartParam) return undefined;
+      let communityId: string | undefined = undefined;
 
-      try {
-        // Decode from base64url
-        const decodedString = base64UrlDecode(tgWebAppStartParam);
+      if (launchParams.tgWebAppStartParam) {
+        try {
+          // Decode from base64url
+          const decodedString = base64UrlDecode(
+            launchParams.tgWebAppStartParam
+          );
 
-        // Extract query string if it exists
-        // decodedString can be like: /post/23?communityId=-123&gg=23
-        if (!decodedString.includes('?')) return undefined;
+          // Extract query string if it exists
+          // decodedString can be like: /post/23?communityId=-123&gg=23
+          if (decodedString.includes('?')) {
+            const queryString = decodedString.split('?')[1];
 
-        const queryString = decodedString.split('?')[1];
-
-        // Parse query params
-        const params = new URLSearchParams(queryString);
-        const communityIdValue = params.get('communityId');
-
-        return communityIdValue || undefined;
-      } catch (error) {
-        console.error('Failed to parse communityId from start param:', error);
-        return undefined;
+            // Parse query params
+            const params = new URLSearchParams(queryString);
+            communityId = params.get('communityId') || undefined;
+          }
+        } catch (error) {
+          console.error('Failed to parse communityId from start param:', error);
+        }
       }
+
+      // Extract auth_date from initData
+      const authDate = extractAuthDate(
+        launchParams.initDataRaw as string | undefined
+      );
+
+      return { communityId, authDate };
     } else {
       // In web browser: parse URL query params directly
-      if (typeof window === 'undefined') return undefined;
+      if (typeof window === 'undefined') {
+        return { communityId: undefined, authDate: null };
+      }
 
       const urlParams = new URLSearchParams(window.location.search);
       const communityIdFromUrl = urlParams.get('communityId');
 
-      return communityIdFromUrl || undefined;
+      return { communityId: communityIdFromUrl || undefined, authDate: null };
     }
-  }, [isTelegram, tgWebAppStartParam]);
+  }, [isTelegram, launchParams]);
 }
 
 export function useGetCommunityCollections(communityId?: string) {

@@ -11,6 +11,8 @@ import {
   useGetCommunityCollections,
   type Community,
 } from '@/hooks/useCommunities';
+import { isFreshLaunch, storeAuthDate } from '@/utils/launchParams';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface SelectedCommunityProviderType {
   selectedCommunity: Community | null;
@@ -27,12 +29,13 @@ const SelectedCommunityContext = createContext<
 const STORAGE_KEY = 'selectedCommunity';
 
 export function SelectCommunityProvider({ children }: { children: ReactNode }) {
+  const queryClient = useQueryClient();
   const [selectedCommunity, setSelectedCommunityState] =
     useState<Community | null>(null);
   const [hasInitialized, setHasInitialized] = useState(false);
 
-  // Get communityId from URL (priority)
-  const communityIdFromUrl = useCommunityId();
+  // Get communityId and authDate from URL (priority)
+  const { communityId: communityIdFromUrl, authDate } = useCommunityId();
 
   // Fetch community from URL if present
   const { data: communityFromUrl, isLoading: isLoadingFromUrl } =
@@ -43,57 +46,64 @@ export function SelectCommunityProvider({ children }: { children: ReactNode }) {
 
   // Initialize from URL (priority) or localStorage
   useEffect(() => {
-    console.log('[SelectCommunityContext] Init check', {
-      hasInitialized,
-      communityIdFromUrl,
-      isLoadingFromUrl,
-      hasCommunityFromUrl: !!communityFromUrl,
-    });
+    console.log(
+      `[SelectCommunityContext] Init check: hasInitialized=${hasInitialized}, communityIdFromUrl=${communityIdFromUrl}, authDate=${authDate}, isLoadingFromUrl=${isLoadingFromUrl}, hasCommunityFromUrl=${!!communityFromUrl}`
+    );
 
     if (hasInitialized) return;
 
-    // Priority 1: URL communityId - wait for fetch to complete
+    // Priority 1: URL communityId - but check if it's a fresh launch
     if (communityIdFromUrl) {
-      console.log('[SelectCommunityContext] URL community detected', {
-        communityIdFromUrl,
-        isLoadingFromUrl,
-        communityFromUrl: communityFromUrl
-          ? { id: communityFromUrl.id, name: communityFromUrl.name }
-          : null,
-      });
+      // Check if this is a fresh launch or a page reload
+      const isNewLaunch = isFreshLaunch(authDate);
 
-      if (communityFromUrl && !isLoadingFromUrl) {
-        console.log(
-          '[SelectCommunityContext] Setting community from URL',
-          communityFromUrl.name
-        );
-        setSelectedCommunityState(communityFromUrl);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(communityFromUrl));
-        setHasInitialized(true);
+      console.log(
+        `[SelectCommunityContext] URL community detected: communityId=${communityIdFromUrl}, authDate=${authDate}, isNewLaunch=${isNewLaunch}, isLoadingFromUrl=${isLoadingFromUrl}, communityName=${communityFromUrl?.name || 'null'}`
+      );
 
-        // Clean up URL parameter
-        if (typeof window !== 'undefined') {
-          const url = new URL(window.location.href);
-          url.searchParams.delete('communityId');
-          window.history.replaceState({}, '', url.toString());
-          console.log('[SelectCommunityContext] Cleaned URL parameter');
+      // Only process communityId if it's a fresh launch
+      if (isNewLaunch) {
+        if (communityFromUrl && !isLoadingFromUrl) {
+          console.log(
+            `[SelectCommunityContext] Setting community from URL (fresh launch): ${communityFromUrl.name} (${communityFromUrl.id})`
+          );
+          setSelectedCommunityState(communityFromUrl);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(communityFromUrl));
+
+          // Store the auth_date to detect future reloads
+          storeAuthDate(authDate);
+
+          setHasInitialized(true);
+
+          // Clean up URL parameter
+          if (typeof window !== 'undefined') {
+            const url = new URL(window.location.href);
+            url.searchParams.delete('communityId');
+            window.history.replaceState({}, '', url.toString());
+            console.log('[SelectCommunityContext] Cleaned URL parameter');
+          }
         }
+        return; // Wait for fetch or skip localStorage check
+      } else {
+        // Not a fresh launch (reload) - ignore URL communityId and use localStorage
+        console.log(
+          `[SelectCommunityContext] Reload detected (same auth_date=${authDate}), ignoring URL communityId and using localStorage`
+        );
+        // Fall through to localStorage loading below
       }
-      return; // Wait for fetch or skip localStorage check
     }
 
-    // Priority 2: localStorage (only if no URL communityId)
+    // Priority 2: localStorage (only if no URL communityId or reload detected)
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
-      console.log('[SelectCommunityContext] Checking localStorage', {
-        hasStored: !!stored,
-      });
+      console.log(
+        `[SelectCommunityContext] Checking localStorage: hasStored=${!!stored}`
+      );
 
       if (stored) {
         const parsedCommunity = JSON.parse(stored) as Community;
         console.log(
-          '[SelectCommunityContext] Loading from localStorage',
-          parsedCommunity.name
+          `[SelectCommunityContext] Loading from localStorage: ${parsedCommunity.name} (${parsedCommunity.id})`
         );
         setSelectedCommunityState(parsedCommunity);
       }
@@ -109,6 +119,7 @@ export function SelectCommunityProvider({ children }: { children: ReactNode }) {
     communityFromUrl,
     isLoadingFromUrl,
     hasInitialized,
+    authDate,
   ]);
 
   // Wrapper to persist to localStorage whenever community changes
@@ -120,6 +131,12 @@ export function SelectCommunityProvider({ children }: { children: ReactNode }) {
     } else {
       localStorage.removeItem(STORAGE_KEY);
     }
+
+    // Invalidate all queries when community changes
+    console.log(
+      `[SelectCommunityContext] Invalidating all queries after community change to: ${community?.name || 'null'}`
+    );
+    queryClient.invalidateQueries();
   };
 
   return (

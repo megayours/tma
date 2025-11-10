@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet } from '@tanstack/react-router';
+import { createFileRoute, Outlet, useLocation } from '@tanstack/react-router';
 import { ContentMenu } from '@/components/ContentMenu';
 import { UserMenuComponent } from '@/components/lib/auth/FavoriteNFT';
 import { useSession } from '@/auth/SessionProvider';
@@ -10,6 +10,7 @@ export const Route = createFileRoute('/_main')({
 
 function MainLayout() {
   const { session } = useSession();
+  const location = useLocation();
 
   const contentTypes = [
     'Stickers',
@@ -24,10 +25,14 @@ function MainLayout() {
     },
   ];
 
+  // Define routes where ContentMenu should be displayed
+  const contentMenuRoutes = ['/', '/landing', '/feed', '/profile', '/stickers'];
+  const shouldShowContentMenu = contentMenuRoutes.includes(location.pathname);
+
   return (
     <div className="text-tg-text">
       <Outlet />
-      <ContentMenu contentTypes={contentTypes} />
+      {shouldShowContentMenu && <ContentMenu contentTypes={contentTypes} />}
     </div>
   );
 }

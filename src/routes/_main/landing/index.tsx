@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { StickerPackItem } from '@/routes/_main/landing/StickerPackItem';
 import { useStickerPacks } from '@/hooks/useStickerPacks';
-import { useWebAppStartParam } from '@/hooks/useWebAppStartParam';
+import { useSelectCommunity } from '@/contexts/SelectCommunityContext';
 
 export const Route = createFileRoute('/_main/landing/')({
   component: RouteComponent,
@@ -12,13 +12,14 @@ function RouteComponent() {
 }
 
 export function Landing() {
-  const webAppStartParam = useWebAppStartParam();
+  const { selectedCommunity: community } = useSelectCommunity();
+  console.log('Selected community in stickers:', community);
   const { data: stickerPacks } = useStickerPacks({
     pagination: {
       page: 1,
       size: 10,
     },
-    tokenCollections: webAppStartParam?.collections || undefined,
+    tokenCollections: community?.collections || undefined,
   });
 
   return (

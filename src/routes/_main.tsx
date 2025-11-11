@@ -26,7 +26,7 @@ function MainLayout() {
   ];
 
   // Define routes where ContentMenu should be displayed
-  const contentMenuRoutes = ['/', '/landing', '/feed', '/profile', '/stickers'];
+  const contentMenuRoutes = ['/', '/feed', '/profile', '/stickers'];
   const shouldShowContentMenu = contentMenuRoutes.includes(location.pathname);
 
   return (

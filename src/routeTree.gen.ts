@@ -29,7 +29,6 @@ import { Route as Demo2ItemIndexRouteImport } from './routes/demo2/item/index'
 import { Route as ContentPromptIdIndexRouteImport } from './routes/content/$promptId/index'
 import { Route as MainStickersIndexRouteImport } from './routes/_main/stickers/index'
 import { Route as MainProfileIndexRouteImport } from './routes/_main/profile/index'
-import { Route as MainLandingIndexRouteImport } from './routes/_main/landing/index'
 import { Route as MainFeedIndexRouteImport } from './routes/_main/feed/index'
 import { Route as StickerPacksStickerPackIdSuccessRouteImport } from './routes/sticker-packs/$stickerPackId/success'
 import { Route as StickerPacksStickerPackIdCheckoutRouteImport } from './routes/sticker-packs/$stickerPackId/checkout'
@@ -158,11 +157,6 @@ const MainStickersIndexRoute = MainStickersIndexRouteImport.update({
 const MainProfileIndexRoute = MainProfileIndexRouteImport.update({
   id: '/profile/',
   path: '/profile/',
-  getParentRoute: () => MainRoute,
-} as any)
-const MainLandingIndexRoute = MainLandingIndexRouteImport.update({
-  id: '/landing/',
-  path: '/landing/',
   getParentRoute: () => MainRoute,
 } as any)
 const MainFeedIndexRoute = MainFeedIndexRouteImport.update({
@@ -343,7 +337,6 @@ export interface FileRoutesByFullPath {
   '/sticker-packs/$stickerPackId/checkout': typeof StickerPacksStickerPackIdCheckoutRoute
   '/sticker-packs/$stickerPackId/success': typeof StickerPacksStickerPackIdSuccessRoute
   '/feed': typeof MainFeedIndexRoute
-  '/landing': typeof MainLandingIndexRoute
   '/profile': typeof MainProfileIndexRoute
   '/stickers': typeof MainStickersIndexRoute
   '/content/$promptId/': typeof ContentPromptIdIndexRoute
@@ -390,7 +383,6 @@ export interface FileRoutesByTo {
   '/sticker-packs/$stickerPackId/checkout': typeof StickerPacksStickerPackIdCheckoutRoute
   '/sticker-packs/$stickerPackId/success': typeof StickerPacksStickerPackIdSuccessRoute
   '/feed': typeof MainFeedIndexRoute
-  '/landing': typeof MainLandingIndexRoute
   '/profile': typeof MainProfileIndexRoute
   '/stickers': typeof MainStickersIndexRoute
   '/content/$promptId': typeof ContentPromptIdIndexRoute
@@ -441,7 +433,6 @@ export interface FileRoutesById {
   '/sticker-packs/$stickerPackId/checkout': typeof StickerPacksStickerPackIdCheckoutRoute
   '/sticker-packs/$stickerPackId/success': typeof StickerPacksStickerPackIdSuccessRoute
   '/_main/feed/': typeof MainFeedIndexRoute
-  '/_main/landing/': typeof MainLandingIndexRoute
   '/_main/profile/': typeof MainProfileIndexRoute
   '/_main/stickers/': typeof MainStickersIndexRoute
   '/content/$promptId/': typeof ContentPromptIdIndexRoute
@@ -493,7 +484,6 @@ export interface FileRouteTypes {
     | '/sticker-packs/$stickerPackId/checkout'
     | '/sticker-packs/$stickerPackId/success'
     | '/feed'
-    | '/landing'
     | '/profile'
     | '/stickers'
     | '/content/$promptId/'
@@ -540,7 +530,6 @@ export interface FileRouteTypes {
     | '/sticker-packs/$stickerPackId/checkout'
     | '/sticker-packs/$stickerPackId/success'
     | '/feed'
-    | '/landing'
     | '/profile'
     | '/stickers'
     | '/content/$promptId'
@@ -590,7 +579,6 @@ export interface FileRouteTypes {
     | '/sticker-packs/$stickerPackId/checkout'
     | '/sticker-packs/$stickerPackId/success'
     | '/_main/feed/'
-    | '/_main/landing/'
     | '/_main/profile/'
     | '/_main/stickers/'
     | '/content/$promptId/'
@@ -786,13 +774,6 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof MainProfileIndexRouteImport
-      parentRoute: typeof MainRoute
-    }
-    '/_main/landing/': {
-      id: '/_main/landing/'
-      path: '/landing'
-      fullPath: '/landing'
-      preLoaderRoute: typeof MainLandingIndexRouteImport
       parentRoute: typeof MainRoute
     }
     '/_main/feed/': {
@@ -1026,7 +1007,6 @@ const MainProfilePromptEditRouteRouteWithChildren =
 
 interface MainRouteChildren {
   MainFeedIndexRoute: typeof MainFeedIndexRoute
-  MainLandingIndexRoute: typeof MainLandingIndexRoute
   MainProfileIndexRoute: typeof MainProfileIndexRoute
   MainStickersIndexRoute: typeof MainStickersIndexRoute
   MainProfilePromptEditRouteRoute: typeof MainProfilePromptEditRouteRouteWithChildren
@@ -1043,7 +1023,6 @@ interface MainRouteChildren {
 
 const MainRouteChildren: MainRouteChildren = {
   MainFeedIndexRoute: MainFeedIndexRoute,
-  MainLandingIndexRoute: MainLandingIndexRoute,
   MainProfileIndexRoute: MainProfileIndexRoute,
   MainStickersIndexRoute: MainStickersIndexRoute,
   MainProfilePromptEditRouteRoute: MainProfilePromptEditRouteRouteWithChildren,

@@ -122,7 +122,6 @@ const PromptEditorContent = ({
   if (!prompt) return <div>Prompt not found</div>;
 
   const isViewportMounted = useSignal(viewport.isMounted);
-  const contentSafeAreaInsets = useSignal(viewport.contentSafeAreaInsets);
   const viewportSafeAreaInsets = useSignal(viewport.safeAreaInsets);
 
   const paddingBottom = isViewportMounted

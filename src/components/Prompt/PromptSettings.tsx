@@ -2,18 +2,10 @@ import { useEffect, useState, useRef } from 'react';
 import type { Prompt } from '@/types/prompt';
 import type { Token } from '@/types/response';
 import type { Contract } from '@/types/contract';
-import {
-  Input,
-  Textarea,
-  Select,
-  List,
-  Section,
-  Cell,
-  IconContainer,
-  Checkbox,
-  Button,
-  Switch,
-} from '@telegram-apps/telegram-ui';
+import { List, Checkbox, Button, Switch } from '@telegram-apps/telegram-ui';
+import { TgInput } from '@/components/ui/forms/TgInput';
+import { TgTextarea } from '@/components/ui/forms/TgTextarea';
+import { TgSelect } from '@/components/ui/forms/TgSelect';
 import type { UseMutationResult } from '@tanstack/react-query';
 import { useModels } from '@/hooks/useModels';
 import { useGetSupportedCollections } from '@/hooks/useCollections';
@@ -379,18 +371,18 @@ export const PromptSettings = ({
       <div className="scrollbar-hide flex-1 overflow-y-auto">
         <List className="bg-tg-secondary m-0 p-5">
           {/* Basic Information Section */}
-          <Section
-            header="Basic Information"
-            footer="Configure the basic properties of your prompt including name and description."
-          >
-            <Input
+          <div>
+            <h2 className="text-tg-section-header-text-color mb-3 text-sm font-medium tracking-wide uppercase">
+              Basic Information
+            </h2>
+            <TgInput
               header="Name"
               placeholder="Enter prompt name"
               value={editedPrompt.name || ''}
               onChange={e => updateField('name', e.target.value)}
             />
             <div className="relative">
-              <Textarea
+              <TgTextarea
                 header="Description"
                 placeholder="Enter prompt description"
                 value={editedPrompt.description || ''}
@@ -414,44 +406,22 @@ export const PromptSettings = ({
                 {(editedPrompt.description || '').length}/100
               </div>
             </div>
-          </Section>
+          </div>
 
           {/* Publication Status Section */}
-          <Section
-            header="Publication Status"
-            footer="Control whether this prompt is published and available for use."
-          >
-            <Cell
-              before={
-                <IconContainer>
-                  <IoInformationCircleOutline />
-                </IconContainer>
-              }
-              after={
-                <div className="flex items-center gap-2">
-                  {isPublishing ? (
-                    <span className="text-tg-hint text-sm font-medium">
-                      Updating...
-                    </span>
-                  ) : (
-                    <span
-                      className={`text-sm font-medium ${editedPrompt.published ? 'text-green-500' : 'text-tg-hint'}`}
-                    >
-                      {editedPrompt.published ? 'Published' : 'Draft'}
-                    </span>
-                  )}
-                  <Switch
-                    checked={!!editedPrompt.published}
-                    disabled={isPublishing}
-                    onChange={e => handlePublicationToggle(e.target.checked)}
-                  />
-                </div>
-              }
-              className={`border-l-4 ${editedPrompt.published ? 'border-l-green-500 bg-green-50/10' : 'border-l-orange-500 bg-orange-50/10'}`}
+          <div>
+            <h2 className="text-tg-section-header-text-color mb-3 text-sm font-medium tracking-wide uppercase">
+              Publication Status
+            </h2>
+            <div
+              className={`flex items-center gap-3 rounded-lg border-l-4 px-4 py-3 ${editedPrompt.published ? 'border-l-green-500 bg-green-500/10' : 'border-l-orange-500 bg-orange-500/10'}`}
             >
-              <div className="flex flex-col">
-                <span className="font-semibold">
-                  Publication Status {prompt.published}
+              <div className="flex items-center justify-center">
+                <IoInformationCircleOutline className="text-tg-hint h-6 w-6" />
+              </div>
+              <div className="flex flex-1 flex-col">
+                <span className="text-tg-text font-semibold">
+                  Status: {prompt.published ? 'Published' : 'Draft'}
                 </span>
                 <span className="text-tg-hint text-sm">
                   {editedPrompt.published
@@ -459,40 +429,56 @@ export const PromptSettings = ({
                     : 'This prompt is not yet published'}
                 </span>
               </div>
-            </Cell>
-          </Section>
+              <div className="flex items-center gap-2">
+                {isPublishing ? (
+                  <span className="text-tg-hint text-sm font-medium">
+                    Updating...
+                  </span>
+                ) : (
+                  <span
+                    onClick={() =>
+                      handlePublicationToggle(!editedPrompt.published)
+                    }
+                    className={`cursor-pointer text-sm font-medium hover:opacity-80 ${editedPrompt.published ? 'text-green-500' : 'text-tg-hint'}`}
+                  >
+                    {editedPrompt.published ? 'Published' : 'Draft'}
+                  </span>
+                )}
+                <Switch
+                  checked={!!editedPrompt.published}
+                  disabled={isPublishing}
+                  onChange={e => handlePublicationToggle(e.target.checked)}
+                />
+              </div>
+            </div>
+            <p className="text-tg-hint mt-2 text-sm">
+              Control whether this prompt is published and available for use.
+            </p>
+          </div>
 
           {/* AI Model Settings Section */}
-          <Section
-            header="AI Model Settings"
-            footer="Configure the AI model and token limits for generation."
-          >
-            <Cell
-              before={
-                <IconContainer>
-                  <IoLayersOutline />
-                </IconContainer>
-              }
+          <div>
+            <h2 className="text-tg-section-header-text-color mb-3 text-sm font-medium tracking-wide uppercase">
+              AI Model Settings
+            </h2>
+            <TgSelect
+              header="Model"
+              value={editedPrompt.model || ''}
+              onChange={e => updateField('model', e.target.value)}
+              disabled={modelsLoading}
             >
-              <Select
-                value={editedPrompt.model || ''}
-                onChange={e => updateField('model', e.target.value)}
-                className="w-full"
-                disabled={modelsLoading}
-              >
-                <option value="">
-                  {modelsLoading ? 'Loading models...' : 'Select a model'}
-                </option>
-                {filteredModels
-                  .filter(model => model.isEnabled)
-                  .map(model => (
-                    <option key={model.id} value={model.id}>
-                      {model.name} ({model.provider})
-                    </option>
-                  ))}
-              </Select>
-            </Cell>
-            <Input
+              <option value="">
+                {modelsLoading ? 'Loading models...' : 'Select a model'}
+              </option>
+              {filteredModels
+                .filter(model => model.isEnabled)
+                .map(model => (
+                  <option key={model.id} value={model.id}>
+                    {model.name} ({model.provider})
+                  </option>
+                ))}
+            </TgSelect>
+            <TgInput
               header="Min Tokens"
               type="number"
               placeholder="Minimum tokens"
@@ -501,7 +487,7 @@ export const PromptSettings = ({
                 updateField('minTokens', parseInt(e.target.value) || 0)
               }
             />
-            <Input
+            <TgInput
               header="Max Tokens"
               type="number"
               placeholder="Maximum tokens"
@@ -510,18 +496,20 @@ export const PromptSettings = ({
                 updateField('maxTokens', parseInt(e.target.value) || 0)
               }
             />
-          </Section>
+            <p className="text-tg-hint mt-2 text-sm">
+              Configure the AI model and token limits for generation.
+            </p>
+          </div>
 
           {/* Contracts Section */}
-          <Section
-            header="Contracts"
-            footer={
-              contractsError ||
-              'Select which NFT contracts this prompt should work with.'
-            }
-          >
+          <div>
+            <h2 className="text-tg-section-header-text-color mb-3 text-sm font-medium tracking-wide uppercase">
+              Contracts
+            </h2>
             {collectionsLoading ? (
-              <Cell>Loading contracts...</Cell>
+              <div className="bg-tg-section-bg text-tg-hint rounded-lg px-4 py-3 text-center">
+                Loading contracts...
+              </div>
             ) : (
               <>
                 {supportedCollections && supportedCollections.length > 0 && (
@@ -547,128 +535,139 @@ export const PromptSettings = ({
                     const contractKey = `${contract.chain}-${contract.address}`;
                     const isSelected = selectedContracts.has(contractKey);
                     return (
-                      <Cell
+                      <div
                         key={contractKey}
-                        before={
-                          <div className="flex items-center">
-                            <img
-                              src={contract.image}
-                              alt={contract.name}
-                              className="mr-3 h-8 w-8 rounded-full"
-                              onError={e => {
-                                const img = e.target as HTMLImageElement;
-                                img.src = '/nfts/not-available.png';
-                              }}
-                            />
-                            <IconContainer>
-                              <IoDocumentTextOutline />
-                            </IconContainer>
-                          </div>
-                        }
-                        after={
-                          <Checkbox
-                            checked={isSelected}
-                            onChange={() => handleContractToggle(contract)}
-                          />
-                        }
+                        className="bg-tg-section-bg hover:bg-tg-secondary-bg flex cursor-pointer items-center gap-3 rounded-lg px-4 py-3 transition-colors"
                         onClick={() => handleContractToggle(contract)}
                       >
-                        <div>
-                          <div className="font-medium">{contract.name}</div>
-                          <div className="text-sm text-gray-500">
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={contract.image}
+                            alt={contract.name}
+                            className="h-10 w-10 rounded-full"
+                            onError={e => {
+                              const img = e.target as HTMLImageElement;
+                              img.src = '/nfts/not-available.png';
+                            }}
+                          />
+                          <div className="flex items-center justify-center">
+                            <IoDocumentTextOutline className="text-tg-hint h-5 w-5" />
+                          </div>
+                        </div>
+                        <div className="flex-1">
+                          <div className="text-tg-text font-medium">
+                            {contract.name}
+                          </div>
+                          <div className="text-tg-hint text-sm">
                             {contract.chain} • {contract.address.slice(0, 6)}...
                             {contract.address.slice(-4)}
                           </div>
                         </div>
-                      </Cell>
+                        <Checkbox
+                          checked={isSelected}
+                          onChange={() => handleContractToggle(contract)}
+                        />
+                      </div>
                     );
                   })
                 ) : (
-                  <Cell>No contracts available</Cell>
+                  <div className="bg-tg-section-bg text-tg-hint rounded-lg px-4 py-3 text-center">
+                    No contracts available
+                  </div>
                 )}
               </>
             )}
-          </Section>
+            <p className="text-tg-hint mt-2 text-sm">
+              {contractsError ||
+                'Select which NFT contracts this prompt should work with.'}
+            </p>
+          </div>
 
           {/* Statistics & Info Section */}
-          <Section
-            header="Statistics & Info"
-            footer="View prompt statistics and usage information."
-          >
-            <Cell
-              before={
-                <IconContainer>
-                  <IoInformationCircleOutline />
-                </IconContainer>
-              }
-              after={
-                editedPrompt.createdAt
-                  ? new Date(editedPrompt.createdAt * 1000).toLocaleDateString()
-                  : 'Unknown'
-              }
-            >
-              Created
-            </Cell>
-            <Cell
-              before={
-                <IconContainer>
-                  <IoLayersOutline />
-                </IconContainer>
-              }
-              after={editedPrompt.versions?.length || 0}
-            >
-              Versions
-            </Cell>
-            <Cell
-              before={
-                <IconContainer>
-                  <IoStatsChartOutline />
-                </IconContainer>
-              }
-              after={editedPrompt.usageCount || 0}
-            >
-              Usage Count
-            </Cell>
-            <Cell
-              before={
-                <IconContainer>
-                  <IoPersonOutline />
-                </IconContainer>
-              }
-              after={selectedNFTs.length}
-            >
-              Selected NFTs
-            </Cell>
-            <Cell
-              before={
-                <IconContainer>
-                  <IoInformationCircleOutline />
-                </IconContainer>
-              }
-              after={
-                editedPrompt.lastUsed
-                  ? new Date(editedPrompt.lastUsed * 1000).toLocaleDateString()
-                  : 'Never'
-              }
-            >
-              Last Used
-            </Cell>
-          </Section>
+          <div>
+            <h2 className="text-tg-section-header-text-color mb-3 text-sm font-medium tracking-wide uppercase">
+              Statistics & Info
+            </h2>
+            <div className="space-y-2">
+              <div className="bg-tg-section-bg flex items-center justify-between rounded-lg px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center">
+                    <IoInformationCircleOutline className="text-tg-hint h-5 w-5" />
+                  </div>
+                  <span className="text-tg-text">Created</span>
+                </div>
+                <span className="text-tg-hint text-sm">
+                  {editedPrompt.createdAt
+                    ? new Date(
+                        editedPrompt.createdAt * 1000
+                      ).toLocaleDateString()
+                    : 'Unknown'}
+                </span>
+              </div>
+              <div className="bg-tg-section-bg flex items-center justify-between rounded-lg px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center">
+                    <IoLayersOutline className="text-tg-hint h-5 w-5" />
+                  </div>
+                  <span className="text-tg-text">Versions</span>
+                </div>
+                <span className="text-tg-hint text-sm">
+                  {editedPrompt.versions?.length || 0}
+                </span>
+              </div>
+              <div className="bg-tg-section-bg flex items-center justify-between rounded-lg px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center">
+                    <IoStatsChartOutline className="text-tg-hint h-5 w-5" />
+                  </div>
+                  <span className="text-tg-text">Usage Count</span>
+                </div>
+                <span className="text-tg-hint text-sm">
+                  {editedPrompt.usageCount || 0}
+                </span>
+              </div>
+              <div className="bg-tg-section-bg flex items-center justify-between rounded-lg px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center">
+                    <IoPersonOutline className="text-tg-hint h-5 w-5" />
+                  </div>
+                  <span className="text-tg-text">Selected NFTs</span>
+                </div>
+                <span className="text-tg-hint text-sm">
+                  {selectedNFTs.length}
+                </span>
+              </div>
+              <div className="bg-tg-section-bg flex items-center justify-between rounded-lg px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center">
+                    <IoInformationCircleOutline className="text-tg-hint h-5 w-5" />
+                  </div>
+                  <span className="text-tg-text">Last Used</span>
+                </div>
+                <span className="text-tg-hint text-sm">
+                  {editedPrompt.lastUsed
+                    ? new Date(
+                        editedPrompt.lastUsed * 1000
+                      ).toLocaleDateString()
+                    : 'Never'}
+                </span>
+              </div>
+            </div>
+            <p className="text-tg-hint mt-2 text-sm">
+              View prompt statistics and usage information.
+            </p>
+          </div>
 
           {/* Danger Zone Section */}
-          <Section
-            header="Danger Zone"
-            footer="Deleting a prompt is permanent and cannot be undone."
-          >
-            <Cell
-              before={
-                <IconContainer>
-                  <IoWarningOutline className="text-red-500" />
-                </IconContainer>
-              }
-              className="border-l-4 border-l-red-500 bg-red-50/10"
-            >
-              <div className="flex w-full flex-col gap-3">
+          <div>
+            <h2 className="text-tg-section-header-text-color mb-3 text-sm font-medium tracking-wide uppercase">
+              Danger Zone
+            </h2>
+            <div className="flex items-start gap-3 rounded-lg border-l-4 border-l-red-500 bg-red-500/10 px-4 py-3">
+              <div className="flex items-center justify-center pt-1">
+                <IoWarningOutline className="h-6 w-6 text-red-500" />
+              </div>
+              <div className="flex w-full flex-1 flex-col gap-3">
                 <div className="flex w-full flex-col">
                   <span className="font-semibold text-red-500">
                     Delete Prompt
@@ -692,8 +691,11 @@ export const PromptSettings = ({
                   </div>
                 </Button>
               </div>
-            </Cell>
-          </Section>
+            </div>
+            <p className="text-tg-hint mt-2 text-sm">
+              Deleting a prompt is permanent and cannot be undone.
+            </p>
+          </div>
         </List>
       </div>
     </div>

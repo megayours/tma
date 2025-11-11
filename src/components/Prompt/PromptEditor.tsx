@@ -11,6 +11,7 @@ import { ContentPreviews } from './ContentPreview';
 import { NFTSetsProvider } from '@/contexts/NFTSetsContext';
 import { useToast } from '@/components/ui/toast';
 import { useGetPrompt, usePromptMutation } from '@/hooks/usePrompts';
+import { viewport, useSignal } from '@telegram-apps/sdk-react';
 
 const PromptEditorContent = ({
   promptId,
@@ -41,7 +42,9 @@ const PromptEditorContent = ({
   // Update selectedVersion when prompt data changes (after refetch)
   useEffect(() => {
     if (prompt?.versions) {
-      const latestVersion = prompt.versions.sort((a, b) => b.version - a.version)[0];
+      const latestVersion = prompt.versions.sort(
+        (a, b) => b.version - a.version
+      )[0];
       setSelectedVersion(latestVersion);
     }
   }, [prompt]);
@@ -91,7 +94,7 @@ const PromptEditorContent = ({
     if (!isTextareaFocused) {
       return 'h-12'; // 1 line when not focused (regardless of content)
     }
-    return 'h-35'; // Max height when focused
+    return 'h-50'; // Max height when focused
   };
 
   const handleGenerate = async () => {
@@ -118,13 +121,26 @@ const PromptEditorContent = ({
   if (error) return <div>Error loading prompt: {error.message}</div>;
   if (!prompt) return <div>Prompt not found</div>;
 
+  const isViewportMounted = useSignal(viewport.isMounted);
+  const contentSafeAreaInsets = useSignal(viewport.contentSafeAreaInsets);
+  const viewportSafeAreaInsets = useSignal(viewport.safeAreaInsets);
+
+  const paddingBottom = isViewportMounted
+    ? 300 + (viewportSafeAreaInsets?.top || 0)
+    : 300;
+
   return (
-    <div className={`bg-tg-bg h-full`}>
+    <div
+      className={`bg-tg-bg h-screen overflow-hidden`}
+      style={{
+        paddingBottom: `${paddingBottom}px`,
+      }}
+    >
       {/* Main content area */}
-      <div className={`h-full`}>
+      <div className={`h-full overflow-hidden`}>
         {/* Your main content goes here */}
         {selectedVersion && (
-          <div className="h-full pb-36">
+          <div className="h-full overflow-hidden">
             <ContentPreviews
               prompt={prompt}
               selectedVersion={selectedVersion}
@@ -141,7 +157,7 @@ const PromptEditorContent = ({
       {/* Bottom toolbar */}
       <div className="safe-area-inset-bottom fixed right-0 bottom-0 left-0 z-30 border-t border-white/20">
         <div className="flex h-full flex-col pb-4">
-          <div className="justify-startgap-2 flex flex-row items-center">
+          <div className="bg-tg-bg justify-startgap-2 flex flex-row items-center">
             {selectedVersion && (
               <AdditionalContentDisplay
                 contentIds={currentAdditionalContentIds || []}

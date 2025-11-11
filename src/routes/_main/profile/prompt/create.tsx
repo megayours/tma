@@ -3,7 +3,8 @@ import { useState, useRef, useEffect } from 'react';
 import { ProtectedRoute } from '@/auth/ProtectedRoute';
 import { useSession } from '@/auth/SessionProvider';
 import { useCreatePromptMutation } from '@/hooks/usePrompts';
-import { Button, Section, Input } from '@telegram-apps/telegram-ui';
+import { Button } from '@telegram-apps/telegram-ui';
+import { TgInput } from '@/components/ui/forms/TgInput';
 
 export const Route = createFileRoute('/_main/profile/prompt/create')({
   component: CreatePromptComponent,
@@ -179,8 +180,8 @@ function CreatePromptComponent() {
               </div>
             </div>
 
-            <Section className="mx-4">
-              <Input
+            <div className="mx-4">
+              <TgInput
                 ref={inputRef}
                 header="Prompt Name"
                 placeholder="Enter a name for your prompt"
@@ -192,7 +193,7 @@ function CreatePromptComponent() {
                   }
                 }}
               />
-            </Section>
+            </div>
 
             <div className="p-6">
               <Button

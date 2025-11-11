@@ -114,7 +114,7 @@ export const ContentPreviews = ({
         {groupedContent.length > 0 && (
           <div
             ref={scrollContainerRef}
-            className="flex max-h-20 w-full flex-shrink-0 flex-row items-center gap-4 overflow-x-auto border border-white/20 bg-white/10 p-2 shadow-lg backdrop-blur-lg"
+            className="scrollbar-hide flex max-h-25 w-full flex-shrink-0 flex-row items-center gap-4 overflow-x-auto border border-white/20 bg-white/10 p-2 shadow-lg backdrop-blur-lg"
           >
             {groupedContent.flatMap((group, groupIndex) => {
               const items = [

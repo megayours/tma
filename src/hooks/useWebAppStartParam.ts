@@ -2,6 +2,7 @@ import { useMemo, useState, useEffect } from 'react';
 import { useTelegramTheme } from '@/auth/useTelegram';
 import { retrieveLaunchParams } from '@telegram-apps/sdk';
 import { useGetCommunityCollections } from './useCommunities';
+import { base64UrlDecode } from '@/utils/base64';
 
 export const useWebAppStartParam = () => {
   const { isTelegram } = useTelegramTheme();
@@ -22,10 +23,29 @@ export const useWebAppStartParam = () => {
     }
   }, [isTelegram]);
 
-  const communityId = useMemo(
-    () => tgWebAppStartParam?.split('_')[0],
-    [tgWebAppStartParam]
-  );
+  const communityId = useMemo(() => {
+    if (!tgWebAppStartParam) return undefined;
+
+    try {
+      // Decode from base64
+      const decodedString = base64UrlDecode(tgWebAppStartParam);
+
+      // Extract query string if it exists
+      // decodedString can be like: /post/23?communityId=-123&gg=23
+      if (!decodedString.includes('?')) return undefined;
+
+      const queryString = decodedString.split('?')[1];
+
+      // Parse query params
+      const params = new URLSearchParams(queryString);
+      const communityIdValue = params.get('communityId');
+
+      return communityIdValue || undefined;
+    } catch (error) {
+      console.error('Failed to parse communityId from start param:', error);
+      return undefined;
+    }
+  }, [tgWebAppStartParam]);
 
   // Only fetch community collections if we have a valid communityId
   const { data } = useGetCommunityCollections(communityId || '');
@@ -36,8 +56,9 @@ export const useWebAppStartParam = () => {
 
     return {
       collections: data.collections,
+      communityId,
     };
-  }, [isTelegram, data?.collections]);
+  }, [isTelegram, data?.collections, communityId]);
 
   return result;
 };

@@ -2,18 +2,10 @@ import { useEffect, useState, useRef } from 'react';
 import type { Prompt } from '@/types/prompt';
 import type { Token } from '@/types/response';
 import type { Contract } from '@/types/contract';
-import {
-  Input,
-  Textarea,
-  Select,
-  List,
-  Section,
-  Cell,
-  IconContainer,
-  Checkbox,
-  Button,
-  Switch,
-} from '@telegram-apps/telegram-ui';
+import { List, Checkbox, Button, Switch } from '@telegram-apps/telegram-ui';
+import { TgInput } from '@/components/ui/forms/TgInput';
+import { TgTextarea } from '@/components/ui/forms/TgTextarea';
+import { TgSelect } from '@/components/ui/forms/TgSelect';
 import type { UseMutationResult } from '@tanstack/react-query';
 import { useModels } from '@/hooks/useModels';
 import { useGetSupportedCollections } from '@/hooks/useCollections';
@@ -23,7 +15,13 @@ import {
   IoStatsChartOutline,
   IoInformationCircleOutline,
   IoDocumentTextOutline,
+  IoTrashOutline,
+  IoWarningOutline,
 } from 'react-icons/io5';
+import { useDeletePromptMutation } from '@/hooks/usePrompts';
+import { useSession } from '@/auth/SessionProvider';
+import { useNavigate } from '@tanstack/react-router';
+import { popup } from '@telegram-apps/sdk-react';
 
 interface PromptSettingsProps {
   prompt: Prompt;
@@ -46,9 +44,25 @@ export const PromptSettings = ({
   isOpen,
   promptMutation,
 }: PromptSettingsProps) => {
+  const { session } = useSession();
+  const navigate = useNavigate();
   const { models, isLoading: modelsLoading } = useModels();
   const { data: supportedCollections, isLoading: collectionsLoading } =
     useGetSupportedCollections();
+
+  const [deletingPromptId, setDeletingPromptId] = useState<number | null>(null);
+
+  const deletePrompt = useDeletePromptMutation(session!, {
+    onSuccess: () => {
+      navigate({ to: '/profile/admin' });
+    },
+    onError: error => {
+      console.error('Failed to delete prompt:', error);
+    },
+    onSettled: () => {
+      setDeletingPromptId(null);
+    },
+  });
 
   // Map prompt types to capability types
   const getCapabilityType = (promptType: string): string => {
@@ -72,8 +86,6 @@ export const PromptSettings = ({
     )
   );
 
-  console.log('filteredModels', filteredModels, models, prompt.type);
-
   // Local state for form fields
   const [editedPrompt, setEditedPrompt] = useState<Prompt>(() => {
     // Set the model from version[0] if available, otherwise use prompt.model
@@ -86,7 +98,6 @@ export const PromptSettings = ({
     };
   });
 
-  console.log('current model:', editedPrompt.model, 'from prompt:', prompt.model, 'from version[0]:', prompt.versions?.[0]?.model);
   const [hasChanges, setHasChanges] = useState(false);
   const [selectedContracts, setSelectedContracts] = useState<Set<string>>(
     new Set()
@@ -105,13 +116,18 @@ export const PromptSettings = ({
     const versionZeroModel = prompt.versions?.[0]?.model;
     const initialModel = versionZeroModel || prompt.model;
 
-    setEditedPrompt({
+    const newPrompt = {
       ...prompt,
       model: initialModel,
-    });
-    setHasChanges(false);
-    setContractsError('');
-  }, [prompt]);
+    };
+
+    // Only update editedPrompt if we don't have unsaved changes
+    // This preserves user edits when the prompt is refetched (e.g., after generation)
+    if (!hasChanges) {
+      setEditedPrompt(newPrompt);
+      setContractsError('');
+    }
+  }, [prompt, hasChanges]);
 
   // Initialize selected contracts when supportedCollections loads
   useEffect(() => {
@@ -181,7 +197,25 @@ export const PromptSettings = ({
 
   // Handle field updates
   const updateField = (field: keyof Prompt, value: any) => {
-    setEditedPrompt(prev => ({ ...prev, [field]: value }));
+    setEditedPrompt(prev => {
+      // Special handling for fields that exist at both prompt and version levels
+      // Update both prompt-level and version[0]-level
+      if (
+        (field === 'model' || field === 'minTokens' || field === 'maxTokens') &&
+        prev.versions &&
+        prev.versions.length > 0
+      ) {
+        return {
+          ...prev,
+          [field]: value,
+          versions: prev.versions.map((version, index) =>
+            // Update the first version (version 0) with the new value
+            index === 0 ? { ...version, [field]: value } : version
+          ),
+        };
+      }
+      return { ...prev, [field]: value };
+    });
     setHasChanges(true);
   };
 
@@ -285,78 +319,109 @@ export const PromptSettings = ({
     setHasChanges(true);
   };
 
+  // Handle prompt deletion
+  const handleDeletePrompt = async (promptId: number) => {
+    // Show Telegram confirmation popup
+    try {
+      const result = await popup.open({
+        title: 'Delete Prompt',
+        message:
+          'Are you sure you want to delete this prompt? This action cannot be undone.',
+        buttons: [
+          {
+            id: 'delete',
+            type: 'destructive',
+            text: 'Delete',
+          },
+          {
+            id: 'cancel',
+            type: 'cancel',
+          },
+        ],
+      });
+
+      // If user confirmed deletion
+      if (result === 'delete') {
+        setDeletingPromptId(promptId);
+        try {
+          await deletePrompt.mutateAsync({ promptId });
+          // Don't clear deletingPromptId here - let mutation onSettled callback handle it after refetch
+        } catch (error) {
+          console.error('Failed to delete prompt:', error);
+          // Error case is handled by mutation onError callback, onSettled will still clear the state
+        }
+      }
+    } catch (error) {
+      console.error('Failed to show popup:', error);
+      // Fallback: proceed with deletion if popup fails
+      setDeletingPromptId(promptId);
+      try {
+        await deletePrompt.mutateAsync({ promptId });
+      } catch (error) {
+        console.error('Failed to delete prompt:', error);
+      }
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
-    <div className="bg-tg-bg z-40 flex h-screen w-full flex-col bg-[var(--tgui--secondary_bg_color)] pb-20">
-      {/* Header */}
-      <div className="flex flex-shrink-0 items-center justify-center px-5 py-4">
-        <img
-          src={editedPrompt.images?.[0]}
-          alt="Prompt Image"
-          className="h-10 w-10 rounded-full"
-        />
-      </div>
-
+    <div className="scrollbar-hide z-50 flex h-screen w-full flex-col pb-60">
       {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto">
-        <List className="bg-tg-secondary-bg m-0 p-5">
+      <div className="scrollbar-hide flex-1 overflow-y-auto">
+        <List className="bg-tg-secondary m-0 p-5">
           {/* Basic Information Section */}
-          <Section
-            header="Basic Information"
-            footer="Configure the basic properties of your prompt including name and description."
-          >
-            <Input
+          <div>
+            <h2 className="text-tg-section-header-text-color mb-3 text-sm font-medium tracking-wide uppercase">
+              Basic Information
+            </h2>
+            <TgInput
               header="Name"
               placeholder="Enter prompt name"
               value={editedPrompt.name || ''}
               onChange={e => updateField('name', e.target.value)}
             />
-            <Textarea
-              header="Description"
-              placeholder="Enter prompt description"
-              value={editedPrompt.description || ''}
-              onChange={e => updateField('description', e.target.value)}
-              rows={3}
-            />
-          </Section>
+            <div className="relative">
+              <TgTextarea
+                header="Description"
+                placeholder="Enter prompt description"
+                value={editedPrompt.description || ''}
+                onChange={e => {
+                  const value = e.target.value;
+                  // Only update if within character limit
+                  if (value.length <= 100) {
+                    updateField('description', value);
+                  }
+                }}
+                rows={3}
+                maxLength={100}
+              />
+              <div
+                className={`mt-1 text-right text-xs ${
+                  (editedPrompt.description || '').length >= 100
+                    ? 'text-red-500'
+                    : 'text-tg-hint'
+                }`}
+              >
+                {(editedPrompt.description || '').length}/100
+              </div>
+            </div>
+          </div>
 
           {/* Publication Status Section */}
-          <Section
-            header="Publication Status"
-            footer="Control whether this prompt is published and available for use."
-          >
-            <Cell
-              before={
-                <IconContainer>
-                  <IoInformationCircleOutline />
-                </IconContainer>
-              }
-              after={
-                <div className="flex items-center gap-2">
-                  {isPublishing ? (
-                    <span className="text-tg-hint text-sm font-medium">
-                      Updating...
-                    </span>
-                  ) : (
-                    <span
-                      className={`text-sm font-medium ${editedPrompt.published ? 'text-green-500' : 'text-tg-hint'}`}
-                    >
-                      {editedPrompt.published ? 'Published' : 'Draft'}
-                    </span>
-                  )}
-                  <Switch
-                    checked={!!editedPrompt.published}
-                    disabled={isPublishing}
-                    onChange={e => handlePublicationToggle(e.target.checked)}
-                  />
-                </div>
-              }
-              className={`border-l-4 ${editedPrompt.published ? 'border-l-green-500 bg-green-50/10' : 'border-l-orange-500 bg-orange-50/10'}`}
+          <div>
+            <h2 className="text-tg-section-header-text-color mb-3 text-sm font-medium tracking-wide uppercase">
+              Publication Status
+            </h2>
+            <div
+              className={`flex items-center gap-3 rounded-lg border-l-4 px-4 py-3 ${editedPrompt.published ? 'border-l-green-500 bg-green-500/10' : 'border-l-orange-500 bg-orange-500/10'}`}
             >
-              <div className="flex flex-col">
-                <span className="font-semibold">
-                  Publication Status {prompt.published}
+              <div className="flex items-center justify-center">
+                <IoInformationCircleOutline className="text-tg-hint h-6 w-6" />
+              </div>
+              <div className="flex flex-1 flex-col">
+                <span className="text-tg-text font-semibold">
+                  Status: {prompt.published ? 'Published' : 'Draft'}
                 </span>
                 <span className="text-tg-hint text-sm">
                   {editedPrompt.published
@@ -364,40 +429,56 @@ export const PromptSettings = ({
                     : 'This prompt is not yet published'}
                 </span>
               </div>
-            </Cell>
-          </Section>
+              <div className="flex items-center gap-2">
+                {isPublishing ? (
+                  <span className="text-tg-hint text-sm font-medium">
+                    Updating...
+                  </span>
+                ) : (
+                  <span
+                    onClick={() =>
+                      handlePublicationToggle(!editedPrompt.published)
+                    }
+                    className={`cursor-pointer text-sm font-medium hover:opacity-80 ${editedPrompt.published ? 'text-green-500' : 'text-tg-hint'}`}
+                  >
+                    {editedPrompt.published ? 'Published' : 'Draft'}
+                  </span>
+                )}
+                <Switch
+                  checked={!!editedPrompt.published}
+                  disabled={isPublishing}
+                  onChange={e => handlePublicationToggle(e.target.checked)}
+                />
+              </div>
+            </div>
+            <p className="text-tg-hint mt-2 text-sm">
+              Control whether this prompt is published and available for use.
+            </p>
+          </div>
 
           {/* AI Model Settings Section */}
-          <Section
-            header="AI Model Settings"
-            footer="Configure the AI model and token limits for generation."
-          >
-            <Cell
-              before={
-                <IconContainer>
-                  <IoLayersOutline />
-                </IconContainer>
-              }
+          <div>
+            <h2 className="text-tg-section-header-text-color mb-3 text-sm font-medium tracking-wide uppercase">
+              AI Model Settings
+            </h2>
+            <TgSelect
+              header="Model"
+              value={editedPrompt.model || ''}
+              onChange={e => updateField('model', e.target.value)}
+              disabled={modelsLoading}
             >
-              <Select
-                value={editedPrompt.model || ''}
-                onChange={e => updateField('model', e.target.value)}
-                className="w-full"
-                disabled={modelsLoading}
-              >
-                <option value="">
-                  {modelsLoading ? 'Loading models...' : 'Select a model'}
-                </option>
-                {filteredModels
-                  .filter(model => model.isEnabled)
-                  .map(model => (
-                    <option key={model.id} value={model.id}>
-                      {model.name} ({model.provider})
-                    </option>
-                  ))}
-              </Select>
-            </Cell>
-            <Input
+              <option value="">
+                {modelsLoading ? 'Loading models...' : 'Select a model'}
+              </option>
+              {filteredModels
+                .filter(model => model.isEnabled)
+                .map(model => (
+                  <option key={model.id} value={model.id}>
+                    {model.name} ({model.provider})
+                  </option>
+                ))}
+            </TgSelect>
+            <TgInput
               header="Min Tokens"
               type="number"
               placeholder="Minimum tokens"
@@ -406,7 +487,7 @@ export const PromptSettings = ({
                 updateField('minTokens', parseInt(e.target.value) || 0)
               }
             />
-            <Input
+            <TgInput
               header="Max Tokens"
               type="number"
               placeholder="Maximum tokens"
@@ -415,18 +496,20 @@ export const PromptSettings = ({
                 updateField('maxTokens', parseInt(e.target.value) || 0)
               }
             />
-          </Section>
+            <p className="text-tg-hint mt-2 text-sm">
+              Configure the AI model and token limits for generation.
+            </p>
+          </div>
 
           {/* Contracts Section */}
-          <Section
-            header="Contracts"
-            footer={
-              contractsError ||
-              'Select which NFT contracts this prompt should work with.'
-            }
-          >
+          <div>
+            <h2 className="text-tg-section-header-text-color mb-3 text-sm font-medium tracking-wide uppercase">
+              Contracts
+            </h2>
             {collectionsLoading ? (
-              <Cell>Loading contracts...</Cell>
+              <div className="bg-tg-section-bg text-tg-hint rounded-lg px-4 py-3 text-center">
+                Loading contracts...
+              </div>
             ) : (
               <>
                 {supportedCollections && supportedCollections.length > 0 && (
@@ -452,113 +535,167 @@ export const PromptSettings = ({
                     const contractKey = `${contract.chain}-${contract.address}`;
                     const isSelected = selectedContracts.has(contractKey);
                     return (
-                      <Cell
+                      <div
                         key={contractKey}
-                        before={
-                          <div className="flex items-center">
-                            <img
-                              src={contract.image}
-                              alt={contract.name}
-                              className="mr-3 h-8 w-8 rounded-full"
-                              onError={e => {
-                                const img = e.target as HTMLImageElement;
-                                img.src = '/nfts/not-available.png';
-                              }}
-                            />
-                            <IconContainer>
-                              <IoDocumentTextOutline />
-                            </IconContainer>
-                          </div>
-                        }
-                        after={
-                          <Checkbox
-                            checked={isSelected}
-                            onChange={() => handleContractToggle(contract)}
-                          />
-                        }
+                        className="bg-tg-section-bg hover:bg-tg-secondary-bg flex cursor-pointer items-center gap-3 rounded-lg px-4 py-3 transition-colors"
                         onClick={() => handleContractToggle(contract)}
                       >
-                        <div>
-                          <div className="font-medium">{contract.name}</div>
-                          <div className="text-sm text-gray-500">
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={contract.image}
+                            alt={contract.name}
+                            className="h-10 w-10 rounded-full"
+                            onError={e => {
+                              const img = e.target as HTMLImageElement;
+                              img.src = '/nfts/not-available.png';
+                            }}
+                          />
+                          <div className="flex items-center justify-center">
+                            <IoDocumentTextOutline className="text-tg-hint h-5 w-5" />
+                          </div>
+                        </div>
+                        <div className="flex-1">
+                          <div className="text-tg-text font-medium">
+                            {contract.name}
+                          </div>
+                          <div className="text-tg-hint text-sm">
                             {contract.chain} • {contract.address.slice(0, 6)}...
                             {contract.address.slice(-4)}
                           </div>
                         </div>
-                      </Cell>
+                        <Checkbox
+                          checked={isSelected}
+                          onChange={() => handleContractToggle(contract)}
+                        />
+                      </div>
                     );
                   })
                 ) : (
-                  <Cell>No contracts available</Cell>
+                  <div className="bg-tg-section-bg text-tg-hint rounded-lg px-4 py-3 text-center">
+                    No contracts available
+                  </div>
                 )}
               </>
             )}
-          </Section>
+            <p className="text-tg-hint mt-2 text-sm">
+              {contractsError ||
+                'Select which NFT contracts this prompt should work with.'}
+            </p>
+          </div>
 
           {/* Statistics & Info Section */}
-          <Section
-            header="Statistics & Info"
-            footer="View prompt statistics and usage information."
-          >
-            <Cell
-              before={
-                <IconContainer>
-                  <IoInformationCircleOutline />
-                </IconContainer>
-              }
-              after={
-                editedPrompt.createdAt
-                  ? new Date(editedPrompt.createdAt * 1000).toLocaleDateString()
-                  : 'Unknown'
-              }
-            >
-              Created
-            </Cell>
-            <Cell
-              before={
-                <IconContainer>
-                  <IoLayersOutline />
-                </IconContainer>
-              }
-              after={editedPrompt.versions?.length || 0}
-            >
-              Versions
-            </Cell>
-            <Cell
-              before={
-                <IconContainer>
-                  <IoStatsChartOutline />
-                </IconContainer>
-              }
-              after={editedPrompt.usageCount || 0}
-            >
-              Usage Count
-            </Cell>
-            <Cell
-              before={
-                <IconContainer>
-                  <IoPersonOutline />
-                </IconContainer>
-              }
-              after={selectedNFTs.length}
-            >
-              Selected NFTs
-            </Cell>
-            <Cell
-              before={
-                <IconContainer>
-                  <IoInformationCircleOutline />
-                </IconContainer>
-              }
-              after={
-                editedPrompt.lastUsed
-                  ? new Date(editedPrompt.lastUsed * 1000).toLocaleDateString()
-                  : 'Never'
-              }
-            >
-              Last Used
-            </Cell>
-          </Section>
+          <div>
+            <h2 className="text-tg-section-header-text-color mb-3 text-sm font-medium tracking-wide uppercase">
+              Statistics & Info
+            </h2>
+            <div className="space-y-2">
+              <div className="bg-tg-section-bg flex items-center justify-between rounded-lg px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center">
+                    <IoInformationCircleOutline className="text-tg-hint h-5 w-5" />
+                  </div>
+                  <span className="text-tg-text">Created</span>
+                </div>
+                <span className="text-tg-hint text-sm">
+                  {editedPrompt.createdAt
+                    ? new Date(
+                        editedPrompt.createdAt * 1000
+                      ).toLocaleDateString()
+                    : 'Unknown'}
+                </span>
+              </div>
+              <div className="bg-tg-section-bg flex items-center justify-between rounded-lg px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center">
+                    <IoLayersOutline className="text-tg-hint h-5 w-5" />
+                  </div>
+                  <span className="text-tg-text">Versions</span>
+                </div>
+                <span className="text-tg-hint text-sm">
+                  {editedPrompt.versions?.length || 0}
+                </span>
+              </div>
+              <div className="bg-tg-section-bg flex items-center justify-between rounded-lg px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center">
+                    <IoStatsChartOutline className="text-tg-hint h-5 w-5" />
+                  </div>
+                  <span className="text-tg-text">Usage Count</span>
+                </div>
+                <span className="text-tg-hint text-sm">
+                  {editedPrompt.usageCount || 0}
+                </span>
+              </div>
+              <div className="bg-tg-section-bg flex items-center justify-between rounded-lg px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center">
+                    <IoPersonOutline className="text-tg-hint h-5 w-5" />
+                  </div>
+                  <span className="text-tg-text">Selected NFTs</span>
+                </div>
+                <span className="text-tg-hint text-sm">
+                  {selectedNFTs.length}
+                </span>
+              </div>
+              <div className="bg-tg-section-bg flex items-center justify-between rounded-lg px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center">
+                    <IoInformationCircleOutline className="text-tg-hint h-5 w-5" />
+                  </div>
+                  <span className="text-tg-text">Last Used</span>
+                </div>
+                <span className="text-tg-hint text-sm">
+                  {editedPrompt.lastUsed
+                    ? new Date(
+                        editedPrompt.lastUsed * 1000
+                      ).toLocaleDateString()
+                    : 'Never'}
+                </span>
+              </div>
+            </div>
+            <p className="text-tg-hint mt-2 text-sm">
+              View prompt statistics and usage information.
+            </p>
+          </div>
+
+          {/* Danger Zone Section */}
+          <div>
+            <h2 className="text-tg-section-header-text-color mb-3 text-sm font-medium tracking-wide uppercase">
+              Danger Zone
+            </h2>
+            <div className="flex items-start gap-3 rounded-lg border-l-4 border-l-red-500 bg-red-500/10 px-4 py-3">
+              <div className="flex items-center justify-center pt-1">
+                <IoWarningOutline className="h-6 w-6 text-red-500" />
+              </div>
+              <div className="flex w-full flex-1 flex-col gap-3">
+                <div className="flex w-full flex-col">
+                  <span className="font-semibold text-red-500">
+                    Delete Prompt
+                  </span>
+                  <p className="text-tg-hint mt-1 text-sm break-words whitespace-normal">
+                    This action cannot be undone. All data associated with this
+                    prompt will be permanently deleted.
+                  </p>
+                </div>
+                <Button
+                  mode="filled"
+                  size="s"
+                  onClick={() => handleDeletePrompt(prompt.id!)}
+                  loading={deletingPromptId === prompt.id}
+                  disabled={deletingPromptId === prompt.id}
+                  className="bg-red-500 hover:bg-red-600"
+                >
+                  <div className="text-tg-button-text flex flex-row items-center">
+                    <IoTrashOutline className="mr-2" />
+                    Delete Prompt
+                  </div>
+                </Button>
+              </div>
+            </div>
+            <p className="text-tg-hint mt-2 text-sm">
+              Deleting a prompt is permanent and cannot be undone.
+            </p>
+          </div>
         </List>
       </div>
     </div>

@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { z } from 'zod';
 import type { Pagination } from '../types/requests';
 import type { Token } from '../types/response';
 import { useSession } from '@/auth/SessionProvider';
@@ -12,6 +13,25 @@ export type SupportedCollection = {
   image: string;
   id?: string;
 };
+
+// Schema for supported collections - converts API response to SupportedCollection type
+export const SupportedCollectionSchema = z
+  .object({
+    id: z.number(),
+    chain: z.string(),
+    address: z.string(),
+    name: z.string(),
+    image: z.string(),
+  })
+  .transform(
+    (data): SupportedCollection => ({
+      id: data.id.toString(),
+      chain: data.chain,
+      address: data.address,
+      name: data.name,
+      image: data.image,
+    })
+  );
 
 export function useGetSupportedCollections() {
   const { session } = useSession();
@@ -181,6 +201,50 @@ export function useGetNFTByCollectionAndTokenId(
   });
 
   return { data, isLoading, error };
+}
+
+export function useGetUsedCollections(limit: number = 6) {
+  const { session } = useSession();
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['usedCollections', limit],
+    queryFn: async () => {
+      if (!session) return [];
+
+      const searchParams = new URLSearchParams({
+        limit: limit.toString(),
+      });
+
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/tokens/used-collections?${searchParams.toString()}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: session.authToken,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      // Transform to SupportedCollection format
+      return data.map((item: any) => ({
+        id: item.id.toString(),
+        chain: item.chain,
+        address: item.address,
+        name: item.name,
+        image: item.image,
+        usage_count: item.usage_count,
+      })) as (SupportedCollection & { usage_count: number })[];
+    },
+    enabled: !!session,
+  });
+
+  return { data: data || [], isLoading, error };
 }
 
 export function useAddToFavoritesMutation(

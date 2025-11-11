@@ -58,6 +58,9 @@ export type {
   AlertDescriptionProps,
 } from './feedback/Alert';
 
+export { Spinner, SpinnerFullPage } from './feedback/Spinner';
+export type { SpinnerProps } from './feedback/Spinner';
+
 // Navigation
 export { Pagination } from './navigation/Pagination';
 export { AddInputMenu } from './navigation/AddInputMenu';

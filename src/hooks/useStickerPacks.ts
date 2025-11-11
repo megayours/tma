@@ -4,7 +4,10 @@ import { safeParse, getValidationErrors } from '@/utils/validation';
 // We'll define our own pagination schema since the API returns total as string
 import type { Pagination } from '../types/requests';
 import type { Session } from '@/auth/useAuth';
-import type { SupportedCollection } from './useCollections';
+import {
+  SupportedCollectionSchema,
+  type SupportedCollection,
+} from './useCollections';
 
 // Custom pagination schema for sticker packs (handles string total)
 const StickerPackPaginationSchema = z.object({
@@ -118,7 +121,6 @@ export const useStickerPacks = (params: UseStickerPacksParams) => {
           size: size.toString(),
         });
 
-        console.log('tokenCollections', tokenCollections);
         // Add token_collection_ids if provided
         if (tokenCollections && tokenCollections.length > 0) {
           tokenCollections.forEach(collection => {
@@ -259,10 +261,12 @@ const StickerPackDetailSchema = z
     item_count: z.number(),
     preview_items: z.array(StickerPackPreviewItemSchema).optional(),
     user_execution: StickerPackUserExecutionSchema.nullable().optional(),
+    supported_collections: z.array(SupportedCollectionSchema).optional(),
   })
   .transform(data => ({
     ...data,
     expiresAt: data.expires_at,
+    supportedCollections: data.supported_collections || [],
   }));
 
 export type StickerPackItem = z.infer<typeof StickerPackItemSchema>;

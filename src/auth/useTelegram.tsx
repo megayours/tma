@@ -20,18 +20,19 @@ export function useTelegramRawInitData():
   }
 }
 export function useTelegramTheme() {
-  const [isDark, setIsDark] = useState(false);
+  // Initialize from DOM to match pre-React theme detection
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof document !== 'undefined') {
+      return document.documentElement.classList.contains('dark');
+    }
+    return false;
+  });
   const [themeParams, setThemeParams] = useState<any>(null);
   const rawInitData = useTelegramRawInitData();
 
   useEffect(() => {
     if (rawInitData?.isTMA && rawInitData.launchParams?.tgWebAppThemeParams) {
       const tgThemeParams = rawInitData.launchParams.tgWebAppThemeParams;
-
-      // Debug logging to check Telegram theme colors
-      console.log('🎨 Telegram theme params:', tgThemeParams);
-      console.log('📦 secondary_bg_color:', tgThemeParams.secondary_bg_color);
-      console.log('🌈 bg_color:', tgThemeParams.bg_color);
 
       setThemeParams(tgThemeParams);
 
@@ -40,8 +41,6 @@ export function useTelegramTheme() {
       const bgColor = tgThemeParams.bg_color;
       const isDarkTheme =
         bgColor && parseInt(bgColor.replace('#', ''), 16) < 0x808080;
-
-      console.log('🌙 isDarkTheme:', isDarkTheme);
 
       setIsDark(isDarkTheme);
 
@@ -75,8 +74,8 @@ export function useTelegramTheme() {
           );
         }
       });
-    } else {
-      // When not in Telegram, check for system preference or localStorage
+    } else if (!isTMA()) {
+      // ONLY use system preference when definitively NOT in Telegram
       const savedTheme = localStorage.getItem('theme');
       const systemPrefersDark = window.matchMedia(
         '(prefers-color-scheme: dark)'
@@ -90,6 +89,8 @@ export function useTelegramTheme() {
       // Apply theme to document
       document.documentElement.classList.toggle('dark', shouldUseDark);
     }
+    // else: We're in Telegram but theme params aren't ready yet
+    // Keep the existing theme from pre-React detection, don't override
   }, [rawInitData]);
 
   const toggleTheme = useCallback(() => {

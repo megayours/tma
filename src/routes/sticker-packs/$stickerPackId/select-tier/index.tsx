@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { useState } from 'react';
 import { useStickerPack } from '@/hooks/useStickerPacks';
 import { useSession } from '@/auth/SessionProvider';
+import { SpinnerFullPage } from '@/components/ui';
 
 const selectTierSearchSchema = z.object({
   nft: z.string().optional(),
@@ -46,13 +47,7 @@ function RouteComponent() {
   };
 
   if (isLoadingStickerPack || !stickerPack) {
-    return (
-      <div className="mx-auto max-w-4xl p-4">
-        <div className="flex items-center justify-center p-8">
-          <div className="text-lg">Loading...</div>
-        </div>
-      </div>
-    );
+    return <SpinnerFullPage text="Loading..." />;
   }
 
   const hasPaidTiers =

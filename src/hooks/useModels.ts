@@ -21,3 +21,15 @@ export const useModels = () => {
     error,
   };
 };
+
+export const useGetModel = (modelId: string) => {
+  const { models, isLoading, error } = useModels();
+
+  const model = models.find(m => m.id === modelId);
+
+  return {
+    model,
+    isLoading,
+    error,
+  };
+};

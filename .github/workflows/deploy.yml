@@ -34,6 +34,7 @@ jobs:
         env:
           NODE_ENV: production
           VITE_PUBLIC_API_URL: ${{ secrets.VITE_PUBLIC_API_URL }}
+          VITE_PUBLIC_BOT_URL: ${{ secrets.VITE_PUBLIC_BOT_URL }}
           # Add other environment variables here
           # VITE_OTHER_VAR: ${{ secrets.VITE_OTHER_VAR }}
 

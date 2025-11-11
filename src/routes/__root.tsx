@@ -13,153 +13,170 @@ import {
   viewport,
   miniApp,
   swipeBehavior,
-  useSignal,
 } from '@telegram-apps/sdk-react';
-import { useEffect, useState } from 'react';
-import { AppRoot } from '@telegram-apps/telegram-ui';
-import { NavBar } from '@/components/lib/auth/NavBar';
-import { FavoriteNFT } from '@/components/lib/auth/FavoriteNFT';
+import { useEffect, useState, useRef } from 'react';
+import { Header } from '@/components/Header';
 import { useTelegramTheme } from '@/auth/useTelegram';
 import { ToastProvider } from '@/components/ui';
 import { SelectedNFTsProvider } from '@/contexts/SelectedNFTsContext';
+import {
+  SelectCommunityProvider,
+  useSelectCommunity,
+} from '@/contexts/SelectCommunityContext';
 import { useSession } from '@/auth/SessionProvider';
-import { Link } from '@tanstack/react-router';
-// import { AddToHomeScreenButton } from '@/components/AddToHomeScreenButton';
+import { useLaunchParams } from '@telegram-apps/sdk-react';
+import { base64UrlDecode } from '@/utils/base64';
 
-function TelegramAppHandler() {
+function TelegramEnvironmentHandler() {
   const location = useLocation();
   const router = useRouter();
   const pathname = location.pathname;
-  const { isDark, themeParams, isTelegram } = useTelegramTheme();
+  const { isDark, themeParams } = useTelegramTheme();
   const [isViewportMounted, setIsViewportMounted] = useState(false);
   const [isViewportMounting, setIsViewportMounting] = useState(false);
+  const launchParams = useLaunchParams(true);
+  const hasRedirected = useRef(false);
+
+  // Handle deep link redirect from start param
+  useEffect(() => {
+    if (
+      launchParams.tgWebAppStartParam &&
+      !hasRedirected.current &&
+      pathname === '/'
+    ) {
+      try {
+        const decodedPath = base64UrlDecode(launchParams.tgWebAppStartParam);
+        console.log('Redirecting to:', decodedPath);
+        hasRedirected.current = true;
+        router.navigate({ to: decodedPath });
+      } catch (error) {
+        console.error('Failed to decode start param:', error);
+      }
+    }
+  }, [launchParams.tgWebAppStartParam, pathname, router]);
 
   useEffect(() => {
-    if (isTMA()) {
-      init();
+    init();
 
-      // Add global error handler for Telegram SDK validation errors
-      const originalConsoleError = console.error;
-      console.error = (...args) => {
-        // Suppress known Telegram SDK validation errors that don't affect functionality
-        const firstArg = args[0];
-        const message = firstArg?.message || firstArg?.toString?.() || '';
-        const fullMessage = args.join(' ');
+    // Add global error handler for Telegram SDK validation errors
+    const originalConsoleError = console.error;
+    console.error = (...args) => {
+      // Suppress known Telegram SDK validation errors that don't affect functionality
+      const firstArg = args[0];
+      const message = firstArg?.message || firstArg?.toString?.() || '';
+      const fullMessage = args.join(' ');
 
-        // Check for viewport_changed ValiError
-        if (
-          (message.includes('viewport_changed') ||
-            fullMessage.includes('viewport_changed')) &&
-          (message.includes(
+      // Check for viewport_changed ValiError
+      if (
+        (message.includes('viewport_changed') ||
+          fullMessage.includes('viewport_changed')) &&
+        (message.includes('Invalid type: Expected Object but received null') ||
+          fullMessage.includes(
             'Invalid type: Expected Object but received null'
           ) ||
-            fullMessage.includes(
-              'Invalid type: Expected Object but received null'
-            ) ||
-            firstArg?.name === 'ValiError')
-        ) {
-          // Silently ignore this known Telegram app bug
-          return;
-        }
-
-        // Log all other errors normally
-        originalConsoleError(...args);
-      };
-
-      // Mount viewport first if not already mounted
-      if (viewport.mount.isAvailable() && !viewport.isMounted()) {
-        setIsViewportMounting(true);
-        try {
-          const mountPromise = viewport.mount();
-          mountPromise
-            .then(() => {
-              setIsViewportMounted(true);
-              setIsViewportMounting(false);
-              console.log('Viewport mounted successfully');
-            })
-            .catch(err => {
-              console.error('Failed to mount viewport:', err);
-              setIsViewportMounting(false);
-              setIsViewportMounted(false);
-            });
-        } catch (err) {
-          console.error('Error mounting viewport:', err);
-          setIsViewportMounting(false);
-          setIsViewportMounted(false);
-        }
-      } else if (viewport.isMounted()) {
-        setIsViewportMounted(true);
-      }
-
-      // Expand the app to full screen using the proper SDK method
-      if (expandViewport.isAvailable()) {
-        expandViewport();
-        console.log('Telegram Mini App expanded to full screen');
-      }
-
-      // Mount miniApp if not already mounted
-      if (!miniApp.isMounted() && miniApp.mountSync.isAvailable()) {
-        try {
-          miniApp.mountSync();
-          console.log('Mini App mounted successfully');
-        } catch (err) {
-          console.error('Error mounting mini app:', err);
-        }
-      }
-
-      // Set header color to orange for Telegram
-      if (miniApp.setHeaderColor.isAvailable() && miniApp.isMounted()) {
-        miniApp.setHeaderColor('#FFFFFF');
-        console.log('Telegram Mini App header color set to orange');
-      }
-
-      // Enable vertical swipe behavior
-      if (!swipeBehavior.isMounted()) {
-        swipeBehavior.mount();
-      }
-      if (swipeBehavior.disableVertical.isAvailable()) {
-        swipeBehavior.disableVertical();
-        console.log('Vertical swipe disabled');
-      }
-
-      // Request fullscreen mode for immersive experience (only after viewport is mounted)
-      if (
-        isViewportMounted &&
-        requestFullscreen &&
-        requestFullscreen.isAvailable()
+          firstArg?.name === 'ValiError')
       ) {
-        requestFullscreen();
-        console.log('Telegram Mini App requested fullscreen mode');
+        // Silently ignore this known Telegram app bug
+        return;
       }
 
-      if (!backButton.isMounted()) {
-        backButton.mount();
-      }
+      // Log all other errors normally
+      originalConsoleError(...args);
+    };
 
-      // if it is not the home page, show the back button
-      if (pathname !== '/') {
-        backButton.show();
-        backButton.onClick(() => {
-          router.history.back();
-          console.log('back button clicked');
-        });
+    // Mount viewport first if not already mounted
+    if (viewport.mount.isAvailable() && !viewport.isMounted()) {
+      setIsViewportMounting(true);
+      try {
+        const mountPromise = viewport.mount();
+        mountPromise
+          .then(() => {
+            setIsViewportMounted(true);
+            setIsViewportMounting(false);
+            console.log('Viewport mounted successfully');
+          })
+          .catch(err => {
+            console.error('Failed to mount viewport:', err);
+            setIsViewportMounting(false);
+            setIsViewportMounted(false);
+          });
+      } catch (err) {
+        console.error('Error mounting viewport:', err);
+        setIsViewportMounting(false);
+        setIsViewportMounted(false);
       }
-
-      // if it is the home page, hide the back button and show the close button
-      if (pathname === '/') {
-        backButton.hide();
-      }
-
-      // Cleanup function to restore original console.error
-      return () => {
-        console.error = originalConsoleError;
-      };
+    } else if (viewport.isMounted()) {
+      setIsViewportMounted(true);
     }
+
+    // Expand the app to full screen using the proper SDK method
+    if (expandViewport.isAvailable()) {
+      expandViewport();
+      console.log('Telegram Mini App expanded to full screen');
+    }
+
+    // Mount miniApp if not already mounted
+    if (!miniApp.isMounted() && miniApp.mountSync.isAvailable()) {
+      try {
+        miniApp.mountSync();
+        console.log('Mini App mounted successfully');
+      } catch (err) {
+        console.error('Error mounting mini app:', err);
+      }
+    }
+
+    // Set header color to orange for Telegram
+    if (miniApp.setHeaderColor.isAvailable() && miniApp.isMounted()) {
+      miniApp.setHeaderColor('#FFFFFF');
+      console.log('Telegram Mini App header color set to orange');
+    }
+
+    // Enable vertical swipe behavior
+    if (!swipeBehavior.isMounted()) {
+      swipeBehavior.mount();
+    }
+    if (swipeBehavior.disableVertical.isAvailable()) {
+      swipeBehavior.disableVertical();
+      console.log('Vertical swipe disabled');
+    }
+
+    // Request fullscreen mode for immersive experience (only after viewport is mounted)
+    if (
+      isViewportMounted &&
+      requestFullscreen &&
+      requestFullscreen.isAvailable()
+    ) {
+      requestFullscreen();
+      console.log('Telegram Mini App requested fullscreen mode');
+    }
+
+    if (!backButton.isMounted()) {
+      backButton.mount();
+    }
+
+    // if it is not the home page, show the back button
+    if (pathname !== '/' && pathname !== '/landing') {
+      backButton.show();
+      backButton.onClick(() => {
+        router.history.back();
+        console.log('back button clicked');
+      });
+    }
+
+    // if it is the home page, hide the back button and show the close button
+    if (pathname === '/') {
+      backButton.hide();
+    }
+
+    // Cleanup function to restore original console.error
+    return () => {
+      console.error = originalConsoleError;
+    };
   }, [pathname, router]);
 
   // Separate useEffect to handle fullscreen request after viewport is mounted
   useEffect(() => {
-    if (isTMA() && isViewportMounted && !isViewportMounting) {
+    if (isViewportMounted && !isViewportMounting) {
       if (requestFullscreen && requestFullscreen.isAvailable()) {
         requestFullscreen();
         console.log('Telegram Mini App requested fullscreen mode');
@@ -169,86 +186,91 @@ function TelegramAppHandler() {
 
   // Log theme information for debugging
   useEffect(() => {
-    if (isTelegram) {
-      console.log('Telegram Theme:', {
-        isDark,
-        themeParams,
-        isTelegram,
-      });
-    }
-  }, [isDark, themeParams, isTelegram]);
+    console.log('Telegram Theme:', {
+      isDark,
+      themeParams,
+      isTelegram: true,
+    });
+  }, [isDark, themeParams]);
+
+  return null;
+}
+
+function WebEnvironmentHandler() {
+  const location = useLocation();
+  const pathname = location.pathname;
+
+  useEffect(() => {
+    console.log('Running in web environment');
+    console.log('Current pathname:', pathname);
+  }, [pathname]);
 
   return null;
 }
 
 function AppContent() {
-  const location = useLocation();
   const { isAuthenticated } = useSession();
-  const isViewportMounting = useSignal(viewport.isMounting);
-  const shouldHaveNavBar = location.pathname.startsWith('/feed');
-  const shouldHaveTopBar =
-    location.pathname.startsWith('/landing') || location.pathname === '/';
-  const isViewportMounted = useSignal(viewport.isMounted);
-  const contentSafeAreaInsets = useSignal(viewport.contentSafeAreaInsets);
-  const viewportSafeAreaInsets = useSignal(viewport.safeAreaInsets);
+  const isTelegramEnvironment = isTMA();
+  const location = useLocation();
+  const router = useRouter();
+  const { selectedCommunity, isLoading: isCommunityLoading } =
+    useSelectCommunity();
+
+  // Redirect to community selection if authenticated but no community selected
+  useEffect(() => {
+    const pathname = location.pathname;
+
+    // Paths that don't require community selection
+    const excludedPaths = ['/selectCommunity'];
+    const isExcludedPath =
+      excludedPaths.includes(pathname) || pathname.startsWith('/auth');
+
+    const needsCommunitySelection =
+      isAuthenticated &&
+      !isCommunityLoading &&
+      !selectedCommunity &&
+      !isExcludedPath;
+
+    console.log(
+      `[Community Redirect] pathname=${pathname}, isAuthenticated=${isAuthenticated}, isCommunityLoading=${isCommunityLoading}, selectedCommunity=${selectedCommunity?.name || 'null'}, isExcludedPath=${isExcludedPath}, needsRedirect=${needsCommunitySelection}`
+    );
+
+    if (needsCommunitySelection) {
+      console.log(
+        `[Community Redirect] Redirecting to /selectCommunity (redirectTo=${pathname})`
+      );
+      router.navigate({
+        to: '/selectCommunity',
+        search: {
+          redirectTo: pathname,
+        },
+      });
+    }
+  }, [
+    isAuthenticated,
+    selectedCommunity,
+    isCommunityLoading,
+    location.pathname,
+    router,
+  ]);
+
   const content = (
     <>
-      <TelegramAppHandler />
-      <AppRoot>
-        {isViewportMounted && !isViewportMounting && (
-          // Optimistically take the space
-          <div
-            className="w-full"
-            style={{
-              marginTop: viewportSafeAreaInsets.top,
-              height: contentSafeAreaInsets.top,
-            }}
-          >
-            <div className={`flex h-full items-center justify-center`}>
-              {/* <AddToHomeScreenButton /> */}
-              <Link to="/">
-                <h1 className="text-tg-text text-xl font-bold">Yours.fun</h1>
-              </Link>
-            </div>
-          </div>
-        )}
-
-        {shouldHaveTopBar && (
-          <div
-            className="bg-tg-secondary-bg fixed top-0 right-0 left-0 z-20 flex h-15 items-center justify-end p-4"
-            style={{
-              marginTop:
-                contentSafeAreaInsets.top + viewportSafeAreaInsets.top + 5,
-            }}
-          >
-            {!isViewportMounted && (
-              <div className="absolute left-1/2 -translate-x-1/2">
-                <Link to="/">
-                  <h1 className="text-tg-text text-xl font-bold">Yours.fun</h1>
-                </Link>
-              </div>
-            )}
-            <FavoriteNFT />
-          </div>
-        )}
-        <main className={`h-full ${shouldHaveTopBar ? 'pt-16' : ''}`}>
+      {isTelegramEnvironment ? (
+        <TelegramEnvironmentHandler />
+      ) : (
+        <WebEnvironmentHandler />
+      )}
+      <div className="bg-tg-bg">
+        <Header />
+        <main className={`h-full`}>
           <Outlet />
         </main>
-        {shouldHaveNavBar && (
-          <div
-            className="fixed right-0 bottom-0 left-0 z-10 flex h-16 items-center"
-            style={{
-              paddingBottom: `${contentSafeAreaInsets.bottom} px`,
-              paddingLeft: `${contentSafeAreaInsets.left} px`,
-              paddingRight: `${contentSafeAreaInsets.right} px`,
-            }}
-          >
-            <NavBar />
-          </div>
-        )}
+
+        {/* <UserMenuComponent size={35} /> */}
         {/* <TanStackRouterDevtools /> */}
         {/* <ReactQueryDevtools initialIsOpen={false} /> */}
-      </AppRoot>
+      </div>
     </>
   );
 
@@ -269,10 +291,12 @@ export const Route = createRootRoute({
   component: () => {
     return (
       <ToastProvider>
-        {/* <ConsoleLogDevtools initialIsOpen={true} onReady={handleConsoleReady} /> */}
-        {/* {consoleReady && ( */}
-        <AppContent />
-        {/* )} */}
+        <SelectCommunityProvider>
+          {/* <ConsoleLogDevtools initialIsOpen={true} onReady={handleConsoleReady} /> */}
+          {/* {consoleReady && ( */}
+          <AppContent />
+          {/* )} */}
+        </SelectCommunityProvider>
       </ToastProvider>
     );
   },

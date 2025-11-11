@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { RouterProvider, createRouter } from '@tanstack/react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AppRoot } from '@telegram-apps/telegram-ui';
-import { TonConnectUIProvider } from '@tonconnect/ui-react';
+// import { TonConnectUIProvider } from '@tonconnect/ui-react';
 import { ThemeProvider } from './auth/ThemeProvider';
 import { AuthProvider } from './auth/AuthProvider';
 import './style.css';
@@ -37,17 +37,17 @@ if (!rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement);
   root.render(
     <StrictMode>
-      <TonConnectUIProvider manifestUrl="https://ton-connect.github.io/demo-dapp-with-react-ui/tonconnect-manifest.json">
-        <ThemeProvider>
-          <AuthProvider>
-            <AppRoot>
-              <QueryClientProvider client={queryClient}>
-                <RouterProvider router={router} />
-              </QueryClientProvider>
-            </AppRoot>
-          </AuthProvider>
-        </ThemeProvider>
-      </TonConnectUIProvider>
+      {/* <TonConnectUIProvider manifestUrl="https://ton-connect.github.io/demo-dapp-with-react-ui/tonconnect-manifest.json"> */}
+      <ThemeProvider>
+        <AuthProvider>
+          <AppRoot>
+            <QueryClientProvider client={queryClient}>
+              <RouterProvider router={router} />
+            </QueryClientProvider>
+          </AppRoot>
+        </AuthProvider>
+      </ThemeProvider>
+      {/* </TonConnectUIProvider> */}
     </StrictMode>
   );
 }

@@ -1,14 +1,9 @@
-import { createFileRoute } from '@tanstack/react-router';
-import { Landing } from '@/routes/landing';
+import { createFileRoute, Navigate } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/')({
   component: Index,
 });
 
 function Index() {
-  return (
-    <div className="bg-tg-bg text-tg-text">
-      <Landing />
-    </div>
-  );
+  return <Navigate to="/stickers" />;
 }

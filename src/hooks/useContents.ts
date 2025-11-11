@@ -480,7 +480,91 @@ export const useUploadContent = (session: Session | null | undefined) => {
       }
 
       const data = await response.json();
+      console.log('Content uploaded successfully:', data);
       return data as { id: string; type: string; url: string };
     },
+  });
+};
+
+// Content execution/status response from /v1/content/{id}
+export interface ContentExecution {
+  id: string;
+  status: 'processing' | 'completed' | 'failed';
+  error?: string;
+  error_message?: string; // Mapped from 'error'
+  type: 'image' | 'video' | 'sticker' | 'animated_sticker';
+  variant: string;
+  created_at: number;
+  creator_id: string;
+  token?: {
+    contract: {
+      id: number;
+      chain: string;
+      address: string;
+      name: string;
+    };
+    id: string;
+  };
+  tokens?: Array<{
+    contract: {
+      id: number;
+      chain: string;
+      address: string;
+      name: string;
+    };
+    id: string;
+  }>;
+  prompt_id: number | null;
+  url?: string;
+  content_url?: string; // Mapped from 'url'
+  progress_percentage?: number; // Optional, may not be in response
+}
+
+// Track content status with polling using /content/{id}
+export const useContentExecution = (
+  executionId: string,
+  session: Session | null | undefined,
+  options?: {
+    enabled?: boolean;
+  }
+) => {
+  return useQuery<ContentExecution>({
+    queryKey: ['content-execution', executionId],
+    queryFn: async () => {
+      if (!session) {
+        throw new Error('Session required');
+      }
+
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/content/${executionId}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: session.authToken,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch content status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      // Map response to expected format
+      return {
+        ...data,
+        error_message: data.error, // Map 'error' to 'error_message'
+        content_url: data.url, // Map 'url' to 'content_url'
+      };
+    },
+    enabled: !!session && !!executionId && options?.enabled !== false,
+    refetchInterval: query => {
+      // Poll every 2 seconds if status is processing
+      const isProcessing = query.state.data?.status === 'processing';
+      return isProcessing ? 2000 : false;
+    },
+    refetchIntervalInBackground: true, // Continue polling when tab is not active
   });
 };

@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 
 export interface TopBarProps {
-  title: string;
+  title: string | ReactNode;
   icon?: ReactNode;
   actions?: ReactNode;
   children?: ReactNode;
@@ -29,18 +29,22 @@ export interface TopBarProps {
  */
 export const TopBar = ({ title, icon, actions, children }: TopBarProps) => {
   return (
-    <div className="bg-tg-secondary-bg border-tg-hint/20 relative border-b">
+    <div className="relative">
       {/* Header with title, icon and actions */}
-      <div className="border-tg-hint/20 grid grid-cols-[1fr_2fr_1fr] items-center border-b px-4">
+      <div className="grid grid-cols-[1fr_2fr_1fr] items-center px-4 py-2">
         {/* Left column - empty */}
         <div></div>
 
         {/* Center column - title */}
         <div className="flex items-center justify-center gap-2">
           {icon && <div className="text-tg-hint text-sm">{icon}</div>}
-          <h1 className="text-tg-text text-center text-sm font-medium">
-            {title}
-          </h1>
+          {typeof title === 'string' ? (
+            <h1 className="text-tg-text text-center text-sm font-medium">
+              {title}
+            </h1>
+          ) : (
+            title
+          )}
         </div>
 
         {/* Right column - actions */}

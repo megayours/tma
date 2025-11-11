@@ -85,3 +85,42 @@ export function useGetImage(imageId: string) {
 
   return { image: data, isLoading };
 }
+
+export function useGetPublicImage(imageId: string) {
+  const { data, isLoading } = useQuery({
+    queryKey: ['public-image', imageId],
+    queryFn: async (): Promise<string> => {
+      try {
+        const url = `${import.meta.env.VITE_PUBLIC_API_URL}/images/public/${imageId}`;
+
+        // Fetch the image directly without using apiGet
+        const response = await fetch(url, {
+          method: 'GET',
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        // Check if response is JSON (contains { image: "..." }) or raw image data
+        const contentType = response.headers.get('content-type');
+
+        if (contentType?.includes('application/json')) {
+          // Response is JSON with base64 image
+          const data = await response.json();
+          return data.image || data;
+        } else {
+          // Response is raw image data - convert to blob URL or base64
+          const blob = await response.blob();
+          return URL.createObjectURL(blob);
+        }
+      } catch (error) {
+        console.error('Error fetching public image:', error);
+        throw error;
+      }
+    },
+    enabled: !!imageId,
+  });
+
+  return { imageData: data, isLoading };
+}

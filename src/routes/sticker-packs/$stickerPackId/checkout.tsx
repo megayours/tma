@@ -6,6 +6,7 @@ import { StripeCheckout } from '@/components/StripeCheckout';
 import { useSession } from '@/auth/SessionProvider';
 import { useStickerPack } from '@/hooks/useStickerPacks';
 import { useTelegramTheme } from '@/auth/useTelegram';
+import { SpinnerFullPage } from '@/components/ui';
 
 interface CheckoutSearch {
   executionId?: string;
@@ -97,11 +98,7 @@ function CheckoutPage() {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <div className="text-lg">Loading...</div>
-      </div>
-    );
+    return <SpinnerFullPage text="Loading..." />;
   }
 
   if (error || !stickerPack) {

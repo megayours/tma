@@ -59,7 +59,7 @@ export const InputSelector = ({
   }, []);
 
   return (
-    <div className="bg-tg-bg flex h-12 flex-shrink-0 flex-row items-center gap-1 rounded-full p-3">
+    <div className="flex h-12 flex-shrink-0 flex-row items-center gap-1 rounded-full">
       {/* Render compulsory NFT items */}
       {compulsoryNFTs.map((token, index) => (
         <NFTItem

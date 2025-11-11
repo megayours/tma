@@ -16,11 +16,19 @@ interface NFTSelectorProps {
   onCancel?: () => void;
 }
 
-export function NFTSelector({ collections, onTokenSelect, selectedNFT, onCancel }: NFTSelectorProps) {
+export function NFTSelector({
+  collections,
+  onTokenSelect,
+  selectedNFT,
+  onCancel,
+}: NFTSelectorProps) {
   const { session } = useSession();
   const { favorites, isLoadingFavorites } = useGetFavorites(session);
-  const [selectionMode, setSelectionMode] = useState<'favorites' | 'collections'>('favorites');
-  const [selectedCollection, setSelectedCollection] = useState<SupportedCollection | null>(null);
+  const [selectionMode, setSelectionMode] = useState<
+    'favorites' | 'collections'
+  >('favorites');
+  const [selectedCollection, setSelectedCollection] =
+    useState<SupportedCollection | null>(null);
   const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null);
 
   // Switch to collections tab if there are no favorites
@@ -62,7 +70,7 @@ export function NFTSelector({ collections, onTokenSelect, selectedNFT, onCancel 
   return (
     <div className="border-tg-section-separator border-t pt-4">
       {!selectedCollection && !selectedTokenId && (
-        <div className="space-y-4">
+        <div className="">
           <div className="flex justify-center gap-2">
             <Button
               mode={selectionMode === 'favorites' ? 'filled' : 'outline'}
@@ -81,7 +89,11 @@ export function NFTSelector({ collections, onTokenSelect, selectedNFT, onCancel 
           </div>
 
           {selectionMode === 'favorites' && (
-            <PickFavoriteNFTs onTokenSelect={handleFavoriteSelect} selectedNFT={selectedNFT} />
+            <PickFavoriteNFTs
+              onTokenSelect={handleFavoriteSelect}
+              selectedNFT={selectedNFT}
+              supportedCollections={collections}
+            />
           )}
 
           {selectionMode === 'collections' && collections && (

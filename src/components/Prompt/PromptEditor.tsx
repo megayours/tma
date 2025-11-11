@@ -1,17 +1,17 @@
 import { useRef, useState, useEffect } from 'react';
 import type { Token } from '@/types/response';
-import { Button, Divider } from '@telegram-apps/telegram-ui';
-import { viewport, useSignal } from '@telegram-apps/sdk-react';
-
-import { AddInputButton } from '@/components/ui';
+import { Divider } from '@telegram-apps/telegram-ui';
+import { AddInputButton, SpinnerFullPage } from '@/components/ui';
 import { IoSend } from 'react-icons/io5';
 import { InputsEditor } from './InputsEditor';
+import { AdditionalContentDisplay } from './AdditionalContentDisplay';
 import { usePromptPreviewGeneration } from '@/hooks/usePromptPreviewGeneration';
 import { useSession } from '@/auth/SessionProvider';
 import { ContentPreviews } from './ContentPreview';
 import { NFTSetsProvider } from '@/contexts/NFTSetsContext';
 import { useToast } from '@/components/ui/toast';
 import { useGetPrompt, usePromptMutation } from '@/hooks/usePrompts';
+import { viewport, useSignal } from '@telegram-apps/sdk-react';
 
 const PromptEditorContent = ({
   promptId,
@@ -25,7 +25,6 @@ const PromptEditorContent = ({
   const [hasChanges, setHasChanges] = useState(false);
   const [isTextareaFocused, setIsTextareaFocused] = useState(false);
   const promptTextareaRef = useRef<HTMLTextAreaElement>(null);
-  const isViewportMounted = useSignal(viewport.isMounted);
 
   // Use React Query to get the prompt data
   const { data: prompt, isLoading, error } = useGetPrompt(promptId, session);
@@ -34,16 +33,35 @@ const PromptEditorContent = ({
   const promptMutation = usePromptMutation(session);
 
   const [promptText, setPromptText] = useState('');
-
-  // Update promptText when prompt data loads/changes
-  useEffect(() => {
-    if (prompt?.versions?.[0]?.text) {
-      setPromptText(prompt.versions[0].text);
-    }
-  }, [prompt?.versions]);
+  const [currentAdditionalContentIds, setCurrentAdditionalContentIds] =
+    useState<string[]>([]);
   const [selectedVersion, setSelectedVersion] = useState(
-    prompt?.versions?.[(prompt.versions?.length ?? 0) - 1]
+    prompt?.versions?.sort((a, b) => b.version - a.version)[0]
   );
+
+  // Update selectedVersion when prompt data changes (after refetch)
+  useEffect(() => {
+    if (prompt?.versions) {
+      const latestVersion = prompt.versions.sort(
+        (a, b) => b.version - a.version
+      )[0];
+      setSelectedVersion(latestVersion);
+    }
+  }, [prompt]);
+
+  // Update promptText and Additional Content IDs when prompt data loads/changes
+  useEffect(() => {
+    if (selectedVersion?.text) {
+      setPromptText(selectedVersion.text);
+    }
+    if (selectedVersion?.additionalContentIds) {
+      setCurrentAdditionalContentIds(
+        selectedVersion.additionalContentIds || []
+      );
+    }
+  }, [selectedVersion]);
+
+  console.log('selectedVersion', selectedVersion);
 
   // Custom hook for prompt generation logic
   const { isGenerating, generatePromptPreview } = usePromptPreviewGeneration({
@@ -76,7 +94,7 @@ const PromptEditorContent = ({
     if (!isTextareaFocused) {
       return 'h-12'; // 1 line when not focused (regardless of content)
     }
-    return 'h-35'; // Max height when focused
+    return 'h-50'; // Max height when focused
   };
 
   const handleGenerate = async () => {
@@ -90,7 +108,8 @@ const PromptEditorContent = ({
         promptText,
         prompt,
         hasChanges,
-        setSelectedVersion
+        setSelectedVersion,
+        currentAdditionalContentIds
       );
     } catch (error) {
       // Error handling is now done in the usePromptPreviewGeneration hook
@@ -98,17 +117,29 @@ const PromptEditorContent = ({
     }
   };
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) return <SpinnerFullPage text="Loading prompt..." />;
   if (error) return <div>Error loading prompt: {error.message}</div>;
   if (!prompt) return <div>Prompt not found</div>;
 
+  const isViewportMounted = useSignal(viewport.isMounted);
+  const viewportSafeAreaInsets = useSignal(viewport.safeAreaInsets);
+
+  const paddingBottom = isViewportMounted
+    ? 300 + (viewportSafeAreaInsets?.top || 0)
+    : 300;
+
   return (
-    <div className="bg-tg-bg">
+    <div
+      className={`bg-tg-bg h-screen overflow-hidden`}
+      style={{
+        paddingBottom: `${paddingBottom}px`,
+      }}
+    >
       {/* Main content area */}
-      <div className={`h-screen ${isViewportMounted ? 'pb-80' : 'pb-60'}`}>
+      <div className={`h-full overflow-hidden`}>
         {/* Your main content goes here */}
         {selectedVersion && (
-          <div className="h-full">
+          <div className="h-full overflow-hidden">
             <ContentPreviews
               prompt={prompt}
               selectedVersion={selectedVersion}
@@ -123,14 +154,40 @@ const PromptEditorContent = ({
       </div>
 
       {/* Bottom toolbar */}
-      <div className="bg-tg-secondary-bg border-tg-hint/20 safe-area-inset-bottom fixed right-0 bottom-0 left-0 z-30 border-t">
+      <div className="safe-area-inset-bottom fixed right-0 bottom-0 left-0 z-30 border-t border-white/20">
         <div className="flex h-full flex-col pb-4">
-          <div className="h-15">
-            <InputsEditor prompt={prompt} />
+          <div className="bg-tg-bg justify-startgap-2 flex flex-row items-center">
+            {selectedVersion && (
+              <AdditionalContentDisplay
+                contentIds={currentAdditionalContentIds || []}
+                isMutating={promptMutation.isPending}
+                removeContent={async contentId => {
+                  setCurrentAdditionalContentIds(
+                    currentAdditionalContentIds.filter(id => id !== contentId)
+                  );
+
+                  // update prompt with the new additional content ids
+                  await promptMutation.mutateAsync({
+                    prompt: {
+                      ...prompt,
+                      additionalContentIds: currentAdditionalContentIds.filter(
+                        id => id !== contentId
+                      ),
+                    },
+                  });
+
+                  setHasChanges(true);
+                }}
+              />
+            )}
+            <div className="border-tg-section-separator h-12 border-1"></div>
+            <div className="h-15">
+              <InputsEditor prompt={prompt} />
+            </div>
           </div>
           <Divider />
           <div className="flex flex-row items-center gap-2 px-2 py-2">
-            <div className="flex items-center justify-center">
+            <div className="bg-tg-button text-tg-button-text flex items-center justify-center overflow-hidden rounded-4xl shadow-lg">
               <AddInputButton
                 prompt={prompt}
                 promptTextareaRef={promptTextareaRef}
@@ -138,8 +195,8 @@ const PromptEditorContent = ({
             </div>
             <div className="flex flex-1 flex-col">
               <textarea
-                placeholder="Enter your prompt..."
-                className={`resize-none rounded-2xl border border-gray-300 bg-gray-100 px-4 py-3 text-gray-900 placeholder-gray-500 transition-all duration-200 outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-400 ${getTextareaHeight()}`}
+                placeholder="Example: The NFT1 in a futuristic cityscape, vibrant colors, high detail"
+                className={`text-tg-text border-tg-button/20 resize-none rounded-2xl border px-4 py-3 shadow-lg backdrop-blur-lg transition-all duration-200 outline-none ${getTextareaHeight()} scrollbar-hide`}
                 ref={promptTextareaRef}
                 value={promptText}
                 onChange={e => {
@@ -151,18 +208,27 @@ const PromptEditorContent = ({
                 disabled={isGenerating || promptMutation.isPending}
               />
             </div>
-            <div className="flex flex-col items-center justify-start gap-2">
-              <Button
-                mode="filled"
-                size="m"
-                onClick={handleGenerate}
-                disabled={
-                  isGenerating || promptMutation.isPending || !promptText.trim()
+            <div
+              onClick={() => {
+                if (
+                  !isGenerating &&
+                  !promptMutation.isPending &&
+                  promptText.trim()
+                ) {
+                  handleGenerate();
                 }
-                loading={isGenerating || promptMutation.isPending}
-              >
-                <IoSend className="text-tg-button-text" />
-              </Button>
+              }}
+              className={`bg-tg-button text-tg-button-text flex cursor-pointer items-center justify-center rounded-4xl p-4 shadow-lg transition-all ${
+                isGenerating || promptMutation.isPending || !promptText.trim()
+                  ? 'cursor-not-allowed opacity-50'
+                  : 'hover:brightness-110 active:scale-95'
+              }`}
+            >
+              {isGenerating || promptMutation.isPending ? (
+                <div className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
+              ) : (
+                <IoSend className="h-3 w-3" />
+              )}
             </div>
           </div>
         </div>

@@ -4,6 +4,9 @@ import { useStickerPack } from '@/hooks/useStickerPacks';
 import { StickerPackContentList } from '@/components/StickerPack/StickerPackContentList';
 import { StickerCollectionHeader } from '@/components/StickerPack/StickerCollectionHeader';
 import { TelegramMainButton } from '@/components/TelegramMainButton';
+import { SpinnerFullPage } from '@/components/ui';
+import { Banner, Divider } from '@telegram-apps/telegram-ui';
+import { Fragment } from 'react/jsx-runtime';
 
 export const Route = createFileRoute('/sticker-packs/$stickerPackId/details/')({
   component: RouteComponent,
@@ -79,13 +82,7 @@ function RouteComponent() {
   };
 
   if (isLoading) {
-    return (
-      <div className="mx-auto max-w-4xl p-4">
-        <div className="flex items-center justify-center p-8">
-          <div className="text-lg">Loading sticker pack...</div>
-        </div>
-      </div>
-    );
+    return <SpinnerFullPage text="Loading sticker pack..." />;
   }
 
   if (error) {
@@ -114,9 +111,9 @@ function RouteComponent() {
     <div className="mx-auto max-w-4xl p-2">
       {/* <StepProgressIndicator currentStep={0} /> */}
 
-      <div className="space-y-4">
+      <div className="">
         {/* Pack Header */}
-        <div className="bg-tg-secondary-bg rounded-lg p-6">
+        <div className="rounded-lg">
           <div className="">
             <StickerCollectionHeader
               stickerPack={stickerPack}
@@ -127,19 +124,44 @@ function RouteComponent() {
               }
             />
           </div>
-          {stickerPack.description && (
-            <p className="text-tg-hint text-sm">{stickerPack.description}</p>
-          )}
         </div>
+        {stickerPack.description && (
+          <div className="p-6">
+            <p className="text-tg-hint text-sm">{stickerPack.description}</p>
+          </div>
+        )}
+
+        <Divider />
 
         {/* Sticker Pack Content List */}
         {stickerPack.items && stickerPack.items.length > 0 && (
-          <div className="bg-tg-secondary-bg rounded-lg p-6">
-            <h2 className="mb-4 text-lg font-semibold">All Stickers</h2>
-            <StickerPackContentList
-              items={stickerPack.items}
-              packName={stickerPack.name}
-            />
+          <div>
+            <Banner
+              header={
+                <h2 className="text-tg-text text-lg">Included in this pack</h2>
+              }
+              description={
+                <div>
+                  <p className="text-xs">
+                    Example of stickers included in this pack from other users.
+                  </p>
+                  <p className="text-tg-accent-text text-xs">
+                    You will receive {stickerPack.item_count} personalized
+                    stickers.
+                  </p>
+                </div>
+              }
+              style={{
+                backgroundColor: 'var(--tg-secondary-bg)',
+              }}
+            >
+              <Fragment>
+                <StickerPackContentList
+                  items={stickerPack.items}
+                  packName={stickerPack.name}
+                />
+              </Fragment>
+            </Banner>
           </div>
         )}
 

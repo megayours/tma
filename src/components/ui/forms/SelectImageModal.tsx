@@ -10,16 +10,25 @@ interface SelectImageModalProps {
   onClose?: () => void;
 }
 
-export const SelectImageModal = ({ prompt, onClose }: SelectImageModalProps) => {
+export const SelectImageModal = ({
+  prompt,
+  onClose,
+}: SelectImageModalProps) => {
   const { session } = useSession();
-  const { mutateAsync: uploadContent, isPending: isUploading } = useUploadContent(session);
-  const { mutateAsync: updatePrompt, isPending: isUpdatingPrompt } = usePromptMutation(session);
-  const [step, setStep] = useState<'select' | 'uploading' | 'completed' | 'error'>('select');
+  const { mutateAsync: uploadContent, isPending: isUploading } =
+    useUploadContent(session);
+  const { mutateAsync: updatePrompt, isPending: isUpdatingPrompt } =
+    usePromptMutation(session);
+  const [step, setStep] = useState<
+    'select' | 'uploading' | 'completed' | 'error'
+  >('select');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -39,7 +48,7 @@ export const SelectImageModal = ({ prompt, onClose }: SelectImageModalProps) => 
 
     // Create preview
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = e => {
       setPreviewUrl(e.target?.result as string);
     };
     reader.readAsDataURL(file);
@@ -49,7 +58,7 @@ export const SelectImageModal = ({ prompt, onClose }: SelectImageModalProps) => 
     setErrorMessage('');
 
     const base64Reader = new FileReader();
-    base64Reader.onload = async (e) => {
+    base64Reader.onload = async e => {
       try {
         const base64String = e.target?.result as string;
         // Keep the full Data URL (including the prefix)
@@ -57,17 +66,25 @@ export const SelectImageModal = ({ prompt, onClose }: SelectImageModalProps) => 
 
         // Upload the image
         const uploadResult = await uploadContent(dataUrl);
+        console.log('📤 Upload completed:', uploadResult);
 
         // Update the prompt with the new content ID
         const updatedPrompt = {
           ...prompt,
           additionalContentIds: [
-            ...(prompt.additionalContentIds || []),
+            ...(prompt.versions?.[0]?.additionalContentIds || []),
             uploadResult.id,
           ],
         };
 
+        console.log('📝 Updating prompt with new content ID:', {
+          promptId: prompt.id,
+          newContentId: uploadResult.id,
+          updatedAdditionalContentIds: updatedPrompt.additionalContentIds,
+        });
+
         await updatePrompt({ prompt: updatedPrompt });
+        console.log('✅ Prompt updated successfully');
 
         setStep('completed');
         // Close modal after a short delay to show feedback
@@ -76,7 +93,9 @@ export const SelectImageModal = ({ prompt, onClose }: SelectImageModalProps) => 
         }, 1000);
       } catch (error) {
         console.error('Failed to upload image:', error);
-        setErrorMessage(error instanceof Error ? error.message : 'Failed to upload image');
+        setErrorMessage(
+          error instanceof Error ? error.message : 'Failed to upload image'
+        );
         setStep('error');
       }
     };
@@ -97,7 +116,7 @@ export const SelectImageModal = ({ prompt, onClose }: SelectImageModalProps) => 
     return (
       <div className="flex flex-col items-center gap-4 p-4">
         <div className="text-center">
-          <div className="text-2xl mb-2">✅</div>
+          <div className="mb-2 text-2xl">✅</div>
           <div className="text-tg-text font-medium">Image Uploaded</div>
           <div className="text-tg-hint text-sm">
             Image has been added to prompt
@@ -111,18 +130,13 @@ export const SelectImageModal = ({ prompt, onClose }: SelectImageModalProps) => 
     return (
       <div className="flex flex-col items-center gap-4 p-4">
         <div className="text-center">
-          <div className="text-2xl mb-2">❌</div>
+          <div className="mb-2 text-2xl">❌</div>
           <div className="text-tg-text font-medium">Upload Failed</div>
-          <div className="text-tg-destructive-text text-sm mt-2">
+          <div className="text-tg-destructive-text mt-2 text-sm">
             {errorMessage}
           </div>
         </div>
-        <Button
-          mode="filled"
-          size="l"
-          onClick={handleRetry}
-          className="w-full"
-        >
+        <Button mode="filled" size="l" onClick={handleRetry} className="w-full">
           Try Again
         </Button>
       </div>
@@ -136,12 +150,12 @@ export const SelectImageModal = ({ prompt, onClose }: SelectImageModalProps) => 
           <img
             src={previewUrl}
             alt="Preview"
-            className="max-w-full max-h-64 rounded-lg object-contain"
+            className="max-h-64 max-w-full rounded-lg object-contain"
           />
         )}
         <div className="text-center">
           <div className="text-tg-text font-medium">Uploading...</div>
-          <div className="text-tg-hint text-sm mt-2">
+          <div className="text-tg-hint mt-2 text-sm">
             Please wait while we upload your image
           </div>
         </div>
@@ -151,8 +165,8 @@ export const SelectImageModal = ({ prompt, onClose }: SelectImageModalProps) => 
 
   return (
     <div className="flex flex-col gap-4 p-4">
-      <div className="text-center mb-4">
-        <h3 className="text-tg-text text-lg font-medium mb-2">Upload Image</h3>
+      <div className="mb-4 text-center">
+        <h3 className="text-tg-text mb-2 text-lg font-medium">Upload Image</h3>
         <p className="text-tg-hint text-sm">
           Select an image to add to this prompt
         </p>
@@ -179,7 +193,7 @@ export const SelectImageModal = ({ prompt, onClose }: SelectImageModalProps) => 
         </Button>
       </div>
 
-      <div className="text-tg-hint text-xs text-center mt-2">
+      <div className="text-tg-hint mt-2 text-center text-xs">
         Maximum file size: 10MB
         <br />
         Supported formats: JPG, PNG, GIF, WebP

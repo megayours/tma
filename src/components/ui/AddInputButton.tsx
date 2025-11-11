@@ -1,4 +1,4 @@
-import { Button, Cell, Divider } from '@telegram-apps/telegram-ui';
+import { Cell, Divider } from '@telegram-apps/telegram-ui';
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { IoArrowBackOutline } from 'react-icons/io5';
@@ -15,7 +15,7 @@ export const SelectNFT = ({
   onClose: () => void;
 }) => {
   const { session } = useSession();
-  const { mutateAsync: updatePrompt, isPending } = usePromptMutation(session);
+  const { mutateAsync: updatePrompt } = usePromptMutation(session);
   const [step, setStep] = useState<'choice' | 'completed'>('choice');
 
   const handleMandatoryAsset = async () => {
@@ -37,24 +37,24 @@ export const SelectNFT = ({
     }
   };
 
-  const handleOptionalAsset = async () => {
-    try {
-      const updatedPrompt = {
-        ...prompt,
-        maxTokens: (prompt.maxTokens ?? 0) + 1,
-        // Don't increment minTokens for optional assets
-      };
+  // const handleOptionalAsset = async () => {
+  //   try {
+  //     const updatedPrompt = {
+  //       ...prompt,
+  //       maxTokens: (prompt.maxTokens ?? 0) + 1,
+  //       // Don't increment minTokens for optional assets
+  //     };
 
-      await updatePrompt({ prompt: updatedPrompt });
-      setStep('completed');
-      // Close modal after a short delay to show feedback
-      setTimeout(() => {
-        onClose();
-      }, 500);
-    } catch (error) {
-      console.error('Failed to update prompt:', error);
-    }
-  };
+  //     await updatePrompt({ prompt: updatedPrompt });
+  //     setStep('completed');
+  //     // Close modal after a short delay to show feedback
+  //     setTimeout(() => {
+  //       onClose();
+  //     }, 500);
+  //   } catch (error) {
+  //     console.error('Failed to update prompt:', error);
+  //   }
+  // };
 
   if (step === 'completed') {
     return (
@@ -73,14 +73,19 @@ export const SelectNFT = ({
   return (
     <div className="flex flex-col gap-4 p-4">
       <div className="mb-4 text-center">
-        <h3 className="text-tg-text mb-2 text-lg font-medium">Add NFT Asset</h3>
-        <p className="text-tg-hint text-sm">
+        <h3
+          className="text-tg-text mb-2 text-lg font-medium"
+          onClick={handleMandatoryAsset}
+        >
+          Add NFT Asset
+        </h3>
+        {/* <p className="text-tg-hint text-sm">
           Choose whether this NFT should be required or optional for content
           generation
-        </p>
+        </p> */}
       </div>
 
-      <div className="flex flex-col gap-3">
+      {/* <div className="flex flex-col gap-3">
         <Button
           mode="filled"
           size="l"
@@ -110,12 +115,12 @@ export const SelectNFT = ({
             </span>
           </div>
         </Button>
-      </div>
+      </div> */}
 
-      <div className="text-tg-hint mt-2 text-center text-xs">
+      {/* <div className="text-tg-hint mt-2 text-center text-xs">
         Current tokens - Min: {prompt.minTokens ?? 0}, Max:{' '}
         {prompt.maxTokens ?? 0}
-      </div>
+      </div> */}
     </div>
   );
 };

@@ -28,7 +28,7 @@ const ExecutionStatusSchema = z.object({
       z.object({
         id: z.number(),
         status: z.string(),
-        generated_content_id: z.string().nullish(),
+        generated_content_id: z.string().nullable(),
         sort_order: z.number(),
       })
     )

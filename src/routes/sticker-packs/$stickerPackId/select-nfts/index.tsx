@@ -31,7 +31,9 @@ function SelectedNFTDisplay({
     <div>
       <h2
         className={`text-tg-text text-center font-semibold transition-all duration-500 ${
-          isSelectorOpen ? 'mb-0 h-0 overflow-hidden opacity-0' : 'mb-6 h-auto opacity-100'
+          isSelectorOpen
+            ? 'mb-0 h-0 overflow-hidden opacity-0'
+            : 'mb-6 h-auto opacity-100'
         }`}
       >
         Selected NFT
@@ -122,6 +124,10 @@ function RouteComponent() {
     collections: [],
   };
 
+  if (stickerPack?.supportedCollections.length == 0) {
+    stickerPack.supportedCollections = collections || [];
+  }
+
   // Local state for selected NFTs
   const [selectedNFTs, setSelectedNFTs] = useState<Token[]>([]);
 
@@ -129,13 +135,13 @@ function RouteComponent() {
   // if communityCollections is empty, use all collections
   const filteredCollections =
     !communityCollections || communityCollections.length === 0
-      ? collections
-      : collections?.filter(collection =>
+      ? stickerPack?.supportedCollections || []
+      : stickerPack?.supportedCollections?.filter(collection =>
           communityCollections.some(
             c =>
               c.address === collection.address && c.chain === collection.chain
           )
-        );
+        ) || [];
 
   // State for selector visibility
   const [isSelectorOpen, setIsSelectorOpen] = useState(false);
@@ -283,8 +289,6 @@ function RouteComponent() {
 
   return (
     <div className="mx-auto max-w-4xl p-4">
-      {/* <StepProgressIndicator currentStep={1} /> */}
-
       <div className="">
         {/* NFT Selection - Unified */}
         <div className="rounded-lg">

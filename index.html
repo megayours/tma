@@ -2,9 +2,9 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/svg+xml" href="/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React + TS</title>
+    <title>Yours.fun</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -16,6 +16,53 @@
       rel="stylesheet"
     />
     <link href="/src/style.css" rel="stylesheet" />
+    <script>
+      // Pre-React theme detection to prevent flash
+      (function () {
+        try {
+          let isDark = false;
+
+          // Check if we're in Telegram
+          const isTelegram = window.Telegram && window.Telegram.WebApp;
+
+          if (isTelegram) {
+            // Try to get Telegram theme params
+            const initDataUnsafe = window.Telegram.WebApp.initDataUnsafe;
+            if (initDataUnsafe && initDataUnsafe.theme_params) {
+              const themeParams = initDataUnsafe.theme_params;
+              isDark =
+                themeParams.bg_color === '#000000' ||
+                themeParams.bg_color === '#0f0f0f' ||
+                (themeParams.bg_color &&
+                  parseInt(themeParams.bg_color.replace('#', ''), 16) <
+                    0x808080);
+            }
+          } else {
+            // Not in Telegram - check localStorage then system preference
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+              isDark = true;
+            } else if (savedTheme === 'light') {
+              isDark = false;
+            } else {
+              // No saved preference - check system
+              isDark =
+                window.matchMedia &&
+                window.matchMedia('(prefers-color-scheme: dark)').matches;
+            }
+          }
+
+          // Set the dark class immediately
+          if (isDark) {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        } catch (error) {
+          console.error('Theme pre-detection error:', error);
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

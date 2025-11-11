@@ -1,12 +1,21 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useEffect, useRef, useMemo } from 'react';
+import { useEffect, useRef, useMemo, useState } from 'react';
 import { useSession } from '@/auth/SessionProvider';
-import { useExecutionStatus } from '@/hooks/useExecutionStatus';
 import { useStickerPackAnimationContext } from '@/contexts/StickerPackAnimationContext';
 import { z } from 'zod';
-import { useStickerPack } from '@/hooks/useStickerPacks';
+import { useStickerPackExecutionById } from '@/hooks/useStickerPack';
 import { decodeNFT } from '@/utils/nftEncoding';
 import { useGetNFTByCollectionAndTokenId } from '@/hooks/useCollections';
+import { SpinnerFullPage } from '@/components/ui';
+import { StickerPackVisualization } from '@/components/StickerPack/StickerPackVisualization';
+import {
+  useLaunchParams,
+  requestWriteAccess,
+  hapticFeedback,
+} from '@telegram-apps/sdk-react';
+import { useTelegramTheme } from '@/auth/useTelegram';
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+import type { DotLottie } from '@lottiefiles/dotlottie-web';
 
 const processingSearchSchema = z.object({
   nft: z.string().optional(),
@@ -20,20 +29,52 @@ export const Route = createFileRoute(
   component: RouteComponent,
 });
 
+const EnableNotifications = () => {
+  const launchParams = useLaunchParams(true);
+  const allowsWriteToPm = launchParams?.tgWebAppData?.user?.allowsWriteToPm;
+
+  const handleEnableNotifications = () => {
+    if (requestWriteAccess.isAvailable()) {
+      requestWriteAccess();
+    }
+    if (!allowsWriteToPm) {
+      return (
+        <div className="bg-tg-secondary-bg mx-auto max-w-md rounded-xl p-4">
+          <div className="mb-3 flex items-center justify-center gap-2"></div>
+          <button
+            onClick={handleEnableNotifications}
+            className="bg-tg-button text-tg-button-text w-full rounded-lg px-4 py-2.5 text-sm font-semibold transition-all hover:brightness-110 active:scale-95"
+          >
+            Enable Notifications <span className="text-sm">🔔</span>
+          </button>
+        </div>
+      );
+    }
+  };
+  return null;
+};
+
 function RouteComponent() {
-  const { stickerPackId, executionId } = Route.useParams();
+  const { executionId } = Route.useParams();
   const search = Route.useSearch();
   const { session } = useSession();
   const { triggerAnimation } = useStickerPackAnimationContext();
+  const { isTelegram } = useTelegramTheme();
   const navigate = useNavigate();
 
-  // Fetch sticker pack data
-  const { data: stickerPack, isLoading: isLoadingStickerPack } = useStickerPack(
-    stickerPackId,
-    session
-  );
+  // Confetti state
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [dotLottieInstance, setDotLottieInstance] = useState<DotLottie | null>(null);
 
-  // Decode NFT from URL
+  // Fetch execution data by execution ID
+  const { data: execution, isLoading: isLoadingExecution } =
+    useStickerPackExecutionById(executionId, session);
+
+  // Extract sticker pack and NFT from execution
+  const stickerPack = execution?.bundle;
+  const nftToken = execution?.nft_token;
+
+  // Decode NFT from URL (fallback if not in execution)
   const nftData = useMemo(() => {
     if (!search.nft) return null;
     try {
@@ -44,28 +85,21 @@ function RouteComponent() {
     }
   }, [search.nft]);
 
-  // Fetch full NFT data from API
+  // Fetch full NFT data from API (fallback if not in execution)
   const { data: selectedNFT } = useGetNFTByCollectionAndTokenId(
-    nftData?.chain || '',
-    nftData?.contractAddress || '',
-    nftData?.tokenId || ''
+    nftData?.chain || nftToken?.contract?.chain || '',
+    nftData?.contractAddress || nftToken?.contract?.address || '',
+    nftData?.tokenId || nftToken?.id || ''
   );
 
   // Track if animations have been triggered to ensure they only run once
   const hasTriggeredProcessing = useRef(false);
+  const hasTriggeredCompletion = useRef(false);
 
-  const {
-    status: executionStatus,
-    isCompleted,
-    isProcessing,
-  } = useExecutionStatus({
-    session,
-    executionId,
-    pollingInterval: 5000, // Poll every 5 seconds
-    onError: status => {
-      console.error('Execution error:', status);
-    },
-  });
+  // Derive status flags from execution
+  const isProcessing = execution?.status === 'processing';
+  const isCompleted = execution?.status === 'completed';
+  const isError = execution?.status === 'failed';
 
   // Trigger animation when processing starts
   useEffect(() => {
@@ -75,22 +109,62 @@ function RouteComponent() {
     }
   }, [isProcessing, triggerAnimation]);
 
+  // Trigger confetti and haptic feedback when completed
+  useEffect(() => {
+    if (isCompleted && !hasTriggeredCompletion.current) {
+      hasTriggeredCompletion.current = true;
+      setShowConfetti(true);
+
+      // Trigger success haptic feedback
+      if (isTelegram) {
+        try {
+          if (hapticFeedback && hapticFeedback.notificationOccurred) {
+            hapticFeedback.notificationOccurred('success');
+          }
+        } catch (error) {
+          console.warn('Haptic feedback not available:', error);
+        }
+      }
+    }
+  }, [isCompleted, isTelegram]);
+
+  // Listen for confetti animation complete event
+  useEffect(() => {
+    if (!dotLottieInstance) return;
+
+    const handleComplete = () => {
+      console.log('Confetti animation completed');
+      setShowConfetti(false);
+    };
+
+    dotLottieInstance.addEventListener('complete', handleComplete);
+
+    return () => {
+      dotLottieInstance.removeEventListener('complete', handleComplete);
+    };
+  }, [dotLottieInstance]);
+
   // Loading states
-  if (isLoadingStickerPack || !stickerPack || !executionId) {
-    return (
-      <div className="mx-auto max-w-4xl p-4">
-        <div className="flex items-center justify-center p-8">
-          <div className="text-lg">Loading...</div>
-        </div>
-      </div>
-    );
+  if (isLoadingExecution || !execution || !executionId) {
+    return <SpinnerFullPage text="Loading..." />;
   }
 
   return (
     <div className="mx-auto max-w-4xl p-4">
+      {/* Confetti animation */}
+      {showConfetti && (
+        <DotLottieReact
+          dotLottieRefCallback={setDotLottieInstance}
+          className="pointer-events-none fixed bottom-0 left-1/2 z-50 h-2/3 w-[150vw] -translate-x-1/2"
+          src="/lotties/confetti-full.lottie"
+          loop={false}
+          autoplay
+        />
+      )}
+
       <div className="space-y-4">
         {/* Unified Information Card */}
-        {isProcessing && executionStatus && stickerPack && (
+        {isProcessing && execution && stickerPack && (
           <div className="bg-tg-secondary-bg rounded-lg p-6">
             <h2 className="text-tg-text mb-6 text-center text-xl font-semibold">
               Creating Your Stickers
@@ -114,73 +188,24 @@ function RouteComponent() {
             )}
 
             {/* Divider */}
-            <div className="border-tg-hint/20 my-6 border-t" />
-
-            {/* Sticker Pack Details */}
-            <div className="mb-6 space-y-2">
-              <div>
-                <span className="text-tg-hint text-sm font-medium">
-                  Sticker Pack:{' '}
-                </span>
-                <span className="text-tg-text text-sm font-semibold">
-                  {stickerPack.name}
-                </span>
-              </div>
-              {stickerPack.description && (
-                <div>
-                  <span className="text-tg-hint text-sm font-medium">
-                    Description:{' '}
-                  </span>
-                  <span className="text-tg-text text-sm">
-                    {stickerPack.description}
-                  </span>
-                </div>
-              )}
-              {executionStatus?.effect_style && (
-                <div>
-                  <span className="text-tg-hint text-sm font-medium">
-                    Tier:{' '}
-                  </span>
-                  <span className="text-tg-text text-sm capitalize">
-                    {executionStatus.effect_style}
-                  </span>
-                </div>
-              )}
-            </div>
+            <div className="border-tg-hint/20 my-2 border-t" />
 
             {/* Status Message */}
             <div className="text-center">
-              <p className="text-tg-hint mb-4 text-sm">
+              <p className="text-tg-hint text-sm">
                 We're creating your stickers! This usually takes a few minutes.
               </p>
-              <p className="text-tg-hint mb-3 text-sm font-semibold">
-                To receive notifications when ready:
-              </p>
-              <div className="text-tg-text mb-3 flex items-center justify-center gap-2 text-sm">
-                <span>📱</span>
-                <span>
-                  Send{' '}
-                  <code className="bg-tg-bg rounded px-1.5 py-0.5 font-mono text-xs">
-                    /status
-                  </code>{' '}
-                  in our{' '}
-                  <a
-                    href={import.meta.env.VITE_PUBLIC_BOT_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-tg-link hover:underline"
-                  >
-                    Telegram bot
-                  </a>
-                </span>
-              </div>
-              <div className="text-tg-hint mb-2 text-xs italic">
-                (Required to get notified via Telegram)
-              </div>
-              <div className="text-tg-text flex items-center justify-center gap-2 text-sm">
-                <span>👤</span>
-                <span>Or check your profile's "My Generations" section</span>
-              </div>
+            </div>
+
+            {isTelegram && <EnableNotifications />}
+
+            {/* Show execution items during processing */}
+            <div className="mt-6">
+              <h3 className="text-tg-text mb-4 text-lg font-semibold">
+                Generated Stickers ({execution.completed_prompts}/
+                {execution.total_prompts})
+              </h3>
+              <StickerPackVisualization execution={execution} />
             </div>
           </div>
         )}
@@ -195,20 +220,20 @@ function RouteComponent() {
           </div>
         )}
 
-        {isCompleted && executionStatus && (
+        {isCompleted && execution && (
           <div className="bg-tg-secondary-bg rounded-lg p-6 text-center">
             <h2 className="text-tg-text mb-4 text-2xl font-semibold">
               🎉 Your Sticker Pack is Ready!
             </h2>
             <p className="text-tg-hint mb-6 text-sm">
-              All {executionStatus.total_prompts} stickers have been generated
+              All {execution.total_prompts} stickers have been generated
               successfully.
             </p>
 
             {/* Telegram Link */}
-            {executionStatus.telegram_pack_url && (
+            {execution.telegram_pack_url && (
               <a
-                href={executionStatus.telegram_pack_url}
+                href={execution.telegram_pack_url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="bg-tg-button inline-block rounded-lg px-6 py-3 font-semibold text-white transition-colors hover:bg-blue-600"
@@ -218,31 +243,23 @@ function RouteComponent() {
             )}
 
             {/* show the stickers */}
-            {/* {executionStatus.items && (
-              <div className="grid grid-cols-5 gap-2">
-                {executionStatus.items.map((sticker, index) => (
-                  <img
-                    key={index}
-                    src={
-                      sticker.generated_content_url ||
-                      sticker.bundle_item.preview_url
-                    }
-                    alt={sticker.bundle_item.prompt.name}
-                  />
-                ))}
-              </div>
-            )} */}
+            <div className="mt-6">
+              <h3 className="text-tg-text mb-4 text-lg font-semibold">
+                All Stickers
+              </h3>
+              <StickerPackVisualization execution={execution} />
+            </div>
           </div>
         )}
 
         {/* Error State */}
-        {executionStatus?.status === 'error' && (
+        {isError && execution && (
           <div className="bg-tg-secondary-bg rounded-lg p-6 text-center">
             <h2 className="mb-4 text-xl font-semibold text-red-600">
               Generation Failed
             </h2>
             <p className="text-tg-hint mb-4 text-sm">
-              {executionStatus.error_message ||
+              {execution.error_message ||
                 'Something went wrong while generating your sticker pack.'}
             </p>
             <button

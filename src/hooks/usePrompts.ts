@@ -2,11 +2,12 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Filter, Pagination } from '@/types/requests';
-import { type RawPromptsResponse, type RawPrompt } from '@/types/response';
-import { apiGet } from '@/lib/api';
+import { type RawPrompt } from '@/types/response';
 import type { PromptWithContent } from '@/types/content';
 import type { Session } from '@/auth/useAuth';
-import type { Prompt } from '@/types/prompt';
+import type { Prompt, PromptFeedback, PromptFeedbackSentiment } from '@/types/prompt';
+import { PromptFeedbackSchema } from '@/types/prompt';
+import { safeParse } from '@/utils/validation';
 
 // Helper function to map raw prompt to expected format
 const mapRawPromptToPrompt = (rawPrompt: RawPrompt) => ({
@@ -55,35 +56,60 @@ export const useGetRecommendedPrompts = ({
   type = 'all',
   excludeUsed = true,
   pagination,
+  tokenCollections,
   enabled = true,
 }: {
   type: 'images' | 'videos' | 'gifs' | 'stickers' | 'animated_stickers' | 'all';
   excludeUsed: boolean;
   pagination: Pagination;
+  tokenCollections?: Array<{ id?: string }>;
   enabled?: boolean;
 }) => {
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['recommended-prompts', type, excludeUsed, pagination],
+    queryKey: ['recommended-prompts', type, excludeUsed, pagination, tokenCollections],
     enabled,
     queryFn: async () => {
       try {
-        const response = await apiGet<RawPromptsResponse>(
-          `${import.meta.env.VITE_PUBLIC_API_URL}/discovery/prompts/recommended`,
-          {
-            type,
-            exclude_used: excludeUsed,
-            page: pagination.page,
-            size: pagination.size,
-          }
-        );
+        // Build query parameters manually to support multiple token_collection_ids
+        const queryParams = new URLSearchParams({
+          type,
+          exclude_used: String(excludeUsed),
+          page: String(pagination.page),
+          size: String(pagination.size),
+        });
 
-        if (!response || !response.data) {
-          console.error('Invalid response format:', response);
+        // Add token_collection_ids if provided
+        if (tokenCollections && tokenCollections.length > 0) {
+          tokenCollections.forEach(collection => {
+            if (collection.id) {
+              queryParams.append('token_collection_ids', collection.id);
+            }
+          });
+        }
+
+        const queryString = queryParams.toString();
+        const url = `${import.meta.env.VITE_PUBLIC_API_URL}/discovery/prompts/recommended${queryString ? `?${queryString}` : ''}`;
+
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const rawResponse = await response.json();
+
+        if (!rawResponse || !rawResponse.data) {
+          console.error('Invalid response format:', rawResponse);
           throw new Error('Invalid response format: missing data');
         }
 
-        const mappedPrompts: PromptWithContent[] = response.data.map(
-          rawPrompt => {
+        const mappedPrompts: PromptWithContent[] = rawResponse.data.map(
+          (rawPrompt: RawPrompt) => {
             const mapped = mapRawPromptToPromptWithContent(rawPrompt);
             return mapped;
           }
@@ -91,7 +117,7 @@ export const useGetRecommendedPrompts = ({
 
         const result = {
           prompts: mappedPrompts,
-          pagination: response.pagination || {
+          pagination: rawResponse.pagination || {
             page: 1,
             size: 10,
             total: 0,
@@ -159,6 +185,11 @@ export const useGetPrompt = (promptId: string, session: Session | null) => {
         ownerId: data.owner_id,
         published: data.published_at,
         usageCount: data.usage_count,
+        animatedStickers: data.animated_stickers,
+        stickers: data.stickers,
+        videos: data.videos,
+        images: data.images,
+        gifs: data.gifs,
         versions: data.versions.map((version: any) => ({
           ...version,
           id: Number(version.id),
@@ -168,8 +199,8 @@ export const useGetPrompt = (promptId: string, session: Session | null) => {
           text: version.text,
           version: version.version,
           createdAt: version.created_at,
+          additionalContentIds: version.additional_content_ids,
         })),
-        additionalContentIds: data.additional_content_ids,
       };
       return prompt;
     },
@@ -207,7 +238,7 @@ export const useGetRecommendedPromptsWithDetails = ({
       session?.authToken,
     ],
     queryFn: async () => {
-      if (!session || !recommendedQuery.data?.prompts?.length) return [];
+      // if (!session || !recommendedQuery.data?.prompts?.length) return [];
 
       const detailPromises = recommendedQuery.data.prompts.map(async prompt => {
         try {
@@ -217,7 +248,7 @@ export const useGetRecommendedPromptsWithDetails = ({
               method: 'GET',
               headers: {
                 'Content-Type': 'application/json',
-                Authorization: session.authToken,
+                ...(session && { Authorization: session.authToken }),
               },
             }
           );
@@ -255,7 +286,7 @@ export const useGetRecommendedPromptsWithDetails = ({
 
       return Promise.all(detailPromises);
     },
-    enabled: !!session && !!recommendedQuery.data?.prompts?.length && enabled,
+    enabled: !!recommendedQuery.data?.prompts?.length && enabled,
   });
 
   return {
@@ -395,18 +426,27 @@ export const useGetMyPrompts = (
   session: Session,
   pagination: Pagination,
   _filtering: Filter,
-  type?: 'images' | 'videos' | 'stickers' | 'animated_stickers'
+  type?: 'images' | 'videos' | 'stickers' | 'animated_stickers',
+  sortBy: 'created_at' | 'last_used' | 'updated_at' = 'created_at',
+  sortOrder: 'asc' | 'desc' = 'desc'
 ) => {
   return useQuery({
-    queryKey: ['my-prompts', session?.authToken, pagination, type],
+    queryKey: [
+      'my-prompts',
+      session?.authToken,
+      pagination,
+      type,
+      sortBy,
+      sortOrder,
+    ],
     queryFn: async () => {
       if (!session) return;
       const params = new URLSearchParams({
         account: session.id,
         page: pagination.page?.toString() ?? '1',
         size: pagination.size?.toString() ?? '10',
-        sort_by: 'created_at',
-        sort_order: 'desc',
+        sort_by: sortBy,
+        sort_order: sortOrder,
         ...(type && { type }),
       });
       const response = await fetch(
@@ -480,6 +520,24 @@ export const usePromptMutation = (session: Session | null | undefined) => {
         throw new Error('No session available');
       }
 
+      const requestBody = {
+        name: prompt.name,
+        description: prompt.description,
+        versions: prompt.versions,
+        prompt: prompt.prompt,
+        additional_content_ids: prompt.additionalContentIds,
+        contracts: prompt.contracts,
+        max_tokens: prompt.maxTokens,
+        min_tokens: prompt.minTokens,
+        model: prompt.model,
+        published: prompt.published! > 0 ? true : false,
+      };
+
+      console.log('🔄 PUT /prompts request:', {
+        url: `${import.meta.env.VITE_PUBLIC_API_URL}/prompts/${prompt.id}`,
+        body: requestBody,
+      });
+
       const response = await fetch(
         `${import.meta.env.VITE_PUBLIC_API_URL}/prompts/${prompt.id}`,
         {
@@ -488,36 +546,33 @@ export const usePromptMutation = (session: Session | null | undefined) => {
             'Content-Type': 'application/json',
             Authorization: session.authToken,
           },
-          body: JSON.stringify({
-            name: prompt.name,
-            description: prompt.description,
-            versions: prompt.versions,
-            prompt: prompt.prompt,
-            additionalContentIds: prompt.additionalContentIds,
-            contracts: prompt.contracts,
-            max_tokens: prompt.maxTokens,
-            min_tokens: prompt.minTokens,
-            model: prompt.model,
-            published: prompt.published! > 0 ? true : false,
-          }),
+          body: JSON.stringify(requestBody),
         }
       );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(
-          errorData.message || `Failed to update prompt: ${response.status}`
-        );
+        console.error('❌ PUT /prompts failed:', {
+          status: response.status,
+          error: errorData,
+        });
+
+        // Extract the actual error message from the response
+        const errorMessage =
+          errorData.error ||
+          errorData.message ||
+          `Failed to update prompt: ${response.status}`;
+        throw new Error(errorMessage);
       }
 
-      return (await response.json()) as Prompt;
+      const responseData = (await response.json()) as Prompt;
+      console.log('✅ PUT /prompts response:', responseData);
+      return responseData;
     },
     onSuccess: (_data, variables) => {
+      // Invalidate all prompts lists
       queryClient.invalidateQueries({ queryKey: ['my-prompts'] });
       queryClient.invalidateQueries({ queryKey: ['prompts'] });
-      queryClient.invalidateQueries({
-        queryKey: ['prompts'],
-      });
 
       // Invalidate the specific prompt query using pattern matching
       queryClient.invalidateQueries({
@@ -566,6 +621,80 @@ export const usePublishPromptMutation = (session: Session) => {
       queryClient.invalidateQueries({
         queryKey: ['prompt', promptIdToInvalidate],
       });
+    },
+  });
+};
+
+export const usePromptFeedbackMutation = (
+  session: Session | null | undefined,
+  options?: {
+    onSuccess?: (data: PromptFeedback) => void;
+    onError?: (error: Error) => void;
+  }
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      contentId,
+      sentiment,
+    }: {
+      contentId: string;
+      sentiment: PromptFeedbackSentiment;
+    }) => {
+      if (!session) {
+        throw new Error('Session required to submit feedback');
+      }
+
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/prompts/feedback`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: session.authToken,
+          },
+          body: JSON.stringify({
+            content_id: contentId,
+            sentiment: sentiment,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.message || errorData.error || `Failed to submit feedback: ${response.status}`
+        );
+      }
+
+      const rawData = await response.json();
+      const validatedData = safeParse(PromptFeedbackSchema, rawData);
+
+      if (!validatedData) {
+        throw new Error('Invalid response format from feedback endpoint');
+      }
+
+      // Map snake_case to camelCase
+      const feedback: PromptFeedback = {
+        id: validatedData.id,
+        promptVersionId: validatedData.prompt_version_id,
+        accountId: validatedData.account_id,
+        sentiment: validatedData.sentiment,
+        contentReferenceId: validatedData.content_reference_id,
+        feedbackText: validatedData.feedback_text,
+        createdAt: validatedData.created_at,
+      };
+
+      return feedback;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['prompts'] });
+      queryClient.invalidateQueries({ queryKey: ['content'] });
+      options?.onSuccess?.(data);
+    },
+    onError: (error: Error) => {
+      console.error('Failed to submit prompt feedback:', error);
+      options?.onError?.(error);
     },
   });
 };

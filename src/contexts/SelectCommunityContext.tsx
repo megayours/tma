@@ -21,7 +21,7 @@ interface SelectedCommunityProviderType {
   setSelectedCommunity: (community: Community | null) => void;
   isLoading: boolean;
   error: Error | null;
-  defaultCollection: SupportedCollection;
+  defaultCollection?: SupportedCollection;
 }
 
 const SelectedCommunityContext = createContext<
@@ -47,7 +47,7 @@ export function SelectCommunityProvider({ children }: { children: ReactNode }) {
   const { data: availableCommunities, isLoading, error } = useGetCommunities();
 
   const defaultCollection = selectedCommunity?.collections.filter(
-    t => t.id == selectedCommunity.default_collection_id!.toString()
+    t => t.id == selectedCommunity.default_collection_id?.toString()
   )[0]!;
 
   // Initialize from URL (priority) or localStorage

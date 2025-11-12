@@ -13,6 +13,7 @@ import { useWebAppStartParam } from '@/hooks/useWebAppStartParam';
 import { useStickerPack } from '@/hooks/useStickerPacks';
 import { useSession } from '@/auth/SessionProvider';
 import { useSelectCommunity } from '@/contexts/SelectCommunityContext';
+import { usePurchase } from '@/hooks/usePurchase';
 
 export const Route = createFileRoute(
   '/sticker-packs/$stickerPackId/select-nfts/'
@@ -123,6 +124,24 @@ function RouteComponent() {
     session
   );
 
+  // Purchase hook for free packs (to skip review)
+  const { purchaseStickerPack, isPending } = usePurchase(session, {
+    onSuccess: data => {
+      // Free tier - go directly to processing page
+      navigate({
+        to: `/sticker-packs/${stickerPackId}/processing/${data.execution_id}`,
+        search: {
+          nft: encodeNFT(selectedNFTs[0]),
+          tier: 'basic',
+        },
+      });
+    },
+    onError: error => {
+      console.error('Purchase failed:', error);
+      alert(`Purchase failed: ${error.message}`);
+    },
+  });
+
   const { data: collections } = useGetSupportedCollections();
   const { selectedFavorite } = useSelectedNFTsSafe();
   const { collections: communityCollections } = useWebAppStartParam() || {
@@ -224,17 +243,12 @@ function RouteComponent() {
       stickerPack?.pricing.gold.amount_cents !== null ||
       stickerPack?.pricing.legendary.amount_cents !== null;
 
-    // Skip tier selection if all tiers are free
+    // Skip tier selection and review if all tiers are free
     if (!hasPaidTiers) {
-      navigate({
-        to: '/sticker-packs/$stickerPackId/review',
-        params: { stickerPackId },
-        search: {
-          nft: encodedNFT,
-          tier: 'basic', // Default to basic for free tier
-        },
-      });
+      // For free packs, call purchase API directly
+      purchaseStickerPack(parseInt(stickerPackId), selectedNFTs, 'basic');
     } else {
+      // For paid packs, continue to tier selection
       navigate({
         to: '/sticker-packs/$stickerPackId/select-tier',
         params: { stickerPackId },
@@ -310,6 +324,14 @@ function RouteComponent() {
     selectedNFTs.length >= (stickerPack.min_tokens_required || 1) &&
     selectedNFTs.length <= (stickerPack.max_tokens_required || 1);
 
+  // Check if the pack is free to determine button text
+  const hasPaidTiers =
+    stickerPack.pricing.basic.amount_cents !== null ||
+    stickerPack.pricing.gold.amount_cents !== null ||
+    stickerPack.pricing.legendary.amount_cents !== null;
+
+  const buttonText = hasPaidTiers ? 'Proceed' : 'Generate';
+
   return (
     <div className="mx-auto max-w-4xl p-4">
       <div className="">
@@ -341,17 +363,19 @@ function RouteComponent() {
         {isSelectorOpen && selectedNFTs.length > 0 ? (
           // Hide button when selector is open and an NFT is already selected
           <TelegramMainButton
-            text="Proceed"
+            text={buttonText}
             onClick={handleContinue}
             disabled={!canContinue || isSelectorOpen}
+            loading={isPending}
             visible={false}
           />
         ) : (
-          // Show Proceed button when selector is closed or no NFT selected
+          // Show button when selector is closed or no NFT selected
           <TelegramMainButton
-            text="Proceed"
+            text={buttonText}
             onClick={handleContinue}
             disabled={!canContinue || isSelectorOpen}
+            loading={isPending}
             visible={true}
           />
         )}

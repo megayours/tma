@@ -12,7 +12,8 @@ export type Favorite = {
 };
 
 export function useGetFavorites(session: Session | null) {
-  const { selectedFavorite, setSelectedFavorite: setSelectedFavoriteGlobal } = useSelectedNFTsSafe();
+  const { selectedFavorite, setSelectedFavorite: setSelectedFavoriteGlobal } =
+    useSelectedNFTsSafe();
   const [isLoadingSelected, setIsLoadingSelected] = useState(true);
 
   const { data, isLoading } = useQuery({
@@ -53,7 +54,10 @@ export function useGetFavorites(session: Session | null) {
 
     const cachedFavorite = getCachedFavorite(session.id);
 
-    if (cachedFavorite && data.some(fav => fav.token.id === cachedFavorite.token.id)) {
+    if (
+      cachedFavorite &&
+      data.some(fav => fav.token.id === cachedFavorite.token.id)
+    ) {
       // Use cached favorite if it still exists in the list
       setSelectedFavoriteGlobal(cachedFavorite);
     } else if (data.length > 0) {
@@ -80,11 +84,11 @@ export function useGetFavorites(session: Session | null) {
     isLoadingFavorites: isLoading,
     selectedFavorite,
     setSelectedFavorite,
-    isLoadingSelected
+    isLoadingSelected,
   };
 }
 
-export function useRemoveFromFavorites(session?: Session) {
+export function useRemoveFromFavorites(session?: Session | null) {
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: async (token: Token) => {

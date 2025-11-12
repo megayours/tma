@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { useGetFavorites } from '@/hooks/useFavorites';
 import { useSession } from '@/auth/SessionProvider';
+import { useSelectCommunity } from '@/contexts/SelectCommunityContext';
+import { useGetDefaultAvatar } from '../../../hooks/useCommunities';
 
 export function UserMenuComponent({ size = 40 }: { size?: number }) {
   const { session } = useSession();
@@ -10,6 +12,8 @@ export function UserMenuComponent({ size = 40 }: { size?: number }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLDivElement>(null);
+  const { selectedCommunity } = useSelectCommunity();
+  const { data: token } = useGetDefaultAvatar(selectedCommunity?.id);
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -31,11 +35,6 @@ export function UserMenuComponent({ size = 40 }: { size?: number }) {
     }
   }, [isMenuOpen]);
 
-  // Don't render if no favorite is selected
-  if (!selectedFavorite) {
-    return null;
-  }
-
   return (
     <div className="relative">
       <div
@@ -44,13 +43,20 @@ export function UserMenuComponent({ size = 40 }: { size?: number }) {
         className="border-tg-link flex cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 transition-all active:scale-95"
         style={{ width: size, height: size }}
       >
-        <img
-          src={selectedFavorite.token.image || '/nfts/not-available.png'}
-          alt={
-            selectedFavorite.token.name || `NFT #${selectedFavorite.token.id}`
-          }
-          className="h-full w-full object-cover"
-        />
+        {selectedFavorite ? (
+          <img
+            src={selectedFavorite.token.image || '/nfts/not-available.png'}
+            alt={
+              selectedFavorite.token.name || `NFT #${selectedFavorite.token.id}`
+            }
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <img
+            src={token?.image || '/lib/image_not_set.png'}
+            className="h-full w-full object-cover"
+          />
+        )}
       </div>
 
       {isMenuOpen && (

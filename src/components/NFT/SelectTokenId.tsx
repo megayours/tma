@@ -2,7 +2,7 @@ import { Button } from '@telegram-apps/telegram-ui';
 import type { SupportedCollection } from '@/hooks/useCollections';
 import { useState, useEffect, useRef } from 'react';
 
-interface SelectTokenIdProps {
+export interface SelectTokenIdProps {
   collection: SupportedCollection;
   onBack: () => void;
   onTokenSelect?: (tokenId: string) => void;

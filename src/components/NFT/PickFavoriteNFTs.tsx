@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useSession } from '@/auth/SessionProvider';
-import { useGetFavorites } from '@/hooks/useFavorites';
+import { useGetFavorites, useRemoveFromFavorites } from '@/hooks/useFavorites';
 import type { Token } from '@/types/response';
 import type { SupportedCollection } from '../../hooks/useCollections';
 import { Blockquote } from '@telegram-apps/telegram-ui';
@@ -26,13 +26,21 @@ function FavoriteItem({
   onImageLoad,
   active = true,
 }: FavoriteItemProps) {
+  const { session } = useSession();
   const [imageLoaded, setImageLoaded] = useState(false);
+  const { removeFromFavorites, isRemoving, removingTokenId } =
+    useRemoveFromFavorites(session);
 
   const handleImageLoad = () => {
     setImageLoaded(true);
     if (onImageLoad) {
       onImageLoad();
     }
+  };
+
+  const handleRemove = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    removeFromFavorites(favorite.token);
   };
 
   return (
@@ -47,6 +55,32 @@ function FavoriteItem({
       <div className="flex flex-col items-center gap-2">
         {/* NFT Image - Circular */}
         <div className="relative">
+          {/* Remove button */}
+          <button
+            onClick={handleRemove}
+            disabled={isRemoving && removingTokenId === favorite.token.id}
+            className="bg-tg-destructive-text absolute -top-0 -right-0 z-10 flex h-5 w-5 items-center justify-center rounded-full text-white shadow-lg transition-all hover:bg-red-600 disabled:opacity-50"
+            aria-label="Remove from favorites"
+          >
+            {isRemoving && removingTokenId === favorite.token.id ? (
+              <div className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
+            ) : (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-3 w-3"
+              >
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            )}
+          </button>
+
           <div
             className={`bg-tg-secondary h-20 w-20 rounded-full p-1 transition-colors ${
               active ? 'hover:bg-tg-secondary/80' : ''
@@ -136,7 +170,9 @@ const sortFavoritesBySupport = (
  */
 const DisabledFavoritesInfo = () => (
   <Blockquote type="text">
-    Only selected NFT collections can be used for this pack
+    <span className="text-tg-text">
+      Only selected NFT collections can be used for this pack
+    </span>
   </Blockquote>
 );
 
@@ -144,7 +180,9 @@ const DisabledFavoritesInfo = () => (
  * Warning message component for when the preselected NFT is not supported
  */
 const InvalidPreselectionWarning = () => (
-  <Blockquote type="text">Selected NFT is not supported</Blockquote>
+  <Blockquote type="text">
+    <span className="text-tg-text">Selected NFT is not supported</span>
+  </Blockquote>
 );
 
 /**

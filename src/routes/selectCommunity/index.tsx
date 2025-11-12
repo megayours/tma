@@ -21,7 +21,7 @@ function SelectCommunityPage() {
 
   const handleCommunitySelect = (community: Community) => {
     setSelectedCommunity(community);
-    navigate({ to: redirectTo || '/landing' });
+    navigate({ to: redirectTo || '/' });
   };
 
   if (isLoading) {

@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useSession } from '@/auth/SessionProvider';
 import type { SupportedCollection } from './useCollections';
+import { useGetNFTByCollectionAndTokenId } from './useCollections';
 import { useMemo } from 'react';
 import { useTelegramTheme } from '@/auth/useTelegram';
 import { retrieveLaunchParams } from '@telegram-apps/sdk';
@@ -220,4 +221,35 @@ export function useGetCommunities() {
   });
 
   return { data: data || [], isLoading, error };
+}
+
+/**
+ * Hook to get the default avatar NFT for a given community
+ * Returns the NFT token (id: '0') from the community's default collection
+ */
+export function useGetDefaultAvatar(communityId: string | undefined) {
+  const { data: community } = useGetCommunityCollections(communityId);
+
+  const selectedCollection = community?.collections.find(
+    c => c.id === community.default_collection_id?.toString()
+  );
+
+  const shouldFetch =
+    !!selectedCollection?.chain && !!selectedCollection?.address;
+
+  const {
+    data: token,
+    isLoading,
+    error,
+  } = useGetNFTByCollectionAndTokenId(
+    selectedCollection?.chain || '',
+    selectedCollection?.address || '',
+    '0'
+  );
+
+  return {
+    data: shouldFetch ? token : undefined,
+    isLoading: shouldFetch ? isLoading : false,
+    error: shouldFetch ? error : null,
+  };
 }

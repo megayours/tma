@@ -12,6 +12,7 @@ export type SupportedCollection = {
   name: string;
   image: string;
   id?: string;
+  size: number;
 };
 
 // Schema for supported collections - converts API response to SupportedCollection type
@@ -22,6 +23,7 @@ export const SupportedCollectionSchema = z
     address: z.string(),
     name: z.string(),
     image: z.string(),
+    size: z.number(),
   })
   .transform(
     (data): SupportedCollection => ({
@@ -30,6 +32,7 @@ export const SupportedCollectionSchema = z
       address: data.address,
       name: data.name,
       image: data.image,
+      size: data.size,
     })
   );
 
@@ -86,20 +89,28 @@ export function useGetCollectionsWithPrompt(prompt?: {
     );
 
     const promptCollections =
-      prompt?.contracts?.map(contract => {
-        // Fast O(1) lookup instead of O(n) find
-        const matchingSupportedCollection = supportedCollectionsMap.get(
-          `${contract.chain}:${contract.address}`
-        );
+      prompt?.contracts
+        ?.map(contract => {
+          // Fast O(1) lookup instead of O(n) find
+          const matchingSupportedCollection = supportedCollectionsMap.get(
+            `${contract.chain}:${contract.address}`
+          );
 
-        return {
-          ...contract,
-          image:
-            matchingSupportedCollection?.image ||
-            contract.image ||
-            '/nfts/not-available.png',
-        };
-      }) || [];
+          // Only return if we have a matching supported collection with all required properties
+          if (!matchingSupportedCollection) {
+            return null;
+          }
+
+          return {
+            ...matchingSupportedCollection,
+            name: contract.name || matchingSupportedCollection.name,
+            image:
+              contract.image ||
+              matchingSupportedCollection.image ||
+              '/nfts/not-available.png',
+          };
+        })
+        .filter(Boolean) as SupportedCollection[] || [];
 
     // If there are prompt contracts, return only those
     // Otherwise, return supported collections

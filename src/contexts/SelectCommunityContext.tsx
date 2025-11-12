@@ -13,6 +13,7 @@ import {
 } from '@/hooks/useCommunities';
 import { isFreshLaunch, storeAuthDate } from '@/utils/launchParams';
 import { useQueryClient } from '@tanstack/react-query';
+import { type SupportedCollection } from '../hooks/useCollections';
 
 interface SelectedCommunityProviderType {
   selectedCommunity: Community | null;
@@ -20,6 +21,7 @@ interface SelectedCommunityProviderType {
   setSelectedCommunity: (community: Community | null) => void;
   isLoading: boolean;
   error: Error | null;
+  defaultCollection: SupportedCollection;
 }
 
 const SelectedCommunityContext = createContext<
@@ -43,6 +45,10 @@ export function SelectCommunityProvider({ children }: { children: ReactNode }) {
 
   // Fetch all available communities
   const { data: availableCommunities, isLoading, error } = useGetCommunities();
+
+  const defaultCollection = selectedCommunity?.collections.filter(
+    t => t.id == selectedCommunity.default_collection_id!.toString()
+  )[0]!;
 
   // Initialize from URL (priority) or localStorage
   useEffect(() => {
@@ -147,6 +153,7 @@ export function SelectCommunityProvider({ children }: { children: ReactNode }) {
         setSelectedCommunity,
         isLoading: isLoading || (!!communityIdFromUrl && isLoadingFromUrl),
         error,
+        defaultCollection,
       }}
     >
       {children}

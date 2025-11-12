@@ -1,7 +1,10 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useCallback, useEffect, useState } from 'react';
 import { TelegramMainButton } from '@/components/TelegramMainButton';
-import { useGetSupportedCollections } from '@/hooks/useCollections';
+import {
+  useGetNFTByCollectionAndTokenId,
+  useGetSupportedCollections,
+} from '@/hooks/useCollections';
 import { NFTSelector } from './NFTSelector';
 import type { Token } from '@/types/response';
 import { useSelectedNFTsSafe } from '../../../../contexts/SelectedNFTsContext';
@@ -9,6 +12,8 @@ import { encodeNFT } from '@/utils/nftEncoding';
 import { useWebAppStartParam } from '@/hooks/useWebAppStartParam';
 import { useStickerPack } from '@/hooks/useStickerPacks';
 import { useSession } from '@/auth/SessionProvider';
+import { useSelectCommunity } from '@/contexts/SelectCommunityContext';
+
 export const Route = createFileRoute(
   '/sticker-packs/$stickerPackId/select-nfts/'
 )({
@@ -146,12 +151,30 @@ function RouteComponent() {
   // State for selector visibility
   const [isSelectorOpen, setIsSelectorOpen] = useState(false);
 
+  const { defaultCollection } = useSelectCommunity();
+
+  // Generate random token ID for default collection
+  const [randomTokenId] = useState(() =>
+    defaultCollection
+      ? Math.floor(Math.random() * defaultCollection.size).toString()
+      : '0'
+  );
+
+  // Fetch default token (only when needed)
+  const { data: defaultToken } = useGetNFTByCollectionAndTokenId(
+    defaultCollection?.chain || '',
+    defaultCollection?.address || '',
+    randomTokenId
+  );
+
   // Pre-populate with selectedFavorite if available and nothing is selected yet
   useEffect(() => {
     if (selectedFavorite && selectedNFTs.length === 0) {
       setSelectedNFTs([selectedFavorite.token]);
+    } else if (!selectedFavorite && defaultToken && selectedNFTs.length === 0) {
+      setSelectedNFTs([defaultToken]);
     }
-  }, [selectedFavorite, selectedNFTs.length, setSelectedNFTs]);
+  }, [selectedFavorite, defaultToken, selectedNFTs.length]);
 
   // Open selector if no NFT selected, close if one is selected
   useEffect(() => {

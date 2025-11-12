@@ -1,7 +1,10 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useCallback, useEffect, useState } from 'react';
 import { TelegramMainButton } from '@/components/TelegramMainButton';
-import { useGetSupportedCollections } from '@/hooks/useCollections';
+import {
+  useGetSupportedCollections,
+  useGetNFTByCollectionAndTokenId,
+} from '@/hooks/useCollections';
 import { NFTSelector } from '@/routes/sticker-packs/$stickerPackId/select-nfts/NFTSelector';
 import type { Token } from '@/types/response';
 import { useSelectedNFTsSafe } from '@/contexts/SelectedNFTsContext';
@@ -9,6 +12,7 @@ import { useGetPrompt } from '@/hooks/usePrompts';
 import { useSession } from '@/auth/SessionProvider';
 import { SpinnerFullPage } from '@/components/ui';
 import { useGenerateContentMutation } from '@/hooks/useContents';
+import { useSelectCommunity } from '@/contexts/SelectCommunityContext';
 
 export const Route = createFileRoute('/content/$promptId/select-nfts/')({
   component: SelectNFTsPage,
@@ -47,15 +51,6 @@ function SelectedNFTDisplay({
 
   return (
     <div>
-      <h2
-        className={`text-tg-text text-center font-semibold transition-all duration-500 ${
-          isSelectorOpen
-            ? 'mb-0 h-0 overflow-hidden opacity-0'
-            : 'mb-6 h-auto opacity-100'
-        }`}
-      >
-        Selected NFT
-      </h2>
       <div
         className={`flex items-center justify-center transition-all duration-500`}
       >
@@ -140,10 +135,27 @@ function SelectNFTsPage() {
   const { selectedFavorite } = useSelectedNFTsSafe();
   const [selectedNFTs, setSelectedNFTs] = useState<Token[]>([]);
 
+  const { defaultCollection } = useSelectCommunity();
+
+  // Generate random token ID for default collection
+  const [randomTokenId] = useState(() =>
+    defaultCollection
+      ? Math.floor(Math.random() * defaultCollection.size).toString()
+      : '0'
+  );
+
+  // Fetch default token (only when needed)
+  const { data: defaultToken } = useGetNFTByCollectionAndTokenId(
+    defaultCollection?.chain || '',
+    defaultCollection?.address || '',
+    randomTokenId
+  );
   // Pre-populate with selectedFavorite if available and nothing is selected yet
   useEffect(() => {
     if (selectedFavorite && selectedNFTs.length === 0) {
       setSelectedNFTs([selectedFavorite.token]);
+    } else if (!selectedFavorite && defaultToken && selectedNFTs.length === 0) {
+      setSelectedNFTs([defaultToken]);
     }
   }, [selectedFavorite, selectedNFTs.length, setSelectedNFTs]);
 

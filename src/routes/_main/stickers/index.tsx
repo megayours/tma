@@ -20,7 +20,7 @@ export function Landing() {
       page: 1,
       size: 10,
     },
-    tokenCollections: community?.collections || undefined,
+    tokenCollections: community?.collections,
   });
 
   return (

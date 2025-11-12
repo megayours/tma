@@ -15,6 +15,7 @@ export function SelectCollection({
   className = '',
 }: SelectCollectionProps) {
   const { selectedCommunity } = useSelectCommunity();
+  console.log('GGGGSelectedCOmmnuity', selectedCommunity);
 
   // Filter collections by selected community
   const filteredCollections = useMemo(() => {
@@ -33,7 +34,9 @@ export function SelectCollection({
 
     // If no community selected, show all collections
     if (!selectedCommunity || !selectedCommunity.collections) {
-      console.log('[SelectCollection Filter] No community selected, showing all collections');
+      console.log(
+        '[SelectCollection Filter] No community selected, showing all collections'
+      );
       return collections;
     }
 

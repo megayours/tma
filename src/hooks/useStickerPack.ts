@@ -1,8 +1,15 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Session } from '@/auth/useAuth';
 import type { ExecutionStatus } from '@/types/executionStatus';
 
 // Sticker Pack Execution Types
+export interface RegenerateItemResponse {
+  execution_id: string;
+  item_id: number;
+  status: string;
+  message: string;
+}
+
 export interface StickerPackNFTToken {
   contract: {
     chain: string;
@@ -184,10 +191,10 @@ export const useStickerPackExecutionById = (
       return data;
     },
     enabled: !!session && !!executionId,
-    // Poll every 5 seconds if status is processing
+    // Poll every 2 seconds until status is completed
     refetchInterval: (query) => {
       const status = query.state.data?.status;
-      return status === 'processing' ? 5000 : false;
+      return status !== 'completed' ? 2000 : false;
     },
     refetchIntervalInBackground: true,
   });
@@ -238,11 +245,71 @@ export const useGetExecution = (
       return data.data.length > 0 ? data.data[0] : null;
     },
     enabled: !!session && !!bundleId,
-    // Poll every 5 seconds if status is processing
+    // Poll every 2 seconds if execution is not completed or any items are pending/processing
     refetchInterval: (query) => {
-      const status = query.state.data?.status;
-      return status === 'processing' ? 5000 : false;
+      const execution = query.state.data;
+      if (!execution) return false;
+
+      // Check if execution status is not completed
+      const executionNotCompleted = execution.status !== 'completed';
+
+      // Check if any items are still pending or processing
+      const hasProcessingItems = execution.items?.some(
+        item => item.status === 'pending' || item.status === 'processing'
+      );
+
+      return executionNotCompleted || hasProcessingItems ? 2000 : false;
     },
     refetchIntervalInBackground: true,
+  });
+};
+
+/**
+ * Hook to regenerate a specific item in a sticker pack execution
+ */
+export const useRegenerateItem = (
+  executionId: string | null,
+  session: Session | null
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (itemId: number): Promise<RegenerateItemResponse> => {
+      if (!session || !executionId) {
+        throw new Error('Session and execution ID required');
+      }
+
+      const url = `${import.meta.env.VITE_PUBLIC_API_URL}/sticker-pack/executions/${executionId}/items/${itemId}/regenerate`;
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: session.authToken,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data: RegenerateItemResponse = await response.json();
+      return data;
+    },
+    onSuccess: () => {
+      // Invalidate the execution queries to refetch updated data
+      queryClient.invalidateQueries({
+        queryKey: ['sticker-pack-execution', executionId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['latest-execution'],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['sticker-pack-executions'],
+      });
+    },
+    onError: (error) => {
+      console.error('Error regenerating item:', error);
+    },
   });
 };

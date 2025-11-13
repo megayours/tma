@@ -2,8 +2,9 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useSession } from '@/auth/SessionProvider';
 import { useGetExecution } from '@/hooks/useStickerPack';
 import { SpinnerFullPage } from '@/components/ui';
-import { StickerPackVisualization } from '@/components/StickerPack/StickerPackVisualization';
-import { TelegramMainButton } from '@/components/TelegramMainButton';
+import { Button } from '@telegram-apps/telegram-ui';
+import { NFTUsedDisplay } from './NFTUsedDisplay';
+import { GeneratedStickers } from './GeneratedStickers';
 
 export const Route = createFileRoute('/sticker-packs/generated/$id/')({
   component: RouteComponent,
@@ -16,7 +17,11 @@ function RouteComponent() {
   const bundleId = parseInt(id);
 
   // Fetch the latest execution for this bundle
-  const { data: execution, isLoading, error } = useGetExecution(bundleId, session);
+  const {
+    data: execution,
+    isLoading,
+    error,
+  } = useGetExecution(bundleId, session);
 
   if (isLoading) {
     return <SpinnerFullPage text="Loading sticker pack..." />;
@@ -98,62 +103,40 @@ function RouteComponent() {
         {/* Header */}
         <div className="bg-tg-secondary-bg rounded-lg p-6">
           <div className="mb-4 flex items-start justify-between">
-            <div className="flex-1">
-              <h1 className="text-tg-text mb-2 text-2xl font-bold">
-                {execution.bundle.name}
-              </h1>
+            <div className="flex flex-col gap-2">
+              <div className="flex flex-row items-center gap-2">
+                <h1 className="text-tg-text mb-2 flex-[2] text-2xl font-bold">
+                  {execution.bundle.name}
+                </h1>
+                <div className="flex flex-[1] items-center justify-end gap-2">
+                  {execution.status === 'completed' &&
+                  execution.telegram_pack_url ? (
+                    <Button
+                      size="s"
+                      mode="filled"
+                      onClick={() => window.open(execution.telegram_pack_url!)}
+                    >
+                      Add to Telegram
+                    </Button>
+                  ) : (
+                    <span
+                      className={`flex items-center justify-center rounded-full px-2 align-middle text-xs font-semibold ${getStatusColor(execution.status)}`}
+                    >
+                      {getStatusLabel(execution.status)}
+                    </span>
+                  )}
+                </div>
+              </div>
               {execution.bundle.description && (
                 <p className="text-tg-hint text-sm">
                   {execution.bundle.description}
                 </p>
               )}
             </div>
-            <span
-              className={`flex-shrink-0 rounded-full px-3 py-1 text-sm font-semibold ${getStatusColor(execution.status)}`}
-            >
-              {getStatusLabel(execution.status)}
-            </span>
           </div>
-
-          {/* Progress */}
-          <div className="mb-4">
-            <div className="mb-2 flex items-center justify-between">
-              <span className="text-tg-text text-sm font-medium">Progress</span>
-              <span className="text-tg-hint text-sm">
-                {execution.completed_prompts} / {execution.total_prompts} stickers
-              </span>
-            </div>
-            <div className="bg-tg-hint/20 h-2 overflow-hidden rounded-full">
-              <div
-                className="bg-tg-button h-full transition-all duration-300"
-                style={{
-                  width: `${execution.progress_percentage}%`,
-                }}
-              />
-            </div>
-          </div>
-
-          {/* Tier/Style */}
-          <div className="mb-4">
-            <span className="text-tg-hint text-sm">Style: </span>
-            <span className="text-tg-text text-sm font-semibold capitalize">
-              {execution.effect_style}
-            </span>
-          </div>
-
           {/* NFT Used */}
           {execution.nft_token && (
-            <div className="border-tg-hint/20 border-t pt-4">
-              <h3 className="text-tg-hint mb-2 text-sm font-semibold">
-                NFT Used
-              </h3>
-              <div className="text-tg-text text-sm">
-                <div className="font-medium">
-                  {execution.nft_token.contract.name}
-                </div>
-                <div className="text-tg-hint text-xs">#{execution.nft_token.id}</div>
-              </div>
-            </div>
+            <NFTUsedDisplay nftToken={execution.nft_token} />
           )}
 
           {/* Error Message */}
@@ -165,25 +148,7 @@ function RouteComponent() {
         </div>
 
         {/* Sticker Grid */}
-        <div className="bg-tg-secondary-bg rounded-lg p-6">
-          <h2 className="text-tg-text mb-4 text-lg font-semibold">
-            Generated Stickers
-          </h2>
-          <StickerPackVisualization execution={execution} />
-        </div>
-
-        {/* Add to Telegram Button */}
-        {execution.status === 'completed' && execution.telegram_pack_url && (
-          <TelegramMainButton
-            text="Add to Telegram"
-            onClick={() => {
-              if (execution.telegram_pack_url) {
-                window.open(execution.telegram_pack_url, '_blank');
-              }
-            }}
-            visible={true}
-          />
-        )}
+        <GeneratedStickers execution={execution} />
       </div>
     </div>
   );

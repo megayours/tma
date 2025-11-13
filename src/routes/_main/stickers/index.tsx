@@ -24,13 +24,13 @@ export function Landing() {
   });
 
   return (
-    <div className="bg-tg-secondary-bg scrollbar-hide flex flex-col gap-2 overflow-y-scroll pt-2">
+    <div className="bg-tg-secondary-bg scrollbar-hide grid grid-cols-2 gap-2 overflow-y-scroll pt-2">
       {stickerPacks?.data.map(stickerPack => (
         <Link
           key={stickerPack.id}
           to="/sticker-packs/$stickerPackId"
           params={{ stickerPackId: stickerPack.id.toString() }}
-          className="bg-tg-section-bg flex shrink-0 snap-start flex-col"
+          className="bg-tg-section-bg flex shrink-0 snap-start flex-col rounded-xl"
         >
           <StickerPackItem stickerPack={stickerPack} />
         </Link>

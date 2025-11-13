@@ -168,14 +168,10 @@ function CreatePromptComponent() {
                 ← Back
               </button>
               <div className="flex items-center gap-4">
-                <span className="text-5xl">{getTypeEmoji()}</span>
                 <div>
                   <h1 className="text-tg-text text-2xl font-bold">
-                    Name Your {getTypeName()}
+                    Create {getTypeName()} Prompt
                   </h1>
-                  <p className="text-tg-hint mt-1 text-base">
-                    Give your prompt a memorable name
-                  </p>
                 </div>
               </div>
             </div>
@@ -183,7 +179,7 @@ function CreatePromptComponent() {
             <div className="mx-4">
               <TgInput
                 ref={inputRef}
-                header="Prompt Name"
+                header="Name"
                 placeholder="Enter a name for your prompt"
                 value={promptName}
                 onChange={e => setPromptName(e.target.value)}

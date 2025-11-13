@@ -3,6 +3,7 @@ import { useStickerPackExecutions } from '@/hooks/useStickerPack';
 import { useState } from 'react';
 import { SpinnerFullPage } from '@/components/ui';
 import { StickerPackVisualization } from '@/components/StickerPack/StickerPackVisualization';
+import { Link } from '@tanstack/react-router';
 
 export function StickerList() {
   const { session } = useSession();
@@ -88,10 +89,11 @@ export function StickerList() {
               <StickerPackVisualization execution={execution} />
             </div>
 
-            {/* Telegram Link for completed */}
-            {execution.status === 'completed' &&
-              execution.telegram_pack_url && (
-                <div className="pb-4">
+            {/* Actions */}
+            <div className="flex flex-col gap-2 pb-4">
+              {/* Telegram Link for completed */}
+              {execution.status === 'completed' &&
+                execution.telegram_pack_url && (
                   <a
                     href={execution.telegram_pack_url}
                     target="_blank"
@@ -100,8 +102,17 @@ export function StickerList() {
                   >
                     Add to Telegram
                   </a>
-                </div>
-              )}
+                )}
+
+              {/* Regenerate Link */}
+              <Link
+                to="/sticker-packs/generated/$id"
+                params={{ id: execution.bundle_id.toString() }}
+                className="border-tg-button text-tg-button hover:bg-tg-button/10 block rounded-lg border-2 py-2.5 text-center text-sm font-semibold transition-colors"
+              >
+                Regenerate
+              </Link>
+            </div>
 
             {/* Error Message */}
             {execution.status === 'failed' && execution.error_message && (

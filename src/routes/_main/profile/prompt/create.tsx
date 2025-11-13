@@ -56,21 +56,6 @@ function CreatePromptComponent() {
     }
   };
 
-  const getTypeEmoji = () => {
-    switch (selectedType) {
-      case 'images':
-        return '🖼️';
-      case 'videos':
-        return '🎬';
-      case 'stickers':
-        return '😊';
-      case 'animated_stickers':
-        return '✨';
-      default:
-        return '';
-    }
-  };
-
   const getTypeName = () => {
     switch (selectedType) {
       case 'images':

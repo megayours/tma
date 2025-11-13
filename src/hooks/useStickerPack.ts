@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import type { Session } from '@/auth/useAuth';
+import type { ExecutionStatus } from '@/types/executionStatus';
 
 // Sticker Pack Execution Types
 export interface StickerPackNFTToken {
@@ -183,6 +184,60 @@ export const useStickerPackExecutionById = (
       return data;
     },
     enabled: !!session && !!executionId,
+    // Poll every 5 seconds if status is processing
+    refetchInterval: (query) => {
+      const status = query.state.data?.status;
+      return status === 'processing' ? 5000 : false;
+    },
+    refetchIntervalInBackground: true,
+  });
+};
+
+/**
+ * Hook to get the latest execution for a specific bundle_id
+ * Useful for showing the most recent generation on a bundle page
+ */
+export const useGetExecution = (
+  bundleId: number | null,
+  session: Session | null,
+  statusFilter?: ExecutionStatus
+) => {
+  return useQuery({
+    queryKey: ['latest-execution', bundleId, statusFilter, session?.authToken],
+    queryFn: async (): Promise<StickerPackExecution | null> => {
+      if (!session || !bundleId) {
+        throw new Error('Session and bundle ID required');
+      }
+
+      // Build query parameters to get the latest execution
+      const queryParams = new URLSearchParams();
+      queryParams.append('page', '1');
+      queryParams.append('size', '1');
+      queryParams.append('bundle_id', bundleId.toString());
+      if (statusFilter) {
+        queryParams.append('status', statusFilter);
+      }
+
+      const url = `${import.meta.env.VITE_PUBLIC_API_URL}/sticker-pack/executions?${queryParams.toString()}`;
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: session.authToken,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data: StickerPackExecutionsResponse = await response.json();
+
+      // Return the first (latest) execution or null if none found
+      return data.data.length > 0 ? data.data[0] : null;
+    },
+    enabled: !!session && !!bundleId,
     // Poll every 5 seconds if status is processing
     refetchInterval: (query) => {
       const status = query.state.data?.status;

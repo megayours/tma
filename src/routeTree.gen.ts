@@ -32,6 +32,7 @@ import { Route as MainProfileIndexRouteImport } from './routes/_main/profile/ind
 import { Route as MainFeedIndexRouteImport } from './routes/_main/feed/index'
 import { Route as StickerPacksStickerPackIdSuccessRouteImport } from './routes/sticker-packs/$stickerPackId/success'
 import { Route as StickerPacksStickerPackIdCheckoutRouteImport } from './routes/sticker-packs/$stickerPackId/checkout'
+import { Route as StickerPacksGeneratedIdIndexRouteImport } from './routes/sticker-packs/generated/$id/index'
 import { Route as StickerPacksStickerPackIdSelectTierIndexRouteImport } from './routes/sticker-packs/$stickerPackId/select-tier/index'
 import { Route as StickerPacksStickerPackIdSelectNftsIndexRouteImport } from './routes/sticker-packs/$stickerPackId/select-nfts/index'
 import { Route as StickerPacksStickerPackIdReviewIndexRouteImport } from './routes/sticker-packs/$stickerPackId/review/index'
@@ -175,6 +176,12 @@ const StickerPacksStickerPackIdCheckoutRoute =
     id: '/checkout',
     path: '/checkout',
     getParentRoute: () => StickerPacksStickerPackIdRoute,
+  } as any)
+const StickerPacksGeneratedIdIndexRoute =
+  StickerPacksGeneratedIdIndexRouteImport.update({
+    id: '/generated/$id/',
+    path: '/generated/$id/',
+    getParentRoute: () => StickerPacksRoute,
   } as any)
 const StickerPacksStickerPackIdSelectTierIndexRoute =
   StickerPacksStickerPackIdSelectTierIndexRouteImport.update({
@@ -363,6 +370,7 @@ export interface FileRoutesByFullPath {
   '/sticker-packs/$stickerPackId/review': typeof StickerPacksStickerPackIdReviewIndexRoute
   '/sticker-packs/$stickerPackId/select-nfts': typeof StickerPacksStickerPackIdSelectNftsIndexRoute
   '/sticker-packs/$stickerPackId/select-tier': typeof StickerPacksStickerPackIdSelectTierIndexRoute
+  '/sticker-packs/generated/$id': typeof StickerPacksGeneratedIdIndexRoute
   '/profile/prompt/edit/$promptId': typeof MainProfilePromptEditPromptIdRouteRouteWithChildren
   '/profile/favorites/new': typeof MainProfileFavoritesNewIndexRoute
   '/profile/my-sticker-packs/new': typeof MainProfileMyStickerPacksNewIndexRoute
@@ -409,6 +417,7 @@ export interface FileRoutesByTo {
   '/sticker-packs/$stickerPackId/review': typeof StickerPacksStickerPackIdReviewIndexRoute
   '/sticker-packs/$stickerPackId/select-nfts': typeof StickerPacksStickerPackIdSelectNftsIndexRoute
   '/sticker-packs/$stickerPackId/select-tier': typeof StickerPacksStickerPackIdSelectTierIndexRoute
+  '/sticker-packs/generated/$id': typeof StickerPacksGeneratedIdIndexRoute
   '/profile/favorites/new': typeof MainProfileFavoritesNewIndexRoute
   '/profile/my-sticker-packs/new': typeof MainProfileMyStickerPacksNewIndexRoute
   '/auth/discord/v1/callback': typeof AuthDiscordV1CallbackIndexRoute
@@ -459,6 +468,7 @@ export interface FileRoutesById {
   '/sticker-packs/$stickerPackId/review/': typeof StickerPacksStickerPackIdReviewIndexRoute
   '/sticker-packs/$stickerPackId/select-nfts/': typeof StickerPacksStickerPackIdSelectNftsIndexRoute
   '/sticker-packs/$stickerPackId/select-tier/': typeof StickerPacksStickerPackIdSelectTierIndexRoute
+  '/sticker-packs/generated/$id/': typeof StickerPacksGeneratedIdIndexRoute
   '/_main/profile/prompt/edit/$promptId': typeof MainProfilePromptEditPromptIdRouteRouteWithChildren
   '/_main/profile/favorites/new/': typeof MainProfileFavoritesNewIndexRoute
   '/_main/profile/my-sticker-packs/new/': typeof MainProfileMyStickerPacksNewIndexRoute
@@ -510,6 +520,7 @@ export interface FileRouteTypes {
     | '/sticker-packs/$stickerPackId/review'
     | '/sticker-packs/$stickerPackId/select-nfts'
     | '/sticker-packs/$stickerPackId/select-tier'
+    | '/sticker-packs/generated/$id'
     | '/profile/prompt/edit/$promptId'
     | '/profile/favorites/new'
     | '/profile/my-sticker-packs/new'
@@ -556,6 +567,7 @@ export interface FileRouteTypes {
     | '/sticker-packs/$stickerPackId/review'
     | '/sticker-packs/$stickerPackId/select-nfts'
     | '/sticker-packs/$stickerPackId/select-tier'
+    | '/sticker-packs/generated/$id'
     | '/profile/favorites/new'
     | '/profile/my-sticker-packs/new'
     | '/auth/discord/v1/callback'
@@ -605,6 +617,7 @@ export interface FileRouteTypes {
     | '/sticker-packs/$stickerPackId/review/'
     | '/sticker-packs/$stickerPackId/select-nfts/'
     | '/sticker-packs/$stickerPackId/select-tier/'
+    | '/sticker-packs/generated/$id/'
     | '/_main/profile/prompt/edit/$promptId'
     | '/_main/profile/favorites/new/'
     | '/_main/profile/my-sticker-packs/new/'
@@ -796,6 +809,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/sticker-packs/$stickerPackId/checkout'
       preLoaderRoute: typeof StickerPacksStickerPackIdCheckoutRouteImport
       parentRoute: typeof StickerPacksStickerPackIdRoute
+    }
+    '/sticker-packs/generated/$id/': {
+      id: '/sticker-packs/generated/$id/'
+      path: '/generated/$id'
+      fullPath: '/sticker-packs/generated/$id'
+      preLoaderRoute: typeof StickerPacksGeneratedIdIndexRouteImport
+      parentRoute: typeof StickerPacksRoute
     }
     '/sticker-packs/$stickerPackId/select-tier/': {
       id: '/sticker-packs/$stickerPackId/select-tier/'
@@ -1078,11 +1098,13 @@ const StickerPacksStickerPackIdRouteWithChildren =
 interface StickerPacksRouteChildren {
   StickerPacksStickerPackIdRoute: typeof StickerPacksStickerPackIdRouteWithChildren
   StickerPacksIndexRoute: typeof StickerPacksIndexRoute
+  StickerPacksGeneratedIdIndexRoute: typeof StickerPacksGeneratedIdIndexRoute
 }
 
 const StickerPacksRouteChildren: StickerPacksRouteChildren = {
   StickerPacksStickerPackIdRoute: StickerPacksStickerPackIdRouteWithChildren,
   StickerPacksIndexRoute: StickerPacksIndexRoute,
+  StickerPacksGeneratedIdIndexRoute: StickerPacksGeneratedIdIndexRoute,
 }
 
 const StickerPacksRouteWithChildren = StickerPacksRoute._addFileChildren(

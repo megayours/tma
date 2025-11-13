@@ -3,7 +3,7 @@ name: Deploy to Firebase on semver branch
 on:
   push:
     branches:
-      - "**" # we filter in the job with a regex
+      - '**' # we filter in the job with a regex
 
 jobs:
   deploy:
@@ -18,8 +18,8 @@ jobs:
       - name: Use Node 20
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
-          cache: "npm"
+          node-version: '20'
+          cache: 'npm'
 
       - name: Write .env.production from secret
         run: |

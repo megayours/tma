@@ -33,8 +33,6 @@ function LoadingDots() {
 
 function StickerItem({
   item,
-  onRegenerate,
-  isPending,
   isSelectMode,
   isSelected,
   onToggleSelect,

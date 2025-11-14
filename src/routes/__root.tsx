@@ -155,7 +155,7 @@ function TelegramEnvironmentHandler() {
     }
 
     // if it is not the home page, show the back button
-    if (pathname !== '/' && pathname !== '/landing') {
+    if (pathname !== '/' && pathname !== '/stickers') {
       backButton.show();
       backButton.onClick(() => {
         router.history.back();

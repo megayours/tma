@@ -56,10 +56,16 @@ export function StickerList() {
             {/* Header */}
             <div className="flex items-start justify-between gap-2 pt-4">
               <div className="min-w-0 flex-1">
-                <h3 className="text-tg-text text-base leading-tight font-semibold">
-                  {execution.bundle.name} (
-                  {execution.effect_style.toUpperCase()})
-                </h3>
+                <Link
+                  to="/sticker-packs/generated/$id"
+                  params={{ id: execution.id.toString() }}
+                >
+                  <h3 className="text-tg-text text-base leading-tight font-semibold">
+                    {execution.bundle.name}
+                    {execution.effect_style !== 'basic' &&
+                      ` (${execution.effect_style.toUpperCase()})`}
+                  </h3>
+                </Link>
                 {execution.nft_token && (
                   <div className="text-tg-hint mt-0.5 truncate text-xs">
                     {execution.nft_token.contract.name} #
@@ -107,7 +113,7 @@ export function StickerList() {
               {/* Regenerate Link */}
               <Link
                 to="/sticker-packs/generated/$id"
-                params={{ id: execution.bundle_id.toString() }}
+                params={{ id: execution.id.toString() }}
                 className="border-tg-button text-tg-button hover:bg-tg-button/10 block rounded-lg border-2 py-2.5 text-center text-sm font-semibold transition-colors"
               >
                 Regenerate

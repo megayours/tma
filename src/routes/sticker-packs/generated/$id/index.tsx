@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useSession } from '@/auth/SessionProvider';
-import { useGetExecution } from '@/hooks/useStickerPack';
+import { useStickerPackExecutionById } from '@/hooks/useStickerPack';
 import { SpinnerFullPage } from '@/components/ui';
 import { Button } from '@telegram-apps/telegram-ui';
 import { NFTUsedDisplay } from './NFTUsedDisplay';
@@ -14,14 +14,12 @@ function RouteComponent() {
   const { id } = Route.useParams();
   const { session } = useSession();
 
-  const bundleId = parseInt(id);
-
-  // Fetch the latest execution for this bundle
+  // Fetch execution status by execution ID
   const {
     data: execution,
     isLoading,
     error,
-  } = useGetExecution(bundleId, session);
+  } = useStickerPackExecutionById(id, session);
 
   if (isLoading) {
     return <SpinnerFullPage text="Loading sticker pack..." />;

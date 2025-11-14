@@ -191,10 +191,17 @@ export const useStickerPackExecutionById = (
       return data;
     },
     enabled: !!session && !!executionId,
-    // Poll every 2 seconds until status is completed
+    // Poll every 2 seconds until execution is completed AND no items are processing
     refetchInterval: (query) => {
-      const status = query.state.data?.status;
-      return status !== 'completed' ? 2000 : false;
+      const execution = query.state.data;
+      if (!execution) return false;
+
+      const executionNotCompleted = execution.status !== 'completed';
+      const hasProcessingItems = execution.items?.some(
+        item => item.status === 'pending' || item.status === 'processing'
+      );
+
+      return executionNotCompleted || hasProcessingItems ? 2000 : false;
     },
     refetchIntervalInBackground: true,
   });

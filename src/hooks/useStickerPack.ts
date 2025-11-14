@@ -51,6 +51,9 @@ export interface StickerPackExecutionItem {
   status: 'pending' | 'processing' | 'completed' | 'failed';
   error_message: string | null;
   sort_order: number;
+  regeneration_count: number;
+  previous_content_ids: string[];
+  last_regenerated_at: number | null;
   created_at: number;
   updated_at: number;
   bundle_item: StickerPackBundleItem;
@@ -64,6 +67,7 @@ export interface StickerPackExecutionItem {
     prompt_id: number;
   };
   generated_content_url?: string;
+  can_regenerate: boolean;
 }
 
 export interface StickerPackExecution {

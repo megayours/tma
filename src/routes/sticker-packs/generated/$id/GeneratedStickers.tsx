@@ -15,6 +15,9 @@ interface StickerItemProps {
   item: StickerPackExecutionItem;
   onRegenerate: (itemId: number) => void;
   isPending: boolean;
+  isSelectMode: boolean;
+  isSelected: boolean;
+  onToggleSelect: (itemId: number) => void;
 }
 
 // Loading dots animation component
@@ -28,7 +31,14 @@ function LoadingDots() {
   );
 }
 
-function StickerItem({ item, onRegenerate, isPending }: StickerItemProps) {
+function StickerItem({
+  item,
+  onRegenerate,
+  isPending,
+  isSelectMode,
+  isSelected,
+  onToggleSelect,
+}: StickerItemProps) {
   const renderStickerContent = () => {
     if (item.status === 'completed' && item.generated_content_url) {
       return (
@@ -63,11 +73,47 @@ function StickerItem({ item, onRegenerate, isPending }: StickerItemProps) {
     );
   };
 
+  const canSelect = item.status === 'completed' && item.can_regenerate;
+
   return (
-    <div className="flex flex-col gap-2">
+    <div className="0 flex flex-col gap-1">
       {/* Sticker Image */}
-      <div className="bg-tg-hint/10 relative aspect-square overflow-hidden rounded-lg">
+      <div
+        className={`bg-tg-hint/10 relative aspect-square overflow-hidden rounded-lg transition-all ${
+          isSelectMode && canSelect ? 'cursor-pointer' : ''
+        } ${isSelected ? 'ring-tg-button ring-4' : ''}`}
+        onClick={() => isSelectMode && canSelect && onToggleSelect(item.id)}
+      >
         {renderStickerContent()}
+
+        {/* Selection Checkbox */}
+        {isSelectMode && canSelect && (
+          <div className="absolute top-2 right-2">
+            <div
+              className={`flex h-6 w-6 items-center justify-center rounded-full border-2 transition-all ${
+                isSelected
+                  ? 'bg-tg-button border-tg-button'
+                  : 'border-gray-300 bg-white/80'
+              }`}
+            >
+              {isSelected && (
+                <svg
+                  className="h-4 w-4 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={3}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Prompt Name */}
@@ -76,19 +122,21 @@ function StickerItem({ item, onRegenerate, isPending }: StickerItemProps) {
       </div>
 
       {/* Regenerate Button or Status */}
-      {item.status === 'completed' ? (
-        <button
-          onClick={() => onRegenerate(item.id)}
-          disabled={isPending}
-          className="bg-tg-button text-tg-button-text hover:bg-tg-button/80 flex w-full items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <FaRedo className={isPending ? 'animate-spin' : ''} />
-          <span>{isPending ? 'Regenerating...' : 'Regenerate'}</span>
-        </button>
-      ) : (item.status === 'processing' || item.status === 'pending') && (
-        <div className="text-tg-hint flex w-full items-center justify-center py-2 text-sm">
-          <span>In Progress</span>
+      {!isSelectMode && item.status === 'completed' && item.can_regenerate ? (
+        ''
+      ) : !isSelectMode &&
+        item.status === 'completed' &&
+        !item.can_regenerate ? (
+        <div className="text-tg-hint flex w-full items-center justify-start text-xs">
+          <span>Out of Regenerations</span>
         </div>
+      ) : (
+        !isSelectMode &&
+        (item.status === 'processing' || item.status === 'pending') && (
+          <div className="text-tg-hint flex w-full items-center justify-start text-xs">
+            <span>In Progress</span>
+          </div>
+        )
       )}
 
       {/* Error Message */}
@@ -105,6 +153,11 @@ export function GeneratedStickers({ execution }: GeneratedStickersProps) {
   const [regeneratingItemId, setRegeneratingItemId] = useState<number | null>(
     null
   );
+  const [isSelectMode, setIsSelectMode] = useState(false);
+  const [selectedItemIds, setSelectedItemIds] = useState<Set<number>>(
+    new Set()
+  );
+  const [isRegeneratingBulk, setIsRegeneratingBulk] = useState(false);
 
   const handleRegenerate = async (itemId: number) => {
     setRegeneratingItemId(itemId);
@@ -117,20 +170,88 @@ export function GeneratedStickers({ execution }: GeneratedStickersProps) {
     }
   };
 
+  const handleToggleSelect = (itemId: number) => {
+    setSelectedItemIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(itemId)) {
+        newSet.delete(itemId);
+      } else {
+        newSet.add(itemId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleRegenerateButtonClick = async () => {
+    if (!isSelectMode) {
+      // Enter select mode
+      setIsSelectMode(true);
+      setSelectedItemIds(new Set());
+    } else {
+      // Regenerate selected items
+      if (selectedItemIds.size === 0) {
+        // Exit select mode if nothing selected
+        setIsSelectMode(false);
+        return;
+      }
+
+      setIsRegeneratingBulk(true);
+      try {
+        // Regenerate all selected items
+        await Promise.all(
+          Array.from(selectedItemIds).map(itemId =>
+            regenerateMutation.mutateAsync(itemId)
+          )
+        );
+      } catch (error) {
+        console.error('Failed to regenerate items:', error);
+      } finally {
+        setIsRegeneratingBulk(false);
+        setSelectedItemIds(new Set());
+        setIsSelectMode(false);
+      }
+    }
+  };
+
+  const getButtonText = () => {
+    if (!isSelectMode) {
+      return 'Regenerate';
+    }
+    if (selectedItemIds.size === 0) {
+      return 'Cancel';
+    }
+    return `Regenerate (${selectedItemIds.size})`;
+  };
+
   return (
     <div className="bg-tg-secondary-bg rounded-lg p-6">
-      <h2 className="text-tg-text mb-4 text-lg font-semibold">
-        Generated Stickers
-      </h2>
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-tg-text text-lg font-semibold">
+          Generated Stickers
+        </h2>
+        <button
+          onClick={handleRegenerateButtonClick}
+          disabled={isRegeneratingBulk}
+          className="bg-tg-button text-tg-button-text hover:bg-tg-button/80 flex items-center gap-2 rounded-lg px-3 py-1 text-sm font-medium transition-all disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <FaRedo className={isRegeneratingBulk ? 'animate-spin' : ''} />
+          <span>
+            {isRegeneratingBulk ? 'Regenerating...' : getButtonText()}
+          </span>
+        </button>
+      </div>
 
       {/* Responsive Grid: 2 columns on mobile, 3 on tablet, 4 on desktop */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-        {execution.items?.map((item) => (
+      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5">
+        {execution.items?.map(item => (
           <StickerItem
             key={item.id}
             item={item}
             onRegenerate={handleRegenerate}
             isPending={regeneratingItemId === item.id}
+            isSelectMode={isSelectMode}
+            isSelected={selectedItemIds.has(item.id)}
+            onToggleSelect={handleToggleSelect}
           />
         ))}
 

@@ -2,7 +2,6 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useSession } from '@/auth/SessionProvider';
 import { useStickerPackExecutionById } from '@/hooks/useStickerPack';
 import { SpinnerFullPage } from '@/components/ui';
-import { Button } from '@telegram-apps/telegram-ui';
 import { NFTUsedDisplay } from './NFTUsedDisplay';
 import { GeneratedStickers } from './GeneratedStickers';
 
@@ -109,15 +108,14 @@ function RouteComponent() {
                 <div className="flex flex-[1] items-center justify-end gap-2">
                   {execution.status === 'completed' &&
                   execution.telegram_pack_url ? (
-                    <Button
-                      size="s"
-                      mode="filled"
-                      onClick={() => window.open(execution.telegram_pack_url!)}
+                    <a
+                      href={execution.telegram_pack_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-tg-button text-tg-button-text rounded-lg p-1.5 text-center text-sm whitespace-nowrap transition-colors"
                     >
-                      <span className="text-tg-button-text text-xs">
-                        Add to Telegram
-                      </span>
-                    </Button>
+                      Add to Telegram
+                    </a>
                   ) : (
                     <span
                       className={`flex items-center justify-center rounded-full px-2 align-middle text-xs font-semibold ${getStatusColor(execution.status)}`}

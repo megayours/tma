@@ -116,7 +116,9 @@ function RouteComponent() {
                       mode="filled"
                       onClick={() => window.open(execution.telegram_pack_url!)}
                     >
-                      Add to Telegram
+                      <span className="text-tg-button-text text-xs">
+                        Add to Telegram
+                      </span>
                     </Button>
                   ) : (
                     <span

@@ -1,4 +1,4 @@
-import { Cell, Divider } from '@telegram-apps/telegram-ui';
+import { Divider } from '@telegram-apps/telegram-ui';
 
 interface AddInputMenuProps {
   onSelectContent: (contentType: string) => void;
@@ -12,16 +12,30 @@ export const AddInputMenu = ({
   console.log('additionalImagesEnabled', additionalImagesEnabled);
   return (
     <div className="flex w-full flex-col gap-2 p-4">
-      <Cell onClick={() => onSelectContent('nft')}>NFT</Cell>
+      <div
+        onClick={() => onSelectContent('nft')}
+        className="cursor-pointer rounded-lg bg-tg-secondary p-4 text-tg-text transition-colors hover:bg-tg-secondary/80"
+      >
+        NFT
+      </div>
       {/* <Divider />
-      <Cell onClick={() => onSelectContent('prompt')}>Prompt</Cell> */}
+      <div
+        onClick={() => onSelectContent('prompt')}
+        className="cursor-pointer rounded-lg bg-tg-secondary p-4 text-tg-text transition-colors hover:bg-tg-secondary/80"
+      >
+        Prompt
+      </div> */}
       <Divider />
-      <Cell
-        onClick={() => onSelectContent('image')}
-        disabled={!additionalImagesEnabled}
+      <div
+        onClick={() => !additionalImagesEnabled ? undefined : onSelectContent('image')}
+        className={`rounded-lg p-4 transition-colors ${
+          additionalImagesEnabled
+            ? 'cursor-pointer bg-tg-secondary text-tg-text hover:bg-tg-secondary/80'
+            : 'cursor-not-allowed bg-tg-secondary/40 text-tg-hint opacity-50'
+        }`}
       >
         Image
-      </Cell>
+      </div>
     </div>
   );
 };

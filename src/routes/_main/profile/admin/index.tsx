@@ -17,7 +17,7 @@ function RenderAdmin() {
     return <div>You are not an admin</div>;
   }
   return (
-    <div className="flex flex-col gap-4 p-4">
+    <div className="mx-auto flex max-w-4xl flex-col gap-4 p-4">
       {/* Recently Used Section */}
       <RecentlyUsedPrompts />
 

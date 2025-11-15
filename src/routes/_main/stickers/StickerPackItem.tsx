@@ -18,12 +18,12 @@ export function StickerPackItem({
   };
 
   return (
-    <div className="flex w-full flex-col rounded-lg bg-tg-section-bg">
+    <div className="bg-tg-section-bg flex w-full flex-col rounded-lg">
       {/* Header with title and price button */}
       <div className="flex items-center justify-between gap-3 px-4 py-2">
         <h2 className="text-xl font-semibold">{stickerPack.name}</h2>
-        <button className="shrink-0 rounded-full px-6 py-2 text-sm font-semibold text-white transition-colors bg-tg-button">
-          {getLowestPrice()}
+        <button className="bg-tg-button shrink-0 rounded-full px-6 py-2 text-sm font-semibold text-white transition-colors">
+          {getLowestPrice() == 'Free' ? 'Get' : getLowestPrice()}
         </button>
       </div>
 
@@ -38,7 +38,7 @@ export function StickerPackItem({
               <img
                 src={item.preview_url}
                 alt={`${stickerPack.name} preview ${index + 1}`}
-                className="h-full w-full p-1 object-contain"
+                className="h-full w-full object-contain p-1"
               />
             </div>
           ))}

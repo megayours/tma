@@ -18,6 +18,7 @@ interface StickerItemProps {
   isSelectMode: boolean;
   isSelected: boolean;
   onToggleSelect: (itemId: number) => void;
+  index: number;
 }
 
 // Loading dots animation component
@@ -36,6 +37,7 @@ function StickerItem({
   isSelectMode,
   isSelected,
   onToggleSelect,
+  index,
 }: StickerItemProps) {
   const renderStickerContent = () => {
     if (item.status === 'completed' && item.generated_content_url) {
@@ -44,6 +46,8 @@ function StickerItem({
           src={item.generated_content_url}
           alt={item.bundle_item.prompt.name}
           className="h-full w-full object-contain"
+          loading={index < 10 ? 'eager' : 'lazy'}
+          decoding="async"
         />
       );
     }
@@ -241,7 +245,7 @@ export function GeneratedStickers({ execution }: GeneratedStickersProps) {
 
       {/* Responsive Grid: 2 columns on mobile, 3 on tablet, 4 on desktop */}
       <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5">
-        {execution.items?.map(item => (
+        {execution.items?.map((item, index) => (
           <StickerItem
             key={item.id}
             item={item}
@@ -250,6 +254,7 @@ export function GeneratedStickers({ execution }: GeneratedStickersProps) {
             isSelectMode={isSelectMode}
             isSelected={selectedItemIds.has(item.id)}
             onToggleSelect={handleToggleSelect}
+            index={index}
           />
         ))}
 

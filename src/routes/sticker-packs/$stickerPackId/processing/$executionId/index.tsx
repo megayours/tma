@@ -64,7 +64,9 @@ function RouteComponent() {
 
   // Confetti state
   const [showConfetti, setShowConfetti] = useState(false);
-  const [dotLottieInstance, setDotLottieInstance] = useState<DotLottie | null>(null);
+  const [dotLottieInstance, setDotLottieInstance] = useState<DotLottie | null>(
+    null
+  );
 
   // Fetch execution data by execution ID
   const { data: execution, isLoading: isLoadingExecution } =
@@ -207,6 +209,17 @@ function RouteComponent() {
               </h3>
               <StickerPackVisualization execution={execution} />
             </div>
+            {/* Link to the in-generation sticker pack */}
+            <div className="">
+              <button
+                onClick={() =>
+                  navigate({ to: `/sticker-packs/generated/${executionId}` })
+                }
+                className="text-tg-link text-sm font-medium hover:underline"
+              >
+                View Sticker Pack Details →
+              </button>
+            </div>
           </div>
         )}
         {isProcessing && (
@@ -221,14 +234,19 @@ function RouteComponent() {
         )}
 
         {isCompleted && execution && (
-          <div className="bg-tg-secondary-bg rounded-lg p-6 text-center">
-            <h2 className="text-tg-text mb-4 text-2xl font-semibold">
+          <div className="bg-tg-secondary-bg flex flex-col gap-2 rounded-lg p-6 text-center">
+            <h2 className="text-tg-text text-2xl font-semibold">
               🎉 Your Sticker Pack is Ready!
             </h2>
-            <p className="text-tg-hint mb-6 text-sm">
+            <p className="text-tg-hint text-sm">
               All {execution.total_prompts} stickers have been generated
               successfully.
             </p>
+
+            {/* show the stickers */}
+            <div className="mt-6">
+              <StickerPackVisualization execution={execution} />
+            </div>
 
             {/* Telegram Link */}
             {execution.telegram_pack_url && (
@@ -241,13 +259,16 @@ function RouteComponent() {
                 Add to Telegram
               </a>
             )}
-
-            {/* show the stickers */}
-            <div className="mt-6">
-              <h3 className="text-tg-text mb-4 text-lg font-semibold">
-                All Stickers
-              </h3>
-              <StickerPackVisualization execution={execution} />
+            {/* Link to generated sticker pack */}
+            <div className="">
+              <button
+                onClick={() =>
+                  navigate({ to: `/sticker-packs/generated/${executionId}` })
+                }
+                className="text-tg-link text-sm font-medium hover:underline"
+              >
+                View Sticker Pack Details →
+              </button>
             </div>
           </div>
         )}

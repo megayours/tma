@@ -275,13 +275,27 @@ export type StickerPackDetail = z.infer<typeof StickerPackDetailSchema>;
 // Hook to fetch a single sticker pack
 export const useStickerPack = (
   id: number | string,
-  session?: Session | null | undefined
+  session?: Session | null | undefined,
+  tokens?: SupportedCollection[]
 ) => {
   return useQuery({
-    queryKey: ['sticker-pack', id],
+    queryKey: ['sticker-pack', id, tokens],
     queryFn: async (): Promise<StickerPackDetail> => {
       try {
-        const url = `${import.meta.env.VITE_PUBLIC_API_URL}/sticker-pack/${id}`;
+        // Build query parameters
+        const queryParams = new URLSearchParams();
+
+        // Add token_collection_ids if provided
+        if (tokens && tokens.length > 0) {
+          tokens.forEach(token => {
+            if (token.id) {
+              queryParams.append('token_collection_ids', token.id.toString());
+            }
+          });
+        }
+
+        const queryString = queryParams.toString();
+        const url = `${import.meta.env.VITE_PUBLIC_API_URL}/sticker-pack/${id}${queryString ? `?${queryString}` : ''}`;
 
         const response = await fetch(url, {
           method: 'GET',

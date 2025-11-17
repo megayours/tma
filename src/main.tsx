@@ -8,6 +8,9 @@ import { ThemeProvider } from './auth/ThemeProvider';
 import { AuthProvider } from './auth/AuthProvider';
 import './style.css';
 
+// Import service worker utilities (adds clearSWCache() and checkSWCache() to window)
+import './utils/clearServiceWorker';
+
 // Import the generated route tree
 import { routeTree } from './routeTree.gen';
 

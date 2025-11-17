@@ -92,3 +92,6 @@ export type { StickerCollectionBarProps } from './content/StickerCollectionPorta
 // Toast
 export { ToastProvider, useToast, Toast, ToastContainer } from './toast';
 export type { ToastType, ToastContextType } from './toast';
+
+// Images
+export { LazyImage } from './LazyImage';

@@ -39,6 +39,8 @@ export function StickerPackItem({
                 src={item.preview_url}
                 alt={`${stickerPack.name} preview ${index + 1}`}
                 className="h-full w-full object-contain p-1"
+                loading="lazy"
+                decoding="async"
               />
             </div>
           ))}

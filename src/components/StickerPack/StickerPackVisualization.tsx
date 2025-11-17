@@ -32,6 +32,8 @@ export function StickerPackVisualization({
                 src={item.generated_content_url}
                 alt={item.bundle_item.prompt.name}
                 className="h-full w-full object-contain p-1"
+                loading="lazy"
+                decoding="async"
               />
             ) : item.status === 'processing' || item.status === 'pending' ? (
               // Processing or pending - show loading dots

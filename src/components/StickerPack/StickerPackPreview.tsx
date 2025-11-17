@@ -43,6 +43,7 @@ const PreviewItem = ({ item, packName, index }: PreviewItemProps) => {
           alt={`${packName} preview ${index + 1}`}
           className="h-full w-full object-cover transition-transform hover:scale-110"
           loading="lazy"
+          decoding="async"
           onLoad={handleImageLoad}
           onError={handleImageError}
         />

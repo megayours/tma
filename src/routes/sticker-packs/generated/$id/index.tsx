@@ -13,6 +13,8 @@ function RouteComponent() {
   const { id } = Route.useParams();
   const { session } = useSession();
 
+  console.log('GMGM');
+
   // Fetch execution status by execution ID
   const {
     data: execution,

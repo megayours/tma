@@ -3,6 +3,7 @@ import {
   Outlet,
   useLocation,
   useRouter,
+  redirect,
 } from '@tanstack/react-router';
 import { isTMA } from '@telegram-apps/bridge';
 import {
@@ -13,6 +14,7 @@ import {
   viewport,
   miniApp,
   swipeBehavior,
+  retrieveLaunchParams,
 } from '@telegram-apps/sdk-react';
 import { useEffect, useState, useRef } from 'react';
 import { Header } from '@/components/Header';
@@ -288,6 +290,23 @@ function AppContent() {
 }
 
 export const Route = createRootRoute({
+  beforeLoad: async ({ location }) => {
+    // Only run on client side
+    if (typeof window === 'undefined') return;
+
+    // Check if running in Telegram environment
+    if (isTMA()) {
+      const launchParams = retrieveLaunchParams();
+      const startParam = launchParams.tgWebAppStartParam;
+
+      // Only redirect from root path and if startParam exists
+      if (startParam && location.pathname === '/') {
+        const decodedPath = base64UrlDecode(startParam);
+        console.log('beforeLoad: Redirecting to:', decodedPath);
+        throw redirect({ to: decodedPath });
+      }
+    }
+  },
   component: () => {
     return (
       <ToastProvider>

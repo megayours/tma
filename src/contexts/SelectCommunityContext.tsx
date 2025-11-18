@@ -124,12 +124,18 @@ export function SelectCommunityProvider({ children }: { children: ReactNode }) {
         `[SelectCommunityContext] Checking localStorage: hasStored=${!!stored}`
       );
 
-      if (stored) {
+      if (stored && !isLoading) {
         const parsedCommunity = JSON.parse(stored) as Community;
         console.log(
           `[SelectCommunityContext] Loading from localStorage: ${parsedCommunity.name} (${parsedCommunity.id})`
         );
-        setSelectedCommunityState(parsedCommunity);
+        if (
+          availableCommunities.some(
+            (c: Community) => c.id === parsedCommunity.id
+          )
+        ) {
+          setSelectedCommunityState(parsedCommunity);
+        }
       }
     } catch (error) {
       console.error('Failed to load community from localStorage:', error);

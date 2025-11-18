@@ -53,8 +53,26 @@ export function SelectCommunityProvider({ children }: { children: ReactNode }) {
   // Initialize from URL (priority) or localStorage
   useEffect(() => {
     console.log(
-      `[SelectCommunityContext] Init check: hasInitialized=${hasInitialized}, communityIdFromUrl=${communityIdFromUrl}, authDate=${authDate}, isLoadingFromUrl=${isLoadingFromUrl}, hasCommunityFromUrl=${!!communityFromUrl}`
+      `[SelectCommunityContext] Init check: hasInitialized=${hasInitialized}, communityIdFromUrl=${communityIdFromUrl}, authDate=${authDate}, isLoadingFromUrl=${isLoadingFromUrl}, hasCommunityFromUrl=${!!communityFromUrl}, availableCommunitiesCount=${availableCommunities.length}, isLoading=${isLoading}`
     );
+
+    // Priority 0: Auto-select if only 1 community available
+    // (Check this BEFORE hasInitialized to ensure it runs when communities load)
+    if (
+      !isLoading &&
+      availableCommunities.length === 1 &&
+      !selectedCommunity &&
+      !communityIdFromUrl
+    ) {
+      const singleCommunity = availableCommunities[0];
+      console.log(
+        `[SelectCommunityContext] Only 1 community available, auto-selecting: ${singleCommunity.name} (${singleCommunity.id})`
+      );
+      setSelectedCommunityState(singleCommunity);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(singleCommunity));
+      setHasInitialized(true);
+      return;
+    }
 
     if (hasInitialized) return;
 
@@ -118,14 +136,21 @@ export function SelectCommunityProvider({ children }: { children: ReactNode }) {
       localStorage.removeItem(STORAGE_KEY);
     }
 
-    setHasInitialized(true);
-    console.log('[SelectCommunityContext] Initialization complete');
+    // Only mark as initialized if communities have finished loading
+    // This ensures Priority 0 (auto-select single community) can run when data loads
+    if (!isLoading) {
+      setHasInitialized(true);
+      console.log('[SelectCommunityContext] Initialization complete');
+    }
   }, [
     communityIdFromUrl,
     communityFromUrl,
     isLoadingFromUrl,
     hasInitialized,
     authDate,
+    availableCommunities,
+    isLoading,
+    selectedCommunity,
   ]);
 
   // Wrapper to persist to localStorage whenever community changes

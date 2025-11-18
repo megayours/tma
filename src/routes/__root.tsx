@@ -215,8 +215,11 @@ function AppContent() {
   const isTelegramEnvironment = isTMA();
   const location = useLocation();
   const router = useRouter();
-  const { selectedCommunity, isLoading: isCommunityLoading } =
-    useSelectCommunity();
+  const {
+    selectedCommunity,
+    availableCommunities,
+    isLoading: isCommunityLoading,
+  } = useSelectCommunity();
 
   // Redirect to community selection if authenticated but no community selected
   useEffect(() => {
@@ -227,14 +230,22 @@ function AppContent() {
     const isExcludedPath =
       excludedPaths.includes(pathname) || pathname.startsWith('/auth');
 
+    // Don't redirect if:
+    // - Still loading communities
+    // - Only 1 community available (will be auto-selected)
+    // - Already have a selected community
+    // - On an excluded path
+    const shouldSkipRedirect =
+      isCommunityLoading ||
+      availableCommunities.length === 1 ||
+      selectedCommunity ||
+      isExcludedPath;
+
     const needsCommunitySelection =
-      isAuthenticated &&
-      !isCommunityLoading &&
-      !selectedCommunity &&
-      !isExcludedPath;
+      isAuthenticated && !shouldSkipRedirect && availableCommunities.length > 1;
 
     console.log(
-      `[Community Redirect] pathname=${pathname}, isAuthenticated=${isAuthenticated}, isCommunityLoading=${isCommunityLoading}, selectedCommunity=${selectedCommunity?.name || 'null'}, isExcludedPath=${isExcludedPath}, needsRedirect=${needsCommunitySelection}`
+      `[Community Redirect] pathname=${pathname}, isAuthenticated=${isAuthenticated}, isCommunityLoading=${isCommunityLoading}, selectedCommunity=${selectedCommunity?.name || 'null'}, availableCommunitiesCount=${availableCommunities.length}, isExcludedPath=${isExcludedPath}, needsRedirect=${needsCommunitySelection}`
     );
 
     if (needsCommunitySelection) {
@@ -251,6 +262,7 @@ function AppContent() {
   }, [
     isAuthenticated,
     selectedCommunity,
+    availableCommunities,
     isCommunityLoading,
     location.pathname,
     router,

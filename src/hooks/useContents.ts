@@ -278,6 +278,7 @@ export const useGenerateContentMutation = (
       // Invalidate relevant queries after successful generation
       queryClient.invalidateQueries({ queryKey: ['content'] });
       queryClient.invalidateQueries({ queryKey: ['preview-content'] });
+      queryClient.invalidateQueries({ queryKey: ['favorites'] });
     },
   });
 };

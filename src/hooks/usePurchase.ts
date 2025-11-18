@@ -101,6 +101,7 @@ export const usePurchase = (
       // Invalidate sticker packs queries to refresh purchase status
       queryClient.invalidateQueries({ queryKey: ['sticker-packs'] });
       queryClient.invalidateQueries({ queryKey: ['sticker-pack'] });
+      queryClient.invalidateQueries({ queryKey: ['favorites'] });
 
       options?.onSuccess?.(data);
     },

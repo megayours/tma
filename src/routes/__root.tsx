@@ -39,6 +39,8 @@ function TelegramEnvironmentHandler() {
   const launchParams = useLaunchParams(true);
   const hasRedirected = useRef(false);
 
+  console.log('ROUTE', location);
+
   // Handle deep link redirect from start param
   useEffect(() => {
     if (

@@ -2,6 +2,7 @@ import { createFileRoute, Link } from '@tanstack/react-router';
 import { StickerPackItem } from '@/routes/_main/stickers/StickerPackItem';
 import { useStickerPacks } from '@/hooks/useStickerPacks';
 import { useSelectCommunity } from '@/contexts/SelectCommunityContext';
+import { SpinnerFullPage } from '@/components/ui';
 
 export const Route = createFileRoute('/_main/stickers/')({
   component: RouteComponent,
@@ -12,8 +13,12 @@ function RouteComponent() {
 }
 
 export function Landing() {
-  const { selectedCommunity: community } = useSelectCommunity();
+  const { selectedCommunity: community, isLoading: isLoadingCommunity } =
+    useSelectCommunity();
   console.log('Selected community in stickers:', community);
+
+  if (isLoadingCommunity || !community)
+    return <SpinnerFullPage text="Loading Sticker Packs..." />;
 
   const { data: stickerPacks } = useStickerPacks({
     pagination: {

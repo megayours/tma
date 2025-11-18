@@ -40,8 +40,11 @@ export function SelectCommunityProvider({ children }: { children: ReactNode }) {
   const { communityId: communityIdFromUrl, authDate } = useCommunityId();
 
   // Fetch community from URL if present
-  const { data: communityFromUrl, isLoading: isLoadingFromUrl } =
-    useGetCommunityCollections(communityIdFromUrl);
+  const {
+    data: communityFromUrl,
+    isLoading: isLoadingFromUrl,
+    error: errorFromUrl,
+  } = useGetCommunityCollections(communityIdFromUrl);
 
   // Fetch all available communities
   const { data: availableCommunities, isLoading, error } = useGetCommunities();
@@ -82,12 +85,32 @@ export function SelectCommunityProvider({ children }: { children: ReactNode }) {
       const isNewLaunch = isFreshLaunch(authDate);
 
       console.log(
-        `[SelectCommunityContext] URL community detected: communityId=${communityIdFromUrl}, authDate=${authDate}, isNewLaunch=${isNewLaunch}, isLoadingFromUrl=${isLoadingFromUrl}, communityName=${communityFromUrl?.name || 'null'}`
+        `[SelectCommunityContext] URL community detected: communityId=${communityIdFromUrl}, authDate=${authDate}, isNewLaunch=${isNewLaunch}, isLoadingFromUrl=${isLoadingFromUrl}, communityName=${communityFromUrl?.name || 'null'}, error=${errorFromUrl?.message || 'null'}`
       );
 
       // Only process communityId if it's a fresh launch
       if (isNewLaunch) {
-        if (communityFromUrl && !isLoadingFromUrl) {
+        // Handle error case (e.g., community doesn't exist)
+        if (errorFromUrl && !isLoadingFromUrl) {
+          console.warn(
+            `[SelectCommunityContext] Failed to load community from URL: ${errorFromUrl.message}. Falling back to localStorage/auto-select.`
+          );
+
+          // Clean up URL parameter
+          if (typeof window !== 'undefined') {
+            const url = new URL(window.location.href);
+            url.searchParams.delete('communityId');
+            window.history.replaceState({}, '', url.toString());
+            console.log(
+              '[SelectCommunityContext] Cleaned invalid URL parameter'
+            );
+          }
+
+          // Store the auth_date to prevent re-processing on reload
+          storeAuthDate(authDate);
+
+          // Fall through to localStorage/auto-select logic below
+        } else if (communityFromUrl && !isLoadingFromUrl) {
           console.log(
             `[SelectCommunityContext] Setting community from URL (fresh launch): ${communityFromUrl.name} (${communityFromUrl.id})`
           );
@@ -106,8 +129,11 @@ export function SelectCommunityProvider({ children }: { children: ReactNode }) {
             window.history.replaceState({}, '', url.toString());
             console.log('[SelectCommunityContext] Cleaned URL parameter');
           }
+          return; // Done processing
+        } else {
+          // Still loading, wait
+          return;
         }
-        return; // Wait for fetch or skip localStorage check
       } else {
         // Not a fresh launch (reload) - ignore URL communityId and use localStorage
         console.log(
@@ -124,12 +150,18 @@ export function SelectCommunityProvider({ children }: { children: ReactNode }) {
         `[SelectCommunityContext] Checking localStorage: hasStored=${!!stored}`
       );
 
-      if (stored) {
+      if (stored && !isLoading) {
         const parsedCommunity = JSON.parse(stored) as Community;
         console.log(
           `[SelectCommunityContext] Loading from localStorage: ${parsedCommunity.name} (${parsedCommunity.id})`
         );
-        setSelectedCommunityState(parsedCommunity);
+        if (
+          availableCommunities.some(
+            (c: Community) => c.id === parsedCommunity.id
+          )
+        ) {
+          setSelectedCommunityState(parsedCommunity);
+        }
       }
     } catch (error) {
       console.error('Failed to load community from localStorage:', error);
@@ -146,11 +178,13 @@ export function SelectCommunityProvider({ children }: { children: ReactNode }) {
     communityIdFromUrl,
     communityFromUrl,
     isLoadingFromUrl,
+    errorFromUrl,
     hasInitialized,
     authDate,
     availableCommunities,
     isLoading,
-    selectedCommunity,
+    // NOTE: selectedCommunity is intentionally NOT in dependencies
+    // This effect initializes the state and should not re-run when selectedCommunity changes
   ]);
 
   // Wrapper to persist to localStorage whenever community changes
@@ -163,11 +197,19 @@ export function SelectCommunityProvider({ children }: { children: ReactNode }) {
       localStorage.removeItem(STORAGE_KEY);
     }
 
-    // Invalidate all queries when community changes
+    // Invalidate community-specific queries, NOT the communities list itself
+    // This prevents triggering a re-fetch of availableCommunities which would cause loops
     console.log(
-      `[SelectCommunityContext] Invalidating all queries after community change to: ${community?.name || 'null'}`
+      `[SelectCommunityContext] Invalidating community-specific queries after community change to: ${community?.name || 'null'}`
     );
-    queryClient.invalidateQueries();
+    queryClient.invalidateQueries({
+      predicate: query => {
+        const queryKey = query.queryKey[0];
+        // Invalidate sticker-packs, contents, favorites, and other community-specific queries
+        // But NOT the 'communities' list query to prevent loops
+        return queryKey !== 'communities';
+      },
+    });
   };
 
   return (

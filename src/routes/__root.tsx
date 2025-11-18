@@ -314,8 +314,14 @@ export const Route = createRootRoute({
       // Only redirect from root path and if startParam exists
       if (startParam && location.pathname === '/') {
         const decodedPath = base64UrlDecode(startParam);
-        console.log('beforeLoad: Redirecting to:', decodedPath);
-        throw redirect({ to: decodedPath });
+        // NOTE: this is a hack
+        if (
+          decodedPath.split('?')[0] !== '/'
+          // && window.location.pathname === '/'
+        ) {
+          console.log('beforeLoad: Redirecting to:', decodedPath);
+          throw redirect({ to: decodedPath });
+        }
       }
     }
   },

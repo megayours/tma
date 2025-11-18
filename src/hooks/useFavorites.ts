@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
 import type { Session } from '@/auth/useAuth';
 import type { Token } from '../types/response';
-import { getCachedFavorite, setCachedFavorite } from '@/utils/favoriteCache';
+import { setCachedFavorite } from '@/utils/favoriteCache';
 import { useSelectedNFTsSafe } from '@/contexts/SelectedNFTsContext';
 
 export type Favorite = {
@@ -21,7 +21,7 @@ export function useGetFavorites(session: Session | null) {
     queryFn: async (): Promise<Favorite[]> => {
       if (!session) return [];
       const response = await fetch(
-        `${import.meta.env.VITE_PUBLIC_API_URL}/profile/favorites/${session.id}`,
+        `${import.meta.env.VITE_PUBLIC_API_URL}/profile/favorites/${session.id}?sort=recent`,
         {
           method: 'GET',
           headers: {
@@ -45,26 +45,18 @@ export function useGetFavorites(session: Session | null) {
     enabled: !!session?.id && !!session?.authToken,
   });
 
-  // Initialize selected favorite from cache or default to first
+  // Always select and cache the most-used favorite (data[0])
   useEffect(() => {
     if (!session?.id || !data) {
       setIsLoadingSelected(false);
       return;
     }
 
-    const cachedFavorite = getCachedFavorite(session.id);
-
-    if (
-      cachedFavorite &&
-      data.some(fav => fav.token.id === cachedFavorite.token.id)
-    ) {
-      // Use cached favorite if it still exists in the list
-      setSelectedFavoriteGlobal(cachedFavorite);
-    } else if (data.length > 0) {
-      // Default to first favorite if no cached or cached doesn't exist
-      const firstFavorite = data[0];
-      setSelectedFavoriteGlobal(firstFavorite);
-      setCachedFavorite(session.id, firstFavorite);
+    if (data.length > 0) {
+      // Always select the most-used favorite (sorted by usage)
+      const mostUsedFavorite = data[0];
+      setSelectedFavoriteGlobal(mostUsedFavorite);
+      setCachedFavorite(session.id, mostUsedFavorite);
     } else {
       setSelectedFavoriteGlobal(null);
     }

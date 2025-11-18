@@ -58,6 +58,7 @@ export function SelectCommunityProvider({ children }: { children: ReactNode }) {
     console.log(
       `[SelectCommunityContext] Init check: hasInitialized=${hasInitialized}, communityIdFromUrl=${communityIdFromUrl}, authDate=${authDate}, isLoadingFromUrl=${isLoadingFromUrl}, hasCommunityFromUrl=${!!communityFromUrl}, availableCommunitiesCount=${availableCommunities.length}, isLoading=${isLoading}`
     );
+    if (isLoading) return;
 
     // Priority 0: Auto-select if only 1 community available
     // (Check this BEFORE hasInitialized to ensure it runs when communities load)
@@ -170,10 +171,10 @@ export function SelectCommunityProvider({ children }: { children: ReactNode }) {
 
     // Only mark as initialized if communities have finished loading
     // This ensures Priority 0 (auto-select single community) can run when data loads
-    if (!isLoading) {
-      setHasInitialized(true);
-      console.log('[SelectCommunityContext] Initialization complete');
-    }
+    // if (!isLoading) {
+    //   setHasInitialized(true);
+    //   console.log('[SelectCommunityContext] Initialization complete');
+    // }
   }, [
     communityIdFromUrl,
     communityFromUrl,

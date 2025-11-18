@@ -6,7 +6,6 @@ import { useMemo } from 'react';
 import { useTelegramTheme } from '@/auth/useTelegram';
 import { retrieveLaunchParams } from '@telegram-apps/sdk';
 import { base64UrlDecode } from '@/utils/base64';
-import { extractAuthDate } from '@/utils/launchParams';
 
 export type Community = {
   id: string;
@@ -70,11 +69,8 @@ export function useCommunityId(): {
       }
 
       // Extract auth_date from initData
-      const authDate = extractAuthDate(
-        launchParams.initDataRaw as string | undefined
-      );
-
-      return { communityId, authDate };
+      const authDate = new Date(launchParams.tgWebAppData?.auth_date!);
+      return { communityId, authDate: authDate.getTime() };
     } else {
       // In web browser: parse URL query params directly
       if (typeof window === 'undefined') {

@@ -1,29 +1,4 @@
 /**
- * Extracts auth_date from Telegram initData
- * @param initData The Telegram initData string (URL-encoded query string)
- * @returns auth_date as a number (Unix timestamp in seconds) or null if not found
- */
-export function extractAuthDate(initData: string | undefined): number | null {
-  if (!initData) return null;
-
-  try {
-    const urlParams = new URLSearchParams(initData);
-    const authDate = urlParams.get('auth_date');
-
-    if (authDate) {
-      const authDateNum = parseInt(authDate, 10);
-      if (!isNaN(authDateNum)) {
-        return authDateNum;
-      }
-    }
-  } catch (error) {
-    console.error('Failed to extract auth_date from initData:', error);
-  }
-
-  return null;
-}
-
-/**
  * Checks if the launch is fresh (new auth_date) or a reload (same auth_date)
  * @param currentAuthDate The auth_date from current launch params
  * @returns true if this is a fresh launch, false if it's a reload

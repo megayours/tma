@@ -44,20 +44,20 @@ import { Route as ContentPromptIdSuccessIndexRouteImport } from './routes/conten
 import { Route as ContentPromptIdSelectNftsIndexRouteImport } from './routes/content/$promptId/select-nfts/index'
 import { Route as ContentPromptIdDetailsIndexRouteImport } from './routes/content/$promptId/details/index'
 import { Route as MainProfilePurchasesIndexRouteImport } from './routes/_main/profile/purchases/index'
-import { Route as MainProfilePromptIndexRouteImport } from './routes/_main/profile/prompt/index'
 import { Route as MainProfileMyStickerPacksIndexRouteImport } from './routes/_main/profile/my-sticker-packs/index'
 import { Route as MainProfileMyGenerationsIndexRouteImport } from './routes/_main/profile/my-generations/index'
 import { Route as MainProfileFavoritesIndexRouteImport } from './routes/_main/profile/favorites/index'
 import { Route as MainProfileAdminIndexRouteImport } from './routes/_main/profile/admin/index'
 import { Route as ContentPromptIdProcessingExecutionIdRouteImport } from './routes/content/$promptId/processing.$executionId'
-import { Route as MainProfilePromptCreateRouteImport } from './routes/_main/profile/prompt/create'
-import { Route as MainProfilePromptEditRouteRouteImport } from './routes/_main/profile/prompt/edit/route'
 import { Route as StickerPacksStickerPackIdProcessingExecutionIdIndexRouteImport } from './routes/sticker-packs/$stickerPackId/processing/$executionId/index'
 import { Route as AuthDiscordV1CallbackIndexRouteImport } from './routes/auth/discord/v1/callback/index'
 import { Route as MainProfileMyStickerPacksNewIndexRouteImport } from './routes/_main/profile/my-sticker-packs/new/index'
 import { Route as MainProfileFavoritesNewIndexRouteImport } from './routes/_main/profile/favorites/new/index'
-import { Route as MainProfilePromptEditPromptIdRouteRouteImport } from './routes/_main/profile/prompt/edit/$promptId/route'
-import { Route as MainProfilePromptEditPromptIdIndexRouteImport } from './routes/_main/profile/prompt/edit/$promptId/index'
+import { Route as MainProfileAdminPromptIndexRouteImport } from './routes/_main/profile/admin/prompt/index'
+import { Route as MainProfileAdminPromptCreateRouteImport } from './routes/_main/profile/admin/prompt/create'
+import { Route as MainProfileAdminPromptEditRouteRouteImport } from './routes/_main/profile/admin/prompt/edit/route'
+import { Route as MainProfileAdminPromptEditPromptIdRouteRouteImport } from './routes/_main/profile/admin/prompt/edit/$promptId/route'
+import { Route as MainProfileAdminPromptEditPromptIdIndexRouteImport } from './routes/_main/profile/admin/prompt/edit/$promptId/index'
 
 const StickerPacksRoute = StickerPacksRouteImport.update({
   id: '/sticker-packs',
@@ -246,11 +246,6 @@ const MainProfilePurchasesIndexRoute =
     path: '/profile/purchases/',
     getParentRoute: () => MainRoute,
   } as any)
-const MainProfilePromptIndexRoute = MainProfilePromptIndexRouteImport.update({
-  id: '/profile/prompt/',
-  path: '/profile/prompt/',
-  getParentRoute: () => MainRoute,
-} as any)
 const MainProfileMyStickerPacksIndexRoute =
   MainProfileMyStickerPacksIndexRouteImport.update({
     id: '/profile/my-sticker-packs/',
@@ -280,17 +275,6 @@ const ContentPromptIdProcessingExecutionIdRoute =
     path: '/processing/$executionId',
     getParentRoute: () => ContentPromptIdRoute,
   } as any)
-const MainProfilePromptCreateRoute = MainProfilePromptCreateRouteImport.update({
-  id: '/profile/prompt/create',
-  path: '/profile/prompt/create',
-  getParentRoute: () => MainRoute,
-} as any)
-const MainProfilePromptEditRouteRoute =
-  MainProfilePromptEditRouteRouteImport.update({
-    id: '/profile/prompt/edit',
-    path: '/profile/prompt/edit',
-    getParentRoute: () => MainRoute,
-  } as any)
 const StickerPacksStickerPackIdProcessingExecutionIdIndexRoute =
   StickerPacksStickerPackIdProcessingExecutionIdIndexRouteImport.update({
     id: '/processing/$executionId/',
@@ -315,17 +299,35 @@ const MainProfileFavoritesNewIndexRoute =
     path: '/profile/favorites/new/',
     getParentRoute: () => MainRoute,
   } as any)
-const MainProfilePromptEditPromptIdRouteRoute =
-  MainProfilePromptEditPromptIdRouteRouteImport.update({
+const MainProfileAdminPromptIndexRoute =
+  MainProfileAdminPromptIndexRouteImport.update({
+    id: '/profile/admin/prompt/',
+    path: '/profile/admin/prompt/',
+    getParentRoute: () => MainRoute,
+  } as any)
+const MainProfileAdminPromptCreateRoute =
+  MainProfileAdminPromptCreateRouteImport.update({
+    id: '/profile/admin/prompt/create',
+    path: '/profile/admin/prompt/create',
+    getParentRoute: () => MainRoute,
+  } as any)
+const MainProfileAdminPromptEditRouteRoute =
+  MainProfileAdminPromptEditRouteRouteImport.update({
+    id: '/profile/admin/prompt/edit',
+    path: '/profile/admin/prompt/edit',
+    getParentRoute: () => MainRoute,
+  } as any)
+const MainProfileAdminPromptEditPromptIdRouteRoute =
+  MainProfileAdminPromptEditPromptIdRouteRouteImport.update({
     id: '/$promptId',
     path: '/$promptId',
-    getParentRoute: () => MainProfilePromptEditRouteRoute,
+    getParentRoute: () => MainProfileAdminPromptEditRouteRoute,
   } as any)
-const MainProfilePromptEditPromptIdIndexRoute =
-  MainProfilePromptEditPromptIdIndexRouteImport.update({
+const MainProfileAdminPromptEditPromptIdIndexRoute =
+  MainProfileAdminPromptEditPromptIdIndexRouteImport.update({
     id: '/',
     path: '/',
-    getParentRoute: () => MainProfilePromptEditPromptIdRouteRoute,
+    getParentRoute: () => MainProfileAdminPromptEditPromptIdRouteRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -351,14 +353,11 @@ export interface FileRoutesByFullPath {
   '/post/$postId': typeof PostPostIdIndexRoute
   '/post/create': typeof PostCreateIndexRoute
   '/sticker-packs/$stickerPackId/': typeof StickerPacksStickerPackIdIndexRoute
-  '/profile/prompt/edit': typeof MainProfilePromptEditRouteRouteWithChildren
-  '/profile/prompt/create': typeof MainProfilePromptCreateRoute
   '/content/$promptId/processing/$executionId': typeof ContentPromptIdProcessingExecutionIdRoute
   '/profile/admin': typeof MainProfileAdminIndexRoute
   '/profile/favorites': typeof MainProfileFavoritesIndexRoute
   '/profile/my-generations': typeof MainProfileMyGenerationsIndexRoute
   '/profile/my-sticker-packs': typeof MainProfileMyStickerPacksIndexRoute
-  '/profile/prompt': typeof MainProfilePromptIndexRoute
   '/profile/purchases': typeof MainProfilePurchasesIndexRoute
   '/content/$promptId/details': typeof ContentPromptIdDetailsIndexRoute
   '/content/$promptId/select-nfts': typeof ContentPromptIdSelectNftsIndexRoute
@@ -371,12 +370,15 @@ export interface FileRoutesByFullPath {
   '/sticker-packs/$stickerPackId/select-nfts': typeof StickerPacksStickerPackIdSelectNftsIndexRoute
   '/sticker-packs/$stickerPackId/select-tier': typeof StickerPacksStickerPackIdSelectTierIndexRoute
   '/sticker-packs/generated/$id': typeof StickerPacksGeneratedIdIndexRoute
-  '/profile/prompt/edit/$promptId': typeof MainProfilePromptEditPromptIdRouteRouteWithChildren
+  '/profile/admin/prompt/edit': typeof MainProfileAdminPromptEditRouteRouteWithChildren
+  '/profile/admin/prompt/create': typeof MainProfileAdminPromptCreateRoute
+  '/profile/admin/prompt': typeof MainProfileAdminPromptIndexRoute
   '/profile/favorites/new': typeof MainProfileFavoritesNewIndexRoute
   '/profile/my-sticker-packs/new': typeof MainProfileMyStickerPacksNewIndexRoute
   '/auth/discord/v1/callback': typeof AuthDiscordV1CallbackIndexRoute
   '/sticker-packs/$stickerPackId/processing/$executionId': typeof StickerPacksStickerPackIdProcessingExecutionIdIndexRoute
-  '/profile/prompt/edit/$promptId/': typeof MainProfilePromptEditPromptIdIndexRoute
+  '/profile/admin/prompt/edit/$promptId': typeof MainProfileAdminPromptEditPromptIdRouteRouteWithChildren
+  '/profile/admin/prompt/edit/$promptId/': typeof MainProfileAdminPromptEditPromptIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -398,14 +400,11 @@ export interface FileRoutesByTo {
   '/post/$postId': typeof PostPostIdIndexRoute
   '/post/create': typeof PostCreateIndexRoute
   '/sticker-packs/$stickerPackId': typeof StickerPacksStickerPackIdIndexRoute
-  '/profile/prompt/edit': typeof MainProfilePromptEditRouteRouteWithChildren
-  '/profile/prompt/create': typeof MainProfilePromptCreateRoute
   '/content/$promptId/processing/$executionId': typeof ContentPromptIdProcessingExecutionIdRoute
   '/profile/admin': typeof MainProfileAdminIndexRoute
   '/profile/favorites': typeof MainProfileFavoritesIndexRoute
   '/profile/my-generations': typeof MainProfileMyGenerationsIndexRoute
   '/profile/my-sticker-packs': typeof MainProfileMyStickerPacksIndexRoute
-  '/profile/prompt': typeof MainProfilePromptIndexRoute
   '/profile/purchases': typeof MainProfilePurchasesIndexRoute
   '/content/$promptId/details': typeof ContentPromptIdDetailsIndexRoute
   '/content/$promptId/select-nfts': typeof ContentPromptIdSelectNftsIndexRoute
@@ -418,11 +417,14 @@ export interface FileRoutesByTo {
   '/sticker-packs/$stickerPackId/select-nfts': typeof StickerPacksStickerPackIdSelectNftsIndexRoute
   '/sticker-packs/$stickerPackId/select-tier': typeof StickerPacksStickerPackIdSelectTierIndexRoute
   '/sticker-packs/generated/$id': typeof StickerPacksGeneratedIdIndexRoute
+  '/profile/admin/prompt/edit': typeof MainProfileAdminPromptEditRouteRouteWithChildren
+  '/profile/admin/prompt/create': typeof MainProfileAdminPromptCreateRoute
+  '/profile/admin/prompt': typeof MainProfileAdminPromptIndexRoute
   '/profile/favorites/new': typeof MainProfileFavoritesNewIndexRoute
   '/profile/my-sticker-packs/new': typeof MainProfileMyStickerPacksNewIndexRoute
   '/auth/discord/v1/callback': typeof AuthDiscordV1CallbackIndexRoute
   '/sticker-packs/$stickerPackId/processing/$executionId': typeof StickerPacksStickerPackIdProcessingExecutionIdIndexRoute
-  '/profile/prompt/edit/$promptId': typeof MainProfilePromptEditPromptIdIndexRoute
+  '/profile/admin/prompt/edit/$promptId': typeof MainProfileAdminPromptEditPromptIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -449,14 +451,11 @@ export interface FileRoutesById {
   '/post/$postId/': typeof PostPostIdIndexRoute
   '/post/create/': typeof PostCreateIndexRoute
   '/sticker-packs/$stickerPackId/': typeof StickerPacksStickerPackIdIndexRoute
-  '/_main/profile/prompt/edit': typeof MainProfilePromptEditRouteRouteWithChildren
-  '/_main/profile/prompt/create': typeof MainProfilePromptCreateRoute
   '/content/$promptId/processing/$executionId': typeof ContentPromptIdProcessingExecutionIdRoute
   '/_main/profile/admin/': typeof MainProfileAdminIndexRoute
   '/_main/profile/favorites/': typeof MainProfileFavoritesIndexRoute
   '/_main/profile/my-generations/': typeof MainProfileMyGenerationsIndexRoute
   '/_main/profile/my-sticker-packs/': typeof MainProfileMyStickerPacksIndexRoute
-  '/_main/profile/prompt/': typeof MainProfilePromptIndexRoute
   '/_main/profile/purchases/': typeof MainProfilePurchasesIndexRoute
   '/content/$promptId/details/': typeof ContentPromptIdDetailsIndexRoute
   '/content/$promptId/select-nfts/': typeof ContentPromptIdSelectNftsIndexRoute
@@ -469,12 +468,15 @@ export interface FileRoutesById {
   '/sticker-packs/$stickerPackId/select-nfts/': typeof StickerPacksStickerPackIdSelectNftsIndexRoute
   '/sticker-packs/$stickerPackId/select-tier/': typeof StickerPacksStickerPackIdSelectTierIndexRoute
   '/sticker-packs/generated/$id/': typeof StickerPacksGeneratedIdIndexRoute
-  '/_main/profile/prompt/edit/$promptId': typeof MainProfilePromptEditPromptIdRouteRouteWithChildren
+  '/_main/profile/admin/prompt/edit': typeof MainProfileAdminPromptEditRouteRouteWithChildren
+  '/_main/profile/admin/prompt/create': typeof MainProfileAdminPromptCreateRoute
+  '/_main/profile/admin/prompt/': typeof MainProfileAdminPromptIndexRoute
   '/_main/profile/favorites/new/': typeof MainProfileFavoritesNewIndexRoute
   '/_main/profile/my-sticker-packs/new/': typeof MainProfileMyStickerPacksNewIndexRoute
   '/auth/discord/v1/callback/': typeof AuthDiscordV1CallbackIndexRoute
   '/sticker-packs/$stickerPackId/processing/$executionId/': typeof StickerPacksStickerPackIdProcessingExecutionIdIndexRoute
-  '/_main/profile/prompt/edit/$promptId/': typeof MainProfilePromptEditPromptIdIndexRoute
+  '/_main/profile/admin/prompt/edit/$promptId': typeof MainProfileAdminPromptEditPromptIdRouteRouteWithChildren
+  '/_main/profile/admin/prompt/edit/$promptId/': typeof MainProfileAdminPromptEditPromptIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -501,14 +503,11 @@ export interface FileRouteTypes {
     | '/post/$postId'
     | '/post/create'
     | '/sticker-packs/$stickerPackId/'
-    | '/profile/prompt/edit'
-    | '/profile/prompt/create'
     | '/content/$promptId/processing/$executionId'
     | '/profile/admin'
     | '/profile/favorites'
     | '/profile/my-generations'
     | '/profile/my-sticker-packs'
-    | '/profile/prompt'
     | '/profile/purchases'
     | '/content/$promptId/details'
     | '/content/$promptId/select-nfts'
@@ -521,12 +520,15 @@ export interface FileRouteTypes {
     | '/sticker-packs/$stickerPackId/select-nfts'
     | '/sticker-packs/$stickerPackId/select-tier'
     | '/sticker-packs/generated/$id'
-    | '/profile/prompt/edit/$promptId'
+    | '/profile/admin/prompt/edit'
+    | '/profile/admin/prompt/create'
+    | '/profile/admin/prompt'
     | '/profile/favorites/new'
     | '/profile/my-sticker-packs/new'
     | '/auth/discord/v1/callback'
     | '/sticker-packs/$stickerPackId/processing/$executionId'
-    | '/profile/prompt/edit/$promptId/'
+    | '/profile/admin/prompt/edit/$promptId'
+    | '/profile/admin/prompt/edit/$promptId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -548,14 +550,11 @@ export interface FileRouteTypes {
     | '/post/$postId'
     | '/post/create'
     | '/sticker-packs/$stickerPackId'
-    | '/profile/prompt/edit'
-    | '/profile/prompt/create'
     | '/content/$promptId/processing/$executionId'
     | '/profile/admin'
     | '/profile/favorites'
     | '/profile/my-generations'
     | '/profile/my-sticker-packs'
-    | '/profile/prompt'
     | '/profile/purchases'
     | '/content/$promptId/details'
     | '/content/$promptId/select-nfts'
@@ -568,11 +567,14 @@ export interface FileRouteTypes {
     | '/sticker-packs/$stickerPackId/select-nfts'
     | '/sticker-packs/$stickerPackId/select-tier'
     | '/sticker-packs/generated/$id'
+    | '/profile/admin/prompt/edit'
+    | '/profile/admin/prompt/create'
+    | '/profile/admin/prompt'
     | '/profile/favorites/new'
     | '/profile/my-sticker-packs/new'
     | '/auth/discord/v1/callback'
     | '/sticker-packs/$stickerPackId/processing/$executionId'
-    | '/profile/prompt/edit/$promptId'
+    | '/profile/admin/prompt/edit/$promptId'
   id:
     | '__root__'
     | '/'
@@ -598,14 +600,11 @@ export interface FileRouteTypes {
     | '/post/$postId/'
     | '/post/create/'
     | '/sticker-packs/$stickerPackId/'
-    | '/_main/profile/prompt/edit'
-    | '/_main/profile/prompt/create'
     | '/content/$promptId/processing/$executionId'
     | '/_main/profile/admin/'
     | '/_main/profile/favorites/'
     | '/_main/profile/my-generations/'
     | '/_main/profile/my-sticker-packs/'
-    | '/_main/profile/prompt/'
     | '/_main/profile/purchases/'
     | '/content/$promptId/details/'
     | '/content/$promptId/select-nfts/'
@@ -618,12 +617,15 @@ export interface FileRouteTypes {
     | '/sticker-packs/$stickerPackId/select-nfts/'
     | '/sticker-packs/$stickerPackId/select-tier/'
     | '/sticker-packs/generated/$id/'
-    | '/_main/profile/prompt/edit/$promptId'
+    | '/_main/profile/admin/prompt/edit'
+    | '/_main/profile/admin/prompt/create'
+    | '/_main/profile/admin/prompt/'
     | '/_main/profile/favorites/new/'
     | '/_main/profile/my-sticker-packs/new/'
     | '/auth/discord/v1/callback/'
     | '/sticker-packs/$stickerPackId/processing/$executionId/'
-    | '/_main/profile/prompt/edit/$promptId/'
+    | '/_main/profile/admin/prompt/edit/$promptId'
+    | '/_main/profile/admin/prompt/edit/$promptId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -894,13 +896,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MainProfilePurchasesIndexRouteImport
       parentRoute: typeof MainRoute
     }
-    '/_main/profile/prompt/': {
-      id: '/_main/profile/prompt/'
-      path: '/profile/prompt'
-      fullPath: '/profile/prompt'
-      preLoaderRoute: typeof MainProfilePromptIndexRouteImport
-      parentRoute: typeof MainRoute
-    }
     '/_main/profile/my-sticker-packs/': {
       id: '/_main/profile/my-sticker-packs/'
       path: '/profile/my-sticker-packs'
@@ -936,20 +931,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContentPromptIdProcessingExecutionIdRouteImport
       parentRoute: typeof ContentPromptIdRoute
     }
-    '/_main/profile/prompt/create': {
-      id: '/_main/profile/prompt/create'
-      path: '/profile/prompt/create'
-      fullPath: '/profile/prompt/create'
-      preLoaderRoute: typeof MainProfilePromptCreateRouteImport
-      parentRoute: typeof MainRoute
-    }
-    '/_main/profile/prompt/edit': {
-      id: '/_main/profile/prompt/edit'
-      path: '/profile/prompt/edit'
-      fullPath: '/profile/prompt/edit'
-      preLoaderRoute: typeof MainProfilePromptEditRouteRouteImport
-      parentRoute: typeof MainRoute
-    }
     '/sticker-packs/$stickerPackId/processing/$executionId/': {
       id: '/sticker-packs/$stickerPackId/processing/$executionId/'
       path: '/processing/$executionId'
@@ -978,65 +959,86 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MainProfileFavoritesNewIndexRouteImport
       parentRoute: typeof MainRoute
     }
-    '/_main/profile/prompt/edit/$promptId': {
-      id: '/_main/profile/prompt/edit/$promptId'
+    '/_main/profile/admin/prompt/': {
+      id: '/_main/profile/admin/prompt/'
+      path: '/profile/admin/prompt'
+      fullPath: '/profile/admin/prompt'
+      preLoaderRoute: typeof MainProfileAdminPromptIndexRouteImport
+      parentRoute: typeof MainRoute
+    }
+    '/_main/profile/admin/prompt/create': {
+      id: '/_main/profile/admin/prompt/create'
+      path: '/profile/admin/prompt/create'
+      fullPath: '/profile/admin/prompt/create'
+      preLoaderRoute: typeof MainProfileAdminPromptCreateRouteImport
+      parentRoute: typeof MainRoute
+    }
+    '/_main/profile/admin/prompt/edit': {
+      id: '/_main/profile/admin/prompt/edit'
+      path: '/profile/admin/prompt/edit'
+      fullPath: '/profile/admin/prompt/edit'
+      preLoaderRoute: typeof MainProfileAdminPromptEditRouteRouteImport
+      parentRoute: typeof MainRoute
+    }
+    '/_main/profile/admin/prompt/edit/$promptId': {
+      id: '/_main/profile/admin/prompt/edit/$promptId'
       path: '/$promptId'
-      fullPath: '/profile/prompt/edit/$promptId'
-      preLoaderRoute: typeof MainProfilePromptEditPromptIdRouteRouteImport
-      parentRoute: typeof MainProfilePromptEditRouteRoute
+      fullPath: '/profile/admin/prompt/edit/$promptId'
+      preLoaderRoute: typeof MainProfileAdminPromptEditPromptIdRouteRouteImport
+      parentRoute: typeof MainProfileAdminPromptEditRouteRoute
     }
-    '/_main/profile/prompt/edit/$promptId/': {
-      id: '/_main/profile/prompt/edit/$promptId/'
+    '/_main/profile/admin/prompt/edit/$promptId/': {
+      id: '/_main/profile/admin/prompt/edit/$promptId/'
       path: '/'
-      fullPath: '/profile/prompt/edit/$promptId/'
-      preLoaderRoute: typeof MainProfilePromptEditPromptIdIndexRouteImport
-      parentRoute: typeof MainProfilePromptEditPromptIdRouteRoute
+      fullPath: '/profile/admin/prompt/edit/$promptId/'
+      preLoaderRoute: typeof MainProfileAdminPromptEditPromptIdIndexRouteImport
+      parentRoute: typeof MainProfileAdminPromptEditPromptIdRouteRoute
     }
   }
 }
 
-interface MainProfilePromptEditPromptIdRouteRouteChildren {
-  MainProfilePromptEditPromptIdIndexRoute: typeof MainProfilePromptEditPromptIdIndexRoute
+interface MainProfileAdminPromptEditPromptIdRouteRouteChildren {
+  MainProfileAdminPromptEditPromptIdIndexRoute: typeof MainProfileAdminPromptEditPromptIdIndexRoute
 }
 
-const MainProfilePromptEditPromptIdRouteRouteChildren: MainProfilePromptEditPromptIdRouteRouteChildren =
+const MainProfileAdminPromptEditPromptIdRouteRouteChildren: MainProfileAdminPromptEditPromptIdRouteRouteChildren =
   {
-    MainProfilePromptEditPromptIdIndexRoute:
-      MainProfilePromptEditPromptIdIndexRoute,
+    MainProfileAdminPromptEditPromptIdIndexRoute:
+      MainProfileAdminPromptEditPromptIdIndexRoute,
   }
 
-const MainProfilePromptEditPromptIdRouteRouteWithChildren =
-  MainProfilePromptEditPromptIdRouteRoute._addFileChildren(
-    MainProfilePromptEditPromptIdRouteRouteChildren,
+const MainProfileAdminPromptEditPromptIdRouteRouteWithChildren =
+  MainProfileAdminPromptEditPromptIdRouteRoute._addFileChildren(
+    MainProfileAdminPromptEditPromptIdRouteRouteChildren,
   )
 
-interface MainProfilePromptEditRouteRouteChildren {
-  MainProfilePromptEditPromptIdRouteRoute: typeof MainProfilePromptEditPromptIdRouteRouteWithChildren
+interface MainProfileAdminPromptEditRouteRouteChildren {
+  MainProfileAdminPromptEditPromptIdRouteRoute: typeof MainProfileAdminPromptEditPromptIdRouteRouteWithChildren
 }
 
-const MainProfilePromptEditRouteRouteChildren: MainProfilePromptEditRouteRouteChildren =
+const MainProfileAdminPromptEditRouteRouteChildren: MainProfileAdminPromptEditRouteRouteChildren =
   {
-    MainProfilePromptEditPromptIdRouteRoute:
-      MainProfilePromptEditPromptIdRouteRouteWithChildren,
+    MainProfileAdminPromptEditPromptIdRouteRoute:
+      MainProfileAdminPromptEditPromptIdRouteRouteWithChildren,
   }
 
-const MainProfilePromptEditRouteRouteWithChildren =
-  MainProfilePromptEditRouteRoute._addFileChildren(
-    MainProfilePromptEditRouteRouteChildren,
+const MainProfileAdminPromptEditRouteRouteWithChildren =
+  MainProfileAdminPromptEditRouteRoute._addFileChildren(
+    MainProfileAdminPromptEditRouteRouteChildren,
   )
 
 interface MainRouteChildren {
   MainFeedIndexRoute: typeof MainFeedIndexRoute
   MainProfileIndexRoute: typeof MainProfileIndexRoute
   MainStickersIndexRoute: typeof MainStickersIndexRoute
-  MainProfilePromptEditRouteRoute: typeof MainProfilePromptEditRouteRouteWithChildren
-  MainProfilePromptCreateRoute: typeof MainProfilePromptCreateRoute
   MainProfileAdminIndexRoute: typeof MainProfileAdminIndexRoute
   MainProfileFavoritesIndexRoute: typeof MainProfileFavoritesIndexRoute
   MainProfileMyGenerationsIndexRoute: typeof MainProfileMyGenerationsIndexRoute
   MainProfileMyStickerPacksIndexRoute: typeof MainProfileMyStickerPacksIndexRoute
-  MainProfilePromptIndexRoute: typeof MainProfilePromptIndexRoute
   MainProfilePurchasesIndexRoute: typeof MainProfilePurchasesIndexRoute
+  MainProfileAdminPromptEditRouteRoute: typeof MainProfileAdminPromptEditRouteRouteWithChildren
+  MainProfileAdminPromptCreateRoute: typeof MainProfileAdminPromptCreateRoute
+  MainProfileAdminPromptIndexRoute: typeof MainProfileAdminPromptIndexRoute
   MainProfileFavoritesNewIndexRoute: typeof MainProfileFavoritesNewIndexRoute
   MainProfileMyStickerPacksNewIndexRoute: typeof MainProfileMyStickerPacksNewIndexRoute
 }
@@ -1045,14 +1047,15 @@ const MainRouteChildren: MainRouteChildren = {
   MainFeedIndexRoute: MainFeedIndexRoute,
   MainProfileIndexRoute: MainProfileIndexRoute,
   MainStickersIndexRoute: MainStickersIndexRoute,
-  MainProfilePromptEditRouteRoute: MainProfilePromptEditRouteRouteWithChildren,
-  MainProfilePromptCreateRoute: MainProfilePromptCreateRoute,
   MainProfileAdminIndexRoute: MainProfileAdminIndexRoute,
   MainProfileFavoritesIndexRoute: MainProfileFavoritesIndexRoute,
   MainProfileMyGenerationsIndexRoute: MainProfileMyGenerationsIndexRoute,
   MainProfileMyStickerPacksIndexRoute: MainProfileMyStickerPacksIndexRoute,
-  MainProfilePromptIndexRoute: MainProfilePromptIndexRoute,
   MainProfilePurchasesIndexRoute: MainProfilePurchasesIndexRoute,
+  MainProfileAdminPromptEditRouteRoute:
+    MainProfileAdminPromptEditRouteRouteWithChildren,
+  MainProfileAdminPromptCreateRoute: MainProfileAdminPromptCreateRoute,
+  MainProfileAdminPromptIndexRoute: MainProfileAdminPromptIndexRoute,
   MainProfileFavoritesNewIndexRoute: MainProfileFavoritesNewIndexRoute,
   MainProfileMyStickerPacksNewIndexRoute:
     MainProfileMyStickerPacksNewIndexRoute,

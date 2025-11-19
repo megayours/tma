@@ -12,7 +12,7 @@ import { SpinnerFullPage } from '@/components/ui';
 import { useSignal } from '@telegram-apps/sdk-react';
 import { viewport } from '@telegram-apps/sdk-react';
 
-export const Route = createFileRoute('/_main/profile/prompt/edit/$promptId')({
+export const Route = createFileRoute('/_main/profile/admin/prompt/edit/$promptId')({
   component: RouteComponent,
 });
 

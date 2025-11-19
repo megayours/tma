@@ -120,7 +120,7 @@ export default function MyPrompts() {
                   className="bg-tg-button text-tg-button-text mt-2 flex cursor-pointer justify-center rounded-full px-4 py-2 text-sm font-semibold"
                   onClick={() => {
                     navigate({
-                      to: '/profile/prompt/edit/$promptId',
+                      to: '/profile/admin/prompt/edit/$promptId',
                       params: { promptId: prompt.id?.toString() ?? '' },
                     });
                   }}

@@ -29,7 +29,7 @@ const PromptCard = ({ prompt }: { prompt: Prompt }) => {
     <div
       onClick={() =>
         navigate({
-          to: '/profile/prompt/edit/$promptId',
+          to: '/profile/admin/prompt/edit/$promptId',
           params: { promptId: prompt.id!.toString() },
         })
       }

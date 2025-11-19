@@ -17,14 +17,14 @@ function RenderAdmin() {
     return <div>You are not an admin</div>;
   }
   return (
-    <div className="mx-auto flex max-w-4xl flex-col gap-4 p-4">
+    <div className="mx-auto flex max-w-4xl flex-col gap-4">
       {/* Recently Used Section */}
       <RecentlyUsedPrompts />
 
       {/* Your Prompts Section */}
       <div className="flex flex-row justify-between">
         <h1 className="text-tg-text text-2xl font-bold">Your prompts</h1>
-        <Link to="/profile/prompt/create">
+        <Link to="/profile/admin/prompt/create">
           <div className="bg-tg-button flex cursor-pointer items-center justify-center rounded-full px-4 py-2 text-sm font-semibold">
             <span className="text-tg-button-text">Create</span>
           </div>
@@ -40,8 +40,10 @@ function ProfileLayout() {
     <ProtectedRoute>
       <div className="profile-layout h-screen">
         {/* This renders the index content when at /profile */}
-        <main className="h-full pb-16">
-          <RenderAdmin />
+        <main className="bg-black pb-16 pl-4">
+          <div className="bg-tg-bg rounded-l-xl pl-2">
+            <RenderAdmin />
+          </div>
         </main>
       </div>
     </ProtectedRoute>

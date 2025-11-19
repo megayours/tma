@@ -6,7 +6,7 @@ import { useCreatePromptMutation } from '@/hooks/usePrompts';
 import { Button } from '@telegram-apps/telegram-ui';
 import { TgInput } from '@/components/ui/forms/TgInput';
 
-export const Route = createFileRoute('/_main/profile/prompt/create')({
+export const Route = createFileRoute('/_main/profile/admin/prompt/create')({
   component: CreatePromptComponent,
 });
 

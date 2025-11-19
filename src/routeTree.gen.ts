@@ -29,7 +29,7 @@ import { Route as Demo2ItemIndexRouteImport } from './routes/demo2/item/index'
 import { Route as ContentPromptIdIndexRouteImport } from './routes/content/$promptId/index'
 import { Route as MainStickersIndexRouteImport } from './routes/_main/stickers/index'
 import { Route as MainProfileIndexRouteImport } from './routes/_main/profile/index'
-import { Route as MainFeedIndexRouteImport } from './routes/_main/feed/index'
+import { Route as MainCommunityIndexRouteImport } from './routes/_main/community/index'
 import { Route as StickerPacksStickerPackIdSuccessRouteImport } from './routes/sticker-packs/$stickerPackId/success'
 import { Route as StickerPacksStickerPackIdCheckoutRouteImport } from './routes/sticker-packs/$stickerPackId/checkout'
 import { Route as StickerPacksGeneratedIdIndexRouteImport } from './routes/sticker-packs/generated/$id/index'
@@ -160,9 +160,9 @@ const MainProfileIndexRoute = MainProfileIndexRouteImport.update({
   path: '/profile/',
   getParentRoute: () => MainRoute,
 } as any)
-const MainFeedIndexRoute = MainFeedIndexRouteImport.update({
-  id: '/feed/',
-  path: '/feed/',
+const MainCommunityIndexRoute = MainCommunityIndexRouteImport.update({
+  id: '/community/',
+  path: '/community/',
   getParentRoute: () => MainRoute,
 } as any)
 const StickerPacksStickerPackIdSuccessRoute =
@@ -345,7 +345,7 @@ export interface FileRoutesByFullPath {
   '/sticker-packs/': typeof StickerPacksIndexRoute
   '/sticker-packs/$stickerPackId/checkout': typeof StickerPacksStickerPackIdCheckoutRoute
   '/sticker-packs/$stickerPackId/success': typeof StickerPacksStickerPackIdSuccessRoute
-  '/feed': typeof MainFeedIndexRoute
+  '/community': typeof MainCommunityIndexRoute
   '/profile': typeof MainProfileIndexRoute
   '/stickers': typeof MainStickersIndexRoute
   '/content/$promptId/': typeof ContentPromptIdIndexRoute
@@ -392,7 +392,7 @@ export interface FileRoutesByTo {
   '/sticker-packs': typeof StickerPacksIndexRoute
   '/sticker-packs/$stickerPackId/checkout': typeof StickerPacksStickerPackIdCheckoutRoute
   '/sticker-packs/$stickerPackId/success': typeof StickerPacksStickerPackIdSuccessRoute
-  '/feed': typeof MainFeedIndexRoute
+  '/community': typeof MainCommunityIndexRoute
   '/profile': typeof MainProfileIndexRoute
   '/stickers': typeof MainStickersIndexRoute
   '/content/$promptId': typeof ContentPromptIdIndexRoute
@@ -443,7 +443,7 @@ export interface FileRoutesById {
   '/sticker-packs/': typeof StickerPacksIndexRoute
   '/sticker-packs/$stickerPackId/checkout': typeof StickerPacksStickerPackIdCheckoutRoute
   '/sticker-packs/$stickerPackId/success': typeof StickerPacksStickerPackIdSuccessRoute
-  '/_main/feed/': typeof MainFeedIndexRoute
+  '/_main/community/': typeof MainCommunityIndexRoute
   '/_main/profile/': typeof MainProfileIndexRoute
   '/_main/stickers/': typeof MainStickersIndexRoute
   '/content/$promptId/': typeof ContentPromptIdIndexRoute
@@ -495,7 +495,7 @@ export interface FileRouteTypes {
     | '/sticker-packs/'
     | '/sticker-packs/$stickerPackId/checkout'
     | '/sticker-packs/$stickerPackId/success'
-    | '/feed'
+    | '/community'
     | '/profile'
     | '/stickers'
     | '/content/$promptId/'
@@ -542,7 +542,7 @@ export interface FileRouteTypes {
     | '/sticker-packs'
     | '/sticker-packs/$stickerPackId/checkout'
     | '/sticker-packs/$stickerPackId/success'
-    | '/feed'
+    | '/community'
     | '/profile'
     | '/stickers'
     | '/content/$promptId'
@@ -592,7 +592,7 @@ export interface FileRouteTypes {
     | '/sticker-packs/'
     | '/sticker-packs/$stickerPackId/checkout'
     | '/sticker-packs/$stickerPackId/success'
-    | '/_main/feed/'
+    | '/_main/community/'
     | '/_main/profile/'
     | '/_main/stickers/'
     | '/content/$promptId/'
@@ -791,11 +791,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MainProfileIndexRouteImport
       parentRoute: typeof MainRoute
     }
-    '/_main/feed/': {
-      id: '/_main/feed/'
-      path: '/feed'
-      fullPath: '/feed'
-      preLoaderRoute: typeof MainFeedIndexRouteImport
+    '/_main/community/': {
+      id: '/_main/community/'
+      path: '/community'
+      fullPath: '/community'
+      preLoaderRoute: typeof MainCommunityIndexRouteImport
       parentRoute: typeof MainRoute
     }
     '/sticker-packs/$stickerPackId/success': {
@@ -1028,7 +1028,7 @@ const MainProfileAdminPromptEditRouteRouteWithChildren =
   )
 
 interface MainRouteChildren {
-  MainFeedIndexRoute: typeof MainFeedIndexRoute
+  MainCommunityIndexRoute: typeof MainCommunityIndexRoute
   MainProfileIndexRoute: typeof MainProfileIndexRoute
   MainStickersIndexRoute: typeof MainStickersIndexRoute
   MainProfileAdminIndexRoute: typeof MainProfileAdminIndexRoute
@@ -1044,7 +1044,7 @@ interface MainRouteChildren {
 }
 
 const MainRouteChildren: MainRouteChildren = {
-  MainFeedIndexRoute: MainFeedIndexRoute,
+  MainCommunityIndexRoute: MainCommunityIndexRoute,
   MainProfileIndexRoute: MainProfileIndexRoute,
   MainStickersIndexRoute: MainStickersIndexRoute,
   MainProfileAdminIndexRoute: MainProfileAdminIndexRoute,

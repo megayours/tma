@@ -126,7 +126,7 @@ function SuccessPage() {
   };
 
   const handleBackToFeed = () => {
-    navigate({ to: '/feed' });
+    navigate({ to: '/community' });
   };
 
   if (isLoading) {

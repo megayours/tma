@@ -275,7 +275,9 @@ function SelectNFTsPage() {
       <TelegramMainButton
         text={generateMutation.isPending ? 'Generating...' : 'Generate'}
         onClick={handleGenerate}
-        disabled={!selectedNFTs.length || generateMutation.isPending}
+        disabled={!selectedNFTs.length}
+        loading={generateMutation.isPending}
+        visible={true}
       />
     </div>
   );

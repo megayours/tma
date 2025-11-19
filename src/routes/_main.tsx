@@ -14,7 +14,7 @@ function MainLayout() {
 
   const contentTypes = [
     'Stickers',
-    ...(!import.meta.env.PROD ? ['Feed'] : []),
+    'Feed',
     {
       id: 'UserMenu',
       content: (

@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { PromptEditor } from '@/components/Prompt/PromptEditor';
 import { useSelectedNFTsSafe } from '@/contexts/SelectedNFTsContext';
 
-export const Route = createFileRoute('/_main/profile/prompt/edit/$promptId/')({
+export const Route = createFileRoute('/_main/profile/admin/prompt/edit/$promptId/')({
   component: RouteComponent,
 });
 

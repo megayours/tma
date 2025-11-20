@@ -1,113 +1,63 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import {
-  ContentFiltersSchema,
-  type ContentFilters,
-  MyRecentGenerationsRequestSchema,
-  type MyRecentGenerationsRequest,
-} from '../types/requests';
 import { safeParse, getValidationErrors } from '@/utils/validation';
 import {
   type Content,
-  type ContentListResponse,
-  type RawContentListResponse,
-  type RawContentResponse,
   type Token,
   RawContentListResponseSchema,
-  MyRecentGenerationsResponseSchema,
-  type MyRecentGenerationsResponse,
+  RawContentResponseSchema,
 } from '../types/response';
 import type { Session } from '@/auth/useAuth';
 import type { Contract } from '../types/contract';
 
-// Helper function to map raw content to expected format
-const mapRawContentToContent = (rawContent: RawContentResponse) => ({
-  id: rawContent.id,
-  status: rawContent.status,
-  error: rawContent.error,
-  type: rawContent.type,
-  variant: rawContent.variant,
-  createdAt: rawContent.created_at,
-  creatorId: rawContent.creator_id,
-  token: rawContent.token,
-  tokens: rawContent.tokens,
-  promptId: rawContent.prompt_id,
-  session: rawContent.session,
-});
-
-export const useGetContent = (
-  params: ContentFilters,
-  session: Session | null | undefined
+export const useGetContents = (
+  session: Session | null | undefined,
+  account: string,
+  unrevealed?: boolean,
+  pagination?: { page: number; size: number },
+  order?: { sort_by: 'created_at'; sort_order: 'asc' | 'desc' }
 ) => {
+  const paginationParams = pagination || { page: 1, size: 10 };
+  const orderParams = order || { sort_by: 'created_at', sort_order: 'desc' };
   return useQuery({
-    queryKey: ['content', params],
-    queryFn: async (): Promise<ContentListResponse> => {
-      const validatedParams = safeParse(ContentFiltersSchema, params);
-      if (!validatedParams) {
-        throw new Error('Invalid parameters');
-      }
+    queryKey: ['content'],
+    queryFn: async () => {
+      if (!session) return;
 
-      try {
-        // Build parameters object
-        const apiParams = {
-          type: validatedParams.type,
-          prompt_id: validatedParams.promptId,
-          prompt_version: validatedParams.promptVersion,
-          account: validatedParams.account,
-          chain: validatedParams.chain,
-          contract_address: validatedParams.contractAddress,
-          token_id: validatedParams.tokenId,
-          created_after: validatedParams.createdAfter,
-          sort_by: validatedParams.filters?.sortBy,
-          sort_order: validatedParams.filters?.sortOrder,
-          page: validatedParams.pagination?.page,
-          size: validatedParams.pagination?.size,
-        };
-
-        // Build query string from parameters
-        const queryParams = new URLSearchParams();
-        Object.entries(apiParams).forEach(([key, value]) => {
-          if (value !== undefined && value !== null) {
-            queryParams.append(key, String(value));
-          }
-        });
-
-        const queryString = queryParams.toString();
-        const url = `${import.meta.env.VITE_PUBLIC_API_URL}/content${queryString ? `?${queryString}` : ''}`;
-
-        const response = await fetch(url, {
+      const queryParams = new URLSearchParams({
+        account: account,
+        page: paginationParams?.page.toString(),
+        size: paginationParams?.size.toString(),
+        sort_by: orderParams?.sort_by,
+        sort_order: orderParams?.sort_order,
+        ...(unrevealed != null && { revealed: (!unrevealed).toString() }),
+      });
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/content?${queryParams.toString()}`,
+        {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-            ...(session?.authToken && { Authorization: session.authToken }),
+            Authorization: session?.authToken,
           },
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
         }
-
-        const rawData: RawContentListResponse = await response.json();
-
-        // Validate raw response data
-        const validatedRawData = safeParse(
-          RawContentListResponseSchema,
-          rawData
-        );
-        if (!validatedRawData) {
-          throw new Error('Invalid response data');
-        }
-
-        // Map raw data to expected format
-        const mappedData: ContentListResponse = {
-          data: validatedRawData.data.map(mapRawContentToContent),
-          pagination: validatedRawData.pagination,
-        };
-
-        return mappedData;
-      } catch (error) {
-        console.error('ERROR', error);
-        throw error;
+      );
+      if (!response.ok) {
+        throw Error('Failed to GET contents');
       }
+      const data = await response.json();
+
+      // Validate and transform with Zod schema
+      const result = safeParse(RawContentListResponseSchema, data);
+      if (!result) {
+        const errors = getValidationErrors(RawContentListResponseSchema, data);
+        console.error('Content validation errors:', errors);
+        throw new Error('Invalid content response format');
+      }
+
+      return {
+        pagination: result.pagination,
+        contents: result.data as Content[],
+      };
     },
   });
 };
@@ -200,9 +150,18 @@ export const useGetPreviewContent = (
         throw new Error('Failed to get preview content');
       }
       const data = await response.json();
+
+      // Validate and transform with Zod schema
+      const result = safeParse(RawContentListResponseSchema, data);
+      if (!result) {
+        const errors = getValidationErrors(RawContentListResponseSchema, data);
+        console.error('Preview content validation errors:', errors);
+        throw new Error('Invalid preview content response format');
+      }
+
       return {
-        pagination: data.pagination,
-        content: data.data as Content[],
+        pagination: result.pagination,
+        content: result.data as Content[],
       };
     },
     enabled: !!session && !!promptId,
@@ -283,103 +242,6 @@ export const useGenerateContentMutation = (
   });
 };
 
-export const useMyRecentGenerations = (
-  params: MyRecentGenerationsRequest,
-  session: Session | null | undefined
-) => {
-  return useQuery({
-    queryKey: ['my-recent-generations', params],
-    queryFn: async (): Promise<MyRecentGenerationsResponse> => {
-      const validatedParams = safeParse(
-        MyRecentGenerationsRequestSchema,
-        params
-      );
-      if (!validatedParams) {
-        throw new Error('Invalid parameters');
-      }
-
-      try {
-        // Build parameters object - convert pagination to individual params
-        const apiParams = {
-          type: validatedParams.type,
-          page: validatedParams.pagination?.page?.toString() || '1',
-          size: validatedParams.pagination?.size?.toString() || '20',
-          days: validatedParams.days,
-        };
-
-        // Build query string from parameters
-        const queryParams = new URLSearchParams();
-        Object.entries(apiParams).forEach(([key, value]) => {
-          if (value !== undefined && value !== null) {
-            queryParams.append(key, String(value));
-          }
-        });
-
-        const queryString = queryParams.toString();
-        const url = `${import.meta.env.VITE_PUBLIC_API_URL}/discovery/generations/my-recent${queryString ? `?${queryString}` : ''}`;
-
-        const response = await fetch(url, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(session?.authToken && { Authorization: session.authToken }),
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const rawData: MyRecentGenerationsResponse = await response.json();
-
-        // Validate raw response data
-        const validatedRawData = safeParse(
-          MyRecentGenerationsResponseSchema,
-          rawData
-        );
-        if (!validatedRawData) {
-          const errors = getValidationErrors(
-            MyRecentGenerationsResponseSchema,
-            rawData
-          );
-          console.error('Schema validation failed:', errors);
-          console.error('Raw data:', rawData);
-          throw new Error(`Invalid response data: ${errors}`);
-        }
-
-        return validatedRawData;
-      } catch (error) {
-        console.error('ERROR', error);
-        throw error;
-      }
-    },
-    enabled: !!session,
-  });
-};
-
-export const useUnrevealedGenerations = (
-  session: Session | null | undefined
-) => {
-  const params: MyRecentGenerationsRequest = {
-    type: 'all',
-    pagination: {
-      page: 1,
-      size: 100, // Get a larger set to find unrevealed items
-    },
-    days: '30',
-  };
-
-  const { data } = useMyRecentGenerations(params, session);
-
-  // Filter unrevealed generations (revealed_at is null)
-  const unrevealedGenerations =
-    data?.data?.filter(generation => generation.revealed_at === null) || [];
-
-  const unrevealedCount = unrevealedGenerations.length;
-
-  return { unrevealedGenerations, unrevealedCount };
-};
-
 export const useRevealContent = (session: Session | null | undefined) => {
   const queryClient = useQueryClient();
 
@@ -408,7 +270,8 @@ export const useRevealContent = (session: Session | null | undefined) => {
       return data;
     },
     onSuccess: () => {
-      // Invalidate my-recent-generations queries to refresh the data
+      // Invalidate queries to refresh the data
+      queryClient.invalidateQueries({ queryKey: ['content'] });
       queryClient.invalidateQueries({ queryKey: ['my-recent-generations'] });
     },
   });
@@ -448,7 +311,8 @@ export const useRevealAllContent = (session: Session | null | undefined) => {
       return { successful: results.length, total: contentIds.length };
     },
     onSuccess: () => {
-      // Invalidate my-recent-generations queries to refresh the data
+      // Invalidate queries to refresh the data
+      queryClient.invalidateQueries({ queryKey: ['content'] });
       queryClient.invalidateQueries({ queryKey: ['my-recent-generations'] });
     },
   });
@@ -487,40 +351,6 @@ export const useUploadContent = (session: Session | null | undefined) => {
   });
 };
 
-// Content execution/status response from /v1/content/{id}
-export interface ContentExecution {
-  id: string;
-  status: 'processing' | 'completed' | 'failed';
-  error?: string;
-  error_message?: string; // Mapped from 'error'
-  type: 'image' | 'video' | 'sticker' | 'animated_sticker';
-  variant: string;
-  created_at: number;
-  creator_id: string;
-  token?: {
-    contract: {
-      id: number;
-      chain: string;
-      address: string;
-      name: string;
-    };
-    id: string;
-  };
-  tokens?: Array<{
-    contract: {
-      id: number;
-      chain: string;
-      address: string;
-      name: string;
-    };
-    id: string;
-  }>;
-  prompt_id: number | null;
-  url?: string;
-  content_url?: string; // Mapped from 'url'
-  progress_percentage?: number; // Optional, may not be in response
-}
-
 // Track content status with polling using /content/{id}
 export const useContentExecution = (
   executionId: string,
@@ -529,7 +359,7 @@ export const useContentExecution = (
     enabled?: boolean;
   }
 ) => {
-  return useQuery<ContentExecution>({
+  return useQuery<Content>({
     queryKey: ['content-execution', executionId],
     queryFn: async () => {
       if (!session) {
@@ -553,12 +383,15 @@ export const useContentExecution = (
 
       const data = await response.json();
 
-      // Map response to expected format
-      return {
-        ...data,
-        error_message: data.error, // Map 'error' to 'error_message'
-        content_url: data.url, // Map 'url' to 'content_url'
-      };
+      // Validate and transform with Zod schema
+      const result = safeParse(RawContentResponseSchema, data);
+      if (!result) {
+        const errors = getValidationErrors(RawContentResponseSchema, data);
+        console.error('Content execution validation errors:', errors);
+        throw new Error('Invalid content execution response format');
+      }
+
+      return result as Content;
     },
     enabled: !!session && !!executionId && options?.enabled !== false,
     refetchInterval: query => {

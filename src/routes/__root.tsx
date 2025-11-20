@@ -277,7 +277,7 @@ function AppContent() {
       ) : (
         <WebEnvironmentHandler />
       )}
-      <div className="bg-tg-bg">
+      <div className="">
         <Header />
         <main className={`h-full`}>
           <Outlet />

@@ -126,14 +126,14 @@ function SuccessPage() {
   };
 
   const handleBackToFeed = () => {
-    navigate({ to: '/feed' });
+    navigate({ to: '/community' });
   };
 
   if (isLoading) {
     return <SpinnerFullPage text="Loading..." />;
   }
 
-  const contentUrl = execution?.content_url;
+  const contentUrl = execution?.url;
 
   return (
     <div className="flex h-screen flex-col">

@@ -12,7 +12,7 @@ import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { FeedFilters } from './FeedFilters';
 
-export const Route = createFileRoute('/_main/feed/')({
+export const Route = createFileRoute('/_main/community/')({
   component: Feed,
 });
 

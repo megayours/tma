@@ -141,7 +141,7 @@ function ProcessingPage() {
             Generation Failed
           </h2>
           <p className="text-tg-hint mb-4">
-            {execution.error_message ||
+            {execution.error ||
               'Something went wrong during generation'}
           </p>
           <button
@@ -161,7 +161,7 @@ function ProcessingPage() {
   }
 
   // Processing state - use real progress if available, otherwise use fake timer
-  const progressPercentage = execution?.progress_percentage ?? fakeProgress;
+  const progressPercentage = execution?.progressPercentage ?? fakeProgress;
 
   return (
     <div className="flex h-screen flex-col">

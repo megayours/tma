@@ -43,14 +43,12 @@ export const TelegramMainButton: React.FC<TelegramMainButtonProps> = ({
           disabled={disabled || loading}
           className="bg-tg-button text-tg-button-text w-full rounded-lg px-6 py-3 text-center font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90"
         >
-          {loading ? (
-            <span className="flex items-center justify-center gap-2">
+          <span className="flex items-center justify-center gap-2">
+            {loading && (
               <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-              Processing...
-            </span>
-          ) : (
-            text
-          )}
+            )}
+            {loading ? 'Processing...' : text}
+          </span>
         </button>
       </div>
     ) : null;

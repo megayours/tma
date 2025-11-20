@@ -1,4 +1,4 @@
-import { Link, useNavigate } from '@tanstack/react-router';
+import { Link, useNavigate, useLocation } from '@tanstack/react-router';
 import { viewport, useSignal } from '@telegram-apps/sdk-react';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import { useStickerPackExecutions } from '../hooks/useStickerPack';
@@ -66,6 +66,8 @@ const HeaderBrand = () => {
   const { selectedCommunity } = useSelectCommunity();
   const navigate = useNavigate();
 
+  const location = useLocation();
+
   const handleCommunityClick = () => {
     if (selectedCommunity) {
       navigate({
@@ -78,16 +80,22 @@ const HeaderBrand = () => {
   };
 
   return (
-    <div className="flex flex-row items-center gap-2">
-      <Link to="/">
-        <h1
-          className={`text-xl font-bold ${
-            isDark ? 'text-[#03FFC2]' : 'text-black'
-          }`}
-        >
-          Yours.fun
-        </h1>
-      </Link>
+    <div className={`flex flex-row items-center gap-2`}>
+      {location.pathname.startsWith('/profile/admin') ? (
+        <Link to="/profile">
+          <h1 className={`text-xl font-bold text-[#03FFC2]`}>Admin.fun</h1>
+        </Link>
+      ) : (
+        <Link to="/">
+          <h1
+            className={`text-xl font-bold ${
+              isDark ? 'text-[#03FFC2]' : 'text-black'
+            }`}
+          >
+            Yours.fun
+          </h1>
+        </Link>
+      )}
       {selectedCommunity && (
         <>
           <div className="border-tg-text h-6 border-r"></div>
@@ -123,6 +131,7 @@ export const Header = () => {
   const isViewportMounting = useSignal(viewport.isMounting);
   const contentSafeAreaInsets = useSignal(viewport.contentSafeAreaInsets);
   const viewportSafeAreaInsets = useSignal(viewport.safeAreaInsets);
+  const location = useLocation();
 
   return (
     <>
@@ -135,9 +144,7 @@ export const Header = () => {
             height: contentSafeAreaInsets.top,
           }}
         >
-          <div
-            className={`flex h-full flex-row items-center justify-center gap-4`}
-          >
+          <div className={`flex h-full flex-row items-center justify-center`}>
             <HeaderBrand />
           </div>
         </div>
@@ -145,10 +152,10 @@ export const Header = () => {
 
       {!isViewportMounted && (
         <div
-          className="flex h-12 items-center justify-end p-4"
+          className={`flex h-12 items-center justify-end p-4 ${location.pathname.startsWith('/profile/admin') && 'bg-black'}`}
           style={{
-            marginTop:
-              contentSafeAreaInsets.top + viewportSafeAreaInsets.top + 5,
+            paddingTop:
+              contentSafeAreaInsets.top + viewportSafeAreaInsets.top + 5 + 16,
           }}
         >
           {!isViewportMounted && (

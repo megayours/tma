@@ -1,29 +1,26 @@
-import type { ReactNode } from 'react';
 import { useRef, useEffect } from 'react';
 import { gsap } from 'gsap';
 import { hapticFeedback } from '@telegram-apps/sdk-react';
 import { useNavigate, useLocation } from '@tanstack/react-router';
+import { useSession } from '../auth/SessionProvider';
+import { UserMenuComponent } from './lib/auth/FavoriteNFT';
+import { FaUser } from 'react-icons/fa';
 
-type ContentType = string | { id: string; content: ReactNode };
-
-interface ContentMenuProps {
-  contentTypes: ContentType[];
-}
-
-export function ContentMenu(props: ContentMenuProps) {
+export function ContentMenu() {
   const navigate = useNavigate();
   const location = useLocation();
   const bubbleRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const containerRef = useRef<HTMLDivElement>(null);
+  const { session } = useSession();
 
   // Derive selected content type from current route
   const getSelectedContentType = (): string => {
     const path = location.pathname;
-    if (path.startsWith('/stickers')) return 'Stickers';
-    if (path.startsWith('/feed')) return 'Feed';
+    if (path.startsWith('/stickers')) return 'Packs';
+    if (path.startsWith('/community')) return 'Community';
     if (path.startsWith('/profile')) return 'UserMenu';
-    return 'Stickers';
+    return 'Packs';
   };
 
   const selectedContentType = getSelectedContentType();
@@ -31,10 +28,10 @@ export function ContentMenu(props: ContentMenuProps) {
   // Map content type to route
   const getRouteForContentType = (id: string): string => {
     switch (id) {
-      case 'Stickers':
+      case 'Packs':
         return '/stickers';
-      case 'Feed':
-        return '/feed';
+      case 'Community':
+        return '/community';
       case 'UserMenu':
         return '/profile';
       default:
@@ -69,7 +66,7 @@ export function ContentMenu(props: ContentMenuProps) {
         ease: 'power2.out',
       });
     }
-  }, [selectedContentType, props.contentTypes]);
+  }, [selectedContentType]);
 
   return (
     <div className="fixed right-10 bottom-5 left-10 z-50 px-4">
@@ -84,26 +81,36 @@ export function ContentMenu(props: ContentMenuProps) {
           style={{ zIndex: 0 }}
         />
 
-        {props.contentTypes.map(contentType => {
-          const id =
-            typeof contentType === 'string' ? contentType : contentType.id;
-          const content =
-            typeof contentType === 'string' ? contentType : contentType.content;
-
-          return (
-            <div
-              key={id}
-              ref={el => {
-                itemRefs.current[id] = el;
-              }}
-              onClick={() => handleItemClick(id)}
-              className={`${selectedContentType == id ? 'text-tg-button-text' : 'text-tg-text'} relative z-10 flex h-full w-full items-center justify-center p-3`}
-              style={{ zIndex: 1 }}
-            >
-              {content}
-            </div>
-          );
-        })}
+        <div
+          ref={el => {
+            itemRefs.current['Packs'] = el;
+          }}
+          onClick={() => handleItemClick('Packs')}
+          className={`${selectedContentType === 'Packs' ? 'text-tg-button-text' : 'text-tg-text'} relative z-10 flex h-full w-full items-center justify-center p-3`}
+          style={{ zIndex: 1 }}
+        >
+          Packs
+        </div>
+        <div
+          ref={el => {
+            itemRefs.current['Community'] = el;
+          }}
+          onClick={() => handleItemClick('Community')}
+          className={`${selectedContentType === 'Community' ? 'text-tg-button-text' : 'text-tg-text'} relative z-10 flex h-full w-full items-center justify-center p-3`}
+          style={{ zIndex: 1 }}
+        >
+          Community
+        </div>
+        <div
+          ref={el => {
+            itemRefs.current['UserMenu'] = el;
+          }}
+          onClick={() => handleItemClick('UserMenu')}
+          className={`${selectedContentType === 'UserMenu' ? 'text-tg-button-text' : 'text-tg-text'} relative z-10 flex h-full w-full items-center justify-center p-3`}
+          style={{ zIndex: 1 }}
+        >
+          {session ? <UserMenuComponent size={35} /> : <FaUser />}
+        </div>
       </div>
     </div>
   );

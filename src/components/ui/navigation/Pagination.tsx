@@ -16,7 +16,8 @@ export function Pagination({
     <TGPagination
       count={totalPages}
       page={page}
-      siblingCount={1}
+      siblingCount={0}
+      boundaryCount={1}
       onChange={(_, page) => setPage(page)}
     />
   );

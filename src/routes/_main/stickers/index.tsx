@@ -44,6 +44,7 @@ export function Landing() {
       {!import.meta.env.PROD && (
         <div className="flex flex-col gap-2">
           <Link to="/sticker-packs">Link to Sticker Packs</Link>
+          <Link to="/profile/notifications">Notifications</Link>
           <Link to="/community">Link to Community</Link>
           <Link to="/about">Check about</Link>
         </div>

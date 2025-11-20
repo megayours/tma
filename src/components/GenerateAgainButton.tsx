@@ -3,11 +3,11 @@ import { useNavigate } from '@tanstack/react-router';
 import { Button } from '@telegram-apps/telegram-ui';
 import { useSession } from '@/auth/SessionProvider';
 import { useGenerateContentMutation } from '@/hooks/useContents';
-import type { ContentExecution } from '@/hooks/useContents';
+import type { Content } from '@/types/content';
 import { FaRedo } from 'react-icons/fa';
 
 interface GenerateAgainButtonProps {
-  execution: ContentExecution | undefined;
+  execution: Content | undefined;
   promptId: string;
 }
 
@@ -45,14 +45,14 @@ export function GenerateAgainButton({
     }
 
     // Build inputs array from the tokens
-    const inputs = tokensArray.map(token => ({
+    const inputs = tokensArray.map((token) => ({
       chain: token.contract.chain,
       contract_address: token.contract.address,
       token_id: token.id,
     }));
 
     generateMutation.mutate({
-      promptId: execution.prompt_id?.toString() || promptId,
+      promptId: execution.promptId?.toString() || promptId,
       type: execution.type,
       inputs: inputs,
       overrideExisting: true,

@@ -11,7 +11,6 @@ export type {
 
 export { AddInputButton } from './buttons/AddInputButton';
 export { AddButton } from './buttons/AddButton';
-export { CreatePromptButton } from './buttons/CreatePromptButton';
 export { CustomButton } from './buttons/CustomButton';
 
 // Layout

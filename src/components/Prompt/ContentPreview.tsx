@@ -80,7 +80,7 @@ export const ContentPreviews = ({
       // OR if the selected content's status has changed (e.g., from processing to completed)
       if (
         !selectedContent ||
-        newestContent.created_at > (selectedContent.created_at || 0) ||
+        newestContent.createdAt > (selectedContent.createdAt || 0) ||
         (selectedContent &&
           newestContent.id === selectedContent.id &&
           newestContent.status !== selectedContent.status)

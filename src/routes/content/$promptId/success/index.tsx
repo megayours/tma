@@ -133,7 +133,7 @@ function SuccessPage() {
     return <SpinnerFullPage text="Loading..." />;
   }
 
-  const contentUrl = execution?.content_url;
+  const contentUrl = execution?.url;
 
   return (
     <div className="flex h-screen flex-col">

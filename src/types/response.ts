@@ -101,20 +101,45 @@ export type ContentStatus = z.infer<typeof ContentStatusSchema>;
 export const ContentVariantSchema = z.string().optional();
 export type ContentVariant = z.infer<typeof ContentVariantSchema>;
 
-// Raw content response schema (snake_case)
-export const RawContentResponseSchema = z.object({
-  id: z.string(),
-  status: ContentStatusSchema.optional(),
-  error: z.string().nullable().optional(),
-  type: ContentTypeSchema,
-  variant: ContentVariantSchema,
-  created_at: z.number().optional(),
-  creator_id: z.string().optional(),
-  token: TokenSchema.optional(),
-  tokens: z.array(TokenSchema).optional(),
-  prompt_id: z.union([z.string(), z.number()]).nullable().optional(),
-  session: z.any().optional(),
-});
+// Raw content response schema (snake_case from API)
+export const RawContentResponseSchema = z
+  .object({
+    id: z.string(),
+    status: ContentStatusSchema.optional(),
+    error: z.string().nullable().optional(),
+    type: ContentTypeSchema,
+    variant: ContentVariantSchema,
+    created_at: z.number().optional(),
+    creator_id: z.string().optional(),
+    revealed_at: z.union([z.number(), z.string()]).nullable().optional(),
+    prompt_id: z.union([z.string(), z.number()]).nullable().optional(),
+    token: TokenSchema.optional(),
+    tokens: z.array(TokenSchema).optional(),
+    url: z.string().optional(),
+    video: z.string().optional(),
+    gif: z.string().optional(),
+    image: z.string().optional(),
+    progress_percentage: z.number().optional(),
+    session: z.any().optional(),
+  })
+  .transform(data => ({
+    id: data.id,
+    status: data.status,
+    error: data.error,
+    type: data.type,
+    variant: data.variant,
+    createdAt: data.created_at,
+    creatorId: data.creator_id,
+    revealedAt: data.revealed_at,
+    promptId: data.prompt_id,
+    token: data.token,
+    tokens: data.tokens,
+    url: data.url,
+    video: data.video,
+    gif: data.gif,
+    image: data.image,
+    progressPercentage: data.progress_percentage,
+  }));
 export type RawContentResponse = z.infer<typeof RawContentResponseSchema>;
 
 // Main content response schema
@@ -126,6 +151,7 @@ export const ContentResponseSchema = z.object({
   variant: ContentVariantSchema,
   createdAt: z.number().optional(),
   creatorId: z.string().optional(),
+  revealedAt: z.string().optional(),
   token: TokenSchema.optional(),
   tokens: z.array(TokenSchema).optional(),
   promptId: z.union([z.string(), z.number()]).nullable().optional(),

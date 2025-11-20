@@ -20,8 +20,16 @@ export interface Content {
   video?: string;
   gif?: string;
   image?: string;
+  url?: string;
   status: 'processing' | 'completed' | 'failed';
-  created_at: number;
-  prompt: Prompt;
-  token: Token;
+  error?: string | null;
+  creatorId: string;
+  revealedAt: string | number | null;
+  createdAt: number;
+  promptId?: string | number | null;
+  prompt?: Prompt;
+  token?: Token;
+  tokens?: Token[];
+  variant?: string;
+  progressPercentage?: number;
 }

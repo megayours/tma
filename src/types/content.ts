@@ -27,6 +27,7 @@ export interface Content {
   revealedAt: string | number | null;
   createdAt: number;
   promptId?: string | number | null;
+  prompt?: Prompt;
   token?: Token;
   tokens?: Token[];
   variant?: string;

@@ -87,6 +87,11 @@ export interface StickerPackExecution {
   nft_token: StickerPackNFTToken;
   items: StickerPackExecutionItem[];
   progress_percentage: number;
+  queueInfo?: {
+    position: number;
+    estimatedMinutes: number;
+    estimatedTimeMessage: string;
+  };
 }
 
 export interface StickerPackExecutionsResponse {
@@ -149,7 +154,23 @@ export const useStickerPackExecutions = (
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data: StickerPackExecutionsResponse = await response.json();
+      const rawData = await response.json();
+
+      // Transform queue_info to queueInfo with camelCase properties for each execution
+      const data: StickerPackExecutionsResponse = {
+        ...rawData,
+        data: rawData.data.map((execution: any) => ({
+          ...execution,
+          queueInfo: execution.queue_info
+            ? {
+                position: execution.queue_info.position,
+                estimatedMinutes: execution.queue_info.estimated_minutes,
+                estimatedTimeMessage: execution.queue_info.estimated_time_message,
+              }
+            : undefined,
+        })),
+      };
+
       return data;
     },
     enabled: !!session,
@@ -191,7 +212,20 @@ export const useStickerPackExecutionById = (
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data: StickerPackExecution = await response.json();
+      const rawData = await response.json();
+
+      // Transform queue_info to queueInfo with camelCase properties
+      const data: StickerPackExecution = {
+        ...rawData,
+        queueInfo: rawData.queue_info
+          ? {
+              position: rawData.queue_info.position,
+              estimatedMinutes: rawData.queue_info.estimated_minutes,
+              estimatedTimeMessage: rawData.queue_info.estimated_time_message,
+            }
+          : undefined,
+      };
+
       return data;
     },
     enabled: !!session && !!executionId,
@@ -250,7 +284,22 @@ export const useGetExecution = (
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data: StickerPackExecutionsResponse = await response.json();
+      const rawData = await response.json();
+
+      // Transform queue_info to queueInfo with camelCase properties for each execution
+      const data: StickerPackExecutionsResponse = {
+        ...rawData,
+        data: rawData.data.map((execution: any) => ({
+          ...execution,
+          queueInfo: execution.queue_info
+            ? {
+                position: execution.queue_info.position,
+                estimatedMinutes: execution.queue_info.estimated_minutes,
+                estimatedTimeMessage: execution.queue_info.estimated_time_message,
+              }
+            : undefined,
+        })),
+      };
 
       // Return the first (latest) execution or null if none found
       return data.data.length > 0 ? data.data[0] : null;

@@ -51,7 +51,7 @@ export function NFTUsedDisplay({ nftToken }: NFTUsedDisplayProps) {
   return (
     <div className="border-tg-hint/20 border-t pt-4">
       <h3 className="text-tg-hint mb-2 text-sm font-semibold">Pictures Used</h3>
-      <div className="flex items-start gap-3">
+      <div className="flex flex-row items-start gap-3">
         {/* NFT Image */}
         {nftData.image && (
           <div className="flex-shrink-0">

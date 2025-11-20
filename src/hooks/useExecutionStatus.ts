@@ -3,8 +3,8 @@ import { z } from 'zod';
 import { safeParse } from '@/utils/validation';
 import type { Session } from '@/auth/useAuth';
 
-// Execution status response schema
-const ExecutionStatusSchema = z.object({
+// Execution status response schema (API format with snake_case)
+const ExecutionStatusApiSchema = z.object({
   id: z.string(),
   bundle_id: z.number(),
   user_account_id: z.string(),
@@ -33,6 +33,27 @@ const ExecutionStatusSchema = z.object({
       })
     )
     .nullish(),
+  queue_info: z
+    .object({
+      position: z.number(),
+      estimated_minutes: z.number(),
+      estimated_time_message: z.string(),
+    })
+    .transform((data) => ({
+      position: data.position,
+      estimatedMinutes: data.estimated_minutes,
+      estimatedTimeMessage: data.estimated_time_message,
+    }))
+    .nullish(),
+});
+
+// Transform to camelCase for TypeScript
+const ExecutionStatusSchema = ExecutionStatusApiSchema.transform((data) => {
+  const { queue_info, ...rest } = data;
+  return {
+    ...rest,
+    queueInfo: queue_info,
+  };
 });
 
 export type ExecutionStatus = z.infer<typeof ExecutionStatusSchema>;

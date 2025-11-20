@@ -193,9 +193,10 @@ function RouteComponent() {
             <div className="border-tg-hint/20 my-2 border-t" />
 
             {/* Status Message */}
-            <div className="text-center">
-              <p className="text-tg-hint text-sm">
-                We're creating your stickers! This usually takes a few minutes.
+            <div className="text-tg-hint text-center text-sm">
+              <p>
+                {execution.queueInfo?.estimatedTimeMessage ||
+                  'This usually takes a few minutes.'}
               </p>
             </div>
 

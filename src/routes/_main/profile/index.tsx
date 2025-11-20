@@ -6,6 +6,7 @@ import { Blockquote, Button } from '@telegram-apps/telegram-ui';
 import { requestWriteAccess } from '@telegram-apps/sdk-react';
 import { useLaunchParams } from '@telegram-apps/sdk-react';
 import { useStickerPackExecutions } from '@/hooks/useStickerPack';
+import { ContentList } from './ContentList';
 import { useTelegramTheme } from '@/auth/useTelegram';
 
 export const Route = createFileRoute('/_main/profile/')({
@@ -104,6 +105,7 @@ export function ProfileLayout() {
               <AuthorizeBotMessages />
             </div>
           )}
+          <ContentList />
           <StickerList />
         </main>
       </div>

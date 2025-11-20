@@ -9,8 +9,9 @@ import {
 import type { Session } from '@/auth/useAuth';
 import type { Contract } from '../types/contract';
 
-export const useGetConents = (
+export const useGetContents = (
   session: Session | null | undefined,
+  account: string,
   unrevealed?: boolean,
   pagination?: { page: number; size: number },
   order?: { sort_by: 'created_at'; sort_order: 'asc' | 'desc' }
@@ -23,6 +24,7 @@ export const useGetConents = (
       if (!session) return;
 
       const queryParams = new URLSearchParams({
+        account: account,
         page: paginationParams?.page.toString(),
         size: paginationParams?.size.toString(),
         sort_by: orderParams?.sort_by,
@@ -268,7 +270,8 @@ export const useRevealContent = (session: Session | null | undefined) => {
       return data;
     },
     onSuccess: () => {
-      // Invalidate my-recent-generations queries to refresh the data
+      // Invalidate queries to refresh the data
+      queryClient.invalidateQueries({ queryKey: ['content'] });
       queryClient.invalidateQueries({ queryKey: ['my-recent-generations'] });
     },
   });
@@ -308,7 +311,8 @@ export const useRevealAllContent = (session: Session | null | undefined) => {
       return { successful: results.length, total: contentIds.length };
     },
     onSuccess: () => {
-      // Invalidate my-recent-generations queries to refresh the data
+      // Invalidate queries to refresh the data
+      queryClient.invalidateQueries({ queryKey: ['content'] });
       queryClient.invalidateQueries({ queryKey: ['my-recent-generations'] });
     },
   });

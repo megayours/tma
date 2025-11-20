@@ -44,6 +44,7 @@ import { Route as ContentPromptIdSuccessIndexRouteImport } from './routes/conten
 import { Route as ContentPromptIdSelectNftsIndexRouteImport } from './routes/content/$promptId/select-nfts/index'
 import { Route as ContentPromptIdDetailsIndexRouteImport } from './routes/content/$promptId/details/index'
 import { Route as MainProfilePurchasesIndexRouteImport } from './routes/_main/profile/purchases/index'
+import { Route as MainProfileNotificationsIndexRouteImport } from './routes/_main/profile/notifications/index'
 import { Route as MainProfileAdminIndexRouteImport } from './routes/_main/profile/admin/index'
 import { Route as ContentPromptIdProcessingExecutionIdRouteImport } from './routes/content/$promptId/processing.$executionId'
 import { Route as StickerPacksStickerPackIdProcessingExecutionIdIndexRouteImport } from './routes/sticker-packs/$stickerPackId/processing/$executionId/index'
@@ -241,6 +242,12 @@ const MainProfilePurchasesIndexRoute =
     path: '/profile/purchases/',
     getParentRoute: () => MainRoute,
   } as any)
+const MainProfileNotificationsIndexRoute =
+  MainProfileNotificationsIndexRouteImport.update({
+    id: '/profile/notifications/',
+    path: '/profile/notifications/',
+    getParentRoute: () => MainRoute,
+  } as any)
 const MainProfileAdminIndexRoute = MainProfileAdminIndexRouteImport.update({
   id: '/profile/admin/',
   path: '/profile/admin/',
@@ -320,6 +327,7 @@ export interface FileRoutesByFullPath {
   '/sticker-packs/$stickerPackId/': typeof StickerPacksStickerPackIdIndexRoute
   '/content/$promptId/processing/$executionId': typeof ContentPromptIdProcessingExecutionIdRoute
   '/profile/admin': typeof MainProfileAdminIndexRoute
+  '/profile/notifications': typeof MainProfileNotificationsIndexRoute
   '/profile/purchases': typeof MainProfilePurchasesIndexRoute
   '/content/$promptId/details': typeof ContentPromptIdDetailsIndexRoute
   '/content/$promptId/select-nfts': typeof ContentPromptIdSelectNftsIndexRoute
@@ -362,6 +370,7 @@ export interface FileRoutesByTo {
   '/sticker-packs/$stickerPackId': typeof StickerPacksStickerPackIdIndexRoute
   '/content/$promptId/processing/$executionId': typeof ContentPromptIdProcessingExecutionIdRoute
   '/profile/admin': typeof MainProfileAdminIndexRoute
+  '/profile/notifications': typeof MainProfileNotificationsIndexRoute
   '/profile/purchases': typeof MainProfilePurchasesIndexRoute
   '/content/$promptId/details': typeof ContentPromptIdDetailsIndexRoute
   '/content/$promptId/select-nfts': typeof ContentPromptIdSelectNftsIndexRoute
@@ -408,6 +417,7 @@ export interface FileRoutesById {
   '/sticker-packs/$stickerPackId/': typeof StickerPacksStickerPackIdIndexRoute
   '/content/$promptId/processing/$executionId': typeof ContentPromptIdProcessingExecutionIdRoute
   '/_main/profile/admin/': typeof MainProfileAdminIndexRoute
+  '/_main/profile/notifications/': typeof MainProfileNotificationsIndexRoute
   '/_main/profile/purchases/': typeof MainProfilePurchasesIndexRoute
   '/content/$promptId/details/': typeof ContentPromptIdDetailsIndexRoute
   '/content/$promptId/select-nfts/': typeof ContentPromptIdSelectNftsIndexRoute
@@ -455,6 +465,7 @@ export interface FileRouteTypes {
     | '/sticker-packs/$stickerPackId/'
     | '/content/$promptId/processing/$executionId'
     | '/profile/admin'
+    | '/profile/notifications'
     | '/profile/purchases'
     | '/content/$promptId/details'
     | '/content/$promptId/select-nfts'
@@ -497,6 +508,7 @@ export interface FileRouteTypes {
     | '/sticker-packs/$stickerPackId'
     | '/content/$promptId/processing/$executionId'
     | '/profile/admin'
+    | '/profile/notifications'
     | '/profile/purchases'
     | '/content/$promptId/details'
     | '/content/$promptId/select-nfts'
@@ -542,6 +554,7 @@ export interface FileRouteTypes {
     | '/sticker-packs/$stickerPackId/'
     | '/content/$promptId/processing/$executionId'
     | '/_main/profile/admin/'
+    | '/_main/profile/notifications/'
     | '/_main/profile/purchases/'
     | '/content/$promptId/details/'
     | '/content/$promptId/select-nfts/'
@@ -831,6 +844,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MainProfilePurchasesIndexRouteImport
       parentRoute: typeof MainRoute
     }
+    '/_main/profile/notifications/': {
+      id: '/_main/profile/notifications/'
+      path: '/profile/notifications'
+      fullPath: '/profile/notifications'
+      preLoaderRoute: typeof MainProfileNotificationsIndexRouteImport
+      parentRoute: typeof MainRoute
+    }
     '/_main/profile/admin/': {
       id: '/_main/profile/admin/'
       path: '/profile/admin'
@@ -932,6 +952,7 @@ interface MainRouteChildren {
   MainProfileIndexRoute: typeof MainProfileIndexRoute
   MainStickersIndexRoute: typeof MainStickersIndexRoute
   MainProfileAdminIndexRoute: typeof MainProfileAdminIndexRoute
+  MainProfileNotificationsIndexRoute: typeof MainProfileNotificationsIndexRoute
   MainProfilePurchasesIndexRoute: typeof MainProfilePurchasesIndexRoute
   MainProfileAdminPromptEditRouteRoute: typeof MainProfileAdminPromptEditRouteRouteWithChildren
   MainProfileAdminPromptCreateRoute: typeof MainProfileAdminPromptCreateRoute
@@ -943,6 +964,7 @@ const MainRouteChildren: MainRouteChildren = {
   MainProfileIndexRoute: MainProfileIndexRoute,
   MainStickersIndexRoute: MainStickersIndexRoute,
   MainProfileAdminIndexRoute: MainProfileAdminIndexRoute,
+  MainProfileNotificationsIndexRoute: MainProfileNotificationsIndexRoute,
   MainProfilePurchasesIndexRoute: MainProfilePurchasesIndexRoute,
   MainProfileAdminPromptEditRouteRoute:
     MainProfileAdminPromptEditRouteRouteWithChildren,

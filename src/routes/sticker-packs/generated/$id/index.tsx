@@ -4,6 +4,7 @@ import { useStickerPackExecutionById } from '@/hooks/useStickerPack';
 import { SpinnerFullPage } from '@/components/ui';
 import { NFTUsedDisplay } from './NFTUsedDisplay';
 import { GeneratedStickers } from './GeneratedStickers';
+import { ProcessingTimeCountdown } from './ProcessingTimeCountdown';
 
 export const Route = createFileRoute('/sticker-packs/generated/$id/')({
   component: RouteComponent,
@@ -12,8 +13,6 @@ export const Route = createFileRoute('/sticker-packs/generated/$id/')({
 function RouteComponent() {
   const { id } = Route.useParams();
   const { session } = useSession();
-
-  console.log('GMGM');
 
   // Fetch execution status by execution ID
   const {
@@ -118,6 +117,15 @@ function RouteComponent() {
                     >
                       Add to Telegram
                     </a>
+                  ) : execution.status === 'processing' ? (
+                    <div
+                      className={`flex flex-col items-center justify-center rounded-lg px-3 py-1.5 text-xs font-semibold ${getStatusColor(execution.status)}`}
+                    >
+                      <div>{getStatusLabel(execution.status)}</div>
+                      <ProcessingTimeCountdown
+                        queueInfo={execution.queueInfo}
+                      />
+                    </div>
                   ) : (
                     <span
                       className={`flex items-center justify-center rounded-full px-2 align-middle text-xs font-semibold ${getStatusColor(execution.status)}`}

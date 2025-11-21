@@ -1,7 +1,11 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, Link } from '@tanstack/react-router';
 import { ProtectedRoute } from '@/auth/ProtectedRoute';
 import { useSession } from '@/auth/SessionProvider';
-import { useGetContents, useRevealContent } from '@/hooks/useContents';
+import {
+  useGetContents,
+  useRevealContent,
+  useRevealAllContent,
+} from '@/hooks/useContents';
 import { useState } from 'react';
 import type { Content } from '@/types/content';
 
@@ -86,10 +90,10 @@ function NotificationItem({
   const thumbnailUrl =
     content.url || content.image || content.video || content.gif || '';
 
-  return (
+  const contentElement = (
     <div
-      className="border-tg-section-separator flex cursor-pointer items-center gap-3 border-b px-6 py-3 transition-colors active:bg-tg-secondary-bg/50"
-      onClick={onClick}
+      className="border-tg-section-separator active:bg-tg-secondary-bg/50 flex cursor-pointer items-center gap-3 border-b px-6 py-3 transition-colors"
+      onClick={isUnread ? onClick : undefined}
     >
       {/* Circular thumbnail with unread indicator */}
       <div className="relative h-12 w-12 flex-shrink-0">
@@ -101,7 +105,7 @@ function NotificationItem({
           }`}
         />
         {isUnread && (
-          <div className="bg-tg-button absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-tg-bg"></div>
+          <div className="bg-tg-button border-tg-bg absolute right-0 bottom-0 h-3 w-3 rounded-full border-2"></div>
         )}
         {isRevealing && (
           <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50">
@@ -114,7 +118,9 @@ function NotificationItem({
       <div className="min-w-0 flex-1">
         <p className="text-tg-text text-sm">
           <span className="font-semibold">
-            {content.status === 'processing' ? 'Generating...' : 'Your content is ready!'}
+            {content.status === 'processing'
+              ? 'Generating...'
+              : 'Your content is ready!'}
           </span>
         </p>
         <p className="text-tg-hint truncate text-xs">
@@ -125,6 +131,21 @@ function NotificationItem({
       </div>
     </div>
   );
+
+  // If revealed and has promptId, wrap in Link to success page
+  if (!isUnread && content.promptId) {
+    return (
+      <Link
+        to="/content/$promptId/success"
+        params={{ promptId: String(content.promptId) }}
+        search={{ executionId: content.id }}
+      >
+        {contentElement}
+      </Link>
+    );
+  }
+
+  return contentElement;
 }
 
 function NotificationsPage() {
@@ -132,7 +153,9 @@ function NotificationsPage() {
   const { data, isLoading } = useGetContents(session, session?.id!);
   const contents = data?.contents || [];
   const revealMutation = useRevealContent(session);
+  const revealAllMutation = useRevealAllContent(session);
   const [revealingIds, setRevealingIds] = useState<Set<string>>(new Set());
+  const [isRevealingAll, setIsRevealingAll] = useState(false);
 
   const handleNotificationClick = async (content: Content) => {
     if (content.revealedAt !== null || revealingIds.has(content.id)) {
@@ -153,6 +176,19 @@ function NotificationsPage() {
     }
   };
 
+  const handleRevealAll = async () => {
+    if (isRevealingAll) return;
+
+    setIsRevealingAll(true);
+    try {
+      await revealAllMutation.mutateAsync();
+    } catch (error) {
+      console.error('Failed to reveal all content:', error);
+    } finally {
+      setIsRevealingAll(false);
+    }
+  };
+
   const groupedContents = groupContentsByTime(contents);
   const hasUnread = contents.some(c => c.revealedAt === null);
 
@@ -160,14 +196,32 @@ function NotificationsPage() {
     <ProtectedRoute>
       <div className="flex h-screen flex-col">
         {/* Header */}
-        <div className="border-tg-section-separator sticky top-0 z-10 border-b bg-tg-bg/95 px-6 py-4 backdrop-blur-md">
+        <div className="border-tg-section-separator bg-tg-bg/95 sticky top-0 z-10 border-b px-6 py-4 backdrop-blur-md">
           <div className="flex items-center justify-between">
             <h1 className="text-tg-text text-2xl font-bold">Notifications</h1>
-            {hasUnread && (
-              <span className="bg-tg-button text-xs font-semibold text-white px-2 py-1 rounded-full">
-                {contents.filter(c => c.revealedAt === null).length}
-              </span>
-            )}
+            <div className="flex items-center gap-2">
+              {hasUnread && (
+                <>
+                  <button
+                    onClick={handleRevealAll}
+                    disabled={isRevealingAll}
+                    className="text-tg-button hover:text-tg-button/80 flex items-center gap-1 text-xs font-semibold transition-colors disabled:opacity-50"
+                  >
+                    {isRevealingAll ? (
+                      <>
+                        <div className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
+                        <span>Revealing...</span>
+                      </>
+                    ) : (
+                      'Reveal All'
+                    )}
+                  </button>
+                  <span className="bg-tg-button rounded-full px-2 py-1 text-xs font-semibold text-white">
+                    {contents.filter(c => c.revealedAt === null).length}
+                  </span>
+                </>
+              )}
+            </div>
           </div>
         </div>
 
@@ -175,7 +229,9 @@ function NotificationsPage() {
         <div className="scrollbar-hide flex-1 overflow-y-auto">
           {isLoading ? (
             <div className="flex h-full items-center justify-center">
-              <div className="text-tg-hint text-sm">Loading notifications...</div>
+              <div className="text-tg-hint text-sm">
+                Loading notifications...
+              </div>
             </div>
           ) : contents.length === 0 ? (
             <div className="flex h-full items-center justify-center">
@@ -188,7 +244,11 @@ function NotificationsPage() {
             </div>
           ) : (
             <>
-              {(Object.keys(groupedContents) as Array<keyof typeof groupedContents>).map(
+              {(
+                Object.keys(groupedContents) as Array<
+                  keyof typeof groupedContents
+                >
+              ).map(
                 groupName =>
                   groupedContents[groupName].length > 0 && (
                     <div key={groupName}>

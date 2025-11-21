@@ -281,34 +281,27 @@ export const useRevealAllContent = (session: Session | null | undefined) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (contentIds: string[]) => {
+    mutationFn: async () => {
       if (!session) {
         throw new Error('Session required');
       }
 
       // Reveal all content in parallel
-      const revealPromises = contentIds.map(contentId =>
-        fetch(
-          `${import.meta.env.VITE_PUBLIC_API_URL}/content/${contentId}/reveal`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: session.authToken,
-            },
-          }
-        ).then(response => {
-          if (!response.ok) {
-            throw new Error(
-              `Failed to reveal content ${contentId}: ${response.status}`
-            );
-          }
-          return response.json();
-        })
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/content/reveal-all`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: session.authToken,
+          },
+        }
       );
+      if (!response.ok) {
+        throw new Error(`Failed to reveal_all content: ${response.status}`);
+      }
 
-      const results = await Promise.all(revealPromises);
-      return { successful: results.length, total: contentIds.length };
+      return await response.json();
     },
     onSuccess: () => {
       // Invalidate queries to refresh the data

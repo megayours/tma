@@ -2,7 +2,6 @@ import { Link } from '@tanstack/react-router';
 import type { StickerBundles } from '@/hooks/useStickerPacks';
 import { Reshared } from './Reshared';
 import { ShareMessage } from './ShareMessage';
-import { base64UrlEncode } from '../../../utils/base64';
 
 export function StickerPackItem({
   stickerPack,
@@ -24,7 +23,7 @@ export function StickerPackItem({
   return (
     <div className="bg-tg-section-bg flex w-full flex-col rounded-lg">
       {/* Header with title and price button */}
-      <div className="flex items-center justify-between gap-3 px-4 py-2">
+      <div className="flex items-center justify-between gap-1 px-4 py-2">
         <Link
           key={stickerPack.id}
           to="/sticker-packs/$stickerPackId"
@@ -44,7 +43,7 @@ export function StickerPackItem({
       </div>
 
       {/* Sticker preview grid */}
-      <div className="flex flex-row items-end justify-center gap-4 px-4 pb-4">
+      <div className="flex flex-row items-end justify-center gap-1 px-4 pb-4">
         <Link
           key={stickerPack.id}
           to="/sticker-packs/$stickerPackId"
@@ -74,8 +73,14 @@ export function StickerPackItem({
             )}
           </div>
         </Link>
-        <div className="flex h-full w-10 flex-col items-center justify-end gap-4 align-bottom">
-          <Reshared amount={stickerPack} />
+        <div className="flex h-full w-10 flex-col items-center justify-end gap-4 pb-4 align-bottom">
+          <Link
+            key={stickerPack.id}
+            to="/sticker-packs/$stickerPackId"
+            params={{ stickerPackId: stickerPack.id.toString() }}
+          >
+            <Reshared amount={stickerPack.item_count} />
+          </Link>
           <ShareMessage
             url={import.meta.env.VITE_PUBLIC_BOT_URL}
             startApp={`/sticker-packs/${stickerPack.id}`}

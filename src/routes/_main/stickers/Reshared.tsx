@@ -1,11 +1,11 @@
 import { AiOutlineRetweet } from 'react-icons/ai';
-import type { StickerBundles } from '@/hooks/useStickerPacks';
 
-export function Reshared({ stickerPack }: { stickerPack: StickerBundles }) {
+export function Reshared({ amount }: { amount: number }) {
+  console.log('Sticker pack in Reshared:', amount);
   return (
-    <div className="h-full w-full">
+    <div className="flex h-full w-full flex-col items-center justify-center align-middle">
       <AiOutlineRetweet className="h-full w-full" />
-      {stickerPack}
+      <span className="text-sm">{amount}</span>
     </div>
   );
 }

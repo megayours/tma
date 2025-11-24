@@ -1,6 +1,11 @@
 import type { Prompt } from './prompt';
 import type { Token } from './response';
 
+type ContentPrompt = Partial<Prompt> & {
+  id: string | number;
+  name: string;
+};
+
 export interface PromptWithContent extends Prompt {
   published: number;
   image: string;
@@ -27,7 +32,7 @@ export interface Content {
   revealedAt: string | number | null;
   createdAt: number;
   promptId?: string | number | null;
-  prompt?: Prompt;
+  prompt?: ContentPrompt | null;
   token?: Token;
   tokens?: Token[];
   variant?: string;

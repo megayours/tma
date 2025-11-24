@@ -8,8 +8,6 @@ import { SpinnerFullPage } from '@/components/ui';
 import {
   FaThumbsUp,
   FaThumbsDown,
-  FaDownload,
-  FaRegSave,
 } from 'react-icons/fa';
 import { usePromptFeedbackMutation } from '@/hooks/usePrompts';
 import type { PromptFeedbackSentiment } from '@/types/prompt';
@@ -21,6 +19,8 @@ import {
   triggerHapticImpact,
 } from '@/utils/hapticFeedback';
 import { GenerateAgainButton } from '@/components/GenerateAgainButton';
+import { TelegramMainButton } from '@/components/TelegramMainButton';
+import { TelegramSecondaryButton } from '@/components/TelegramSecondaryButton';
 
 const successSearchSchema = z.object({
   executionId: z.string().optional(),
@@ -47,8 +47,9 @@ function SuccessPage() {
   const [sadLottieInstance, setSadLottieInstance] = useState<DotLottie | null>(
     null
   );
-  const [isSavingToCameraRoll, setIsSavingToCameraRoll] = useState(false);
   const [isMobileDevice, setIsMobileDevice] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
   const hasSubmittedFeedback = useRef(false);
 
   useEffect(() => {
@@ -166,15 +167,23 @@ function SuccessPage() {
     typeof navigator !== 'undefined' &&
     typeof navigator.share === 'function' &&
     typeof navigator.canShare === 'function';
-  const shouldShowSaveButton = isTelegram && isMobileDevice;
-  const downloadButtonClass =
-    'bg-white text-tg-button inline-flex items-center gap-2 rounded-full border border-black/5 px-4 py-2 text-sm font-semibold shadow-sm transition-all hover:bg-gray-50 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-gray-900 dark:text-white dark:hover:bg-gray-800';
 
-  const handleSaveToCameraRoll = async () => {
+  const handleDownload = async () => {
     if (!contentUrl) return;
 
     try {
-      setIsSavingToCameraRoll(true);
+      setIsDownloading(true);
+
+      // On Telegram Desktop, use direct URL instead of blob
+      if (isTelegram && !isMobileDevice) {
+        // Open in new tab for Telegram Desktop
+        window.open(contentUrl, '_blank');
+
+        if (isTelegram) {
+          triggerHapticImpact('light');
+        }
+        return;
+      }
 
       const response = await fetch(contentUrl);
       if (!response.ok) {
@@ -187,13 +196,19 @@ function SuccessPage() {
       const fileName = `artwork-${execution?.id || promptId}.${extension}`;
       const file = new File([blob], fileName, { type: mimeType });
 
-      if (canShareFiles && navigator.canShare({ files: [file] })) {
+      // Mobile: use share API to save to camera roll
+      if (
+        isMobileDevice &&
+        canShareFiles &&
+        navigator.canShare({ files: [file] })
+      ) {
         await navigator.share({
           files: [file],
           title: 'Save your artwork',
           text: 'Choose "Save Image" to store this in your camera roll.',
         });
       } else {
+        // Desktop (non-Telegram): direct download
         const objectUrl = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = objectUrl;
@@ -208,12 +223,50 @@ function SuccessPage() {
         triggerHapticImpact('light');
       }
     } catch (error) {
-      console.error('Failed to save content:', error);
+      console.error('Failed to download content:', error);
       if (isTelegram) {
         triggerHapticNotification('error');
       }
     } finally {
-      setIsSavingToCameraRoll(false);
+      setIsDownloading(false);
+    }
+  };
+
+  const handleShare = async () => {
+    try {
+      setIsSharing(true);
+
+      // Get current page URL
+      const shareUrl = window.location.href;
+      const shareTitle = execution?.prompt?.name || 'Check out my creation!';
+      const shareText = `${shareTitle} - Created with MegaYours`;
+
+      if (navigator.share) {
+        await navigator.share({
+          title: shareTitle,
+          text: shareText,
+          url: shareUrl,
+        });
+
+        if (isTelegram) {
+          triggerHapticImpact('light');
+        }
+      } else {
+        // Fallback: copy link to clipboard
+        await navigator.clipboard.writeText(shareUrl);
+        if (isTelegram) {
+          triggerHapticImpact('light');
+        }
+        // Could show a toast notification here
+        console.log('Link copied to clipboard');
+      }
+    } catch (error) {
+      console.error('Failed to share:', error);
+      if (isTelegram) {
+        triggerHapticNotification('error');
+      }
+    } finally {
+      setIsSharing(false);
     }
   };
 
@@ -227,36 +280,6 @@ function SuccessPage() {
             <h1 className="text-tg-text text-lg font-semibold">
               {execution?.prompt?.name || 'Tadaa! 🎉'}
             </h1>
-            {contentUrl && (
-              <div className="flex justify-end">
-                {shouldShowSaveButton ? (
-                  <button
-                    type="button"
-                    onClick={handleSaveToCameraRoll}
-                    disabled={isSavingToCameraRoll}
-                    aria-busy={isSavingToCameraRoll}
-                    className={downloadButtonClass}
-                  >
-                    <FaRegSave className="h-4 w-4" />
-                    <span>
-                      {isSavingToCameraRoll
-                        ? 'Saving...'
-                        : 'Save to Camera Roll'}
-                    </span>
-                  </button>
-                ) : (
-                  <a
-                    href={contentUrl}
-                    download
-                    className={downloadButtonClass}
-                    aria-label="Download content"
-                  >
-                    <FaDownload className="h-4 w-4" />
-                    <span>Download</span>
-                  </a>
-                )}
-              </div>
-            )}
           </div>
 
           {/* Generated Content Display */}
@@ -354,6 +377,25 @@ function SuccessPage() {
           </div>
         </div>
       </div>
+
+      {/* Telegram Buttons */}
+      {contentUrl && (
+        <>
+          <TelegramMainButton
+            text="Save Image"
+            onClick={handleDownload}
+            loading={isDownloading}
+            visible={true}
+          />
+          <TelegramSecondaryButton
+            text="Share"
+            onClick={handleShare}
+            loading={isSharing}
+            visible={true}
+            position="top"
+          />
+        </>
+      )}
     </div>
   );
 }

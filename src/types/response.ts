@@ -113,6 +113,13 @@ export const RawContentResponseSchema = z
     creator_id: z.string().optional(),
     revealed_at: z.union([z.number(), z.string()]).nullable().optional(),
     prompt_id: z.union([z.string(), z.number()]).nullable().optional(),
+    prompt: z
+      .object({
+        id: z.union([z.string(), z.number()]),
+        name: z.string(),
+      })
+      .nullable()
+      .optional(),
     token: TokenSchema.optional(),
     tokens: z.array(TokenSchema).optional(),
     url: z.string().optional(),
@@ -122,24 +129,46 @@ export const RawContentResponseSchema = z
     progress_percentage: z.number().optional(),
     session: z.any().optional(),
   })
-  .transform(data => ({
-    id: data.id,
-    status: data.status,
-    error: data.error,
-    type: data.type,
-    variant: data.variant,
-    createdAt: data.created_at,
-    creatorId: data.creator_id,
-    revealedAt: data.revealed_at,
-    promptId: data.prompt_id,
-    token: data.token,
-    tokens: data.tokens,
-    url: data.url,
-    video: data.video,
-    gif: data.gif,
-    image: data.image,
-    progressPercentage: data.progress_percentage,
-  }));
+  .transform(data => {
+    const promptId = data.prompt?.id ?? data.prompt_id ?? null;
+    const promptName =
+      data.prompt?.name ??
+      (promptId !== null && promptId !== undefined ? 'Prompt' : '');
+
+    const prompt =
+      data.prompt != null
+        ? {
+            id: data.prompt.id,
+            name: data.prompt.name,
+            ...('version' in data.prompt ? { version: data.prompt.version } : {}),
+          }
+        : promptId !== null && promptId !== undefined
+        ? {
+            id: promptId,
+            name: promptName,
+          }
+        : null;
+
+    return {
+      id: data.id,
+      status: data.status,
+      error: data.error,
+      type: data.type,
+      variant: data.variant,
+      createdAt: data.created_at,
+      creatorId: data.creator_id,
+      revealedAt: data.revealed_at,
+      promptId,
+      prompt,
+      token: data.token,
+      tokens: data.tokens,
+      url: data.url,
+      video: data.video,
+      gif: data.gif,
+      image: data.image,
+      progressPercentage: data.progress_percentage,
+    };
+  });
 export type RawContentResponse = z.infer<typeof RawContentResponseSchema>;
 
 // Main content response schema

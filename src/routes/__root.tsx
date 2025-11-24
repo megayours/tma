@@ -15,6 +15,7 @@ import {
   miniApp,
   swipeBehavior,
   retrieveLaunchParams,
+  closingBehavior,
 } from '@telegram-apps/sdk-react';
 import { useEffect, useState, useRef } from 'react';
 import { Header } from '@/components/Header';
@@ -28,6 +29,7 @@ import {
 import { useSession } from '@/auth/SessionProvider';
 import { useLaunchParams } from '@telegram-apps/sdk-react';
 import { base64UrlDecode } from '@/utils/base64';
+import { NavigationHistoryProvider, useNavigationHistory } from '@/contexts/NavigationHistoryContext';
 
 function TelegramEnvironmentHandler() {
   const location = useLocation();
@@ -38,6 +40,7 @@ function TelegramEnvironmentHandler() {
   const [isViewportMounting, setIsViewportMounting] = useState(false);
   const launchParams = useLaunchParams(true);
   const hasRedirected = useRef(false);
+  const { lastContentMenuRoute } = useNavigationHistory();
 
   console.log('ROUTE', location);
 
@@ -158,25 +161,66 @@ function TelegramEnvironmentHandler() {
       backButton.mount();
     }
 
-    // if it is not the home page, show the back button
-    if (pathname !== '/' && pathname !== '/stickers') {
-      backButton.show();
-      backButton.onClick(() => {
-        router.history.back();
-        console.log('back button clicked');
-      });
+    // Mount closing behavior for close button
+    if (!closingBehavior.isMounted() && closingBehavior.mount.isAvailable()) {
+      closingBehavior.mount();
     }
 
-    // if it is the home page, hide the back button and show the close button
-    if (pathname === '/') {
+    // Platform detection
+    const isAndroid = /Android/i.test(navigator.userAgent);
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+    // Check if this is the first page (no history to go back to)
+    const hasHistoryStack = window.history.length > 1;
+    const isFirstPage = !hasHistoryStack;
+
+    console.log('[Navigation] State', {
+      pathname,
+      historyLength: window.history.length,
+      isFirstPage,
+      lastContentMenuRoute,
+    });
+
+    if (isFirstPage) {
+      // First page: hide back button, enable close button
       backButton.hide();
+      if (closingBehavior.enableConfirmation.isAvailable()) {
+        closingBehavior.enableConfirmation();
+      }
+      console.log('[Navigation] First page - showing close behavior');
+    } else {
+      // Not first page: show back button, disable close confirmation
+      backButton.show();
+      if (closingBehavior.disableConfirmation.isAvailable()) {
+        closingBehavior.disableConfirmation();
+      }
+
+      backButton.onClick(() => {
+        console.log('[BackButton] Clicked', {
+          platform: isAndroid ? 'Android' : isIOS ? 'iOS' : 'Unknown',
+          historyLength: window.history.length,
+          currentPath: pathname,
+          lastContentMenuRoute,
+        });
+
+        // Smart fallback for Android WebView history issues
+        if (window.history.length > 1) {
+          // Try normal history.back() first
+          router.history.back();
+        } else {
+          // History stack is too short (Android issue), use explicit fallback
+          console.log('[BackButton] History stack too short, falling back to:', lastContentMenuRoute);
+          router.navigate({ to: lastContentMenuRoute });
+        }
+      });
+      console.log('[Navigation] Not first page - showing back button');
     }
 
     // Cleanup function to restore original console.error
     return () => {
       console.error = originalConsoleError;
     };
-  }, [pathname, router]);
+  }, [pathname, router, lastContentMenuRoute]);
 
   // Separate useEffect to handle fullscreen request after viewport is mounted
   useEffect(() => {
@@ -330,12 +374,14 @@ export const Route = createRootRoute({
   component: () => {
     return (
       <ToastProvider>
-        <SelectCommunityProvider>
-          {/* <ConsoleLogDevtools initialIsOpen={true} onReady={handleConsoleReady} /> */}
-          {/* {consoleReady && ( */}
-          <AppContent />
-          {/* )} */}
-        </SelectCommunityProvider>
+        <NavigationHistoryProvider>
+          <SelectCommunityProvider>
+            {/* <ConsoleLogDevtools initialIsOpen={true} onReady={handleConsoleReady} /> */}
+            {/* {consoleReady && ( */}
+            <AppContent />
+            {/* )} */}
+          </SelectCommunityProvider>
+        </NavigationHistoryProvider>
       </ToastProvider>
     );
   },

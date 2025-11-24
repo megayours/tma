@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react';
-import { mainButton } from '@telegram-apps/sdk-react';
+import { secondaryButton } from '@telegram-apps/sdk-react';
 import { useTelegramTheme } from '@/auth/useTelegram';
 
-interface TelegramMainButtonProps {
+interface TelegramSecondaryButtonProps {
   text: string;
   disabled?: boolean;
   loading?: boolean;
@@ -11,9 +11,10 @@ interface TelegramMainButtonProps {
   backgroundColor?: string;
   textColor?: string;
   hasShineEffect?: boolean;
+  position?: 'left' | 'top';
 }
 
-export const TelegramMainButton: React.FC<TelegramMainButtonProps> = ({
+export const TelegramSecondaryButton: React.FC<TelegramSecondaryButtonProps> = ({
   text,
   disabled = false,
   loading = false,
@@ -22,6 +23,7 @@ export const TelegramMainButton: React.FC<TelegramMainButtonProps> = ({
   backgroundColor,
   textColor,
   hasShineEffect = false,
+  position = 'left',
 }) => {
   const { isTelegram } = useTelegramTheme();
   const clickHandlerRef = useRef<(() => void) | null>(null);
@@ -37,7 +39,7 @@ export const TelegramMainButton: React.FC<TelegramMainButtonProps> = ({
   // Render a normal button when not in Telegram
   if (!isTelegram) {
     return visible ? (
-      <div className="fixed bottom-0 left-0 right-0 z-50 p-4">
+      <div className="fixed bottom-20 left-0 right-0 z-50 p-4">
         <button
           onClick={onClick}
           disabled={disabled || loading}
@@ -54,24 +56,30 @@ export const TelegramMainButton: React.FC<TelegramMainButtonProps> = ({
     ) : null;
   }
 
-  // Mount main button and set up click handler
+  // Mount secondary button and set up click handler
   useEffect(() => {
     if (!isTelegram) return;
 
-    // Mount the main button
-    if (mainButton.mount.isAvailable()) {
+    // Check if secondary button is supported
+    if (!secondaryButton.isSupported()) {
+      console.warn('TelegramSecondaryButton: Secondary button is not supported');
+      return;
+    }
+
+    // Mount the secondary button
+    if (secondaryButton.mount.isAvailable()) {
       try {
-        mainButton.mount();
+        secondaryButton.mount();
       } catch (error) {
-        console.error('TelegramMainButton: Error mounting main button:', error);
+        console.error('TelegramSecondaryButton: Error mounting secondary button:', error);
         return;
       }
     }
 
     // Set up click handler
-    if (mainButton.onClick.isAvailable()) {
+    if (secondaryButton.onClick.isAvailable()) {
       clickHandlerRef.current = onClick;
-      const offClick = mainButton.onClick(() => {
+      const offClick = secondaryButton.onClick(() => {
         if (
           clickHandlerRef.current &&
           !disabledRef.current &&
@@ -84,12 +92,12 @@ export const TelegramMainButton: React.FC<TelegramMainButtonProps> = ({
       // Cleanup function
       return () => {
         offClick();
-        if (mainButton.setParams && mainButton.setParams.isAvailable()) {
+        if (secondaryButton.setParams && secondaryButton.setParams.isAvailable()) {
           try {
-            mainButton.setParams({ isVisible: false });
+            secondaryButton.setParams({ isVisible: false });
           } catch (error) {
             console.error(
-              'TelegramMainButton: Error hiding main button:',
+              'TelegramSecondaryButton: Error hiding secondary button:',
               error
             );
           }
@@ -103,9 +111,9 @@ export const TelegramMainButton: React.FC<TelegramMainButtonProps> = ({
     clickHandlerRef.current = onClick;
   }, [onClick]);
 
-  // Update main button parameters when props change
+  // Update secondary button parameters when props change
   useEffect(() => {
-    if (!isTelegram || !mainButton.setParams.isAvailable()) return;
+    if (!isTelegram || !secondaryButton.setParams.isAvailable()) return;
 
     try {
       const params: any = {
@@ -114,6 +122,7 @@ export const TelegramMainButton: React.FC<TelegramMainButtonProps> = ({
         isLoaderVisible: loading,
         isVisible: visible && !disabled,
         hasShineEffect,
+        position,
       };
 
       if (backgroundColor) {
@@ -124,9 +133,9 @@ export const TelegramMainButton: React.FC<TelegramMainButtonProps> = ({
         params.textColor = textColor;
       }
 
-      mainButton.setParams(params);
+      secondaryButton.setParams(params);
     } catch (error) {
-      console.error('TelegramMainButton: Error updating params:', error);
+      console.error('TelegramSecondaryButton: Error updating params:', error);
     }
   }, [
     isTelegram,
@@ -137,6 +146,7 @@ export const TelegramMainButton: React.FC<TelegramMainButtonProps> = ({
     backgroundColor,
     textColor,
     hasShineEffect,
+    position,
   ]);
 
   // Dedicated cleanup useEffect to ensure button is hidden on component unmount
@@ -145,18 +155,18 @@ export const TelegramMainButton: React.FC<TelegramMainButtonProps> = ({
       // Always try to hide the button when component unmounts
       if (
         isTelegram &&
-        mainButton.setParams &&
-        mainButton.setParams.isAvailable()
+        secondaryButton.setParams &&
+        secondaryButton.setParams.isAvailable()
       ) {
         try {
-          mainButton.setParams({ isVisible: false });
+          secondaryButton.setParams({ isVisible: false });
         } catch (error) {
-          console.error('TelegramMainButton: Error during cleanup:', error);
+          console.error('TelegramSecondaryButton: Error during cleanup:', error);
         }
       }
     };
   }, []); // Empty dependency array - only runs on mount/unmount
 
-  // Component renders nothing (main button is handled by Telegram)
+  // Component renders nothing (secondary button is handled by Telegram)
   return null;
 };

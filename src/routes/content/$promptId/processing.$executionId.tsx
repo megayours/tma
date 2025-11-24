@@ -1,10 +1,11 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { createFileRoute, useNavigate, Link } from '@tanstack/react-router';
 import { useEffect, useState, useRef } from 'react';
 import { z } from 'zod';
 import { useSession } from '@/auth/SessionProvider';
 import { useContentExecution } from '@/hooks/useContents';
 import { useLaunchParams, requestWriteAccess } from '@telegram-apps/sdk-react';
 import { useTelegramTheme } from '@/auth/useTelegram';
+import { FaChevronDown } from 'react-icons/fa';
 
 const processingSearchSchema = z.object({
   nft: z.string().optional(),
@@ -170,9 +171,14 @@ function ProcessingPage() {
         <div className="px-2">
           {/* Processing Title */}
           <div className="pt-6 pb-6 text-center">
-            <h1 className="text-tg-text mb-2 text-2xl font-bold">
-              Creating Your Content...
-            </h1>
+            <div className="mb-2 flex items-center justify-center gap-2">
+              <Link to="/community">
+                <FaChevronDown className="text-tg-text cursor-pointer hover:opacity-70 transition-opacity" />
+              </Link>
+              <h1 className="text-tg-text text-2xl font-bold">
+                Creating Your Content...
+              </h1>
+            </div>
             <p className="text-tg-hint text-sm">
               This usually takes 1-3 minutes
             </p>

@@ -1,6 +1,7 @@
 import { useSession } from '@/auth/SessionProvider';
 import { useGetContents, useRevealContent } from '@/hooks/useContents';
 import { useState } from 'react';
+import { Link } from '@tanstack/react-router';
 
 export function ContentList() {
   const { session } = useSession();
@@ -42,7 +43,7 @@ export function ContentList() {
           const isRevealed = content.revealedAt !== null;
           const isRevealing = revealingIds.has(content.id);
 
-          return (
+          const contentElement = (
             <div
               key={content.id}
               className="relative h-40 w-40 flex-shrink-0 cursor-pointer"
@@ -76,6 +77,22 @@ export function ContentList() {
               )}
             </div>
           );
+
+          // If revealed and has promptId, wrap in Link to success page
+          if (isRevealed && content.promptId) {
+            return (
+              <Link
+                key={content.id}
+                to="/content/$promptId/success"
+                params={{ promptId: String(content.promptId) }}
+                search={{ executionId: content.id }}
+              >
+                {contentElement}
+              </Link>
+            );
+          }
+
+          return contentElement;
         })}
       </div>
     </div>

@@ -21,6 +21,8 @@ import {
 import { GenerateAgainButton } from '@/components/GenerateAgainButton';
 import { TelegramMainButton } from '@/components/TelegramMainButton';
 import { TelegramSecondaryButton } from '@/components/TelegramSecondaryButton';
+import { buildShareUrl } from '@/utils/shareUrl';
+import { useSelectCommunity } from '@/contexts/SelectCommunityContext';
 
 const successSearchSchema = z.object({
   executionId: z.string().optional(),
@@ -37,6 +39,7 @@ function SuccessPage() {
   const navigate = useNavigate();
   const { session } = useSession();
   const { isTelegram } = useTelegramTheme();
+  const { selectedCommunity } = useSelectCommunity();
 
   // Feedback state
   const [selectedFeedback, setSelectedFeedback] =
@@ -236,8 +239,12 @@ function SuccessPage() {
     try {
       setIsSharing(true);
 
-      // Get current page URL
-      const shareUrl = window.location.href;
+      // Build share URL with bot URL and content details path
+      const shareUrl = buildShareUrl(
+        import.meta.env.VITE_PUBLIC_BOT_URL,
+        `/content/${promptId}/details`,
+        selectedCommunity?.id
+      );
       const shareTitle = execution?.prompt?.name || 'Check out my creation!';
       const shareText = `${shareTitle} - Created with MegaYours`;
 

@@ -5,6 +5,7 @@ import { SpinnerFullPage } from '@/components/ui';
 import { Banner, Divider } from '@telegram-apps/telegram-ui';
 import { TelegramMainButton } from '../../../../components/TelegramMainButton';
 import { Fragment } from 'react/jsx-runtime';
+import { is } from 'zod/v4/locales';
 
 export const Route = createFileRoute('/content/$promptId/details/')({
   component: ContentDetails,
@@ -33,7 +34,7 @@ const getTypeLabel = (
 function ContentDetails() {
   const { promptId } = Route.useParams();
   const navigate = useNavigate();
-  const { session } = useSession();
+  const { session, isAuthenticating } = useSession();
 
   const { data: prompt, isLoading, error } = useGetPrompt(promptId, session);
 
@@ -44,11 +45,14 @@ function ContentDetails() {
     });
   };
 
+  if (isAuthenticating) {
+    return <SpinnerFullPage text="Authenticating..." />;
+  }
   if (isLoading) {
-    return <SpinnerFullPage text="Loading prompt details..." />;
+    return <SpinnerFullPage text="Loading template details..." />;
   }
 
-  if (error || !prompt) {
+  if (error || (!prompt && !isLoading)) {
     return (
       <div className="mx-auto max-w-4xl p-4">
         <div className="flex items-center justify-center p-8">

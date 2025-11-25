@@ -1,6 +1,6 @@
 import { FiSend } from 'react-icons/fi';
 import { useSelectCommunity } from '@/contexts/SelectCommunityContext';
-import { encodeBase64Url } from '@telegram-apps/sdk-react';
+import { buildShareUrl } from '@/utils/shareUrl';
 
 export function ShareMessage({
   url,
@@ -13,11 +13,11 @@ export function ShareMessage({
 }) {
   const { selectedCommunity } = useSelectCommunity();
   const onShare = async () => {
-    const sharePayload =
-      withCommunity && selectedCommunity?.id
-        ? `${startApp}?communityId=${selectedCommunity.id}`
-        : startApp;
-    const shareUrl = `${url}?startapp=${encodeBase64Url(sharePayload)}`;
+    const shareUrl = buildShareUrl(
+      url,
+      startApp,
+      withCommunity ? selectedCommunity?.id : null
+    );
 
     if (navigator.share) {
       try {

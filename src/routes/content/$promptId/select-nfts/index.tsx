@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useCallback, useEffect, useState } from 'react';
-import { TelegramMainButton } from '@/components/TelegramMainButton';
+import { TelegramDualButtons } from '@/components/TelegramDualButtons';
 import {
   useGetSupportedCollections,
   useGetNFTByCollectionAndTokenId,
@@ -272,12 +272,14 @@ function SelectNFTsPage() {
       </div>
 
       {/* Bottom Button */}
-      <TelegramMainButton
-        text={generateMutation.isPending ? 'Generating...' : 'Generate'}
-        onClick={handleGenerate}
-        disabled={!selectedNFTs.length}
-        loading={generateMutation.isPending}
-        visible={true}
+      <TelegramDualButtons
+        mainButton={{
+          text: generateMutation.isPending ? 'Generating...' : 'Generate',
+          onClick: handleGenerate,
+          disabled: !selectedNFTs.length,
+          loading: generateMutation.isPending,
+          visible: true,
+        }}
       />
     </div>
   );

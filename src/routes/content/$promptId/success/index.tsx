@@ -19,8 +19,7 @@ import {
   triggerHapticImpact,
 } from '@/utils/hapticFeedback';
 import { GenerateAgainButton } from '@/components/GenerateAgainButton';
-import { TelegramMainButton } from '@/components/TelegramMainButton';
-import { TelegramSecondaryButton } from '@/components/TelegramSecondaryButton';
+import { TelegramDualButtons } from '@/components/TelegramDualButtons';
 import { buildShareUrl } from '@/utils/shareUrl';
 import { useSelectCommunity } from '@/contexts/SelectCommunityContext';
 
@@ -387,21 +386,21 @@ function SuccessPage() {
 
       {/* Telegram Buttons */}
       {contentUrl && (
-        <>
-          <TelegramMainButton
-            text="Save Image"
-            onClick={handleDownload}
-            loading={isDownloading}
-            visible={true}
-          />
-          <TelegramSecondaryButton
-            text="Share"
-            onClick={handleShare}
-            loading={isSharing}
-            visible={true}
-            position="top"
-          />
-        </>
+        <TelegramDualButtons
+          mainButton={{
+            text: "Save Image",
+            onClick: handleDownload,
+            loading: isDownloading,
+            visible: true,
+          }}
+          secondaryButton={{
+            text: "Share",
+            onClick: handleShare,
+            loading: isSharing,
+            visible: true,
+            position: "top",
+          }}
+        />
       )}
     </div>
   );

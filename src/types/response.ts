@@ -113,6 +113,7 @@ export const RawContentResponseSchema = z
     creator_id: z.string().optional(),
     revealed_at: z.union([z.number(), z.string()]).nullable().optional(),
     prompt_id: z.union([z.string(), z.number()]).nullable().optional(),
+    execution_id: z.union([z.string(), z.number()]).nullable().optional(),
     prompt: z
       .object({
         id: z.union([z.string(), z.number()]),
@@ -140,14 +141,16 @@ export const RawContentResponseSchema = z
         ? {
             id: data.prompt.id,
             name: data.prompt.name,
-            ...('version' in data.prompt ? { version: data.prompt.version } : {}),
+            ...('version' in data.prompt
+              ? { version: data.prompt.version }
+              : {}),
           }
         : promptId !== null && promptId !== undefined
-        ? {
-            id: promptId,
-            name: promptName,
-          }
-        : null;
+          ? {
+              id: promptId,
+              name: promptName,
+            }
+          : null;
 
     return {
       id: data.id,
@@ -158,6 +161,7 @@ export const RawContentResponseSchema = z
       createdAt: data.created_at,
       creatorId: data.creator_id,
       revealedAt: data.revealed_at,
+      executionId: data.execution_id,
       promptId,
       prompt,
       token: data.token,

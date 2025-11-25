@@ -3,7 +3,7 @@ import { useGetPrompt } from '@/hooks/usePrompts';
 import { useSession } from '@/auth/SessionProvider';
 import { SpinnerFullPage } from '@/components/ui';
 import { Banner, Divider } from '@telegram-apps/telegram-ui';
-import { TelegramMainButton } from '../../../../components/TelegramMainButton';
+import { TelegramDualButtons } from '../../../../components/TelegramDualButtons';
 import { Fragment } from 'react/jsx-runtime';
 
 export const Route = createFileRoute('/content/$promptId/details/')({
@@ -174,10 +174,12 @@ function ContentDetails() {
         )}
 
         {/* Get Started Button */}
-        <TelegramMainButton
-          text={`Get ${getTypeLabel(prompt.type as 'images' | 'videos' | 'stickers' | 'gifs' | 'animated_stickers').toLowerCase()} with your PFP`}
-          onClick={handleContinue}
-          visible={true}
+        <TelegramDualButtons
+          mainButton={{
+            text: `Get ${getTypeLabel(prompt.type as 'images' | 'videos' | 'stickers' | 'gifs' | 'animated_stickers').toLowerCase()} with your PFP`,
+            onClick: handleContinue,
+            visible: true,
+          }}
         />
       </div>
     </div>

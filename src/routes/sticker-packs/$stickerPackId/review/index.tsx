@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useSession } from '@/auth/SessionProvider';
 import { usePurchase } from '@/hooks/usePurchase';
-import { TelegramMainButton } from '@/components/TelegramMainButton';
+import { TelegramDualButtons } from '@/components/TelegramDualButtons';
 import { z } from 'zod';
 import { useMemo, useState } from 'react';
 import { decodeNFT } from '@/utils/nftEncoding';
@@ -166,12 +166,14 @@ function RouteComponent() {
           </div>
         </div>
 
-        <TelegramMainButton
-          text={isFree ? 'Confirm & Generate' : 'Confirm & Purchase'}
-          onClick={handleConfirm}
-          disabled={isPending}
-          loading={isPending || isLoading}
-          visible={true}
+        <TelegramDualButtons
+          mainButton={{
+            text: isFree ? 'Confirm & Generate' : 'Confirm & Purchase',
+            onClick: handleConfirm,
+            disabled: isPending,
+            loading: isPending || isLoading,
+            visible: true,
+          }}
         />
       </div>
     </div>

@@ -1,14 +1,13 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { ProtectedRoute } from '@/auth/ProtectedRoute';
-import { StickerList } from './StickerList';
 import { useSession } from '@/auth/SessionProvider';
 import { Blockquote, Button } from '@telegram-apps/telegram-ui';
 import { requestWriteAccess } from '@telegram-apps/sdk-react';
 import { useLaunchParams } from '@telegram-apps/sdk-react';
 import { useStickerPackExecutions } from '@/hooks/useStickerPack';
-import { ContentList } from './ContentList';
 import { useTelegramTheme } from '@/auth/useTelegram';
 import { useGetContents } from '@/hooks/useContents';
+import { GenerationsTimeline } from './GenerationsTimeline';
 
 export const Route = createFileRoute('/_main/profile/')({
   component: ProfileLayout,
@@ -142,8 +141,8 @@ export function ProfileLayout() {
               <AuthorizeBotMessages />
             </div>
           )}
-          <ContentList />
-          <StickerList />
+
+          <GenerationsTimeline />
         </main>
       </div>
       <div className="h-20"></div>

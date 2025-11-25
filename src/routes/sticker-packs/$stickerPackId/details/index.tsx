@@ -3,7 +3,7 @@ import { useSession } from '@/auth/SessionProvider';
 import { useStickerPack } from '@/hooks/useStickerPacks';
 import { StickerPackContentList } from '@/components/StickerPack/StickerPackContentList';
 import { StickerCollectionHeader } from '@/components/StickerPack/StickerCollectionHeader';
-import { TelegramMainButton } from '@/components/TelegramMainButton';
+import { TelegramDualButtons } from '@/components/TelegramDualButtons';
 import { SpinnerFullPage } from '@/components/ui';
 import { Banner, Divider } from '@telegram-apps/telegram-ui';
 import { Fragment } from 'react/jsx-runtime';
@@ -168,10 +168,12 @@ function RouteComponent() {
         )}
 
         {/* Get Started Button */}
-        <TelegramMainButton
-          text={getButtonText()}
-          onClick={handleGetStarted}
-          visible={true}
+        <TelegramDualButtons
+          mainButton={{
+            text: getButtonText(),
+            onClick: handleGetStarted,
+            visible: true,
+          }}
         />
       </div>
     </div>

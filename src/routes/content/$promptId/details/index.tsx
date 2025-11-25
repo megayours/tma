@@ -5,7 +5,6 @@ import { SpinnerFullPage } from '@/components/ui';
 import { Banner, Divider } from '@telegram-apps/telegram-ui';
 import { TelegramMainButton } from '../../../../components/TelegramMainButton';
 import { Fragment } from 'react/jsx-runtime';
-import { is } from 'zod/v4/locales';
 
 export const Route = createFileRoute('/content/$promptId/details/')({
   component: ContentDetails,
@@ -52,7 +51,7 @@ function ContentDetails() {
     return <SpinnerFullPage text="Loading template details..." />;
   }
 
-  if (error || (!prompt && !isLoading)) {
+  if (error || !prompt) {
     return (
       <div className="mx-auto max-w-4xl p-4">
         <div className="flex items-center justify-center p-8">
@@ -70,6 +69,7 @@ function ContentDetails() {
     );
   }
 
+  // TypeScript now knows prompt is defined here
   // Get all preview images
   const getPreviewImages = () => {
     if (prompt.stickers && prompt.stickers.length > 0) return prompt.stickers;

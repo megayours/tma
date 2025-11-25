@@ -93,7 +93,7 @@ export const PromptBar = ({
                   <FaChevronDown />
                 </Link>
               </div>
-              <h1 className="text-tg-text text-lg font-bold">{prompt.name}</h1>
+              <h1 className="text-tg-text text-lg font-bold truncate max-w-xs">{prompt.name}</h1>
             </div>
             <div className="">
               <span className="text-xs font-medium">({prompt.type})</span>

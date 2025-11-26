@@ -40,8 +40,8 @@ function ProfileLayout() {
     <ProtectedRoute>
       <div className="profile-layout h-screen">
         {/* This renders the index content when at /profile */}
-        <main className="bg-black pb-16 pl-4">
-          <div className="bg-tg-bg rounded-l-xl pl-2">
+        <main className="pb-16">
+          <div className="bg-tg-bg rounded-l-xl px-2">
             <RenderAdmin />
           </div>
         </main>

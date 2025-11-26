@@ -50,20 +50,23 @@ export function StickerPackItem({
           params={{ stickerPackId: stickerPack.id.toString() }}
         >
           <div className="grid w-full max-w-2xl grid-cols-3 gap-1">
-            {stickerPack.preview_items.map((item, index) => (
-              <div
-                key={item.content_id || index}
-                className="relative aspect-square overflow-hidden rounded-lg"
-              >
-                <img
-                  src={item.preview_url}
-                  alt={`${stickerPack.name} preview ${index + 1}`}
-                  className="h-full w-full object-contain p-1"
-                  loading="lazy"
-                  decoding="async"
-                />
-              </div>
-            ))}
+            {stickerPack.preview_items.map(
+              (item, index) =>
+                index < 5 && (
+                  <div
+                    key={item.content_id || index}
+                    className="relative aspect-square overflow-hidden rounded-lg"
+                  >
+                    <img
+                      src={item.preview_url}
+                      alt={`${stickerPack.name} preview ${index + 1}`}
+                      className="h-full w-full object-contain p-1"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </div>
+                )
+            )}
             {stickerPack.item_count > 5 && (
               <div className="p-4">
                 <div className="bg-tg-secondary-bg flex h-full w-full items-center justify-center rounded-xl shadow">

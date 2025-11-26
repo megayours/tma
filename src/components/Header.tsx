@@ -83,7 +83,9 @@ const HeaderBrand = () => {
     <div className={`flex flex-row items-center gap-2`}>
       {location.pathname.startsWith('/profile/admin') ? (
         <Link to="/profile">
-          <h1 className={`text-xl font-bold text-[#03FFC2]`}>Admin.fun</h1>
+          <h1 className={`text-tg-button-text text-xl font-bold`}>
+            Create.fun
+          </h1>
         </Link>
       ) : (
         <Link to="/">
@@ -134,14 +136,16 @@ export const Header = () => {
   const location = useLocation();
 
   return (
-    <>
+    <div
+      className={`${location.pathname.startsWith('/profile/admin') && 'bg-tg-button'} `}
+    >
       {isViewportMounted && !isViewportMounting && (
         // Optimistically take the space
         <div
           className="w-full"
           style={{
-            marginTop: viewportSafeAreaInsets.top,
-            height: contentSafeAreaInsets.top,
+            paddingTop: viewportSafeAreaInsets.top,
+            height: contentSafeAreaInsets.top + viewportSafeAreaInsets.top,
           }}
         >
           <div className={`flex h-full flex-row items-center justify-center`}>
@@ -152,7 +156,7 @@ export const Header = () => {
 
       {!isViewportMounted && (
         <div
-          className={`flex h-12 items-center justify-end p-4 ${location.pathname.startsWith('/profile/admin') && 'bg-black'}`}
+          className={`flex h-12 items-center justify-end p-4`}
           style={{
             paddingTop:
               contentSafeAreaInsets.top + viewportSafeAreaInsets.top + 5 + 16,
@@ -165,6 +169,6 @@ export const Header = () => {
           )}
         </div>
       )}
-    </>
+    </div>
   );
 };

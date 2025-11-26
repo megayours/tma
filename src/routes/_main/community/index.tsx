@@ -4,13 +4,12 @@ import { useGetRecommendedPrompts } from '@/hooks/usePrompts';
 import type { PromptWithContent } from '@/types/content';
 import { Spinner } from '@/components/ui';
 import { useSession } from '@/auth/SessionProvider';
-import {
-  useGetUsedCollections,
-  type SupportedCollection,
-} from '@/hooks/useCollections';
+import { type SupportedCollection } from '@/hooks/useCollections';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { FeedFilters } from './FeedFilters';
+import { useSelectCommunity } from '../../../contexts/SelectCommunityContext';
+import { Reshared } from '../stickers/Reshared';
 
 export const Route = createFileRoute('/_main/community/')({
   component: Feed,
@@ -62,8 +61,8 @@ export function Feed() {
   );
 
   // Fetch used collections
-  const { data: usedCollections, isLoading: isLoadingCollections } =
-    useGetUsedCollections(6);
+  const { selectedCommunity } = useSelectCommunity();
+  const supportedCollections = selectedCommunity?.collections || [];
 
   // Determine query type based on selections
   const queryType: ContentTypeFilter | 'all' =
@@ -293,8 +292,8 @@ export function Feed() {
           selectedTypes={selectedTypes}
           toggleType={toggleType}
           typeButtonsRef={typeButtonsRef}
-          usedCollections={usedCollections}
-          isLoadingCollections={isLoadingCollections}
+          usedCollections={supportedCollections}
+          isLoadingCollections={false}
           selectedCollections={selectedCollections}
           toggleCollection={toggleCollection}
         />
@@ -313,7 +312,7 @@ export function Feed() {
                   </span>
                 </div>
 
-                <div className="flex h-full w-full items-center justify-center p-4">
+                <div className="justify-cente flex h-full w-full items-center">
                   {prompt.latestContentUrl ? (
                     <img
                       src={prompt.latestContentUrl}
@@ -341,14 +340,17 @@ export function Feed() {
                 </div>
 
                 {/* Make it Yours button */}
-                {session && (
-                  <button
-                    onClick={() => handleMakeItYours(prompt)}
-                    className="bg-tg-button text-tg-button-text w-full rounded-xl px-4 py-2.5 text-sm font-semibold shadow-md transition-all active:scale-95"
-                  >
-                    Make it Yours
-                  </button>
-                )}
+                <div className="flex flex-row items-center gap-2">
+                  {prompt.usageCount && <Reshared amount={prompt.usageCount} />}
+                  {session && (
+                    <button
+                      onClick={() => handleMakeItYours(prompt)}
+                      className="bg-tg-button text-tg-button-text flex-1 rounded-xl p-1 text-sm font-semibold whitespace-nowrap shadow-md transition-all active:scale-95"
+                    >
+                      Make it Yours
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           ))}

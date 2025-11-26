@@ -69,11 +69,6 @@ const PromptEditorContent = ({
     onSuccess: result => {
       if (result.generated) {
         setHasChanges(false);
-        addToast({
-          type: 'success',
-          title: 'Success',
-          message: 'Prompt updated and preview generated successfully!',
-        });
       }
     },
     onError: error => {

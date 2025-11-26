@@ -27,6 +27,7 @@ export const ContentPreviews = ({
     page,
     size: 10,
   });
+  console.log('Fetched preview content:', content);
   const [selectedContent, setSelectedContent] = useState<Content | null>(null);
 
   // Update allContent when new data is fetched
@@ -114,7 +115,7 @@ export const ContentPreviews = ({
         {groupedContent.length > 0 && (
           <div
             ref={scrollContainerRef}
-            className="scrollbar-hide flex max-h-25 w-full flex-shrink-0 flex-row items-center gap-4 overflow-x-auto border border-white/20 bg-white/10 p-2 shadow-lg backdrop-blur-lg"
+            className="scrollbar-hide bg-tg-secondary-bg flex max-h-25 w-full flex-shrink-0 flex-row items-center gap-2 overflow-x-auto border border-white/20 p-2 shadow-lg backdrop-blur-lg"
           >
             {groupedContent.flatMap((group, groupIndex) => {
               const items = [

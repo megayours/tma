@@ -1,24 +1,22 @@
 import { useSession } from '@/auth/SessionProvider';
-import { useStickerPackExecutions } from '@/hooks/useStickerPack';
-import { useState } from 'react';
+import { useStickerPackExecutionById } from '@/hooks/useStickerPack';
 import { SpinnerFullPage } from '@/components/ui';
 import { StickerPackVisualization } from '@/components/StickerPack/StickerPackVisualization';
 import { Link } from '@tanstack/react-router';
+import type { Content } from '@/types/content';
 
-export function StickerList() {
+export function StickerList({
+  selectedContents,
+}: {
+  selectedContents: Content[];
+}) {
   const { session } = useSession();
-  const [page, setPage] = useState(1);
-  const pageSize = 20;
 
-  const { data, isLoading, error } = useStickerPackExecutions(
-    {
-      pagination: {
-        page,
-        size: pageSize,
-      },
-    },
-    session
-  );
+  const {
+    data: execution,
+    isLoading,
+    error,
+  } = useStickerPackExecutionById(selectedContents?.[0].executionId!, session);
 
   if (isLoading) {
     return <SpinnerFullPage text="Loading your sticker packs..." />;
@@ -34,7 +32,7 @@ export function StickerList() {
     );
   }
 
-  if (!data || data.data.length === 0) {
+  if (!execution) {
     return (
       <div className="flex flex-col items-center justify-center">
         <div className="text-tg-hint text-center text-lg">
@@ -48,10 +46,10 @@ export function StickerList() {
   }
 
   return (
-    <div className="space-y-4 pb-20">
+    <div className="space-y-4">
       {/* Executions List */}
-      <div className="space-y-2">
-        {data.data.map(execution => (
+      {execution && (
+        <div className="space-y-2">
           <div key={execution.id} className="overflow-hidden rounded-xl">
             {/* Header */}
             <div className="flex items-start justify-between gap-2 pt-4">
@@ -129,31 +127,6 @@ export function StickerList() {
               </div>
             )}
           </div>
-        ))}
-      </div>
-
-      {/* Pagination */}
-      {data.pagination.totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2">
-          <button
-            onClick={() => setPage(p => Math.max(1, p - 1))}
-            disabled={page === 1}
-            className="text-tg-text disabled:text-tg-hint bg-tg-secondary-bg rounded-lg px-4 py-2 disabled:cursor-not-allowed"
-          >
-            Previous
-          </button>
-          <span className="text-tg-text">
-            Page {page} of {data.pagination.totalPages}
-          </span>
-          <button
-            onClick={() =>
-              setPage(p => Math.min(data.pagination.totalPages, p + 1))
-            }
-            disabled={page === data.pagination.totalPages}
-            className="text-tg-text disabled:text-tg-hint bg-tg-secondary-bg rounded-lg px-4 py-2 disabled:cursor-not-allowed"
-          >
-            Next
-          </button>
         </div>
       )}
     </div>

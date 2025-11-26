@@ -32,6 +32,7 @@ import { Route as MainProfileIndexRouteImport } from './routes/_main/profile/ind
 import { Route as MainCommunityIndexRouteImport } from './routes/_main/community/index'
 import { Route as StickerPacksStickerPackIdSuccessRouteImport } from './routes/sticker-packs/$stickerPackId/success'
 import { Route as StickerPacksStickerPackIdCheckoutRouteImport } from './routes/sticker-packs/$stickerPackId/checkout'
+import { Route as MainProfileGenerationsTimelineRouteImport } from './routes/_main/profile/GenerationsTimeline'
 import { Route as StickerPacksGeneratedIdIndexRouteImport } from './routes/sticker-packs/generated/$id/index'
 import { Route as StickerPacksStickerPackIdSelectTierIndexRouteImport } from './routes/sticker-packs/$stickerPackId/select-tier/index'
 import { Route as StickerPacksStickerPackIdSelectNftsIndexRouteImport } from './routes/sticker-packs/$stickerPackId/select-nfts/index'
@@ -172,6 +173,12 @@ const StickerPacksStickerPackIdCheckoutRoute =
     id: '/checkout',
     path: '/checkout',
     getParentRoute: () => StickerPacksStickerPackIdRoute,
+  } as any)
+const MainProfileGenerationsTimelineRoute =
+  MainProfileGenerationsTimelineRouteImport.update({
+    id: '/profile/GenerationsTimeline',
+    path: '/profile/GenerationsTimeline',
+    getParentRoute: () => MainRoute,
   } as any)
 const StickerPacksGeneratedIdIndexRoute =
   StickerPacksGeneratedIdIndexRouteImport.update({
@@ -315,6 +322,7 @@ export interface FileRoutesByFullPath {
   '/private': typeof PrivateIndexRoute
   '/selectCommunity': typeof SelectCommunityIndexRoute
   '/sticker-packs/': typeof StickerPacksIndexRoute
+  '/profile/GenerationsTimeline': typeof MainProfileGenerationsTimelineRoute
   '/sticker-packs/$stickerPackId/checkout': typeof StickerPacksStickerPackIdCheckoutRoute
   '/sticker-packs/$stickerPackId/success': typeof StickerPacksStickerPackIdSuccessRoute
   '/community': typeof MainCommunityIndexRoute
@@ -358,6 +366,7 @@ export interface FileRoutesByTo {
   '/private': typeof PrivateIndexRoute
   '/selectCommunity': typeof SelectCommunityIndexRoute
   '/sticker-packs': typeof StickerPacksIndexRoute
+  '/profile/GenerationsTimeline': typeof MainProfileGenerationsTimelineRoute
   '/sticker-packs/$stickerPackId/checkout': typeof StickerPacksStickerPackIdCheckoutRoute
   '/sticker-packs/$stickerPackId/success': typeof StickerPacksStickerPackIdSuccessRoute
   '/community': typeof MainCommunityIndexRoute
@@ -405,6 +414,7 @@ export interface FileRoutesById {
   '/private/': typeof PrivateIndexRoute
   '/selectCommunity/': typeof SelectCommunityIndexRoute
   '/sticker-packs/': typeof StickerPacksIndexRoute
+  '/_main/profile/GenerationsTimeline': typeof MainProfileGenerationsTimelineRoute
   '/sticker-packs/$stickerPackId/checkout': typeof StickerPacksStickerPackIdCheckoutRoute
   '/sticker-packs/$stickerPackId/success': typeof StickerPacksStickerPackIdSuccessRoute
   '/_main/community/': typeof MainCommunityIndexRoute
@@ -453,6 +463,7 @@ export interface FileRouteTypes {
     | '/private'
     | '/selectCommunity'
     | '/sticker-packs/'
+    | '/profile/GenerationsTimeline'
     | '/sticker-packs/$stickerPackId/checkout'
     | '/sticker-packs/$stickerPackId/success'
     | '/community'
@@ -496,6 +507,7 @@ export interface FileRouteTypes {
     | '/private'
     | '/selectCommunity'
     | '/sticker-packs'
+    | '/profile/GenerationsTimeline'
     | '/sticker-packs/$stickerPackId/checkout'
     | '/sticker-packs/$stickerPackId/success'
     | '/community'
@@ -542,6 +554,7 @@ export interface FileRouteTypes {
     | '/private/'
     | '/selectCommunity/'
     | '/sticker-packs/'
+    | '/_main/profile/GenerationsTimeline'
     | '/sticker-packs/$stickerPackId/checkout'
     | '/sticker-packs/$stickerPackId/success'
     | '/_main/community/'
@@ -760,6 +773,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StickerPacksStickerPackIdCheckoutRouteImport
       parentRoute: typeof StickerPacksStickerPackIdRoute
     }
+    '/_main/profile/GenerationsTimeline': {
+      id: '/_main/profile/GenerationsTimeline'
+      path: '/profile/GenerationsTimeline'
+      fullPath: '/profile/GenerationsTimeline'
+      preLoaderRoute: typeof MainProfileGenerationsTimelineRouteImport
+      parentRoute: typeof MainRoute
+    }
     '/sticker-packs/generated/$id/': {
       id: '/sticker-packs/generated/$id/'
       path: '/generated/$id'
@@ -948,6 +968,7 @@ const MainProfileAdminPromptEditRouteRouteWithChildren =
   )
 
 interface MainRouteChildren {
+  MainProfileGenerationsTimelineRoute: typeof MainProfileGenerationsTimelineRoute
   MainCommunityIndexRoute: typeof MainCommunityIndexRoute
   MainProfileIndexRoute: typeof MainProfileIndexRoute
   MainStickersIndexRoute: typeof MainStickersIndexRoute
@@ -960,6 +981,7 @@ interface MainRouteChildren {
 }
 
 const MainRouteChildren: MainRouteChildren = {
+  MainProfileGenerationsTimelineRoute: MainProfileGenerationsTimelineRoute,
   MainCommunityIndexRoute: MainCommunityIndexRoute,
   MainProfileIndexRoute: MainProfileIndexRoute,
   MainStickersIndexRoute: MainStickersIndexRoute,

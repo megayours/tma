@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { TierSelector } from '@/components/StickerPack/TierSelector';
-import { TelegramMainButton } from '../../../../components/TelegramMainButton';
+import { TelegramDualButtons } from '../../../../components/TelegramDualButtons';
 import { z } from 'zod';
 import { useState } from 'react';
 import { useStickerPack } from '@/hooks/useStickerPacks';
@@ -89,11 +89,13 @@ function RouteComponent() {
         )}
 
         {/* Navigation Buttons */}
-        <TelegramMainButton
-          text="Review"
-          onClick={handleReview}
-          disabled={false}
-          visible={true}
+        <TelegramDualButtons
+          mainButton={{
+            text: "Review",
+            onClick: handleReview,
+            disabled: false,
+            visible: true,
+          }}
         />
       </div>
     </div>

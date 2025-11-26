@@ -3,7 +3,7 @@ import { useGetPrompt } from '@/hooks/usePrompts';
 import { useSession } from '@/auth/SessionProvider';
 import { SpinnerFullPage } from '@/components/ui';
 import { Banner, Divider } from '@telegram-apps/telegram-ui';
-import { TelegramMainButton } from '../../../../components/TelegramMainButton';
+import { TelegramDualButtons } from '../../../../components/TelegramDualButtons';
 import { Fragment } from 'react/jsx-runtime';
 
 export const Route = createFileRoute('/content/$promptId/details/')({
@@ -33,7 +33,7 @@ const getTypeLabel = (
 function ContentDetails() {
   const { promptId } = Route.useParams();
   const navigate = useNavigate();
-  const { session } = useSession();
+  const { session, isAuthenticating } = useSession();
 
   const { data: prompt, isLoading, error } = useGetPrompt(promptId, session);
 
@@ -44,8 +44,11 @@ function ContentDetails() {
     });
   };
 
+  if (isAuthenticating) {
+    return <SpinnerFullPage text="Authenticating..." />;
+  }
   if (isLoading) {
-    return <SpinnerFullPage text="Loading prompt details..." />;
+    return <SpinnerFullPage text="Loading template details..." />;
   }
 
   if (error || !prompt) {
@@ -66,6 +69,7 @@ function ContentDetails() {
     );
   }
 
+  // TypeScript now knows prompt is defined here
   // Get all preview images
   const getPreviewImages = () => {
     if (prompt.stickers && prompt.stickers.length > 0) return prompt.stickers;
@@ -170,10 +174,12 @@ function ContentDetails() {
         )}
 
         {/* Get Started Button */}
-        <TelegramMainButton
-          text={`Get ${getTypeLabel(prompt.type as 'images' | 'videos' | 'stickers' | 'gifs' | 'animated_stickers').toLowerCase()} with your PFP`}
-          onClick={handleContinue}
-          visible={true}
+        <TelegramDualButtons
+          mainButton={{
+            text: `Get ${getTypeLabel(prompt.type as 'images' | 'videos' | 'stickers' | 'gifs' | 'animated_stickers').toLowerCase()} with your PFP`,
+            onClick: handleContinue,
+            visible: true,
+          }}
         />
       </div>
     </div>

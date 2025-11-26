@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useCallback, useEffect, useState } from 'react';
-import { TelegramMainButton } from '@/components/TelegramMainButton';
+import { TelegramDualButtons } from '@/components/TelegramDualButtons';
 import {
   useGetNFTByCollectionAndTokenId,
   useGetSupportedCollections,
@@ -362,21 +362,25 @@ function RouteComponent() {
         {/* Navigation Buttons */}
         {isSelectorOpen && selectedNFTs.length > 0 ? (
           // Hide button when selector is open and an NFT is already selected
-          <TelegramMainButton
-            text={buttonText}
-            onClick={handleContinue}
-            disabled={!canContinue || isSelectorOpen}
-            loading={isPending}
-            visible={false}
+          <TelegramDualButtons
+            mainButton={{
+              text: buttonText,
+              onClick: handleContinue,
+              disabled: !canContinue || isSelectorOpen,
+              loading: isPending,
+              visible: false,
+            }}
           />
         ) : (
           // Show button when selector is closed or no NFT selected
-          <TelegramMainButton
-            text={buttonText}
-            onClick={handleContinue}
-            disabled={!canContinue || isSelectorOpen}
-            loading={isPending}
-            visible={true}
+          <TelegramDualButtons
+            mainButton={{
+              text: buttonText,
+              onClick: handleContinue,
+              disabled: !canContinue || isSelectorOpen,
+              loading: isPending,
+              visible: true,
+            }}
           />
         )}
       </div>

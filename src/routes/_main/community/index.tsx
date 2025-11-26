@@ -36,8 +36,8 @@ const getTypeLabel = (
       return 'Sticker';
     case 'gifs':
       return 'GIF';
-    case 'animated_stickers':
-      return 'Animated';
+    // case 'animated_stickers':
+    //   return 'Animated';
     default:
       return type;
   }
@@ -207,7 +207,7 @@ export function Feed() {
     { value: 'images', label: 'Images' },
     { value: 'stickers', label: 'Stickers' },
     { value: 'videos', label: 'Gifs' },
-    { value: 'animated_stickers', label: 'Animated Stickers' },
+    // { value: 'animated_stickers', label: 'Animated Stickers' },
   ];
 
   // GSAP animation for collapsing/expanding type filters

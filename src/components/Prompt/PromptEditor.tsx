@@ -61,8 +61,6 @@ const PromptEditorContent = ({
     }
   }, [selectedVersion]);
 
-  console.log('selectedVersion', selectedVersion);
-
   // Custom hook for prompt generation logic
   const { isGenerating, generatePromptPreview } = usePromptPreviewGeneration({
     session,

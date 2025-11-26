@@ -67,8 +67,8 @@ function CreatePromptComponent() {
         return 'GIF';
       case 'stickers':
         return 'Sticker';
-      case 'animated_stickers':
-        return 'Animated Sticker';
+      // case 'animated_stickers':
+      //   return 'Animated Sticker';
       default:
         return '';
     }

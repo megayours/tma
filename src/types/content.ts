@@ -32,7 +32,7 @@ export interface Content {
   revealedAt: string | number | null;
   createdAt: number;
   promptId?: string | number | null;
-  executionId?: string | number | null;
+  executionId?: string | null;
   prompt?: ContentPrompt | null;
   token?: Token;
   tokens?: Token[];

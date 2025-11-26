@@ -5,6 +5,7 @@ import { useSession } from '@/auth/SessionProvider';
 import { useCreatePromptMutation } from '@/hooks/usePrompts';
 import { Button } from '@telegram-apps/telegram-ui';
 import { TgInput } from '@/components/ui/forms/TgInput';
+import { useSelectCommunity } from '../../../../../contexts/SelectCommunityContext';
 
 export const Route = createFileRoute('/_main/profile/admin/prompt/create')({
   component: CreatePromptComponent,
@@ -13,6 +14,7 @@ export const Route = createFileRoute('/_main/profile/admin/prompt/create')({
 function CreatePromptComponent() {
   const { session } = useSession();
   const isMegaAdmin = session && parseInt(session.role) >= 2;
+  const { selectedCommunity } = useSelectCommunity();
   const navigate = useNavigate();
   const { mutateAsync: createPrompt, isPending } = useCreatePromptMutation();
   const [selectedType, setSelectedType] = useState<
@@ -45,10 +47,11 @@ function CreatePromptComponent() {
         session,
         type: selectedType,
         name: promptName.trim(),
+        communityId: selectedCommunity?.id,
       });
       if (prompt) {
         navigate({
-          to: `/profile/prompt/edit/${prompt.id}`,
+          to: `/profile/admin/prompt/edit/${prompt.id}`,
         });
       }
     } catch (error) {

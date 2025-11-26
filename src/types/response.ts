@@ -113,7 +113,7 @@ export const RawContentResponseSchema = z
     creator_id: z.string().optional(),
     revealed_at: z.union([z.number(), z.string()]).nullable().optional(),
     prompt_id: z.union([z.string(), z.number()]).nullable().optional(),
-    execution_id: z.union([z.string(), z.number()]).nullable().optional(),
+    execution_id: z.string().nullable(),
     prompt: z
       .object({
         id: z.union([z.string(), z.number()]),
@@ -185,6 +185,7 @@ export const ContentResponseSchema = z.object({
   createdAt: z.number().optional(),
   creatorId: z.string().optional(),
   revealedAt: z.string().optional(),
+  executionId: z.string().nullable().optional(),
   token: TokenSchema.optional(),
   tokens: z.array(TokenSchema).optional(),
   promptId: z.union([z.string(), z.number()]).nullable().optional(),

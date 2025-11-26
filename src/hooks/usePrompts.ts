@@ -5,7 +5,11 @@ import type { Filter, Pagination } from '@/types/requests';
 import { type RawPrompt } from '@/types/response';
 import type { PromptWithContent } from '@/types/content';
 import type { Session } from '@/auth/useAuth';
-import type { Prompt, PromptFeedback, PromptFeedbackSentiment } from '@/types/prompt';
+import type {
+  Prompt,
+  PromptFeedback,
+  PromptFeedbackSentiment,
+} from '@/types/prompt';
 import { PromptFeedbackSchema } from '@/types/prompt';
 import { safeParse } from '@/utils/validation';
 
@@ -66,7 +70,13 @@ export const useGetRecommendedPrompts = ({
   enabled?: boolean;
 }) => {
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['recommended-prompts', type, excludeUsed, pagination, tokenCollections],
+    queryKey: [
+      'recommended-prompts',
+      type,
+      excludeUsed,
+      pagination,
+      tokenCollections,
+    ],
     enabled,
     queryFn: async () => {
       try {
@@ -369,12 +379,15 @@ export const useCreatePromptMutation = () => {
       session,
       type,
       name,
+      communityId,
     }: {
       session: Session | null;
       type: 'images' | 'videos' | 'stickers' | 'animated_stickers';
       name: string;
+      communityId: string | undefined;
     }) => {
       if (!session) return;
+      if (!communityId) return;
       const response = await fetch(
         `${import.meta.env.VITE_PUBLIC_API_URL}/prompts`,
         {
@@ -383,7 +396,11 @@ export const useCreatePromptMutation = () => {
             'Content-Type': 'application/json',
             Authorization: session.authToken,
           },
-          body: JSON.stringify({ name: name, type: type }),
+          body: JSON.stringify({
+            name: name,
+            type: type,
+            community_id: communityId,
+          }),
         }
       );
       if (!response.ok) {
@@ -663,7 +680,9 @@ export const usePromptFeedbackMutation = (
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          errorData.message || errorData.error || `Failed to submit feedback: ${response.status}`
+          errorData.message ||
+            errorData.error ||
+            `Failed to submit feedback: ${response.status}`
         );
       }
 
@@ -687,7 +706,7 @@ export const usePromptFeedbackMutation = (
 
       return feedback;
     },
-    onSuccess: (data) => {
+    onSuccess: data => {
       queryClient.invalidateQueries({ queryKey: ['prompts'] });
       queryClient.invalidateQueries({ queryKey: ['content'] });
       options?.onSuccess?.(data);

@@ -19,7 +19,7 @@ export const useGetContents = (
   const paginationParams = pagination || { page: 1, size: 10 };
   const orderParams = order || { sort_by: 'created_at', sort_order: 'desc' };
   return useQuery({
-    queryKey: ['content'],
+    queryKey: ['content', account, paginationParams.page, paginationParams.size, unrevealed],
     queryFn: async () => {
       if (!session) return;
 

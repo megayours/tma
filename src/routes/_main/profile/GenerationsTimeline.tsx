@@ -8,8 +8,6 @@ import { useState, useEffect, useRef } from 'react';
 
 // Minimum number of timeline items to show before stopping initial fetch
 const MIN_TIMELINE_ITEMS = 10;
-// How many more items to load when scrolling
-const LOAD_MORE_THRESHOLD = 5;
 
 export const Route = createFileRoute('/_main/profile/GenerationsTimeline')({
   component: GenerationsTimeline,
@@ -93,14 +91,20 @@ export function GenerationsTimeline() {
   return (
     <div className="pb-20">
       {timeline.map(({ execId, contents }) => (
-        <div key={execId} className="border-b border-tg-section-separator pb-3 mb-3 last:border-b-0">
+        <div
+          key={execId}
+          className="border-tg-section-separator mb-3 border-b pb-3 last:border-b-0"
+        >
           {contents.length === 1 && <SingleContent content={contents[0]} />}
           {contents.length > 1 && <StickerList selectedContents={contents} />}
         </div>
       ))}
 
       {/* Infinite scroll sentinel */}
-      <div ref={observerTarget} className="h-10 flex items-center justify-center">
+      <div
+        ref={observerTarget}
+        className="flex h-10 items-center justify-center"
+      >
         {isFetching && page > 1 && (
           <div className="text-tg-hint text-sm">Loading more...</div>
         )}
@@ -111,7 +115,7 @@ export function GenerationsTimeline() {
 
 function SingleContent({ content }: { content: Content }) {
   return (
-    <div className="flex items-center gap-3 py-3 px-2 overflow-hidden rounded-xl">
+    <div className="flex items-center gap-3 overflow-hidden rounded-xl px-2 py-3">
       {/* Thumbnail Image - Left */}
       <Link
         to="/content/$promptId/success"
@@ -122,24 +126,24 @@ function SingleContent({ content }: { content: Content }) {
         <img
           src={content.url || ''}
           alt="Generated content"
-          className="h-20 w-20 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+          className="h-20 w-20 cursor-pointer rounded-lg object-cover transition-opacity hover:opacity-90"
         />
       </Link>
 
       {/* Content Info - Middle */}
-      <div className="flex-1 min-w-0">
-        <h3 className="text-tg-text text-sm font-semibold truncate">
+      <div className="min-w-0 flex-1">
+        <h3 className="text-tg-text truncate text-sm font-semibold">
           {content.prompt?.name || 'Generated Content'}
         </h3>
         {content.token && (
-          <p className="text-tg-hint text-xs truncate">
+          <p className="text-tg-hint truncate text-xs">
             {content.token.contract.name} #{content.token.id}
           </p>
         )}
       </div>
 
       {/* Actions - Right */}
-      <div className="flex flex-col gap-1 items-end flex-shrink-0">
+      <div className="flex flex-shrink-0 flex-col items-end gap-1">
         <span
           className={`rounded-full px-2 py-0.5 text-xs font-semibold whitespace-nowrap ${
             content.status === 'completed'

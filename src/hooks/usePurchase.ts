@@ -20,7 +20,12 @@ const ExecuteResponseSchema = z.object({
 export type ExecuteResponse = z.infer<typeof ExecuteResponseSchema>;
 
 // Purchase states
-export type PurchaseState = 'idle' | 'processing' | 'success' | 'error' | 'pending_payment';
+export type PurchaseState =
+  | 'idle'
+  | 'processing'
+  | 'success'
+  | 'error'
+  | 'pending_payment';
 
 interface UsePurchaseOptions {
   onSuccess?: (data: ExecuteResponse) => void;
@@ -102,6 +107,7 @@ export const usePurchase = (
       queryClient.invalidateQueries({ queryKey: ['sticker-packs'] });
       queryClient.invalidateQueries({ queryKey: ['sticker-pack'] });
       queryClient.invalidateQueries({ queryKey: ['favorites'] });
+      queryClient.invalidateQueries({ queryKey: ['content'] });
 
       options?.onSuccess?.(data);
     },

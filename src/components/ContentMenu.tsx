@@ -5,6 +5,7 @@ import { useNavigate, useLocation } from '@tanstack/react-router';
 import { useSession } from '../auth/SessionProvider';
 import { UserMenuComponent } from './lib/auth/FavoriteNFT';
 import { FaUser } from 'react-icons/fa';
+import { useNotifications } from '../hooks/useNotifications';
 
 export function ContentMenu() {
   const navigate = useNavigate();
@@ -13,6 +14,8 @@ export function ContentMenu() {
   const itemRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const containerRef = useRef<HTMLDivElement>(null);
   const { session } = useSession();
+
+  const { count: notificationCount, isLoading } = useNotifications(session);
 
   // Derive selected content type from current route
   const getSelectedContentType = (): string => {
@@ -109,7 +112,14 @@ export function ContentMenu() {
           className={`${selectedContentType === 'UserMenu' ? 'text-tg-button-text' : 'text-tg-text'} relative z-10 flex h-full w-full items-center justify-center p-3`}
           style={{ zIndex: 1 }}
         >
-          {session ? <UserMenuComponent size={35} /> : <FaUser />}
+          <div className="relative w-10">
+            {session ? <UserMenuComponent size={35} /> : <FaUser />}
+            {!isLoading && notificationCount > 0 && (
+              <div className="absolute -top-0.5 right-0 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                {notificationCount > 9 ? '•' : notificationCount}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

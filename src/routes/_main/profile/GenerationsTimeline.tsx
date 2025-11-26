@@ -23,7 +23,7 @@ export function GenerationsTimeline() {
   const { data, isLoading, isFetching } = useGetContents(
     session,
     session?.id!,
-    undefined, // unrevealed
+    undefined,
     { page, size: 20 }
   );
 

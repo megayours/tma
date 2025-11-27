@@ -3,13 +3,15 @@ import { useLocation } from '@tanstack/react-router';
 
 const STORAGE_KEY = 'last_content_menu_route';
 const CONTENT_MENU_ROUTES = ['/stickers', '/community', '/profile'] as const;
-type ContentMenuRoute = typeof CONTENT_MENU_ROUTES[number];
+type ContentMenuRoute = (typeof CONTENT_MENU_ROUTES)[number];
 
 interface NavigationHistoryContextType {
   lastContentMenuRoute: ContentMenuRoute;
 }
 
-const NavigationHistoryContext = createContext<NavigationHistoryContextType | undefined>(undefined);
+const NavigationHistoryContext = createContext<
+  NavigationHistoryContextType | undefined
+>(undefined);
 
 function getStoredRoute(): ContentMenuRoute {
   try {
@@ -35,7 +37,11 @@ function isContentMenuRoute(pathname: string): pathname is ContentMenuRoute {
   return CONTENT_MENU_ROUTES.some(route => pathname.startsWith(route));
 }
 
-export function NavigationHistoryProvider({ children }: { children: ReactNode }) {
+export function NavigationHistoryProvider({
+  children,
+}: {
+  children: ReactNode;
+}) {
   const location = useLocation();
   const pathname = location.pathname;
 
@@ -60,7 +66,9 @@ export function NavigationHistoryProvider({ children }: { children: ReactNode })
 export function useNavigationHistory() {
   const context = useContext(NavigationHistoryContext);
   if (!context) {
-    throw new Error('useNavigationHistory must be used within NavigationHistoryProvider');
+    throw new Error(
+      'useNavigationHistory must be used within NavigationHistoryProvider'
+    );
   }
   return context;
 }

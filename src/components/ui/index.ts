@@ -60,6 +60,8 @@ export type {
 export { Spinner, SpinnerFullPage } from './feedback/Spinner';
 export type { SpinnerProps } from './feedback/Spinner';
 
+export { TopLoadingBar } from './feedback/TopLoadingBar';
+
 // Navigation
 export { Pagination } from './navigation/Pagination';
 export { AddInputMenu } from './navigation/AddInputMenu';

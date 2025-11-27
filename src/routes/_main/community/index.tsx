@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useGetRecommendedPrompts } from '@/hooks/usePrompts';
 import type { PromptWithContent } from '@/types/content';
-import { Spinner } from '@/components/ui';
+import { Spinner, TopLoadingBar } from '@/components/ui';
 import { useSession } from '@/auth/SessionProvider';
 import { type SupportedCollection } from '@/hooks/useCollections';
 import { useGSAP } from '@gsap/react';
@@ -61,19 +61,13 @@ export function Feed() {
   );
 
   // Fetch used collections
-  const { selectedCommunity, isLoading: isLoadingCommunity } = useSelectCommunity();
-
-  // Hold the screen until context is fully initialized
-  if (isLoadingCommunity) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <Spinner text="Loading community..." size="lg" />
-      </div>
-    );
-  }
+  const {
+    selectedCommunity,
+    isLoading: isLoadingCommunity,
+    isRefetching,
+  } = useSelectCommunity();
 
   const supportedCollections = selectedCommunity?.collections || [];
-  console.log('Supported collections:', selectedCommunity);
 
   // Determine query type based on selections
   const queryType: ContentTypeFilter | 'all' =
@@ -89,8 +83,10 @@ export function Feed() {
     },
     tokenCollections:
       selectedCollections.length > 0 ? selectedCollections : undefined,
-    enabled: true,
+    enabled: !isLoadingCommunity, // Only enable when community is loaded
   });
+
+  console.log('Supported collections:', selectedCommunity);
 
   // Toggle content type selection
   const toggleType = (type: ContentTypeFilter | 'all') => {
@@ -267,6 +263,16 @@ export function Feed() {
     });
   }, [isExpanded, selectedTypes]);
 
+  // Hold the screen until context is fully initialized
+  // This check happens AFTER all hooks are called
+  if (isLoadingCommunity && !selectedCommunity) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Spinner text="Loading community..." size="lg" />
+      </div>
+    );
+  }
+
   // Show error state if there's an error and no data
   if (error && allPrompts.length === 0) {
     return (
@@ -290,6 +296,7 @@ export function Feed() {
 
   return (
     <div className="flex h-screen flex-col">
+      {isRefetching && <TopLoadingBar />}
       {/* Content type and collection filters */}
       <div
         className="scrollbar-hide border-tg-section-separator bg-tg-bg/80 sticky top-0 z-10 flex shrink-0 gap-1 overflow-x-hidden border-b py-3 backdrop-blur-md lg:overflow-x-auto"
@@ -331,7 +338,7 @@ export function Feed() {
                       className="h-full w-full object-contain"
                       loading={index < 4 ? 'eager' : 'lazy'}
                       decoding="async"
-                      {...(index < 4 && { fetchPriority: 'high' as const })}
+                      {...(index < 4 && { fetchpriority: 'high' as const })}
                     />
                   ) : (
                     <div className="text-tg-hint flex h-full w-full items-center justify-center">

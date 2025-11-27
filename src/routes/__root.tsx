@@ -3,7 +3,6 @@ import {
   Outlet,
   useLocation,
   useRouter,
-  redirect,
 } from '@tanstack/react-router';
 import { isTMA } from '@telegram-apps/bridge';
 import {
@@ -14,10 +13,9 @@ import {
   viewport,
   miniApp,
   swipeBehavior,
-  retrieveLaunchParams,
   closingBehavior,
 } from '@telegram-apps/sdk-react';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { Header } from '@/components/Header';
 import { useTelegramTheme } from '@/auth/useTelegram';
 import { ToastProvider } from '@/components/ui';
@@ -27,9 +25,10 @@ import {
   useSelectCommunity,
 } from '@/contexts/SelectCommunityContext';
 import { useSession } from '@/auth/SessionProvider';
-import { useLaunchParams } from '@telegram-apps/sdk-react';
-import { base64UrlDecode } from '@/utils/base64';
-import { NavigationHistoryProvider, useNavigationHistory } from '@/contexts/NavigationHistoryContext';
+import {
+  NavigationHistoryProvider,
+  useNavigationHistory,
+} from '@/contexts/NavigationHistoryContext';
 
 function TelegramEnvironmentHandler() {
   const location = useLocation();
@@ -38,29 +37,9 @@ function TelegramEnvironmentHandler() {
   const { isDark, themeParams } = useTelegramTheme();
   const [isViewportMounted, setIsViewportMounted] = useState(false);
   const [isViewportMounting, setIsViewportMounting] = useState(false);
-  const launchParams = useLaunchParams(true);
-  const hasRedirected = useRef(false);
   const { lastContentMenuRoute } = useNavigationHistory();
 
   console.log('ROUTE', location);
-
-  // Handle deep link redirect from start param
-  useEffect(() => {
-    if (
-      launchParams.tgWebAppStartParam &&
-      !hasRedirected.current &&
-      pathname === '/'
-    ) {
-      try {
-        const decodedPath = base64UrlDecode(launchParams.tgWebAppStartParam);
-        console.log('Redirecting to:', decodedPath);
-        hasRedirected.current = true;
-        router.navigate({ to: decodedPath });
-      } catch (error) {
-        console.error('Failed to decode start param:', error);
-      }
-    }
-  }, [launchParams.tgWebAppStartParam, pathname, router]);
 
   useEffect(() => {
     init();
@@ -209,7 +188,10 @@ function TelegramEnvironmentHandler() {
           router.history.back();
         } else {
           // History stack is too short (Android issue), use explicit fallback
-          console.log('[BackButton] History stack too short, falling back to:', lastContentMenuRoute);
+          console.log(
+            '[BackButton] History stack too short, falling back to:',
+            lastContentMenuRoute
+          );
           router.navigate({ to: lastContentMenuRoute });
         }
       });
@@ -348,29 +330,6 @@ function AppContent() {
 }
 
 export const Route = createRootRoute({
-  beforeLoad: async ({ location }) => {
-    // Only run on client side
-    if (typeof window === 'undefined') return;
-
-    // Check if running in Telegram environment
-    if (isTMA()) {
-      const launchParams = retrieveLaunchParams();
-      const startParam = launchParams.tgWebAppStartParam;
-
-      // Only redirect from root path and if startParam exists
-      if (startParam && location.pathname === '/') {
-        const decodedPath = base64UrlDecode(startParam);
-        // NOTE: this is a hack
-        if (
-          decodedPath.split('?')[0] !== '/'
-          // && window.location.pathname === '/'
-        ) {
-          console.log('beforeLoad: Redirecting to:', decodedPath);
-          throw redirect({ to: decodedPath });
-        }
-      }
-    }
-  },
   component: () => {
     return (
       <ToastProvider>

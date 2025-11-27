@@ -2,7 +2,7 @@ import { createFileRoute, Link } from '@tanstack/react-router';
 import { StickerPackItem } from '@/routes/_main/stickers/StickerPackItem';
 import { useStickerPacks } from '@/hooks/useStickerPacks';
 import { useSelectCommunity } from '@/contexts/SelectCommunityContext';
-import { SpinnerFullPage } from '@/components/ui';
+import { SpinnerFullPage, TopLoadingBar } from '@/components/ui';
 
 export const Route = createFileRoute('/_main/stickers/')({
   component: RouteComponent,
@@ -13,8 +13,11 @@ function RouteComponent() {
 }
 
 export function Landing() {
-  const { selectedCommunity: community, isLoading: isLoadingCommunity } =
-    useSelectCommunity();
+  const {
+    selectedCommunity: community,
+    isLoading: isLoadingCommunity,
+    isRefetching,
+  } = useSelectCommunity();
   console.log('Selected community in stickers:', community);
 
   const { data: stickerPacks } = useStickerPacks({
@@ -25,11 +28,13 @@ export function Landing() {
     tokenCollections: community?.collections,
   });
 
-  if (isLoadingCommunity || !community)
+  if (isLoadingCommunity && !community)
     return <SpinnerFullPage text="Loading Sticker Packs..." />;
 
   return (
-    <div className="bg-tg-secondary-bg scrollbar-hide flex flex-col gap-2 overflow-y-scroll pt-2">
+    <>
+      {isRefetching && <TopLoadingBar />}
+      <div className="bg-tg-secondary-bg scrollbar-hide flex flex-col gap-2 overflow-y-scroll pt-2">
       {stickerPacks?.data.map(stickerPack => (
         <div key={stickerPack.id} className="bg-tg-section-bg flex shrink-0 snap-start flex-col">
           <StickerPackItem stickerPack={stickerPack} />
@@ -44,6 +49,7 @@ export function Landing() {
           <Link to="/about">Check about</Link>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }

@@ -61,19 +61,12 @@ const PromptEditorContent = ({
     }
   }, [selectedVersion]);
 
-  console.log('selectedVersion', selectedVersion);
-
   // Custom hook for prompt generation logic
   const { isGenerating, generatePromptPreview } = usePromptPreviewGeneration({
     session,
     onSuccess: result => {
       if (result.generated) {
         setHasChanges(false);
-        addToast({
-          type: 'success',
-          title: 'Success',
-          message: 'Prompt updated and preview generated successfully!',
-        });
       }
     },
     onError: error => {
@@ -149,7 +142,7 @@ const PromptEditorContent = ({
       </div>
 
       {/* Portal container for AddContentButton and NFTCloud */}
-      <div className="bg-tg-bg pointer-events-none fixed right-0 bottom-20 left-0 z-29 overflow-y-scroll pb-16">
+      <div className="bg-tg-bg pointer-events-none fixed right-0 bottom-20 left-0 z-29 overflow-y-hidden pb-16">
         <div id="custom-input-container"></div>
       </div>
 

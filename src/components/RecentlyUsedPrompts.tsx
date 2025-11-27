@@ -107,7 +107,7 @@ export function RecentlyUsedPrompts() {
     <div className="flex flex-col gap-3">
       {/* Header */}
       <div className="flex flex-row items-center justify-between">
-        <h2 className="text-tg-text text-xl font-bold">Prompt Previews</h2>
+        <h2 className="text-tg-text text-xl font-bold">Recent Previews</h2>
         <div className="flex items-center gap-2">
           <button
             onClick={handlePrevious}

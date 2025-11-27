@@ -20,6 +20,7 @@ interface SelectedCommunityProviderType {
   availableCommunities: Community[];
   setSelectedCommunity: (community: Community | null) => void;
   isLoading: boolean;
+  isRefetching: boolean;
   error: Error | null;
   defaultCollection?: SupportedCollection;
 }
@@ -207,13 +208,17 @@ export function SelectCommunityProvider({ children }: { children: ReactNode }) {
   // Calculate ready state: true when initialization is complete and no refetch pending
   const isReady = hasInitialized && !isRefetching && !communityIdToRefetch;
 
+  // Determine if we have any community data
+  const hasAnyCommunityData = !!selectedCommunity;
+
   return (
     <SelectedCommunityContext.Provider
       value={{
         selectedCommunity,
         availableCommunities,
         setSelectedCommunity,
-        isLoading: isLoading || (!!communityIdFromUrl && isLoadingFromUrl) || !isReady,
+        isLoading: !hasAnyCommunityData && (isLoading || !isReady),
+        isRefetching: hasAnyCommunityData && (isLoadingFromUrl || isRefetching),
         error,
         defaultCollection,
       }}

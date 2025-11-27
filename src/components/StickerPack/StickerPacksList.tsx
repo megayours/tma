@@ -43,9 +43,9 @@ export function StickerPacksList() {
       <div className="flex flex-col space-y-6 overflow-x-auto pb-20">
         {stickerPacks &&
           stickerPacks.data.length > 0 &&
-          stickerPacks.data.map(stickerPack => (
+          stickerPacks.data.map((stickerPack, idx) => (
             <div
-              key={stickerPack.id}
+              key={idx}
               className="border-tg-section-separator flex flex-col space-y-2 rounded-tl-lg rounded-bl-lg border-2 border-r-0 p-2 pr-0"
             >
               <Link

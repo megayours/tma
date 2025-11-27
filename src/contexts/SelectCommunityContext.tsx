@@ -35,6 +35,9 @@ export function SelectCommunityProvider({ children }: { children: ReactNode }) {
   const [selectedCommunity, setSelectedCommunityState] =
     useState<Community | null>(null);
   const [hasInitialized, setHasInitialized] = useState(false);
+  const [communityIdToRefetch, setCommunityIdToRefetch] = useState<
+    string | undefined
+  >(undefined);
 
   // Get communityId and authDate from URL (priority)
   const { communityId: communityIdFromUrl, authDate } = useCommunityId();
@@ -45,6 +48,10 @@ export function SelectCommunityProvider({ children }: { children: ReactNode }) {
 
   // Fetch all available communities
   const { data: availableCommunities, isLoading, error } = useGetCommunities();
+
+  // Refetch community loaded from localStorage to get latest data
+  const { data: refetchedCommunity, isLoading: isRefetching } =
+    useGetCommunityCollections(communityIdToRefetch);
 
   const defaultCollection = selectedCommunity?.collections.filter(
     t => t.id == selectedCommunity.default_collection_id?.toString()
@@ -130,6 +137,11 @@ export function SelectCommunityProvider({ children }: { children: ReactNode }) {
           `[SelectCommunityContext] Loading from localStorage: ${parsedCommunity.name} (${parsedCommunity.id})`
         );
         setSelectedCommunityState(parsedCommunity);
+        // Trigger refetch to get latest community data
+        setCommunityIdToRefetch(parsedCommunity.id);
+        console.log(
+          `[SelectCommunityContext] Triggering refetch for community: ${parsedCommunity.id}`
+        );
         setHasInitialized(true);
       }
     } catch (error) {
@@ -154,6 +166,27 @@ export function SelectCommunityProvider({ children }: { children: ReactNode }) {
     selectedCommunity,
   ]);
 
+  // Handle refetched community data - update state and localStorage with fresh data
+  useEffect(() => {
+    if (refetchedCommunity && !isRefetching && communityIdToRefetch) {
+      console.log(
+        `[SelectCommunityContext] Refetch completed for community: ${refetchedCommunity.name} (${refetchedCommunity.id})`
+      );
+      console.log(
+        `[SelectCommunityContext] Updating state and localStorage with fresh data`
+      );
+
+      // Update state with fresh data
+      setSelectedCommunityState(refetchedCommunity);
+
+      // Save fresh data to localStorage
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(refetchedCommunity));
+
+      // Clear the refetch trigger to prevent re-fetching
+      setCommunityIdToRefetch(undefined);
+    }
+  }, [refetchedCommunity, isRefetching, communityIdToRefetch]);
+
   // Wrapper to persist to localStorage whenever community changes
   const setSelectedCommunity = (community: Community | null) => {
     setSelectedCommunityState(community);
@@ -171,13 +204,16 @@ export function SelectCommunityProvider({ children }: { children: ReactNode }) {
     queryClient.invalidateQueries();
   };
 
+  // Calculate ready state: true when initialization is complete and no refetch pending
+  const isReady = hasInitialized && !isRefetching && !communityIdToRefetch;
+
   return (
     <SelectedCommunityContext.Provider
       value={{
         selectedCommunity,
         availableCommunities,
         setSelectedCommunity,
-        isLoading: isLoading || (!!communityIdFromUrl && isLoadingFromUrl),
+        isLoading: isLoading || (!!communityIdFromUrl && isLoadingFromUrl) || !isReady,
         error,
         defaultCollection,
       }}

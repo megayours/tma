@@ -12,14 +12,20 @@ import type { Contract } from '../types/contract';
 export const useGetContents = (
   session: Session | null | undefined,
   account: string,
-  unrevealed?: boolean,
+  revealed?: boolean,
   pagination?: { page: number; size: number },
   order?: { sort_by: 'created_at'; sort_order: 'asc' | 'desc' }
 ) => {
   const paginationParams = pagination || { page: 1, size: 10 };
   const orderParams = order || { sort_by: 'created_at', sort_order: 'desc' };
   return useQuery({
-    queryKey: ['content', account, paginationParams.page, paginationParams.size, unrevealed],
+    queryKey: [
+      'content',
+      account,
+      paginationParams.page,
+      paginationParams.size,
+      revealed,
+    ],
     queryFn: async () => {
       if (!session) return;
 
@@ -29,7 +35,7 @@ export const useGetContents = (
         size: paginationParams?.size.toString(),
         sort_by: orderParams?.sort_by,
         sort_order: orderParams?.sort_order,
-        ...(unrevealed != null && { revealed: (!unrevealed).toString() }),
+        ...(revealed != null && { revealed: revealed.toString() }),
       });
       const response = await fetch(
         `${import.meta.env.VITE_PUBLIC_API_URL}/content?${queryParams.toString()}`,

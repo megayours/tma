@@ -17,9 +17,6 @@ export function Landing() {
     useSelectCommunity();
   console.log('Selected community in stickers:', community);
 
-  if (isLoadingCommunity || !community)
-    return <SpinnerFullPage text="Loading Sticker Packs..." />;
-
   const { data: stickerPacks } = useStickerPacks({
     pagination: {
       page: 1,
@@ -28,10 +25,13 @@ export function Landing() {
     tokenCollections: community?.collections,
   });
 
+  if (isLoadingCommunity || !community)
+    return <SpinnerFullPage text="Loading Sticker Packs..." />;
+
   return (
     <div className="bg-tg-secondary-bg scrollbar-hide flex flex-col gap-2 overflow-y-scroll pt-2">
       {stickerPacks?.data.map(stickerPack => (
-        <div className="bg-tg-section-bg flex shrink-0 snap-start flex-col">
+        <div key={stickerPack.id} className="bg-tg-section-bg flex shrink-0 snap-start flex-col">
           <StickerPackItem stickerPack={stickerPack} />
         </div>
       ))}

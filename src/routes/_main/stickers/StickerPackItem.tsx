@@ -25,14 +25,12 @@ export function StickerPackItem({
       {/* Header with title and price button */}
       <div className="flex items-center justify-between gap-1 px-4 py-2">
         <Link
-          key={stickerPack.id}
           to="/sticker-packs/$stickerPackId"
           params={{ stickerPackId: stickerPack.id.toString() }}
         >
           <h2 className="text-xl font-semibold">{stickerPack.name}</h2>
         </Link>
         <Link
-          key={stickerPack.id}
           to="/sticker-packs/$stickerPackId"
           params={{ stickerPackId: stickerPack.id.toString() }}
         >
@@ -45,7 +43,6 @@ export function StickerPackItem({
       {/* Sticker preview grid */}
       <div className="flex flex-row items-end justify-center gap-1 px-4 pb-4">
         <Link
-          key={stickerPack.id}
           to="/sticker-packs/$stickerPackId"
           params={{ stickerPackId: stickerPack.id.toString() }}
         >
@@ -78,7 +75,6 @@ export function StickerPackItem({
         </Link>
         <div className="flex h-full w-10 flex-col items-center justify-end gap-4 pb-4 align-bottom">
           <Link
-            key={stickerPack.id}
             to="/sticker-packs/$stickerPackId"
             params={{ stickerPackId: stickerPack.id.toString() }}
           >

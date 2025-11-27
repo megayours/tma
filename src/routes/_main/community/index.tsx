@@ -61,8 +61,19 @@ export function Feed() {
   );
 
   // Fetch used collections
-  const { selectedCommunity } = useSelectCommunity();
+  const { selectedCommunity, isLoading: isLoadingCommunity } = useSelectCommunity();
+
+  // Hold the screen until context is fully initialized
+  if (isLoadingCommunity) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Spinner text="Loading community..." size="lg" />
+      </div>
+    );
+  }
+
   const supportedCollections = selectedCommunity?.collections || [];
+  console.log('Supported collections:', selectedCommunity);
 
   // Determine query type based on selections
   const queryType: ContentTypeFilter | 'all' =

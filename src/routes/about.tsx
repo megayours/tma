@@ -22,6 +22,10 @@ function Demo() {
     console.log(`Copied ${label} to clipboard`);
   };
 
+  const testSentry = () => {
+    throw new Error('Sentry Test Error - This is intentional!');
+  };
+
   return (
     <List className="p-2">
       <Section header="Build Information">
@@ -74,6 +78,18 @@ function Demo() {
             }`}
           >
             {buildInfo.environment}
+          </span>
+        </Cell>
+      </Section>
+
+      <Section header="Sentry Test">
+        <Cell
+          subtitle="Click to test Sentry error tracking"
+          onClick={testSentry}
+          className="cursor-pointer"
+        >
+          <span className="text-red-600 font-semibold">
+            Throw Test Error
           </span>
         </Cell>
       </Section>

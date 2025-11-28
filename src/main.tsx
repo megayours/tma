@@ -15,11 +15,9 @@ initSentry();
 // Import and initialize build info logging
 import { logBuildInfo, attachBuildInfoToWindow } from './utils/buildInfo';
 
-// Log build information on startup (production only)
-if (import.meta.env.PROD) {
-  logBuildInfo();
-  attachBuildInfoToWindow();
-}
+// Log build information on startup
+logBuildInfo();
+attachBuildInfoToWindow();
 
 // Import service worker utilities (adds clearSWCache() and checkSWCache() to window)
 import './utils/clearServiceWorker';

@@ -81,7 +81,7 @@ export function StickerPackItem({
             <Reshared amount={stickerPack.item_count} />
           </Link>
           <ShareMessage
-            url={import.meta.env.VITE_PUBLIC_BOT_URL}
+            url={import.meta.env.VITE_PUBLIC_BOT_URL || ''}
             startApp={`/sticker-packs/${stickerPack.id}`}
             withCommunity={true}
           />

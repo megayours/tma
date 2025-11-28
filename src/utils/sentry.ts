@@ -1,8 +1,10 @@
 import * as Sentry from '@sentry/react';
+import { getBuildInfo } from './buildInfo';
 
 export function initSentry() {
   const dsn = import.meta.env.VITE_SENTRY_DSN;
   const environment = import.meta.env.VITE_SENTRY_ENVIRONMENT || 'development';
+  const buildInfo = getBuildInfo();
 
   // Only initialize if DSN is provided
   if (!dsn) {
@@ -25,9 +27,16 @@ export function initSentry() {
     // Session Replay
     replaysSessionSampleRate: 0.1, // 10% of sessions
     replaysOnErrorSampleRate: 1.0, // 100% of sessions with errors
-    // Release tracking
-    release: import.meta.env.VITE_APP_VERSION || 'unknown',
+    // Release tracking - use full version with commit hash
+    release: `${buildInfo.version}@${buildInfo.commitHashShort}`,
     // Additional context
+    initialScope: {
+      tags: {
+        'git.commit': buildInfo.commitHash,
+        'git.branch': buildInfo.branch,
+        'build.timestamp': buildInfo.buildTimestamp,
+      },
+    },
     beforeSend(event) {
       // Filter out development errors if needed
       if (environment === 'development' && !dsn) {

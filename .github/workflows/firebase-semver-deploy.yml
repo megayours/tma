@@ -20,6 +20,16 @@ jobs:
         with:
           bun-version: latest
 
+      - name: Set build metadata
+        id: build-meta
+        run: |
+          echo "commit_hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+          echo "commit_hash_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          echo "branch=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
+          echo "timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
+          # Use package.json version as app version
+          echo "app_version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
       - name: Write .env.production from secret
         run: |
           printf "%s" "${PRODUCTION_ENV_FILE}" > .env.production
@@ -43,6 +53,11 @@ jobs:
       - name: Build (prod)
         env:
           NODE_ENV: production
+          # Build metadata
+          VITE_APP_VERSION: ${{ steps.build-meta.outputs.app_version }}
+          VITE_GIT_COMMIT_HASH: ${{ steps.build-meta.outputs.commit_hash }}
+          VITE_GIT_BRANCH: ${{ steps.build-meta.outputs.branch }}
+          VITE_BUILD_TIMESTAMP: ${{ steps.build-meta.outputs.timestamp }}
           # Sentry configuration - environment from GitHub context
           VITE_SENTRY_ENVIRONMENT: production
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}

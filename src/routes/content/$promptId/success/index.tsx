@@ -240,7 +240,7 @@ function SuccessPage() {
 
       // Build share URL with bot URL and content details path
       const shareUrl = buildShareUrl(
-        import.meta.env.VITE_PUBLIC_BOT_URL,
+        import.meta.env.VITE_PUBLIC_BOT_URL || '',
         `/content/${promptId}/details`,
         selectedCommunity?.id
       );

@@ -4,6 +4,16 @@ import { tanstackRouter } from '@tanstack/router-plugin/vite';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import { sentryVitePlugin } from '@sentry/vite-plugin';
+import { execSync } from 'child_process';
+
+// Helper to safely execute git commands
+function getGitInfo(command: string, fallback: string = 'unknown'): string {
+  try {
+    return execSync(command, { encoding: 'utf-8' }).trim();
+  } catch {
+    return fallback;
+  }
+}
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
@@ -17,6 +27,34 @@ export default defineConfig(({ mode }) => {
     : ['localhost', '127.0.0.1', 'mini.megayours.fun', 'mini.yours.fun'];
 
   const isProd = mode === 'production' || mode === 'staging';
+
+  // Get git information for build tracking
+  const getCommitHash = () =>
+    env.VITE_GIT_COMMIT_HASH || getGitInfo('git rev-parse HEAD');
+  const getCommitHashShort = () =>
+    env.VITE_GIT_COMMIT_HASH
+      ? getGitInfo(`git rev-parse --short ${env.VITE_GIT_COMMIT_HASH}`)
+      : getGitInfo('git rev-parse --short HEAD');
+  const getBranch = () =>
+    env.VITE_GIT_BRANCH || getGitInfo('git rev-parse --abbrev-ref HEAD');
+  const getBuildTimestamp = () =>
+    env.VITE_BUILD_TIMESTAMP || new Date().toISOString();
+  const getBuildDate = () =>
+    new Date(getBuildTimestamp()).toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZoneName: 'short',
+    });
+
+  // Get version from environment or package.json
+  const packageVersion = env.VITE_APP_VERSION || '0.0.0';
+
+  // Determine environment
+  const environment =
+    mode === 'production' ? 'production' : mode === 'staging' ? 'staging' : 'development';
 
   // Build plugins array
   const plugins = [
@@ -112,6 +150,17 @@ export default defineConfig(({ mode }) => {
 
   return {
     base: '/',
+    define: {
+      __BUILD_INFO__: JSON.stringify({
+        version: packageVersion,
+        commitHash: getCommitHash(),
+        commitHashShort: getCommitHashShort(),
+        branch: getBranch(),
+        buildTimestamp: getBuildTimestamp(),
+        buildDate: getBuildDate(),
+        environment: environment,
+      }),
+    },
     plugins,
     resolve: {
       alias: {

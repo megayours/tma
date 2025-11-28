@@ -12,6 +12,15 @@ import './style.css';
 import { initSentry } from './utils/sentry';
 initSentry();
 
+// Import and initialize build info logging
+import { logBuildInfo, attachBuildInfoToWindow } from './utils/buildInfo';
+
+// Log build information on startup (production only)
+if (import.meta.env.PROD) {
+  logBuildInfo();
+  attachBuildInfoToWindow();
+}
+
 // Import service worker utilities (adds clearSWCache() and checkSWCache() to window)
 import './utils/clearServiceWorker';
 

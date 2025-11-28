@@ -26,6 +26,14 @@ jobs:
         with:
           bun-version: latest
 
+      - name: Set build metadata
+        id: build-meta
+        run: |
+          echo "commit_hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+          echo "commit_hash_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          echo "branch=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
+          echo "timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
+
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
@@ -33,6 +41,12 @@ jobs:
         run: bun run build
         env:
           NODE_ENV: production
+          # Build metadata
+          VITE_APP_VERSION: ${{ steps.build-meta.outputs.commit_hash_short }}
+          VITE_GIT_COMMIT_HASH: ${{ steps.build-meta.outputs.commit_hash }}
+          VITE_GIT_BRANCH: ${{ steps.build-meta.outputs.branch }}
+          VITE_BUILD_TIMESTAMP: ${{ steps.build-meta.outputs.timestamp }}
+          # App configuration
           VITE_PUBLIC_API_URL: ${{ secrets.VITE_PUBLIC_API_URL }}
           VITE_PUBLIC_BOT_URL: ${{ secrets.VITE_PUBLIC_BOT_URL }}
           # Sentry configuration - environment determined from GitHub context
@@ -41,8 +55,6 @@ jobs:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT_STAGING }}
-          # Add other environment variables here
-          # VITE_OTHER_VAR: ${{ secrets.VITE_OTHER_VAR }}
 
       - name: Add 404 fallback for SPA
         run: cp dist/index.html dist/404.html || true

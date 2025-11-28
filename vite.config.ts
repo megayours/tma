@@ -18,16 +18,15 @@ export default defineConfig(({ mode }) => {
 
   const isProd = mode === 'production' || mode === 'staging';
 
-  return {
-    base: '/',
-    plugins: [
-      tanstackRouter({
-        target: 'react',
-        autoCodeSplitting: true,
-      }),
-      react(),
-      tailwindcss(),
-      VitePWA({
+  // Build plugins array
+  const plugins = [
+    tanstackRouter({
+      target: 'react',
+      autoCodeSplitting: true,
+    }),
+    react(),
+    tailwindcss(),
+    VitePWA({
         registerType: 'autoUpdate',
         devOptions: {
           enabled: false, // Disable service worker in dev to avoid caching issues
@@ -94,19 +93,26 @@ export default defineConfig(({ mode }) => {
           ],
         },
       }),
-      // Upload source maps to Sentry in production/staging builds
-      isProd &&
-        env.VITE_SENTRY_DSN &&
-        sentryVitePlugin({
-          org: env.SENTRY_ORG,
-          project: env.SENTRY_PROJECT,
-          authToken: env.SENTRY_AUTH_TOKEN,
-          sourcemaps: {
-            assets: './dist/**',
-          },
-          telemetry: false,
-        }),
-    ].filter(Boolean),
+  ];
+
+  // Add Sentry plugin only if all required credentials are provided
+  if (isProd && env.SENTRY_ORG && env.SENTRY_PROJECT && env.SENTRY_AUTH_TOKEN) {
+    plugins.push(
+      sentryVitePlugin({
+        org: env.SENTRY_ORG,
+        project: env.SENTRY_PROJECT,
+        authToken: env.SENTRY_AUTH_TOKEN,
+        sourcemaps: {
+          assets: './dist/**',
+        },
+        telemetry: false,
+      })
+    );
+  }
+
+  return {
+    base: '/',
+    plugins,
     resolve: {
       alias: {
         '@': '/src',

@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react-swc';
 import { tanstackRouter } from '@tanstack/router-plugin/vite';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import { sentryVitePlugin } from '@sentry/vite-plugin';
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
@@ -14,6 +15,8 @@ export default defineConfig(({ mode }) => {
   const allowedHosts = env.VITE_ALLOWED_HOSTS
     ? env.VITE_ALLOWED_HOSTS.split(',').map(host => host.trim())
     : ['localhost', '127.0.0.1', 'mini.megayours.fun', 'mini.yours.fun'];
+
+  const isProd = mode === 'production' || mode === 'staging';
 
   return {
     base: '/',
@@ -91,13 +94,27 @@ export default defineConfig(({ mode }) => {
           ],
         },
       }),
-    ],
+      // Upload source maps to Sentry in production/staging builds
+      isProd &&
+        env.VITE_SENTRY_DSN &&
+        sentryVitePlugin({
+          org: env.SENTRY_ORG,
+          project: env.SENTRY_PROJECT,
+          authToken: env.SENTRY_AUTH_TOKEN,
+          sourcemaps: {
+            assets: './dist/**',
+          },
+          telemetry: false,
+        }),
+    ].filter(Boolean),
     resolve: {
       alias: {
         '@': '/src',
       },
     },
     build: {
+      // Generate source maps for error tracking
+      sourcemap: isProd,
       // Enable rollup options for better chunking
       rollupOptions: {
         output: {

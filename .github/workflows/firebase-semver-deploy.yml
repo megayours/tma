@@ -1,14 +1,13 @@
-name: Deploy to Firebase on semver branch
+name: Deploy to Firebase Production
 
 on:
   push:
     branches:
-      - "**" # we filter in the job with a regex
+      - main
+  workflow_dispatch:
 
 jobs:
   deploy:
-    # Run only on branches that match v{number}.{number}.{number} (e.g., v1.2.3, v2.0.0-rc1)
-    if: ${{ github.ref_type == 'branch' && startsWith(github.ref_name, 'v') && contains(github.ref_name, '.') }}
     runs-on: ubuntu-latest
     environment: production
 
@@ -44,6 +43,11 @@ jobs:
       - name: Build (prod)
         env:
           NODE_ENV: production
+          # Sentry configuration - environment from GitHub context
+          VITE_SENTRY_ENVIRONMENT: production
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT_PRODUCTION }}
         run: |
           if [ -f package.json ] && jq -e '.scripts.build' package.json >/dev/null 2>&1; then
             echo "Building project..."

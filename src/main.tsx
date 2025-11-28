@@ -8,6 +8,10 @@ import { ThemeProvider } from './auth/ThemeProvider';
 import { AuthProvider } from './auth/AuthProvider';
 import './style.css';
 
+// Initialize Sentry
+import { initSentry } from './utils/sentry';
+initSentry();
+
 // Import service worker utilities (adds clearSWCache() and checkSWCache() to window)
 import './utils/clearServiceWorker';
 

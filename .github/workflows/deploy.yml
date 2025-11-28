@@ -1,8 +1,8 @@
-name: Deploy to GitHub Pages
+name: Deploy to GitHub Pages (Staging)
 
 on:
   push:
-    branches: [main] # Trigger deploy on main branch
+    branches: [staging] # Trigger deploy on staging branch
   workflow_dispatch:
 
 permissions:
@@ -35,6 +35,12 @@ jobs:
           NODE_ENV: production
           VITE_PUBLIC_API_URL: ${{ secrets.VITE_PUBLIC_API_URL }}
           VITE_PUBLIC_BOT_URL: ${{ secrets.VITE_PUBLIC_BOT_URL }}
+          # Sentry configuration - environment determined from GitHub context
+          VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN_STAGING }}
+          VITE_SENTRY_ENVIRONMENT: ${{ github.ref_name }} # Uses branch name ("staging")
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT_STAGING }}
           # Add other environment variables here
           # VITE_OTHER_VAR: ${{ secrets.VITE_OTHER_VAR }}
 

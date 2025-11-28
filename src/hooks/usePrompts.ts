@@ -60,12 +60,14 @@ export const useGetRecommendedPrompts = ({
   type = 'all',
   excludeUsed = true,
   pagination,
+  community,
   tokenCollections,
   enabled = true,
 }: {
   type: 'images' | 'videos' | 'gifs' | 'stickers' | 'animated_stickers' | 'all';
   excludeUsed: boolean;
   pagination: Pagination;
+  community?: { id: string } | null;
   tokenCollections?: Array<{ id?: string }>;
   enabled?: boolean;
 }) => {
@@ -76,8 +78,9 @@ export const useGetRecommendedPrompts = ({
       excludeUsed,
       pagination,
       tokenCollections,
+      community?.id,
     ],
-    enabled,
+    enabled: enabled && !!community?.id,
     queryFn: async () => {
       try {
         // Build query parameters manually to support multiple token_collection_ids
@@ -86,6 +89,7 @@ export const useGetRecommendedPrompts = ({
           exclude_used: String(excludeUsed),
           page: String(pagination.page),
           size: String(pagination.size),
+          community_id: community?.id || '',
         });
 
         // Add token_collection_ids if provided
@@ -223,12 +227,14 @@ export const useGetRecommendedPromptsWithDetails = ({
   type = 'all',
   excludeUsed = true,
   pagination,
+  community,
   enabled = true,
   session,
 }: {
   type: 'images' | 'videos' | 'gifs' | 'stickers' | 'animated_stickers' | 'all';
   excludeUsed: boolean;
   pagination: Pagination;
+  community: { id: string };
   enabled?: boolean;
   session: Session | null;
 }) => {
@@ -237,6 +243,7 @@ export const useGetRecommendedPromptsWithDetails = ({
     type,
     excludeUsed,
     pagination,
+    community,
     enabled,
   });
 

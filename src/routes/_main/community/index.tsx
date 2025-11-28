@@ -81,6 +81,7 @@ export function Feed() {
       page: currentPage,
       size: 10,
     },
+    community: selectedCommunity,
     tokenCollections:
       selectedCollections.length > 0 ? selectedCollections : undefined,
     enabled: !isLoadingCommunity, // Only enable when community is loaded

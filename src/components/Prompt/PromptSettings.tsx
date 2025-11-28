@@ -184,15 +184,6 @@ export const PromptSettings = ({
               supportedCollections &&
               currentPrompt.contracts.length === supportedCollections.length;
 
-            console.log('Auto-save debug:', {
-              currentContractsLength: currentPrompt.contracts.length,
-              supportedCollectionsLength: supportedCollections?.length,
-              allContractsSelected,
-              contractsToSend: allContractsSelected
-                ? []
-                : currentPrompt.contracts,
-            });
-
             const promptToSave = {
               ...currentPrompt,
               contracts: allContractsSelected ? [] : currentPrompt.contracts,
@@ -253,13 +244,6 @@ export const PromptSettings = ({
         supportedCollections &&
         editedPrompt.contracts &&
         editedPrompt.contracts.length === supportedCollections.length;
-
-      console.log('Publication toggle debug:', {
-        currentContractsLength: editedPrompt.contracts?.length,
-        supportedCollectionsLength: supportedCollections?.length,
-        allContractsSelected,
-        contractsToSend: allContractsSelected ? [] : editedPrompt.contracts,
-      });
 
       await promptMutation.mutateAsync({
         prompt: {

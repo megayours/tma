@@ -22,6 +22,7 @@ import { useDeletePromptMutation } from '@/hooks/usePrompts';
 import { useSession } from '@/auth/SessionProvider';
 import { useNavigate } from '@tanstack/react-router';
 import { popup } from '@telegram-apps/sdk-react';
+import { useSelectCommunity } from '../../contexts/SelectCommunityContext';
 
 interface PromptSettingsProps {
   prompt: Prompt;
@@ -47,8 +48,9 @@ export const PromptSettings = ({
   const { session } = useSession();
   const navigate = useNavigate();
   const { models, isLoading: modelsLoading } = useModels();
-  const { data: supportedCollections, isLoading: collectionsLoading } =
-    useGetSupportedCollections();
+  const { selectedCommunity, isLoading: communityIsLoading } =
+    useSelectCommunity();
+  const supportedCollections = selectedCommunity?.collections || [];
 
   const [deletingPromptId, setDeletingPromptId] = useState<number | null>(null);
 
@@ -176,8 +178,28 @@ export const PromptSettings = ({
               return;
             }
 
+            // Prepare the prompt for saving
+            // If all contracts are selected, send empty array; otherwise send selected contracts
+            const allContractsSelected =
+              supportedCollections &&
+              currentPrompt.contracts.length === supportedCollections.length;
+
+            console.log('Auto-save debug:', {
+              currentContractsLength: currentPrompt.contracts.length,
+              supportedCollectionsLength: supportedCollections?.length,
+              allContractsSelected,
+              contractsToSend: allContractsSelected
+                ? []
+                : currentPrompt.contracts,
+            });
+
+            const promptToSave = {
+              ...currentPrompt,
+              contracts: allContractsSelected ? [] : currentPrompt.contracts,
+            };
+
             const updatedPrompt = await promptMutation.mutateAsync({
-              prompt: currentPrompt,
+              prompt: promptToSave,
             });
             if (updatedPrompt) {
               setHasChanges(false);
@@ -226,10 +248,24 @@ export const PromptSettings = ({
     console.log('Toggle clicked, new value:', checked);
     setIsPublishing(true);
     try {
+      // If all contracts are selected, send empty array; otherwise send selected contracts
+      const allContractsSelected =
+        supportedCollections &&
+        editedPrompt.contracts &&
+        editedPrompt.contracts.length === supportedCollections.length;
+
+      console.log('Publication toggle debug:', {
+        currentContractsLength: editedPrompt.contracts?.length,
+        supportedCollectionsLength: supportedCollections?.length,
+        allContractsSelected,
+        contractsToSend: allContractsSelected ? [] : editedPrompt.contracts,
+      });
+
       await promptMutation.mutateAsync({
         prompt: {
           ...editedPrompt,
           published: checked ? 1 : 0, // Keep timestamp locally, API gets boolean
+          contracts: allContractsSelected ? [] : editedPrompt.contracts,
         },
       });
 
@@ -506,34 +542,15 @@ export const PromptSettings = ({
             <h2 className="text-tg-section-header-text-color mb-3 text-sm font-medium tracking-wide uppercase">
               Contracts
             </h2>
-            {collectionsLoading ? (
+            {communityIsLoading ? (
               <div className="bg-tg-section-bg text-tg-hint rounded-lg px-4 py-3 text-center">
                 Loading contracts...
               </div>
             ) : (
               <>
-                {supportedCollections && supportedCollections.length > 0 && (
-                  <div className="mb-4 flex gap-2">
-                    <Button
-                      size="s"
-                      mode="outline"
-                      onClick={handleSelectAllContracts}
-                    >
-                      Select All
-                    </Button>
-                    <Button
-                      size="s"
-                      mode="outline"
-                      onClick={handleUnselectAllContracts}
-                    >
-                      Unselect All
-                    </Button>
-                  </div>
-                )}
                 {supportedCollections && supportedCollections.length > 0 ? (
                   supportedCollections.map(contract => {
                     const contractKey = `${contract.chain}-${contract.address}`;
-                    const isSelected = selectedContracts.has(contractKey);
                     return (
                       <div
                         key={contractKey}
@@ -563,10 +580,6 @@ export const PromptSettings = ({
                             {contract.address.slice(-4)}
                           </div>
                         </div>
-                        <Checkbox
-                          checked={isSelected}
-                          onChange={() => handleContractToggle(contract)}
-                        />
                       </div>
                     );
                   })

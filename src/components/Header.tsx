@@ -88,7 +88,7 @@ const HeaderBrand = () => {
           </h1>
         </Link>
       ) : (
-        <Link to="/">
+        <Link to="/stickers">
           <h1
             className={`text-xl font-bold ${
               isDark ? 'text-[#03FFC2]' : 'text-black'

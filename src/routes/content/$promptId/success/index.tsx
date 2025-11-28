@@ -3,7 +3,6 @@ import { z } from 'zod';
 import { useState, useRef, useEffect } from 'react';
 import { useSession } from '@/auth/SessionProvider';
 import { useContentExecution, useShareContent } from '@/hooks/useContents';
-import { Button } from '@telegram-apps/telegram-ui';
 import { SpinnerFullPage } from '@/components/ui';
 import { FaThumbsUp, FaThumbsDown } from 'react-icons/fa';
 import { usePromptFeedbackMutation } from '@/hooks/usePrompts';
@@ -434,7 +433,9 @@ function SuccessPage() {
           <div className="mt-6 space-y-3 px-4 pb-6">
             {/* Share Section */}
             <div className="space-y-2">
-              <div className="text-tg-hint px-1 text-xs font-medium">Share:</div>
+              <div className="text-tg-hint px-1 text-xs font-medium">
+                Share:
+              </div>
 
               {/* Share Buttons */}
               <div className="flex gap-2">
@@ -442,7 +443,7 @@ function SuccessPage() {
                 <button
                   onClick={handleShare}
                   disabled={isSharing}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-tg-button px-4 py-2.5 shadow-md transition-all duration-200 hover:opacity-90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="bg-tg-button flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2.5 shadow-md transition-all duration-200 hover:opacity-90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {isSharing ? (
                     <>

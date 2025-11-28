@@ -5,6 +5,8 @@ import {
   type Token,
   RawContentListResponseSchema,
   RawContentResponseSchema,
+  ShareResponseSchema,
+  type ShareResponse,
 } from '../types/response';
 import type { Session } from '@/auth/useAuth';
 import type { Contract } from '../types/contract';
@@ -399,5 +401,46 @@ export const useContentExecution = (
       return isProcessing ? 2000 : false;
     },
     refetchIntervalInBackground: true, // Continue polling when tab is not active
+  });
+};
+
+// Share content to external integrations (e.g., Giphy)
+export const useShareContent = (session: Session | null | undefined) => {
+  return useMutation({
+    mutationFn: async (contentId: string) => {
+      if (!session) {
+        throw new Error('Session required');
+      }
+
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/content/${contentId}/share`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: session.authToken,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.message || `Failed to share content: ${response.status}`
+        );
+      }
+
+      const data = await response.json();
+
+      // Validate and transform with Zod schema
+      const result = safeParse(ShareResponseSchema, data);
+      if (!result) {
+        const errors = getValidationErrors(ShareResponseSchema, data);
+        console.error('Share response validation errors:', errors);
+        throw new Error('Invalid share response format');
+      }
+
+      return result as ShareResponse;
+    },
   });
 };

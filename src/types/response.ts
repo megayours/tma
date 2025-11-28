@@ -234,5 +234,20 @@ export type MyRecentGenerationsResponse = z.infer<
   typeof MyRecentGenerationsResponseSchema
 >;
 
+// Share integration result schema
+export const ShareIntegrationResultSchema = z.object({
+  integration: z.string(),
+  success: z.boolean(),
+  url: z.string().optional(),
+  error: z.string().optional(),
+});
+export type ShareIntegrationResult = z.infer<
+  typeof ShareIntegrationResultSchema
+>;
+
+// Share response schema (array of integration results)
+export const ShareResponseSchema = z.array(ShareIntegrationResultSchema);
+export type ShareResponse = z.infer<typeof ShareResponseSchema>;
+
 // Export the Content type from content.ts
 export type { Content } from './content';

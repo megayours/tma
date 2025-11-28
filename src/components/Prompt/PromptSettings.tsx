@@ -2,13 +2,13 @@ import { useEffect, useState, useRef } from 'react';
 import type { Prompt } from '@/types/prompt';
 import type { Token } from '@/types/response';
 import type { Contract } from '@/types/contract';
-import { List, Checkbox, Button, Switch } from '@telegram-apps/telegram-ui';
+import { List, Button, Switch } from '@telegram-apps/telegram-ui';
 import { TgInput } from '@/components/ui/forms/TgInput';
 import { TgTextarea } from '@/components/ui/forms/TgTextarea';
 import { TgSelect } from '@/components/ui/forms/TgSelect';
 import type { UseMutationResult } from '@tanstack/react-query';
 import { useModels } from '@/hooks/useModels';
-import { useGetSupportedCollections } from '@/hooks/useCollections';
+
 import {
   IoPersonOutline,
   IoLayersOutline,
@@ -319,40 +319,6 @@ export const PromptSettings = ({
     if (contractsError) {
       setContractsError('');
     }
-  };
-
-  // Handle select all contracts
-  const handleSelectAllContracts = () => {
-    if (!supportedCollections) return;
-
-    const allContractKeys = new Set<string>();
-    const allContracts: Contract[] = [];
-
-    supportedCollections.forEach(collection => {
-      const key = `${collection.chain}-${collection.address}`;
-      allContractKeys.add(key);
-      allContracts.push({
-        chain: collection.chain,
-        address: collection.address,
-        name: collection.name,
-      });
-    });
-
-    setSelectedContracts(allContractKeys);
-    setEditedPrompt(prev => ({ ...prev, contracts: allContracts }));
-    setHasChanges(true);
-
-    // Clear any existing error
-    if (contractsError) {
-      setContractsError('');
-    }
-  };
-
-  // Handle unselect all contracts
-  const handleUnselectAllContracts = () => {
-    setSelectedContracts(new Set());
-    setEditedPrompt(prev => ({ ...prev, contracts: [] }));
-    setHasChanges(true);
   };
 
   // Handle prompt deletion

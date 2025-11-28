@@ -359,7 +359,9 @@ export function Feed() {
 
                 {/* Make it Yours button */}
                 <div className="flex flex-row items-center gap-2">
-                  {prompt.usageCount && <Reshared amount={prompt.usageCount} />}
+                  {Number(prompt?.usageCount) > 0 && (
+                    <Reshared amount={Number(prompt.usageCount)} />
+                  )}
                   {session && (
                     <button
                       onClick={() => handleMakeItYours(prompt)}

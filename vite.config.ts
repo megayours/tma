@@ -189,6 +189,7 @@ export default defineConfig(({ mode }) => {
       minify: 'terser',
       terserOptions: {
         compress: {
+          // Drop console logs only in production, keep them in dev and staging
           drop_console: mode === 'production',
           drop_debugger: mode === 'production',
         },

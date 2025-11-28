@@ -6,13 +6,20 @@ export function initSentry() {
   const environment = import.meta.env.VITE_SENTRY_ENVIRONMENT || 'development';
   const buildInfo = getBuildInfo();
 
+  console.log('Sentry initialization:', {
+    hasDSN: !!dsn,
+    dsnPreview: dsn ? `${dsn.substring(0, 20)}...` : 'none',
+    environment,
+  });
+
   // Only initialize if DSN is provided
   if (!dsn) {
     console.log('Sentry DSN not provided, skipping initialization');
     return;
   }
 
-  Sentry.init({
+  try {
+    Sentry.init({
     dsn,
     environment,
     integrations: [
@@ -45,4 +52,8 @@ export function initSentry() {
       return event;
     },
   });
+    console.log('✅ Sentry initialized successfully');
+  } catch (error) {
+    console.error('❌ Sentry initialization failed:', error);
+  }
 }

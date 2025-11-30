@@ -128,7 +128,7 @@ export const RawContentResponseSchema = z
     gif: z.string().optional(),
     image: z.string().optional(),
     progress_percentage: z.number().optional(),
-    telegram_pack_url: z.string().optional(),
+    telegram_pack_url: z.string().nullable().optional(),
     session: z.any().optional(),
   })
   .transform(data => {

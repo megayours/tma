@@ -431,6 +431,26 @@ function SuccessPage() {
 
           {/* Action Buttons */}
           <div className="mt-6 space-y-3 px-4 pb-6">
+            {/* Add to Telegram Sticker Pack Button */}
+            {content?.telegramPackURL && content?.token && (
+              <div className="space-y-2">
+                <div className="text-tg-hint px-1 text-xs font-medium">
+                  Sticker Pack:
+                </div>
+                <a
+                  href={content.telegramPackURL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-tg-button text-tg-button-text flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 shadow-md transition-all duration-200 hover:opacity-90 active:scale-95"
+                >
+                  <span className="text-sm font-medium">
+                    Add Sticker Pack {content.token.contract.name} #
+                    {content.token.id}
+                  </span>
+                </a>
+              </div>
+            )}
+
             {/* Share Section */}
             <div className="space-y-2">
               <div className="text-tg-hint px-1 text-xs font-medium">

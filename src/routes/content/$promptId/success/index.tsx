@@ -280,49 +280,51 @@ function SuccessPage() {
   const handleShareToGiphy = async () => {
     if (!content?.id) return;
 
-    try {
-      setIsGiphySharing(true);
-      setGiphyShareSuccess(false);
+    setIsGiphySharing(true);
+    setGiphyShareSuccess(false);
 
-      console.log('Sharing content with ID:', content.id);
-      shareContent(content.id, {
-        onSuccess: data => {
-          console.log('Share response:', data);
+    console.log('Sharing content with ID:', content.id);
+    shareContent(content.id, {
+      onSuccess: data => {
+        console.log('Share response:', data);
 
-          // Find Giphy integration result
-          const giphyResult = data.find(
-            result => result.integration === 'giphy'
-          );
+        // Find Giphy integration result
+        const giphyResult = data.find(
+          result => result.integration === 'giphy'
+        );
 
-          if (giphyResult?.success) {
-            setGiphyShareSuccess(true);
-            console.log('Giphy share URL:', giphyResult.url);
+        if (giphyResult?.success) {
+          setGiphyShareSuccess(true);
+          console.log('Giphy share URL:', giphyResult.url);
 
-            if (isTelegram) {
-              triggerHapticImpact('light');
-            }
-
-            // Reset success state after 3 seconds
-            setTimeout(() => {
-              setGiphyShareSuccess(false);
-            }, 3000);
-          } else {
-            console.error('Giphy share failed:', giphyResult?.error);
-            if (isTelegram) {
-              triggerHapticNotification('error');
-            }
+          if (isTelegram) {
+            triggerHapticImpact('light');
           }
-        },
-        onError: error => {
-          console.error('Failed to share to Giphy:', error);
+
+          // Reset success state after 3 seconds
+          setTimeout(() => {
+            setGiphyShareSuccess(false);
+          }, 3000);
+        } else {
+          console.error('Giphy share failed:', giphyResult?.error);
           if (isTelegram) {
             triggerHapticNotification('error');
           }
-        },
-      });
-    } finally {
-      setIsGiphySharing(false);
-    }
+        }
+
+        // Reset loading state after success
+        setIsGiphySharing(false);
+      },
+      onError: error => {
+        console.error('Failed to share to Giphy:', error);
+        if (isTelegram) {
+          triggerHapticNotification('error');
+        }
+
+        // Reset loading state after error
+        setIsGiphySharing(false);
+      },
+    });
   };
 
   return (

@@ -378,6 +378,10 @@ export const useRegenerateItem = (
       queryClient.invalidateQueries({
         queryKey: ['sticker-pack-executions'],
       });
+      // Invalidate content queries so profile page shows updated content
+      queryClient.invalidateQueries({
+        queryKey: ['content'],
+      });
     },
     onError: error => {
       console.error('Error regenerating item:', error);

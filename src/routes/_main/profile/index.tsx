@@ -52,7 +52,7 @@ function CreatePromptDropdownButton() {
   return (
     <Link to="/profile/admin">
       <Button mode="plain" size="l">
-        <span className="text-tg-button">Admin</span>
+        <span className="text-tg-button">Create</span>
       </Button>
     </Link>
   );

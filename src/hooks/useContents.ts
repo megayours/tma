@@ -16,7 +16,8 @@ export const useGetContents = (
   account: string,
   revealed?: boolean,
   pagination?: { page: number; size: number },
-  order?: { sort_by: 'created_at'; sort_order: 'asc' | 'desc' }
+  order?: { sort_by: 'created_at'; sort_order: 'asc' | 'desc' },
+  type?: 'image' | 'video' | 'sticker' | 'animated_sticker'
 ) => {
   const paginationParams = pagination || { page: 1, size: 10 };
   const orderParams = order || { sort_by: 'created_at', sort_order: 'desc' };
@@ -27,6 +28,7 @@ export const useGetContents = (
       paginationParams.page,
       paginationParams.size,
       revealed,
+      type,
     ],
     queryFn: async () => {
       if (!session) return;
@@ -38,6 +40,7 @@ export const useGetContents = (
         sort_by: orderParams?.sort_by,
         sort_order: orderParams?.sort_order,
         ...(revealed != null && { revealed: revealed.toString() }),
+        ...(type && { type }),
       });
       const response = await fetch(
         `${import.meta.env.VITE_PUBLIC_API_URL}/content?${queryParams.toString()}`,

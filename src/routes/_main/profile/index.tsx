@@ -8,6 +8,14 @@ import { useStickerPackExecutions } from '@/hooks/useStickerPack';
 import { useTelegramTheme } from '@/auth/useTelegram';
 import { useGetContents } from '@/hooks/useContents';
 import { GenerationsTimeline } from './GenerationsTimeline';
+import { useState, useRef } from 'react';
+import { ProfileFilters } from './ProfileFilters';
+
+type ProfileContentTypeFilter =
+  | 'image'
+  | 'video'
+  | 'sticker'
+  | 'animated_sticker';
 
 export const Route = createFileRoute('/_main/profile/')({
   component: ProfileLayout,
@@ -124,6 +132,31 @@ function AuthorizeBotMessages() {
 
 export function ProfileLayout() {
   const { isTelegram } = useTelegramTheme();
+
+  // Filter state
+  const [selectedTypes, setSelectedTypes] = useState<ProfileContentTypeFilter[]>([]);
+  const typeButtonsRef = useRef<{ [key: string]: HTMLButtonElement | null }>({});
+
+  // Filter options
+  const contentTypes: { value: ProfileContentTypeFilter | 'all'; label: string }[] = [
+    { value: 'all', label: 'All' },
+    { value: 'image', label: 'Images' },
+    { value: 'sticker', label: 'Stickers' },
+    { value: 'video', label: 'GIFs' },
+    { value: 'animated_sticker', label: 'Animated' },
+  ];
+
+  // Toggle function with single selection enforcement
+  const toggleType = (type: ProfileContentTypeFilter | 'all') => {
+    if (type === 'all') {
+      setSelectedTypes([]);
+    } else {
+      setSelectedTypes(prev =>
+        prev.includes(type) ? [] : [type]
+      );
+    }
+  };
+
   return (
     <ProtectedRoute>
       <div className="profile-layout h-screen">
@@ -142,7 +175,20 @@ export function ProfileLayout() {
             </div>
           )}
 
-          <GenerationsTimeline />
+          {/* Content Type Filters */}
+          <div className="border-tg-section-separator border-b pb-3">
+            <ProfileFilters
+              contentTypes={contentTypes}
+              selectedTypes={selectedTypes}
+              toggleType={toggleType}
+              typeButtonsRef={typeButtonsRef}
+            />
+          </div>
+
+          {/* Timeline with filter */}
+          <GenerationsTimeline
+            selectedType={selectedTypes.length > 0 ? selectedTypes[0] : undefined}
+          />
         </main>
       </div>
       <div className="h-20"></div>

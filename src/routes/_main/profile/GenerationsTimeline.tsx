@@ -13,7 +13,11 @@ export const Route = createFileRoute('/_main/profile/GenerationsTimeline')({
   component: GenerationsTimeline,
 });
 
-export function GenerationsTimeline() {
+export function GenerationsTimeline({
+  selectedType
+}: {
+  selectedType?: 'image' | 'video' | 'sticker' | 'animated_sticker'
+} = {}) {
   const { session, isAuthenticating } = useSession();
   const [page, setPage] = useState(1);
   const [allContents, setAllContents] = useState<Content[]>([]);
@@ -24,7 +28,9 @@ export function GenerationsTimeline() {
     session,
     session?.id!,
     undefined,
-    { page, size: 20 }
+    { page, size: 20 },
+    undefined,
+    selectedType
   );
 
   const timeline = buildTimeline(allContents);
@@ -76,14 +82,24 @@ export function GenerationsTimeline() {
     return () => observer.disconnect();
   }, [hasMore, isFetching]);
 
+  // Reset pagination when filter changes
+  useEffect(() => {
+    setPage(1);
+    setAllContents([]);
+    setHasMore(true);
+  }, [selectedType]);
+
   if (isAuthenticating || (isLoading && page === 1)) {
     return <SpinnerFullPage text="Loading generations..." />;
   }
 
   if (!timeline.length && !isLoading) {
+    const filterText = selectedType
+      ? ` of type "${selectedType}"`
+      : '';
     return (
       <div className="text-tg-hint text-center text-sm">
-        You have no generations yet.
+        You have no generations{filterText} yet.
       </div>
     );
   }

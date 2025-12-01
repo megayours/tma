@@ -130,21 +130,24 @@ export function GenerationsTimeline({
 }
 
 function SingleContent({ content }: { content: Content }) {
-  return (
+  const isUnrevealed = content.revealedAt === null;
+
+  // Wrap in Link for navigation
+  const contentElement = (
     <div className="flex items-center gap-3 overflow-hidden rounded-xl px-2 py-3">
       {/* Thumbnail Image - Left */}
-      <Link
-        to="/content/$promptId/success"
-        params={{ promptId: String(content.promptId) }}
-        search={{ executionId: content.executionId || content.id }}
-        className="flex-shrink-0"
-      >
+      <div className="relative flex-shrink-0">
         <img
           src={content.url || ''}
           alt="Generated content"
-          className="h-20 w-20 cursor-pointer rounded-lg object-cover transition-opacity hover:opacity-90"
+          className={`h-20 w-20 rounded-lg object-cover transition-opacity ${
+            isUnrevealed ? 'blur-sm' : 'hover:opacity-90'
+          }`}
         />
-      </Link>
+        {isUnrevealed && (
+          <div className="bg-tg-button border-tg-bg absolute right-1 bottom-1 h-3 w-3 rounded-full border-2"></div>
+        )}
+      </div>
 
       {/* Content Info - Middle */}
       <div className="min-w-0 flex-1">
@@ -171,18 +174,39 @@ function SingleContent({ content }: { content: Content }) {
         >
           {content.status}
         </span>
-        <button
-          onClick={() => {
-            if (content.url) {
-              navigator.clipboard.writeText(content.url);
-            }
-          }}
-          className="text-tg-link text-xs hover:underline"
-        >
-          Copy
-        </button>
+        {!isUnrevealed && (
+          <button
+            onClick={() => {
+              if (content.url) {
+                navigator.clipboard.writeText(content.url);
+              }
+            }}
+            className="text-tg-link text-xs hover:underline"
+          >
+            Copy
+          </button>
+        )}
       </div>
     </div>
+  );
+
+  // If unrevealed, link to notifications; otherwise link to success page
+  if (isUnrevealed) {
+    return (
+      <Link to="/profile/notifications" className="cursor-pointer">
+        {contentElement}
+      </Link>
+    );
+  }
+
+  return (
+    <Link
+      to="/content/$promptId/success"
+      params={{ promptId: String(content.promptId) }}
+      search={{ executionId: content.executionId || content.id }}
+    >
+      {contentElement}
+    </Link>
   );
 }
 

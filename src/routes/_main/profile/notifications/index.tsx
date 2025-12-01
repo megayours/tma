@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from '@tanstack/react-router';
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { ProtectedRoute } from '@/auth/ProtectedRoute';
 import { useSession } from '@/auth/SessionProvider';
 import {
@@ -150,6 +150,7 @@ function NotificationItem({
 
 function NotificationsPage() {
   const { session } = useSession();
+  const navigate = useNavigate();
   const { data, isLoading } = useGetContents(session, session?.id!);
   const contents = data?.contents || [];
   const revealMutation = useRevealContent(session);
@@ -165,9 +166,18 @@ function NotificationsPage() {
     setRevealingIds(prev => new Set(prev).add(content.id));
     try {
       await revealMutation.mutateAsync(content.id);
+
+      // Redirect to success page after successful reveal
+      if (content.promptId) {
+        navigate({
+          to: '/content/$promptId/success',
+          params: { promptId: String(content.promptId) },
+          search: { executionId: content.id },
+        });
+      }
     } catch (error) {
       console.error('Failed to reveal content:', error);
-    } finally {
+      // Remove from revealing state on error so user can retry
       setRevealingIds(prev => {
         const next = new Set(prev);
         next.delete(content.id);

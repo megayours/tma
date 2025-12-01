@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { z } from 'zod';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useSession } from '@/auth/SessionProvider';
 import { useContentExecution, useShareContent } from '@/hooks/useContents';
 import { SpinnerFullPage } from '@/components/ui';
@@ -49,6 +49,7 @@ function SuccessPage() {
   const [isDownloading, setIsDownloading] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [isGiphySharing, setIsGiphySharing] = useState(false);
+  const [isGiphyEnabled, setIsGiphyEnabled] = useState(false);
   const [giphyShareSuccess, setGiphyShareSuccess] = useState(false);
   const hasSubmittedFeedback = useRef(false);
 
@@ -81,6 +82,35 @@ function SuccessPage() {
   );
 
   console.log('Exection data in SuccessPage:', content, search.executionId);
+
+  // Determine which collection the content belongs to
+  const contentCollection = useMemo(() => {
+    if (!content?.token?.contract || !selectedCommunity?.collections) {
+      return null;
+    }
+
+    // Find matching collection by chain + address
+    return selectedCommunity.collections.find(
+      c =>
+        c.chain === content.token!.contract.chain &&
+        c.address === content.token!.contract.address
+    );
+  }, [content, selectedCommunity]);
+
+  // Check if Giphy integration is enabled for this collection
+  useEffect(() => {
+    if (!contentCollection) {
+      setIsGiphyEnabled(false);
+      return;
+    }
+
+    const enabled =
+      contentCollection.integrations?.some(
+        i => i.type === 'giphy' && i.enabled
+      ) || false;
+
+    setIsGiphyEnabled(enabled);
+  }, [contentCollection]);
 
   // Feedback mutation
   const { mutate: submitFeedback } = usePromptFeedbackMutation(session, {
@@ -289,16 +319,15 @@ function SuccessPage() {
         console.log('Share response:', data);
 
         // Find Giphy integration result
-        const giphyResult = data.find(
-          result => result.integration === 'giphy'
-        );
+        const giphyResult = data.find(result => result.integration === 'giphy');
 
         if (giphyResult?.success) {
           setGiphyShareSuccess(true);
           console.log('Giphy share URL:', giphyResult.url);
 
           if (isTelegram) {
-            triggerHapticImpact('light');
+            // Use success notification for better feedback
+            triggerHapticNotification('success');
           }
 
           // Reset success state after 3 seconds
@@ -484,7 +513,7 @@ function SuccessPage() {
                 {/* Share to Giphy */}
                 <button
                   onClick={handleShareToGiphy}
-                  disabled={!content?.id || isGiphySharing}
+                  disabled={!isGiphyEnabled || !content?.id || isGiphySharing}
                   className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-[#6157ff] via-[#a640ff] to-[#ff0099] px-4 py-2.5 shadow-md transition-all duration-200 hover:opacity-90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {isGiphySharing ? (
@@ -496,8 +525,11 @@ function SuccessPage() {
                     </>
                   ) : giphyShareSuccess ? (
                     <>
+                      <span className="animate-pulse text-base font-medium text-white">
+                        ✓
+                      </span>
                       <span className="text-sm font-medium text-white">
-                        ✓ Shared!
+                        Shared to Giphy!
                       </span>
                     </>
                   ) : (

@@ -134,6 +134,7 @@ export function useGetCommunityCollections(communityId?: string) {
             return {
               ...rest,
               address: contract_address,
+              integrations: c.integrations || [],
             };
           });
         }
@@ -206,9 +207,11 @@ export function useGetCommunities() {
             return {
               ...rest,
               address: contract_address,
+              integrations: c.integrations || [],
             };
           });
         }
+
         return community as Community;
       });
     },

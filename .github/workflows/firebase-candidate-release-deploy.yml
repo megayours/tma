@@ -87,13 +87,12 @@ jobs:
             echo "WARNING: firebase.json not found"
           fi
 
-      - name: Deploy to Firebase (preview channel)
+      - name: Deploy to Firebase (candidate site)
         run: |
-          echo "Starting Firebase deployment to preview channel 'candidate-prod' (target 'candidate')..."
+          echo "Starting Firebase deployment to candidate site..."
           firebase --version
-          firebase hosting:channel:deploy candidate-prod \
+          firebase deploy \
             --project mini-tma \
             --only hosting:candidate \
-            --non-interactive \
-            --debug
-          echo "Preview deployment completed successfully!"
+            --non-interactive
+          echo "Deployment to candidate site completed successfully!"

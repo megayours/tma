@@ -73,7 +73,7 @@ export function StickerPackItem({
             )}
           </div>
         </Link>
-        <div className="flex h-full w-10 flex-col items-center justify-end gap-4 pb-4 align-bottom">
+        <div className="flex w-10 flex-col items-center justify-end gap-4 self-end pb-4">
           <Link
             to="/sticker-packs/$stickerPackId"
             params={{ stickerPackId: stickerPack.id.toString() }}

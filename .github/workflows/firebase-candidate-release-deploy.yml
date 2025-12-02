@@ -93,6 +93,7 @@ jobs:
           firebase --version
           firebase hosting:channel:deploy candidate-prod \
             --project mini-tma \
+            --site mini-tma-candidate \
             --non-interactive \
             --debug
           echo "Preview deployment completed successfully!"

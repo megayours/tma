@@ -79,7 +79,7 @@ export function Feed() {
     excludeUsed: false,
     pagination: {
       page: currentPage,
-      size: 10,
+      size: 30,
     },
     community: selectedCommunity,
     tokenCollections:

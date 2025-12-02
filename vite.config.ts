@@ -54,7 +54,11 @@ export default defineConfig(({ mode }) => {
 
   // Determine environment
   const environment =
-    mode === 'production' ? 'production' : mode === 'staging' ? 'staging' : 'development';
+    mode === 'production'
+      ? 'production'
+      : mode === 'staging'
+        ? 'staging'
+        : 'development';
 
   // Build plugins array
   const plugins = [
@@ -65,72 +69,72 @@ export default defineConfig(({ mode }) => {
     react(),
     tailwindcss(),
     VitePWA({
-        registerType: 'autoUpdate',
-        devOptions: {
-          enabled: false, // Disable service worker in dev to avoid caching issues
-        },
-        includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
-        manifest: {
-          name: 'Yours Mini App',
-          short_name: 'Yours',
-          description: 'Create and manage your sticker packs',
-          theme_color: '#ffffff',
-          icons: [
-            {
-              src: 'pwa-192x192.png',
-              sizes: '192x192',
-              type: 'image/png',
+      registerType: 'autoUpdate',
+      devOptions: {
+        enabled: false, // Disable service worker in dev to avoid caching issues
+      },
+      includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
+      manifest: {
+        name: 'Yours Mini App',
+        short_name: 'Yours',
+        description: 'Create and manage your sticker packs',
+        theme_color: '#ffffff',
+        icons: [
+          {
+            src: 'pwa-192x192.png',
+            sizes: '192x192',
+            type: 'image/png',
+          },
+          {
+            src: 'pwa-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+          },
+        ],
+      },
+      workbox: {
+        runtimeCaching: [
+          {
+            // Cache external API images - more flexible pattern
+            urlPattern: ({ url, request }) =>
+              url.hostname.includes('megayours.com') &&
+              (request.destination === 'image' ||
+                url.pathname.match(/\.(png|jpg|jpeg|webp|gif|webm)(\?.*)?$/i) ||
+                url.pathname.includes('/content/') ||
+                url.pathname.includes('/preview/')),
+            handler: 'NetworkFirst', // Changed to NetworkFirst to avoid serving stale/failed responses
+            options: {
+              cacheName: 'image-cache',
+              expiration: {
+                maxEntries: 500,
+                maxAgeSeconds: 60 * 60 * 24 * 7, // 7 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+              networkTimeoutSeconds: 10, // Fallback to cache after 10s timeout
             },
-            {
-              src: 'pwa-512x512.png',
-              sizes: '512x512',
-              type: 'image/png',
-            },
-          ],
-        },
-        workbox: {
-          runtimeCaching: [
-            {
-              // Cache external API images - more flexible pattern
-              urlPattern: ({ url, request }) =>
-                url.hostname.includes('megayours.com') &&
-                (request.destination === 'image' ||
-                  url.pathname.match(/\.(png|jpg|jpeg|webp|gif|webm)(\?.*)?$/i) ||
-                  url.pathname.includes('/content/') ||
-                  url.pathname.includes('/preview/')),
-              handler: 'NetworkFirst', // Changed to NetworkFirst to avoid serving stale/failed responses
-              options: {
-                cacheName: 'image-cache',
-                expiration: {
-                  maxEntries: 500,
-                  maxAgeSeconds: 60 * 60 * 24 * 7, // 7 days
-                },
-                cacheableResponse: {
-                  statuses: [0, 200],
-                },
-                networkTimeoutSeconds: 10, // Fallback to cache after 10s timeout
+          },
+          {
+            // Cache API calls with network-first strategy
+            urlPattern: ({ url, request }) =>
+              url.hostname.includes('megayours.com') &&
+              request.destination !== 'image',
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'api-cache',
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 5, // 5 minutes
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
               },
             },
-            {
-              // Cache API calls with network-first strategy
-              urlPattern: ({ url, request }) =>
-                url.hostname.includes('megayours.com') &&
-                request.destination !== 'image',
-              handler: 'NetworkFirst',
-              options: {
-                cacheName: 'api-cache',
-                expiration: {
-                  maxEntries: 100,
-                  maxAgeSeconds: 60 * 5, // 5 minutes
-                },
-                cacheableResponse: {
-                  statuses: [0, 200],
-                },
-              },
-            },
-          ],
-        },
-      }),
+          },
+        ],
+      },
+    }),
   ];
 
   // Add Sentry plugin only if all required credentials are provided
@@ -190,8 +194,8 @@ export default defineConfig(({ mode }) => {
       terserOptions: {
         compress: {
           // Drop console logs in production and staging, keep them in dev only
-          drop_console: mode === 'production' || mode === 'staging',
-          drop_debugger: mode === 'production' || mode === 'staging',
+          // drop_console: mode === 'production' || mode === 'staging',
+          // drop_debugger: mode === 'production' || mode === 'staging',
         },
       },
     },

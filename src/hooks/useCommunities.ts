@@ -180,7 +180,7 @@ export function useGetCommunities() {
       if (!session) return [];
 
       const response = await fetch(
-        `${import.meta.env.VITE_PUBLIC_API_URL}/communities`,
+        `${import.meta.env.VITE_PUBLIC_API_URL}/communities?type=telegram&status=live`,
         {
           method: 'GET',
           headers: {

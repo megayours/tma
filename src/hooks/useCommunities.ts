@@ -171,34 +171,24 @@ export function useGetCommunityCollections(communityId?: string) {
   return { data, isLoading, error };
 }
 
-export function useGetCommunities(params?: { type?: string; status?: string }) {
+export function useGetCommunities() {
   const { session } = useSession();
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['communities', params],
+    queryKey: ['communities'],
     queryFn: async () => {
       if (!session) return [];
 
-      const queryParams = new URLSearchParams();
-      if (params?.type) {
-        queryParams.append('type', params.type);
-      }
-      if (params?.status) {
-        queryParams.append('status', params.status);
-      }
-
-      const queryString = queryParams.toString();
-      const url = queryString
-        ? `${import.meta.env.VITE_PUBLIC_API_URL}/communities?${queryString}`
-        : `${import.meta.env.VITE_PUBLIC_API_URL}/communities`;
-
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: session.authToken,
-        },
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/communities?type=telegram&status=live`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: session.authToken,
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);

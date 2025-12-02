@@ -73,8 +73,8 @@ jobs:
           NODE_ENV: production
 
           # App configuration (same as prod)
-          VITE_PUBLIC_API_URL: ${{ env.VITE_PUBLIC_API_URL }}
-          VITE_PUBLIC_BOT_URL: ${{ env.VITE_PUBLIC_BOT_URL }}
+          VITE_PUBLIC_API_URL: ${{ vars.VITE_PUBLIC_API_URL }}
+          VITE_PUBLIC_BOT_URL: ${{ vars.VITE_PUBLIC_BOT_URL }}
 
           # Build metadata
           VITE_APP_VERSION: ${{ steps.build-meta.outputs.app_version }}

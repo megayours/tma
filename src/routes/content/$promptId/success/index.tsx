@@ -195,22 +195,6 @@ function SuccessPage() {
     navigate({ to: '/community' });
   };
 
-  // Helper function to shorten URL for display
-  const shortenUrl = (url: string, maxLength: number = 25): string => {
-    try {
-      const urlObj = new URL(url);
-      const path = urlObj.pathname + urlObj.search;
-      if (path.length <= maxLength) {
-        return path;
-      }
-      return path.substring(0, maxLength - 3) + '...';
-    } catch {
-      return url.length > maxLength
-        ? url.substring(0, maxLength - 3) + '...'
-        : url;
-    }
-  };
-
   // Get Giphy URL from share data
   const giphyUrl = shareData?.find(
     result => result.integration === 'giphy'

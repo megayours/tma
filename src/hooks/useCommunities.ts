@@ -97,7 +97,7 @@ export function useGetCommunityCollections(communityId?: string) {
 
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_PUBLIC_API_URL}/communities/${communityId}?type=telegram&status=live`,
+          `${import.meta.env.VITE_PUBLIC_API_URL}/communities/${communityId}`,
           {
             method: 'GET',
             headers: {
@@ -192,16 +192,13 @@ export function useGetCommunities(params?: { type?: string; status?: string }) {
         ? `${import.meta.env.VITE_PUBLIC_API_URL}/communities?${queryString}`
         : `${import.meta.env.VITE_PUBLIC_API_URL}/communities`;
 
-      const response = await fetch(
-        url,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: session.authToken,
-          },
-        }
-      );
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: session.authToken,
+        },
+      });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);

@@ -46,6 +46,28 @@ jobs:
       - name: Install deps
         run: bun install --frozen-lockfile
 
+      - name: Print environment variables
+        env:
+          NODE_ENV: production
+          VITE_PUBLIC_API_URL: ${{ env.VITE_PUBLIC_API_URL }}
+          VITE_PUBLIC_BOT_URL: ${{ env.VITE_PUBLIC_BOT_URL }}
+          VITE_APP_VERSION: ${{ steps.build-meta.outputs.app_version }}
+          VITE_GIT_COMMIT_HASH: ${{ steps.build-meta.outputs.commit_hash }}
+          VITE_GIT_BRANCH: ${{ steps.build-meta.outputs.branch }}
+          VITE_BUILD_TIMESTAMP: ${{ steps.build-meta.outputs.timestamp }}
+          VITE_SENTRY_ENVIRONMENT: production
+        run: |
+          echo "=== Environment Variables ==="
+          echo "NODE_ENV: $NODE_ENV"
+          echo "VITE_PUBLIC_API_URL: $VITE_PUBLIC_API_URL"
+          echo "VITE_PUBLIC_BOT_URL: $VITE_PUBLIC_BOT_URL"
+          echo "VITE_APP_VERSION: $VITE_APP_VERSION"
+          echo "VITE_GIT_COMMIT_HASH: $VITE_GIT_COMMIT_HASH"
+          echo "VITE_GIT_BRANCH: $VITE_GIT_BRANCH"
+          echo "VITE_BUILD_TIMESTAMP: $VITE_BUILD_TIMESTAMP"
+          echo "VITE_SENTRY_ENVIRONMENT: $VITE_SENTRY_ENVIRONMENT"
+          echo "============================"
+
       - name: Build (prod)
         env:
           NODE_ENV: production

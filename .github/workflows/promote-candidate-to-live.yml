@@ -1,23 +1,22 @@
-name: Firebase Candidate Prod (prod Env)
+name: Promote Candidate to Production
 
 on:
-  push:
-    branches:
-      - 'candidate/prod'
   workflow_dispatch:
 
 permissions:
-  id-token: write # required for OIDC
+  id-token: write
   contents: read
 
 jobs:
-  build_and_deploy:
+  promote:
     runs-on: ubuntu-latest
     environment: production
 
     steps:
-      - name: Checkout
+      - name: Checkout main branch
         uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -29,11 +28,10 @@ jobs:
         run: |
           echo "commit_hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
           echo "commit_hash_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-          echo "branch=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
+          echo "branch=main" >> $GITHUB_OUTPUT
           echo "timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
           echo "app_version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
 
-      # 🔐 Auth to GCP via Workload Identity Federation (no keys, no tokens)
       - name: Authenticate to Google Cloud (OIDC)
         uses: google-github-actions/auth@v2
         with:
@@ -51,8 +49,8 @@ jobs:
           NODE_ENV: production
 
           # App configuration (same as prod)
-          VITE_PUBLIC_API_URL: ${{ vars.VITE_PUBLIC_API_URL }}
-          VITE_PUBLIC_BOT_URL: ${{ vars.VITE_PUBLIC_BOT_URL }}
+          VITE_PUBLIC_API_URL: ${{ secrets.VITE_PUBLIC_API_URL }}
+          VITE_PUBLIC_BOT_URL: ${{ secrets.VITE_PUBLIC_BOT_URL }}
 
           # Build metadata
           VITE_APP_VERSION: ${{ steps.build-meta.outputs.app_version }}
@@ -66,38 +64,17 @@ jobs:
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT_PRODUCTION }}
         run: |
-          echo "Building project..."
+          echo "Building project for production..."
           bun run build
           echo "Build completed. dist/:"
           ls -lah dist/ || true
 
-      - name: Check Firebase config
+      - name: Deploy to Production (mini-tma site)
         run: |
-          echo "Checking Firebase configuration..."
-          if [ -f .firebaserc ]; then
-            echo ".firebaserc:"
-            cat .firebaserc
-          else
-            echo "WARNING: .firebaserc not found"
-          fi
-          if [ -f firebase.json ]; then
-            echo "firebase.json:"
-            cat firebase.json
-          else
-            echo "WARNING: firebase.json not found"
-          fi
-
-      - name: Ensure candidate site exists
-        run: |
-          echo "Creating candidate site if it doesn't exist..."
-          firebase hosting:sites:create mini-tma-candidate --project mini-tma || echo "Site already exists or creation skipped"
-
-      - name: Deploy to Firebase (candidate site)
-        run: |
-          echo "Starting Firebase deployment to candidate site..."
+          echo "Starting Firebase deployment to production site..."
           firebase --version
           firebase deploy \
             --project mini-tma \
-            --only hosting:candidate \
+            --only hosting:mini-tma \
             --non-interactive
-          echo "Deployment to candidate site completed successfully!"
+          echo "Production deployment completed successfully!"

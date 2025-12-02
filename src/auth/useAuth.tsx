@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Buffer } from 'buffer';
 import { isTMA } from '@telegram-apps/bridge';
+import { popup, hapticFeedback } from '@telegram-apps/sdk-react';
 import { useTelegramRawInitData } from './useTelegram';
 
 export type Session = {
@@ -14,11 +15,20 @@ export type Session = {
   authToken: string;
 };
 
+export type AuthError = {
+  message: string;
+  details?: string;
+  statusCode?: number;
+  timestamp: number;
+};
+
 export function useAuth() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [isTelegram, setIsTelegram] = useState(false);
   const [session, setSession] = useState<Session | null>(null);
+  const [authError, setAuthError] = useState<AuthError | null>(null);
+  const [hasAttemptedAuth, setHasAttemptedAuth] = useState(false);
   const telegramUser = useTelegramRawInitData();
 
   // Memoize the isTMA check to prevent unnecessary re-renders
@@ -80,12 +90,21 @@ export function useAuth() {
   }, []);
 
   // Extract Discord authentication logic into reusable function
-  const authenticateDiscord = useCallback(async (): Promise<boolean> => {
+  const authenticateDiscord = useCallback(async (): Promise<{
+    success: boolean;
+    error?: AuthError;
+  }> => {
     const discordToken = localStorage.getItem('discord_token');
     const authProvider = localStorage.getItem('auth_provider');
 
     if (!discordToken || authProvider !== 'discord') {
-      return false;
+      return {
+        success: false,
+        error: {
+          message: 'No Discord token available',
+          timestamp: Date.now(),
+        },
+      };
     }
 
     try {
@@ -118,7 +137,8 @@ export function useAuth() {
         localStorage.setItem('session', JSON.stringify(session));
         setSession(session);
         setIsAuthenticated(true);
-        return true;
+        setAuthError(null); // Clear any previous errors
+        return { success: true };
       } else {
         // Token is invalid, clear storage
         localStorage.removeItem('discord_token');
@@ -127,21 +147,62 @@ export function useAuth() {
         localStorage.removeItem('session');
         setIsAuthenticated(false);
         setSession(null);
-        return false;
+
+        // Handle HTTP error responses
+        let errorMessage = 'Authentication failed';
+        let errorDetails = '';
+
+        try {
+          const errorData = await response.json();
+          errorDetails = errorData.message || errorData.error || '';
+        } catch (e) {
+          // Response body might not be JSON
+          try {
+            errorDetails = await response.text();
+          } catch (textError) {
+            // Ignore if can't read text either
+          }
+        }
+
+        return {
+          success: false,
+          error: {
+            message: errorMessage,
+            details: errorDetails,
+            statusCode: response.status,
+            timestamp: Date.now(),
+          },
+        };
       }
     } catch (error) {
       console.error('Discord token validation error:', error);
       localStorage.removeItem('session');
       setIsAuthenticated(false);
       setSession(null);
-      return false;
+      return {
+        success: false,
+        error: {
+          message: 'Network error',
+          details: error instanceof Error ? error.message : 'Unknown error',
+          timestamp: Date.now(),
+        },
+      };
     }
   }, []);
 
   // Extract Telegram authentication logic into reusable function
-  const authenticateTelegram = useCallback(async (): Promise<boolean> => {
+  const authenticateTelegram = useCallback(async (): Promise<{
+    success: boolean;
+    error?: AuthError;
+  }> => {
     if (!checkIsTMA() || !telegramUser?.initData) {
-      return false;
+      return {
+        success: false,
+        error: {
+          message: 'Not in Telegram environment',
+          timestamp: Date.now(),
+        },
+      };
     }
 
     try {
@@ -172,34 +233,77 @@ export function useAuth() {
         localStorage.setItem('session', JSON.stringify(session));
         setSession(session);
         setIsAuthenticated(true);
-        return true;
+        setAuthError(null); // Clear any previous errors
+        return { success: true };
       }
-      return false;
+
+      // Handle HTTP error responses
+      let errorMessage = 'Authentication failed';
+      let errorDetails = '';
+
+      try {
+        const errorData = await response.json();
+        errorDetails = errorData.message || errorData.error || '';
+      } catch (e) {
+        // Response body might not be JSON
+        try {
+          errorDetails = await response.text();
+        } catch (textError) {
+          // Ignore if can't read text either
+        }
+      }
+
+      return {
+        success: false,
+        error: {
+          message: errorMessage,
+          details: errorDetails,
+          statusCode: response.status,
+          timestamp: Date.now(),
+        },
+      };
     } catch (error) {
       console.error('Telegram token validation error:', error);
-      return false;
+      return {
+        success: false,
+        error: {
+          message: 'Network error',
+          details: error instanceof Error ? error.message : 'Unknown error',
+          timestamp: Date.now(),
+        },
+      };
     }
   }, [checkIsTMA, telegramUser?.initData]);
 
   // Function to manually refresh authentication
   const refreshAuth = useCallback(async (): Promise<boolean> => {
     setIsAuthenticating(true);
+    setAuthError(null); // Clear previous errors
+    setHasAttemptedAuth(false); // Allow retry
+
     try {
       // Wait a moment for the stored tokens to be available
       await new Promise(resolve => setTimeout(resolve, 100));
 
       // Try Discord authentication first
-      const discordSuccess = await authenticateDiscord();
-      if (discordSuccess) {
+      const discordResult = await authenticateDiscord();
+      if (discordResult.success) {
+        setHasAttemptedAuth(true);
         return true;
+      } else if (discordResult.error) {
+        setAuthError(discordResult.error);
       }
 
       // If Discord fails, try Telegram
-      const telegramSuccess = await authenticateTelegram();
-      if (telegramSuccess) {
+      const telegramResult = await authenticateTelegram();
+      if (telegramResult.success) {
+        setHasAttemptedAuth(true);
         return true;
+      } else if (telegramResult.error) {
+        setAuthError(telegramResult.error);
       }
 
+      setHasAttemptedAuth(true);
       return false;
     } finally {
       setIsAuthenticating(false);
@@ -211,15 +315,20 @@ export function useAuth() {
       // Prevent multiple simultaneous authentication attempts
       if (isAuthenticating) return;
 
+      // Prevent retry loop - only attempt once per session
+      if (hasAttemptedAuth) return;
+
       // Check if we already have a valid session first
       if (await isSessionValid()) {
         const sessionData = JSON.parse(localStorage.getItem('session') || '{}');
         setSession(sessionData);
         setIsAuthenticated(true);
+        setHasAttemptedAuth(true);
         return;
       }
 
       setIsAuthenticating(true);
+      setHasAttemptedAuth(true); // Mark that we've attempted auth
 
       try {
         if (checkIsTMA()) {
@@ -230,28 +339,39 @@ export function useAuth() {
             if (!telegramUser.initData)
               throw new Error('No telegram init data found');
 
-            const success = await authenticateTelegram();
-            if (!success) {
+            const result = await authenticateTelegram();
+            if (!result.success) {
               setIsAuthenticated(false);
+              setAuthError(result.error || null);
             }
           } else {
             setIsAuthenticated(false);
+            setAuthError({
+              message: 'No Telegram user data available',
+              timestamp: Date.now(),
+            });
           }
         } else {
           // Try Discord authentication
-          const success = await authenticateDiscord();
-          if (!success) {
+          const result = await authenticateDiscord();
+          if (!result.success) {
             setIsAuthenticated(false);
+            setAuthError(result.error || null);
           }
         }
       } catch (error) {
         console.error('Authentication error:', error);
         setIsAuthenticated(false);
+        setAuthError({
+          message: 'Authentication error',
+          details: error instanceof Error ? error.message : 'Unknown error',
+          timestamp: Date.now(),
+        });
       } finally {
         setIsAuthenticating(false);
       }
     };
-    if (!isAuthenticating && !isAuthenticated) {
+    if (!isAuthenticating && !isAuthenticated && !hasAttemptedAuth) {
       initializeAuth();
     }
   }, [
@@ -262,7 +382,49 @@ export function useAuth() {
     authenticateTelegram,
     isAuthenticating,
     isAuthenticated,
+    hasAttemptedAuth,
   ]);
+
+  // Show Telegram native popup when authentication errors occur
+  useEffect(() => {
+    if (authError && hasAttemptedAuth && checkIsTMA()) {
+      // Trigger error haptic feedback
+      if (hapticFeedback?.notificationOccurred) {
+        hapticFeedback.notificationOccurred('error');
+      }
+
+      // Show Telegram native popup
+      const showErrorPopup = async () => {
+        const errorMessage = authError.details
+          ? `${authError.message}: ${authError.details}`
+          : authError.message;
+
+        if (popup?.open) {
+          const result = await popup.open({
+            title: 'Login Failed',
+            message: errorMessage,
+            buttons: [
+              {
+                id: 'retry',
+                type: 'default',
+                text: 'Retry',
+              },
+              {
+                id: 'cancel',
+                type: 'cancel',
+              },
+            ],
+          });
+
+          if (result === 'retry') {
+            refreshAuth();
+          }
+        }
+      };
+
+      showErrorPopup();
+    }
+  }, [authError, hasAttemptedAuth, checkIsTMA, refreshAuth]);
 
   const logout = () => {
     localStorage.removeItem('session');
@@ -277,5 +439,7 @@ export function useAuth() {
     session,
     logout,
     refreshAuth,
+    authError,
+    hasAttemptedAuth,
   };
 }

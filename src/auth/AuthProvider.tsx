@@ -1,5 +1,5 @@
 import { createContext, useContext, type ReactNode } from 'react';
-import { useAuth } from './useAuth';
+import { useAuth, type AuthError } from './useAuth';
 import { SessionProvider } from './SessionProvider';
 
 interface AuthContextType {
@@ -8,7 +8,9 @@ interface AuthContextType {
   isTelegram: boolean;
   session: any;
   logout: () => void;
-  refreshAuth: () => Promise<boolean>; // Add this line
+  refreshAuth: () => Promise<boolean>;
+  authError: AuthError | null;
+  hasAttemptedAuth: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);

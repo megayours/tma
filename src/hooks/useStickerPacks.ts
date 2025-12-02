@@ -101,18 +101,18 @@ type StickerPacksResponse = z.infer<typeof StickerPacksResponseSchema>;
 interface UseStickerPacksParams {
   pagination?: Pagination;
   type?: StickerPackType;
-  tokenCollections?: SupportedCollection[] | undefined;
+  communityId?: string;
 }
 
 export const useStickerPacks = (params: UseStickerPacksParams) => {
-  const { pagination, type, tokenCollections } = params;
+  const { pagination, type, communityId } = params;
 
   // Extract page and size with null checking
   const page = pagination?.page || 1;
   const size = pagination?.size || 10;
 
   return useQuery({
-    queryKey: ['sticker-packs', type, page, size, tokenCollections],
+    queryKey: ['sticker-packs', type, page, size, communityId],
     queryFn: async (): Promise<StickerPacksResponse> => {
       try {
         // Build query parameters
@@ -122,13 +122,8 @@ export const useStickerPacks = (params: UseStickerPacksParams) => {
         });
 
         // Add token_collection_ids if provided
-        if (tokenCollections && tokenCollections.length > 0) {
-          tokenCollections.forEach(collection => {
-            queryParams.append(
-              'token_collection_ids',
-              collection.id?.toString() || ''
-            );
-          });
+        if (communityId) {
+          queryParams.append('community_id', communityId);
         }
 
         // Add type parameter if provided

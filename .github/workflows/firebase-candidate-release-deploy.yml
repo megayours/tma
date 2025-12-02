@@ -87,6 +87,11 @@ jobs:
             echo "WARNING: firebase.json not found"
           fi
 
+      - name: Ensure candidate site exists
+        run: |
+          echo "Creating candidate site if it doesn't exist..."
+          firebase hosting:sites:create mini-tma-candidate --project mini-tma || echo "Site already exists or creation skipped"
+
       - name: Deploy to Firebase (candidate site)
         run: |
           echo "Starting Firebase deployment to candidate site..."

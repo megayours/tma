@@ -106,8 +106,7 @@ function SuccessPage() {
     }
 
     // Giphy only supports animated content (GIFs, videos, animated stickers)
-    const isGiphyContent =
-      content.type !== 'image' && content.type !== 'sticker';
+    const isGiphyContent = content.type !== 'image';
 
     const hasGiphyIntegration =
       contentCollection.integrations?.some(
@@ -128,7 +127,7 @@ function SuccessPage() {
   });
 
   // Share content mutation
-  const { mutate: shareContent } = useShareContent(session);
+  const { mutate: shareContent, data: shareData } = useShareContent(session);
 
   // Listen for winner animation complete event
   useEffect(() => {
@@ -195,6 +194,27 @@ function SuccessPage() {
   const handleBackToFeed = () => {
     navigate({ to: '/community' });
   };
+
+  // Helper function to shorten URL for display
+  const shortenUrl = (url: string, maxLength: number = 25): string => {
+    try {
+      const urlObj = new URL(url);
+      const path = urlObj.pathname + urlObj.search;
+      if (path.length <= maxLength) {
+        return path;
+      }
+      return path.substring(0, maxLength - 3) + '...';
+    } catch {
+      return url.length > maxLength
+        ? url.substring(0, maxLength - 3) + '...'
+        : url;
+    }
+  };
+
+  // Get Giphy URL from share data
+  const giphyUrl = shareData?.find(
+    result => result.integration === 'giphy'
+  )?.url;
 
   if (isLoading) {
     return <SpinnerFullPage text="Loading..." />;
@@ -314,6 +334,23 @@ function SuccessPage() {
 
   const handleShareToGiphy = async () => {
     if (!content?.id) return;
+
+    // If already shared, copy URL to clipboard
+    if (giphyUrl) {
+      try {
+        await navigator.clipboard.writeText(giphyUrl);
+        if (isTelegram) {
+          triggerHapticImpact('light');
+        }
+        console.log('Giphy URL copied to clipboard:', giphyUrl);
+      } catch (error) {
+        console.error('Failed to copy to clipboard:', error);
+        if (isTelegram) {
+          triggerHapticNotification('error');
+        }
+      }
+      return;
+    }
 
     setIsGiphySharing(true);
     setGiphyShareSuccess(false);
@@ -516,35 +553,57 @@ function SuccessPage() {
                 </button>
 
                 {/* Share to Giphy */}
-                <button
-                  onClick={handleShareToGiphy}
-                  disabled={!isGiphyEnabled || !content?.id || isGiphySharing}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-[#6157ff] via-[#a640ff] to-[#ff0099] px-4 py-2.5 shadow-md transition-all duration-200 hover:opacity-90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {isGiphySharing ? (
-                    <>
-                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                      <span className="text-sm font-medium text-white">
-                        Sharing...
-                      </span>
-                    </>
-                  ) : giphyShareSuccess ? (
-                    <>
-                      <span className="animate-pulse text-base font-medium text-white">
-                        ✓
-                      </span>
-                      <span className="text-sm font-medium text-white">
-                        Shared to Giphy!
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <span className="text-sm font-medium text-white">
-                        Giphy
-                      </span>
-                    </>
-                  )}
-                </button>
+                {content?.type !== 'image' && (
+                  <button
+                    onClick={handleShareToGiphy}
+                    disabled={!content?.id || isGiphySharing || !isGiphyEnabled}
+                    className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-[#6157ff] via-[#a640ff] to-[#ff0099] px-4 py-2.5 shadow-md transition-all duration-200 hover:opacity-90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {isGiphySharing ? (
+                      <>
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                        <span className="text-sm font-medium text-white">
+                          Sharing...
+                        </span>
+                      </>
+                    ) : giphyShareSuccess ? (
+                      <>
+                        <span className="animate-pulse text-base font-medium text-white">
+                          ✓
+                        </span>
+                        <span className="text-sm font-medium text-white">
+                          Shared to Giphy!
+                        </span>
+                      </>
+                    ) : giphyUrl ? (
+                      <>
+                        <svg
+                          className="h-4 w-4 text-white"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                          />
+                        </svg>
+                        <span className="text-sm font-medium text-white">
+                          Copy Link
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-sm font-medium text-white">
+                          Giphy
+                        </span>
+                      </>
+                    )}
+                  </button>
+                )}
               </div>
             </div>
           </div>

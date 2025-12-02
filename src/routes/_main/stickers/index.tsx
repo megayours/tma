@@ -25,7 +25,7 @@ export function Landing() {
       page: 1,
       size: 10,
     },
-    tokenCollections: community?.collections,
+    communityId: community?.id,
   });
 
   if (isLoadingCommunity && !community)

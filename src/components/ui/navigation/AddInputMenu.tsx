@@ -12,12 +12,12 @@ export const AddInputMenu = ({
   console.log('additionalImagesEnabled', additionalImagesEnabled);
   return (
     <div className="flex w-full flex-col gap-2 p-4">
-      <div
+      {/* <div
         onClick={() => onSelectContent('nft')}
         className="cursor-pointer rounded-lg bg-tg-secondary p-4 text-tg-text transition-colors hover:bg-tg-secondary/80"
       >
         NFT
-      </div>
+      </div> */}
       {/* <Divider />
       <div
         onClick={() => onSelectContent('prompt')}
@@ -27,11 +27,13 @@ export const AddInputMenu = ({
       </div> */}
       <Divider />
       <div
-        onClick={() => !additionalImagesEnabled ? undefined : onSelectContent('image')}
+        onClick={() =>
+          !additionalImagesEnabled ? undefined : onSelectContent('image')
+        }
         className={`rounded-lg p-4 transition-colors ${
           additionalImagesEnabled
-            ? 'cursor-pointer bg-tg-secondary text-tg-text hover:bg-tg-secondary/80'
-            : 'cursor-not-allowed bg-tg-secondary/40 text-tg-hint opacity-50'
+            ? 'bg-tg-secondary text-tg-text hover:bg-tg-secondary/80 cursor-pointer'
+            : 'bg-tg-secondary/40 text-tg-hint cursor-not-allowed opacity-50'
         }`}
       >
         Image

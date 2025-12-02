@@ -1,14 +1,10 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { z } from 'zod';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useSession } from '@/auth/SessionProvider';
-import { useContentExecution } from '@/hooks/useContents';
-import { Button } from '@telegram-apps/telegram-ui';
+import { useContentExecution, useShareContent } from '@/hooks/useContents';
 import { SpinnerFullPage } from '@/components/ui';
-import {
-  FaThumbsUp,
-  FaThumbsDown,
-} from 'react-icons/fa';
+import { FaThumbsUp, FaThumbsDown } from 'react-icons/fa';
 import { usePromptFeedbackMutation } from '@/hooks/usePrompts';
 import type { PromptFeedbackSentiment } from '@/types/prompt';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
@@ -52,6 +48,9 @@ function SuccessPage() {
   const [isMobileDevice, setIsMobileDevice] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
+  const [isGiphySharing, setIsGiphySharing] = useState(false);
+  const [isGiphyEnabled, setIsGiphyEnabled] = useState(false);
+  const [giphyShareSuccess, setGiphyShareSuccess] = useState(false);
   const hasSubmittedFeedback = useRef(false);
 
   useEffect(() => {
@@ -74,7 +73,7 @@ function SuccessPage() {
   }, []);
 
   // Fetch execution data if executionId is provided
-  const { data: execution, isLoading } = useContentExecution(
+  const { data: content, isLoading } = useContentExecution(
     search.executionId || '',
     session,
     {
@@ -82,7 +81,40 @@ function SuccessPage() {
     }
   );
 
-  console.log('Exection data in SuccessPage:', execution, search.executionId);
+  console.log('Exection data in SuccessPage:', content, search.executionId);
+
+  // Determine which collection the content belongs to
+  const contentCollection = useMemo(() => {
+    if (!content?.token?.contract || !selectedCommunity?.collections) {
+      return null;
+    }
+
+    // Find matching collection by chain + address
+    return selectedCommunity.collections.find(
+      c =>
+        c.chain === content.token!.contract.chain &&
+        c.address === content.token!.contract.address
+    );
+  }, [content, selectedCommunity]);
+
+  // Check if Giphy integration is enabled for this collection
+  // Only enable for animated content (GIFs, videos, animated stickers), not static images
+  useEffect(() => {
+    if (!contentCollection || !content) {
+      setIsGiphyEnabled(false);
+      return;
+    }
+
+    // Giphy only supports animated content (GIFs, videos, animated stickers)
+    const isGiphyContent = content.type !== 'image';
+
+    const hasGiphyIntegration =
+      contentCollection.integrations?.some(
+        i => i.type === 'giphy' && i.enabled
+      ) || false;
+
+    setIsGiphyEnabled(isGiphyContent && hasGiphyIntegration);
+  }, [contentCollection, content]);
 
   // Feedback mutation
   const { mutate: submitFeedback } = usePromptFeedbackMutation(session, {
@@ -93,6 +125,9 @@ function SuccessPage() {
       console.error('Failed to submit feedback:', error);
     },
   });
+
+  // Share content mutation
+  const { mutate: shareContent, data: shareData } = useShareContent(session);
 
   // Listen for winner animation complete event
   useEffect(() => {
@@ -127,7 +162,7 @@ function SuccessPage() {
   }, [sadLottieInstance]);
 
   const handleFeedback = (sentiment: PromptFeedbackSentiment) => {
-    if (!execution?.id) return;
+    if (!content?.id) return;
 
     setSelectedFeedback(sentiment);
 
@@ -150,7 +185,7 @@ function SuccessPage() {
     if (!hasSubmittedFeedback.current) {
       hasSubmittedFeedback.current = true;
       submitFeedback({
-        contentId: execution.id,
+        contentId: content.id,
         sentiment,
       });
     }
@@ -160,11 +195,16 @@ function SuccessPage() {
     navigate({ to: '/community' });
   };
 
+  // Get Giphy URL from share data
+  const giphyUrl = shareData?.find(
+    result => result.integration === 'giphy'
+  )?.url;
+
   if (isLoading) {
     return <SpinnerFullPage text="Loading..." />;
   }
 
-  const contentUrl = execution?.url;
+  const contentUrl = content?.url;
   const canShareFiles =
     typeof navigator !== 'undefined' &&
     typeof navigator.share === 'function' &&
@@ -195,7 +235,7 @@ function SuccessPage() {
       const blob = await response.blob();
       const mimeType = blob.type || 'image/png';
       const extension = mimeType.split('/')[1]?.split('+')[0] || 'png';
-      const fileName = `artwork-${execution?.id || promptId}.${extension}`;
+      const fileName = `artwork-${content?.id || promptId}.${extension}`;
       const file = new File([blob], fileName, { type: mimeType });
 
       // Mobile: use share API to save to camera roll
@@ -240,11 +280,11 @@ function SuccessPage() {
 
       // Build share URL with bot URL and content details path
       const shareUrl = buildShareUrl(
-        import.meta.env.VITE_PUBLIC_BOT_URL,
+        import.meta.env.VITE_PUBLIC_BOT_URL || '',
         `/content/${promptId}/details`,
         selectedCommunity?.id
       );
-      const shareTitle = execution?.prompt?.name || 'Check out my creation!';
+      const shareTitle = content?.prompt?.name || 'Check out my creation!';
       const shareText = `${shareTitle} - Created with MegaYours`;
 
       if (navigator.share) {
@@ -276,6 +316,72 @@ function SuccessPage() {
     }
   };
 
+  const handleShareToGiphy = async () => {
+    if (!content?.id) return;
+
+    // If already shared, copy URL to clipboard
+    if (giphyUrl) {
+      try {
+        await navigator.clipboard.writeText(giphyUrl);
+        if (isTelegram) {
+          triggerHapticImpact('light');
+        }
+        console.log('Giphy URL copied to clipboard:', giphyUrl);
+      } catch (error) {
+        console.error('Failed to copy to clipboard:', error);
+        if (isTelegram) {
+          triggerHapticNotification('error');
+        }
+      }
+      return;
+    }
+
+    setIsGiphySharing(true);
+    setGiphyShareSuccess(false);
+
+    console.log('Sharing content with ID:', content.id);
+    shareContent(content.id, {
+      onSuccess: data => {
+        console.log('Share response:', data);
+
+        // Find Giphy integration result
+        const giphyResult = data.find(result => result.integration === 'giphy');
+
+        if (giphyResult?.success) {
+          setGiphyShareSuccess(true);
+          console.log('Giphy share URL:', giphyResult.url);
+
+          if (isTelegram) {
+            // Use success notification for better feedback
+            triggerHapticNotification('success');
+          }
+
+          // Reset success state after 3 seconds
+          setTimeout(() => {
+            setGiphyShareSuccess(false);
+          }, 3000);
+        } else {
+          console.error('Giphy share failed:', giphyResult?.error);
+          if (isTelegram) {
+            triggerHapticNotification('error');
+          }
+        }
+
+        // Reset loading state after success
+        setIsGiphySharing(false);
+      },
+      onError: error => {
+        console.error('Failed to share to Giphy:', error);
+        if (isTelegram) {
+          triggerHapticNotification('error');
+        }
+
+        // Reset loading state after error
+        setIsGiphySharing(false);
+      },
+    });
+  };
+
   return (
     <div className="flex h-screen flex-col">
       {/* Content */}
@@ -284,33 +390,43 @@ function SuccessPage() {
           {/* Success Title */}
           <div className="flex flex-row items-center justify-between px-6">
             <h1 className="text-tg-text text-lg font-semibold">
-              {execution?.prompt?.name || 'Tadaa! 🎉'}
+              {content?.prompt?.name || 'Tadaa! 🎉'}
             </h1>
           </div>
 
           {/* Generated Content Display */}
           <div className="flex justify-center px-4">
             <div className="gap- flex w-full max-w-md flex-col">
-              <div className="bg-tg-bg mt-2 overflow-hidden rounded-2xl shadow-sm">
-                <div className="flex aspect-square items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 px-4 dark:from-gray-800 dark:to-gray-900">
-                  {contentUrl ? (
-                    <img
-                      src={contentUrl}
-                      alt="Generated content"
-                      className="h-full w-full rounded-xl object-contain"
-                    />
-                  ) : (
-                    <div className="text-tg-hint text-sm">
-                      Content preview not available
-                    </div>
-                  )}
+              <div className="relative mt-2">
+                {/* Gradient border wrapper for success state */}
+                {giphyShareSuccess && (
+                  <div className="absolute -inset-1 animate-pulse rounded-[18px] bg-gradient-to-r from-[#6157ff] via-[#a640ff] to-[#ff0099] opacity-75 blur-sm" />
+                )}
+                {/* Pulsing border for loading state */}
+                {isGiphySharing && (
+                  <div className="absolute -inset-1 animate-pulse rounded-[18px] bg-[#6157ff] opacity-50" />
+                )}
+                <div className="bg-tg-bg relative overflow-hidden rounded-2xl shadow-sm">
+                  <div className="flex aspect-square items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 px-4 dark:from-gray-800 dark:to-gray-900">
+                    {contentUrl ? (
+                      <img
+                        src={contentUrl}
+                        alt="Generated content"
+                        className="h-full w-full rounded-xl object-contain"
+                      />
+                    ) : (
+                      <div className="text-tg-hint text-sm">
+                        Content preview not available
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Feedback Section */}
-          {execution?.id && (
+          {content?.id && (
             <div className="mt-2 flex items-center justify-between gap-2 px-4">
               {/* Positive Button (with centered Lottie) */}
               <div className="relative flex items-center justify-center gap-2">
@@ -352,7 +468,7 @@ function SuccessPage() {
               </div>
 
               {/* Generate Again Button */}
-              <GenerateAgainButton execution={execution} promptId={promptId} />
+              <GenerateAgainButton execution={content} promptId={promptId} />
             </div>
           )}
 
@@ -371,15 +487,109 @@ function SuccessPage() {
           )}
 
           {/* Action Buttons */}
-          <div className="space-y-4 px-4 pb-6">
-            <Button
-              mode="plain"
-              size="l"
-              onClick={handleBackToFeed}
-              className="w-full"
-            >
-              Back to Feed
-            </Button>
+          <div className="mt-6 space-y-3 px-4 pb-6">
+            {/* Add to Telegram Sticker Pack Button */}
+            {content?.telegramPackURL && content?.token && (
+              <div className="space-y-2">
+                <div className="text-tg-hint px-1 text-xs font-medium">
+                  Sticker Pack:
+                </div>
+                <a
+                  href={content.telegramPackURL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-tg-button text-tg-button-text flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 shadow-md transition-all duration-200 hover:opacity-90 active:scale-95"
+                >
+                  <span className="text-sm font-medium">
+                    Add Sticker Pack {content.token.contract.name} #
+                    {content.token.id}
+                  </span>
+                </a>
+              </div>
+            )}
+
+            {/* Share Section */}
+            <div className="space-y-2">
+              <div className="text-tg-hint px-1 text-xs font-medium">
+                Share:
+              </div>
+
+              {/* Share Buttons */}
+              <div className="flex gap-2">
+                {/* Share to Telegram/WhatsApp */}
+                <button
+                  onClick={handleShare}
+                  disabled={isSharing}
+                  className="bg-tg-button flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2.5 shadow-md transition-all duration-200 hover:opacity-90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {isSharing ? (
+                    <>
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                      <span className="text-sm font-medium text-white">
+                        Sharing...
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-sm font-medium text-white">
+                      Telegram
+                    </span>
+                  )}
+                </button>
+
+                {/* Share to Giphy */}
+                {content?.type !== 'image' && (
+                  <button
+                    onClick={handleShareToGiphy}
+                    disabled={!content?.id || isGiphySharing || !isGiphyEnabled}
+                    className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-[#6157ff] via-[#a640ff] to-[#ff0099] px-4 py-2.5 shadow-md transition-all duration-200 hover:opacity-90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {isGiphySharing ? (
+                      <>
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                        <span className="text-sm font-medium text-white">
+                          Sharing...
+                        </span>
+                      </>
+                    ) : giphyShareSuccess ? (
+                      <>
+                        <span className="animate-pulse text-base font-medium text-white">
+                          ✓
+                        </span>
+                        <span className="text-sm font-medium text-white">
+                          Shared to Giphy!
+                        </span>
+                      </>
+                    ) : giphyUrl ? (
+                      <>
+                        <svg
+                          className="h-4 w-4 text-white"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                          />
+                        </svg>
+                        <span className="text-sm font-medium text-white">
+                          Copy Link
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-sm font-medium text-white">
+                          Giphy
+                        </span>
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -388,17 +598,16 @@ function SuccessPage() {
       {contentUrl && (
         <TelegramDualButtons
           mainButton={{
-            text: "Save Image",
-            onClick: handleDownload,
-            loading: isDownloading,
+            text: 'Go to Feed',
+            onClick: handleBackToFeed,
             visible: true,
           }}
           secondaryButton={{
-            text: "Share",
-            onClick: handleShare,
-            loading: isSharing,
+            text: 'Save Image',
+            onClick: handleDownload,
+            loading: isDownloading,
             visible: true,
-            position: "top",
+            position: 'top',
           }}
         />
       )}

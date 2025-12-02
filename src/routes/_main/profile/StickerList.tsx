@@ -12,6 +12,9 @@ export function StickerList({
 }) {
   const { session } = useSession();
 
+  // Check if any content in the pack is unrevealed
+  const hasUnrevealed = selectedContents.some(c => c.revealedAt === null);
+
   const {
     data: execution,
     isLoading,
@@ -45,7 +48,8 @@ export function StickerList({
     );
   }
 
-  return (
+  // Wrap entire content in Link if unrevealed
+  const contentElement = (
     <div className="space-y-4">
       {/* Executions List */}
       {execution && (
@@ -89,34 +93,41 @@ export function StickerList({
             </div>
 
             {/* Sticker Grid Visualization */}
-            <div className="py-2">
-              <StickerPackVisualization execution={execution} />
+            <div className="relative py-2">
+              <div className={hasUnrevealed ? 'blur-sm' : ''}>
+                <StickerPackVisualization execution={execution} />
+              </div>
+              {hasUnrevealed && (
+                <div className="bg-tg-button border-tg-bg absolute right-2 bottom-2 h-3 w-3 rounded-full border-2"></div>
+              )}
             </div>
 
             {/* Actions */}
-            <div className="flex flex-col gap-2 pb-4">
-              {/* Telegram Link for completed */}
-              {execution.status === 'completed' &&
-                execution.telegram_pack_url && (
-                  <a
-                    href={execution.telegram_pack_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="bg-tg-button text-tg-button-text block rounded-lg py-2.5 text-center text-sm font-semibold transition-colors"
-                  >
-                    Add to Telegram
-                  </a>
-                )}
+            {!hasUnrevealed && (
+              <div className="flex flex-col gap-2 pb-4">
+                {/* Telegram Link for completed */}
+                {execution.status === 'completed' &&
+                  execution.telegram_pack_url && (
+                    <a
+                      href={execution.telegram_pack_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-tg-button text-tg-button-text block rounded-lg py-2.5 text-center text-sm font-semibold transition-colors"
+                    >
+                      Add to Telegram
+                    </a>
+                  )}
 
-              {/* Regenerate Link */}
-              <Link
-                to="/sticker-packs/generated/$id"
-                params={{ id: execution.id.toString() }}
-                className="border-tg-button text-tg-button hover:bg-tg-button/10 block rounded-lg border-2 py-2.5 text-center text-sm font-semibold transition-colors"
-              >
-                Regenerate
-              </Link>
-            </div>
+                {/* Regenerate Link */}
+                <Link
+                  to="/sticker-packs/generated/$id"
+                  params={{ id: execution.id.toString() }}
+                  className="border-tg-button text-tg-button hover:bg-tg-button/10 block rounded-lg border-2 py-2.5 text-center text-sm font-semibold transition-colors"
+                >
+                  Regenerate
+                </Link>
+              </div>
+            )}
 
             {/* Error Message */}
             {execution.status === 'failed' && execution.error_message && (
@@ -131,4 +142,15 @@ export function StickerList({
       )}
     </div>
   );
+
+  // If unrevealed, wrap in Link to notifications
+  if (hasUnrevealed) {
+    return (
+      <Link to="/profile/notifications" className="cursor-pointer block">
+        {contentElement}
+      </Link>
+    );
+  }
+
+  return contentElement;
 }

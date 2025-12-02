@@ -16,6 +16,7 @@ import {
 import { useTelegramTheme } from '@/auth/useTelegram';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import type { DotLottie } from '@lottiefiles/dotlottie-web';
+import { ProcessingTimeCountdown } from '../../../generated/$id/ProcessingTimeCountdown';
 
 const processingSearchSchema = z.object({
   nft: z.string().optional(),
@@ -194,10 +195,7 @@ function RouteComponent() {
 
             {/* Status Message */}
             <div className="text-tg-hint text-center text-sm">
-              <p>
-                {execution.queueInfo?.estimatedTimeMessage ||
-                  'This usually takes a few minutes.'}
-              </p>
+              <ProcessingTimeCountdown queueInfo={execution.queueInfo} />
             </div>
 
             {isTelegram && <EnableNotifications />}

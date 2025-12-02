@@ -6,6 +6,11 @@ import type { Token } from '../types/response';
 import { useSession } from '@/auth/SessionProvider';
 import type { Session } from '@/auth/useAuth';
 
+export type Integration = {
+  type: string;
+  enabled: boolean;
+};
+
 export type SupportedCollection = {
   address: string;
   chain: string;
@@ -13,6 +18,7 @@ export type SupportedCollection = {
   image: string;
   id?: string;
   size: number;
+  integrations?: Integration[];
 };
 
 // Schema for supported collections - converts API response to SupportedCollection type
@@ -24,6 +30,10 @@ export const SupportedCollectionSchema = z
     name: z.string(),
     image: z.string(),
     size: z.number(),
+    integrations: z.array(z.object({
+      type: z.string(),
+      enabled: z.boolean(),
+    })).optional(),
   })
   .transform(
     (data): SupportedCollection => ({
@@ -33,6 +43,7 @@ export const SupportedCollectionSchema = z
       name: data.name,
       image: data.image,
       size: data.size,
+      integrations: data.integrations || [],
     })
   );
 

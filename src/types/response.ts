@@ -128,6 +128,7 @@ export const RawContentResponseSchema = z
     gif: z.string().optional(),
     image: z.string().optional(),
     progress_percentage: z.number().optional(),
+    telegram_pack_url: z.string().nullable().optional(),
     session: z.any().optional(),
   })
   .transform(data => {
@@ -171,6 +172,7 @@ export const RawContentResponseSchema = z
       gif: data.gif,
       image: data.image,
       progressPercentage: data.progress_percentage,
+      telegramPackURL: data.telegram_pack_url,
     };
   });
 export type RawContentResponse = z.infer<typeof RawContentResponseSchema>;
@@ -233,6 +235,21 @@ export const MyRecentGenerationsResponseSchema = z.object({
 export type MyRecentGenerationsResponse = z.infer<
   typeof MyRecentGenerationsResponseSchema
 >;
+
+// Share integration result schema
+export const ShareIntegrationResultSchema = z.object({
+  integration: z.string(),
+  success: z.boolean(),
+  url: z.string().optional(),
+  error: z.string().optional(),
+});
+export type ShareIntegrationResult = z.infer<
+  typeof ShareIntegrationResultSchema
+>;
+
+// Share response schema (array of integration results)
+export const ShareResponseSchema = z.array(ShareIntegrationResultSchema);
+export type ShareResponse = z.infer<typeof ShareResponseSchema>;
 
 // Export the Content type from content.ts
 export type { Content } from './content';

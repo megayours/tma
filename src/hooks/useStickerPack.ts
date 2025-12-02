@@ -76,7 +76,12 @@ export interface StickerPackExecution {
   user_account_id: string;
   nft_token_id: number;
   effect_style: string;
-  status: 'pending_payment' | 'processing' | 'completed' | 'failed' | 'cancelled';
+  status:
+    | 'pending_payment'
+    | 'processing'
+    | 'completed'
+    | 'failed'
+    | 'cancelled';
   total_prompts: number;
   completed_prompts: number;
   error_message: string | null;
@@ -89,8 +94,7 @@ export interface StickerPackExecution {
   progress_percentage: number;
   queueInfo?: {
     position: number;
-    estimatedMinutes: number;
-    estimatedTimeMessage: string;
+    estimatedCompletionTime: string;
   };
 }
 
@@ -109,7 +113,12 @@ export interface UseStickerPackExecutionsParams {
     page?: number;
     size?: number;
   };
-  status?: 'pending_payment' | 'processing' | 'completed' | 'failed' | 'cancelled';
+  status?:
+    | 'pending_payment'
+    | 'processing'
+    | 'completed'
+    | 'failed'
+    | 'cancelled';
   bundle_id?: number;
 }
 
@@ -161,11 +170,11 @@ export const useStickerPackExecutions = (
         ...rawData,
         data: rawData.data.map((execution: any) => ({
           ...execution,
-          queueInfo: execution.queue_info
+          queueInfo: execution.queueInfo
             ? {
-                position: execution.queue_info.position,
-                estimatedMinutes: execution.queue_info.estimated_minutes,
-                estimatedTimeMessage: execution.queue_info.estimated_time_message,
+                position: execution.queueInfo.position,
+                estimatedCompletionTime:
+                  execution.queueInfo.estimatedCompletionTime,
               }
             : undefined,
         })),
@@ -175,7 +184,7 @@ export const useStickerPackExecutions = (
     },
     enabled: !!session,
     // Optional: Add polling for processing executions
-    refetchInterval: (query) => {
+    refetchInterval: query => {
       // Check if any execution has "processing" status
       const hasProcessingExecution = query.state.data?.data?.some(
         (execution: StickerPackExecution) => execution.status === 'processing'
@@ -220,6 +229,8 @@ export const useStickerPackExecutionById = (
         queueInfo: rawData.queue_info
           ? {
               position: rawData.queue_info.position,
+              estimatedCompletionTime:
+                rawData.queue_info.estimated_completion_time,
               estimatedMinutes: rawData.queue_info.estimated_minutes,
               estimatedTimeMessage: rawData.queue_info.estimated_time_message,
             }
@@ -230,7 +241,7 @@ export const useStickerPackExecutionById = (
     },
     enabled: !!session && !!executionId,
     // Poll every 2 seconds until execution is completed AND no items are processing
-    refetchInterval: (query) => {
+    refetchInterval: query => {
       const execution = query.state.data;
       if (!execution) return false;
 
@@ -294,8 +305,8 @@ export const useGetExecution = (
           queueInfo: execution.queue_info
             ? {
                 position: execution.queue_info.position,
-                estimatedMinutes: execution.queue_info.estimated_minutes,
-                estimatedTimeMessage: execution.queue_info.estimated_time_message,
+                estimatedCompletionTime:
+                  execution.queue_info.estimated_completion_time,
               }
             : undefined,
         })),
@@ -306,7 +317,7 @@ export const useGetExecution = (
     },
     enabled: !!session && !!bundleId,
     // Poll every 2 seconds if execution is not completed or any items are pending/processing
-    refetchInterval: (query) => {
+    refetchInterval: query => {
       const execution = query.state.data;
       if (!execution) return false;
 
@@ -367,8 +378,12 @@ export const useRegenerateItem = (
       queryClient.invalidateQueries({
         queryKey: ['sticker-pack-executions'],
       });
+      // Invalidate content queries so profile page shows updated content
+      queryClient.invalidateQueries({
+        queryKey: ['content'],
+      });
     },
-    onError: (error) => {
+    onError: error => {
       console.error('Error regenerating item:', error);
     },
   });

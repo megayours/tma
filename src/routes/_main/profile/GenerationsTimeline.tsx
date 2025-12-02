@@ -76,11 +76,11 @@ export function GenerationsTimeline() {
     return () => observer.disconnect();
   }, [hasMore, isFetching]);
 
-  if (isAuthenticating || (isLoading && page === 1)) {
+  if (isAuthenticating || !session || (isLoading && page === 1)) {
     return <SpinnerFullPage text="Loading generations..." />;
   }
 
-  if (!timeline.length && !isLoading) {
+  if (!timeline.length && !isLoading && session) {
     return (
       <div className="text-tg-hint text-center text-sm">
         You have no generations yet.
@@ -140,6 +140,11 @@ function SingleContent({ content }: { content: Content }) {
             {content.token.contract.name} #{content.token.id}
           </p>
         )}
+        <div>
+          <div className="bg-tg-button text-tg-button-text inline-flex items-center justify-center rounded-2xl px-2">
+            <span className="text-sm">{content.type}</span>
+          </div>
+        </div>
       </div>
 
       {/* Actions - Right */}
@@ -155,16 +160,6 @@ function SingleContent({ content }: { content: Content }) {
         >
           {content.status}
         </span>
-        <button
-          onClick={() => {
-            if (content.url) {
-              navigator.clipboard.writeText(content.url);
-            }
-          }}
-          className="text-tg-link text-xs hover:underline"
-        >
-          Copy
-        </button>
       </div>
     </div>
   );

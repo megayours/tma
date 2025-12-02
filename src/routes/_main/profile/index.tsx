@@ -52,7 +52,7 @@ function CreatePromptDropdownButton() {
   return (
     <Link to="/profile/admin">
       <Button mode="plain" size="l">
-        <span className="text-tg-button">Admin</span>
+        <span className="text-tg-button">Create</span>
       </Button>
     </Link>
   );
@@ -124,11 +124,12 @@ function AuthorizeBotMessages() {
 
 export function ProfileLayout() {
   const { isTelegram } = useTelegramTheme();
+
   return (
     <ProtectedRoute>
       <div className="profile-layout h-screen">
         {/* This renders the index content when at /profile */}
-        <main className="flex h-full flex-col gap-4 p-6">
+        <main className="flex h-full flex-col p-6">
           <div className="flex flex-row items-center justify-between gap-2">
             <h1 className="text-tg-text text-2xl font-bold">My Artworks</h1>
             <div className="flex items-center gap-2">
@@ -142,6 +143,18 @@ export function ProfileLayout() {
             </div>
           )}
 
+          {/* REMOVED FILTERS AS IT WAS A BIT BUGGED*/}
+          {/* Content Type Filters */}
+          {/* <div className="border-tg-section-separator border-b pb-3">
+            <ProfileFilters
+              contentTypes={contentTypes}
+              selectedTypes={selectedTypes}
+              toggleType={toggleType}
+              typeButtonsRef={typeButtonsRef}
+            />
+          </div> */}
+
+          {/* Timeline with filter */}
           <GenerationsTimeline />
         </main>
       </div>

@@ -38,4 +38,5 @@ export interface Content {
   tokens?: Token[];
   variant?: string;
   progressPercentage?: number;
+  telegramPackURL?: string | null;
 }

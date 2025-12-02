@@ -36,19 +36,17 @@ const ExecutionStatusApiSchema = z.object({
   queue_info: z
     .object({
       position: z.number(),
-      estimated_minutes: z.number(),
-      estimated_time_message: z.string(),
+      estimated_completion_time: z.string(),
     })
-    .transform((data) => ({
+    .transform(data => ({
       position: data.position,
-      estimatedMinutes: data.estimated_minutes,
-      estimatedTimeMessage: data.estimated_time_message,
+      estimatedCompletionTime: data.estimated_completion_time,
     }))
     .nullish(),
 });
 
 // Transform to camelCase for TypeScript
-const ExecutionStatusSchema = ExecutionStatusApiSchema.transform((data) => {
+const ExecutionStatusSchema = ExecutionStatusApiSchema.transform(data => {
   const { queue_info, ...rest } = data;
   return {
     ...rest,

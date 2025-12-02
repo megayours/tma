@@ -5,6 +5,8 @@ import {
   type Token,
   RawContentListResponseSchema,
   RawContentResponseSchema,
+  ShareResponseSchema,
+  type ShareResponse,
 } from '../types/response';
 import type { Session } from '@/auth/useAuth';
 import type { Contract } from '../types/contract';
@@ -14,17 +16,20 @@ export const useGetContents = (
   account: string,
   revealed?: boolean,
   pagination?: { page: number; size: number },
-  order?: { sort_by: 'created_at'; sort_order: 'asc' | 'desc' }
+  order?: { sort_by: 'created_at'; sort_order: 'asc' | 'desc' },
+  type?: 'image' | 'video' | 'sticker' | 'animated_sticker'
 ) => {
   const paginationParams = pagination || { page: 1, size: 10 };
   const orderParams = order || { sort_by: 'created_at', sort_order: 'desc' };
   return useQuery({
     queryKey: [
       'content',
+      session?.id,
       account,
       paginationParams.page,
       paginationParams.size,
       revealed,
+      type,
     ],
     queryFn: async () => {
       if (!session) return;
@@ -36,6 +41,7 @@ export const useGetContents = (
         sort_by: orderParams?.sort_by,
         sort_order: orderParams?.sort_order,
         ...(revealed != null && { revealed: revealed.toString() }),
+        ...(type && { type }),
       });
       const response = await fetch(
         `${import.meta.env.VITE_PUBLIC_API_URL}/content?${queryParams.toString()}`,
@@ -65,6 +71,7 @@ export const useGetContents = (
         contents: result.data as Content[],
       };
     },
+    enabled: !!session,
   });
 };
 
@@ -399,5 +406,46 @@ export const useContentExecution = (
       return isProcessing ? 2000 : false;
     },
     refetchIntervalInBackground: true, // Continue polling when tab is not active
+  });
+};
+
+// Share content to external integrations (e.g., Giphy)
+export const useShareContent = (session: Session | null | undefined) => {
+  return useMutation({
+    mutationFn: async (contentId: string) => {
+      if (!session) {
+        throw new Error('Session required');
+      }
+
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/content/${contentId}/share`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: session.authToken,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.message || `Failed to share content: ${response.status}`
+        );
+      }
+
+      const data = await response.json();
+
+      // Validate and transform with Zod schema
+      const result = safeParse(ShareResponseSchema, data);
+      if (!result) {
+        const errors = getValidationErrors(ShareResponseSchema, data);
+        console.error('Share response validation errors:', errors);
+        throw new Error('Invalid share response format');
+      }
+
+      return result as ShareResponse;
+    },
   });
 };

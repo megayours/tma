@@ -89,7 +89,7 @@ function CreatePromptComponent() {
             </div>
 
             <div className="text-tg-text mx-4 flex flex-col gap-2">
-              <h1 className="text-sm">MEMEs {isMegaAdmin && 'Admin'}</h1>
+              <h1 className="text-sm">MEMEs </h1>
               <div
                 onClick={() =>
                   !isMegaAdmin ? null : handleTypeSelect('images')
@@ -139,10 +139,10 @@ function CreatePromptComponent() {
                 onClick={() => handleTypeSelect('animated_stickers')}
                 className="cursor-pointer"
               >
-                <div className="border-tg-section-separator flex flex-row items-center gap-2 overflow-hidden rounded-2xl border p-4">
+                {/* <div className="border-tg-section-separator flex flex-row items-center gap-2 overflow-hidden rounded-2xl border p-4">
                   <span className="text-5xl">✨</span>
                   <span className="text-lg">Animated Sticker</span>
-                </div>
+                </div> */}
               </div>
             </div>
           </>

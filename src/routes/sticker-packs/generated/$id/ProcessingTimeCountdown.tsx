@@ -1,10 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 interface ProcessingTimeCountdownProps {
   queueInfo?: {
     position: number;
-    estimatedMinutes: number;
-    estimatedTimeMessage: string;
+    estimatedCompletionTime: string;
   };
   showCountdown?: boolean;
 }
@@ -13,23 +12,41 @@ export function ProcessingTimeCountdown({
   queueInfo,
   showCountdown = false,
 }: ProcessingTimeCountdownProps) {
-  // Countdown timer state
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
 
-  // Initialize countdown from estimatedMinutes (only if showCountdown is true)
-  useEffect(() => {
-    if (
-      showCountdown &&
-      queueInfo?.estimatedMinutes &&
-      timeRemaining === null
-    ) {
-      setTimeRemaining(queueInfo.estimatedMinutes * 60);
+  const adjustedInitialTime = useMemo(() => {
+    if (!queueInfo?.estimatedCompletionTime) {
+      return null;
     }
-  }, [showCountdown, queueInfo?.estimatedMinutes, timeRemaining]);
+
+    const completionTime = new Date(
+      queueInfo.estimatedCompletionTime
+    ).getTime();
+
+    if (Number.isNaN(completionTime)) {
+      return null;
+    }
+
+    const diffMs = completionTime * 1000 - Date.now();
+    const paddedMs = diffMs * 1.1; // add 10% padding
+    return Math.max(Math.ceil(paddedMs / 1000), 0);
+  }, [queueInfo?.estimatedCompletionTime]);
+
+  // Initialize countdown from estimatedCompletionTime (only if showCountdown is true)
+  useEffect(() => {
+    if (!showCountdown || adjustedInitialTime === null) {
+      setTimeRemaining(null);
+      return;
+    }
+
+    setTimeRemaining(adjustedInitialTime);
+  }, [showCountdown, adjustedInitialTime]);
 
   // Countdown timer (only if showCountdown is true)
   useEffect(() => {
-    if (!showCountdown || timeRemaining === null || timeRemaining <= 0) return;
+    if (!showCountdown || timeRemaining === null || timeRemaining <= 0) {
+      return;
+    }
 
     const timer = setInterval(() => {
       setTimeRemaining(prev => (prev !== null && prev > 0 ? prev - 1 : 0));
@@ -38,26 +55,38 @@ export function ProcessingTimeCountdown({
     return () => clearInterval(timer);
   }, [showCountdown, timeRemaining]);
 
-  // Don't render if no queue info
   if (!queueInfo) {
     return null;
   }
 
-  // Show countdown timer
   if (showCountdown && timeRemaining !== null && timeRemaining > 0) {
     return (
-      <span className="tabular-nums whitespace-nowrap">
+      <span className="whitespace-nowrap tabular-nums">
         {Math.floor(timeRemaining / 60)}:
         {(timeRemaining % 60).toString().padStart(2, '0')}
       </span>
     );
   }
 
-  // Show static time estimate
+  const fallbackMinutes =
+    adjustedInitialTime !== null
+      ? Math.max(1, Math.ceil(adjustedInitialTime / 60))
+      : null;
+
+  if (fallbackMinutes !== null) {
+    return (
+      <span className="whitespace-nowrap">
+        ~{fallbackMinutes} minute
+        {fallbackMinutes !== 1 ? 's' : ''} left
+      </span>
+    );
+  }
+
   return (
     <span className="whitespace-nowrap">
-      ~{queueInfo.estimatedMinutes} minute
-      {queueInfo.estimatedMinutes !== 1 ? 's' : ''} left
+      {queueInfo.position
+        ? `In queue (position ${queueInfo.position})`
+        : 'In queue'}
     </span>
   );
 }

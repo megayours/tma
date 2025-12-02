@@ -81,6 +81,7 @@ export function Feed() {
       page: currentPage,
       size: 10,
     },
+    community: selectedCommunity,
     tokenCollections:
       selectedCollections.length > 0 ? selectedCollections : undefined,
     enabled: !isLoadingCommunity, // Only enable when community is loaded
@@ -359,7 +360,9 @@ export function Feed() {
 
                 {/* Make it Yours button */}
                 <div className="flex flex-row items-center gap-2">
-                  {prompt.usageCount && <Reshared amount={prompt.usageCount} />}
+                  {Number(prompt?.usageCount) > 0 && (
+                    <Reshared amount={Number(prompt.usageCount)} />
+                  )}
                   {session && (
                     <button
                       onClick={() => handleMakeItYours(prompt)}

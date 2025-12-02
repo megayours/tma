@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { List, Section } from '@telegram-apps/telegram-ui';
+import { List, Section, Cell } from '@telegram-apps/telegram-ui';
 import {
   TelegramThemeStatus,
   TelegramThemeDemo,
@@ -8,14 +8,92 @@ import {
   ThemeDemo,
   ThemeUsageExamples,
 } from '../components';
+import { getBuildInfo } from '../utils/buildInfo';
 
 export const Route = createFileRoute('/about')({
   component: Demo,
 });
 
 function Demo() {
+  const buildInfo = getBuildInfo();
+
+  const copyToClipboard = (text: string, label: string) => {
+    navigator.clipboard.writeText(text);
+    console.log(`Copied ${label} to clipboard`);
+  };
+
+  const testSentry = () => {
+    throw new Error('Sentry Test Error - This is intentional!');
+  };
+
   return (
     <List className="p-2">
+      <Section header="Build Information">
+        <Cell
+          subtitle="App Version"
+          onClick={() => copyToClipboard(buildInfo.version, 'version')}
+        >
+          {buildInfo.version}
+        </Cell>
+        <Cell
+          subtitle="Git Commit (Short)"
+          onClick={() =>
+            copyToClipboard(buildInfo.commitHashShort, 'short hash')
+          }
+        >
+          {buildInfo.commitHashShort}
+        </Cell>
+        <Cell
+          subtitle="Git Commit (Full)"
+          onClick={() => copyToClipboard(buildInfo.commitHash, 'full hash')}
+          className="font-mono text-xs"
+        >
+          {buildInfo.commitHash}
+        </Cell>
+        <Cell
+          subtitle="Branch"
+          onClick={() => copyToClipboard(buildInfo.branch, 'branch')}
+        >
+          {buildInfo.branch}
+        </Cell>
+        <Cell
+          subtitle="Build Date"
+          onClick={() => copyToClipboard(buildInfo.buildDate, 'build date')}
+        >
+          {buildInfo.buildDate}
+        </Cell>
+        <Cell
+          subtitle="Environment"
+          onClick={() =>
+            copyToClipboard(buildInfo.environment, 'environment')
+          }
+        >
+          <span
+            className={`font-semibold ${
+              buildInfo.environment === 'production'
+                ? 'text-green-600'
+                : buildInfo.environment === 'staging'
+                  ? 'text-yellow-600'
+                  : 'text-blue-600'
+            }`}
+          >
+            {buildInfo.environment}
+          </span>
+        </Cell>
+      </Section>
+
+      <Section header="Sentry Test">
+        <Cell
+          subtitle="Click to test Sentry error tracking"
+          onClick={testSentry}
+          className="cursor-pointer"
+        >
+          <span className="text-red-600 font-semibold">
+            Throw Test Error
+          </span>
+        </Cell>
+      </Section>
+
       <Section>
         <h1 className="mb-4 text-2xl">Demo Page</h1>
       </Section>

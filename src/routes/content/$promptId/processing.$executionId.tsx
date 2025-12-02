@@ -142,8 +142,7 @@ function ProcessingPage() {
             Generation Failed
           </h2>
           <p className="text-tg-hint mb-4">
-            {execution.error ||
-              'Something went wrong during generation'}
+            {execution.error || 'Something went wrong during generation'}
           </p>
           <button
             onClick={() =>
@@ -173,7 +172,7 @@ function ProcessingPage() {
           <div className="pt-6 pb-6 text-center">
             <div className="mb-2 flex items-center justify-center gap-2">
               <Link to="/community">
-                <FaChevronDown className="text-tg-text cursor-pointer hover:opacity-70 transition-opacity" />
+                <FaChevronDown className="text-tg-text cursor-pointer transition-opacity hover:opacity-70" />
               </Link>
               <h1 className="text-tg-text text-2xl font-bold">
                 Creating Your Content...
@@ -206,10 +205,16 @@ function ProcessingPage() {
             </div>
 
             {/* Notification */}
-            <blockquote className="border-tg-link bg-tg-secondary-bg border-l-4 p-4">
+            <blockquote className="border-tg-link bg-tg-secondary-bg flex flex-col items-center justify-center gap-2 border-l-4 p-4">
               <p className="text-tg-hint text-sm">
                 You can close this page — we'll notify you when ready
               </p>
+              <Link
+                to="/profile"
+                className="text-tg-link text-sm font-medium hover:underline"
+              >
+                Go to Profile
+              </Link>
             </blockquote>
 
             {/* Enable Notifications if not already enabled */}

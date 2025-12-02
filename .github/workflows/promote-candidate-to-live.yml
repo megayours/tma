@@ -1,0 +1,80 @@
+name: Promote Candidate to Production
+
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Set build metadata
+        id: build-meta
+        run: |
+          echo "commit_hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+          echo "commit_hash_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          echo "branch=main" >> $GITHUB_OUTPUT
+          echo "timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
+          echo "app_version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
+      - name: Authenticate to Google Cloud (OIDC)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/959750918427/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+          service_account: github-actions-firebase-deploy@mini-tma.iam.gserviceaccount.com
+
+      - name: Install Firebase CLI
+        run: bun i -g firebase-tools
+
+      - name: Install deps
+        run: bun install --frozen-lockfile
+
+      - name: Build (prod)
+        env:
+          NODE_ENV: production
+
+          # App configuration (same as prod)
+          VITE_PUBLIC_API_URL: ${{ secrets.VITE_PUBLIC_API_URL }}
+          VITE_PUBLIC_BOT_URL: ${{ secrets.VITE_PUBLIC_BOT_URL }}
+
+          # Build metadata
+          VITE_APP_VERSION: ${{ steps.build-meta.outputs.app_version }}
+          VITE_GIT_COMMIT_HASH: ${{ steps.build-meta.outputs.commit_hash }}
+          VITE_GIT_BRANCH: ${{ steps.build-meta.outputs.branch }}
+          VITE_BUILD_TIMESTAMP: ${{ steps.build-meta.outputs.timestamp }}
+
+          # Sentry
+          VITE_SENTRY_ENVIRONMENT: production
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT_PRODUCTION }}
+        run: |
+          echo "Building project for production..."
+          bun run build
+          echo "Build completed. dist/:"
+          ls -lah dist/ || true
+
+      - name: Deploy to Production (mini-tma site)
+        run: |
+          echo "Starting Firebase deployment to production site..."
+          firebase --version
+          firebase deploy \
+            --project mini-tma \
+            --only hosting:mini-tma \
+            --non-interactive
+          echo "Production deployment completed successfully!"

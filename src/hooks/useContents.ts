@@ -24,6 +24,7 @@ export const useGetContents = (
   return useQuery({
     queryKey: [
       'content',
+      session?.id,
       account,
       paginationParams.page,
       paginationParams.size,
@@ -70,6 +71,7 @@ export const useGetContents = (
         contents: result.data as Content[],
       };
     },
+    enabled: !!session,
   });
 };
 

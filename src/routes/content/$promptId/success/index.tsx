@@ -98,19 +98,24 @@ function SuccessPage() {
   }, [content, selectedCommunity]);
 
   // Check if Giphy integration is enabled for this collection
+  // Only enable for animated content (GIFs, videos, animated stickers), not static images
   useEffect(() => {
-    if (!contentCollection) {
+    if (!contentCollection || !content) {
       setIsGiphyEnabled(false);
       return;
     }
 
-    const enabled =
+    // Giphy only supports animated content (GIFs, videos, animated stickers)
+    const isGiphyContent =
+      content.type !== 'image' && content.type !== 'sticker';
+
+    const hasGiphyIntegration =
       contentCollection.integrations?.some(
         i => i.type === 'giphy' && i.enabled
       ) || false;
 
-    setIsGiphyEnabled(enabled);
-  }, [contentCollection]);
+    setIsGiphyEnabled(isGiphyContent && hasGiphyIntegration);
+  }, [contentCollection, content]);
 
   // Feedback mutation
   const { mutate: submitFeedback } = usePromptFeedbackMutation(session, {

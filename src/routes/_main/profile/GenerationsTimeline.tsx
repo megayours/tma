@@ -13,11 +13,7 @@ export const Route = createFileRoute('/_main/profile/GenerationsTimeline')({
   component: GenerationsTimeline,
 });
 
-export function GenerationsTimeline({
-  selectedType
-}: {
-  selectedType?: 'image' | 'video' | 'sticker' | 'animated_sticker'
-} = {}) {
+export function GenerationsTimeline() {
   const { session, isAuthenticating } = useSession();
   const [page, setPage] = useState(1);
   const [allContents, setAllContents] = useState<Content[]>([]);
@@ -28,9 +24,7 @@ export function GenerationsTimeline({
     session,
     session?.id!,
     undefined,
-    { page, size: 20 },
-    undefined,
-    selectedType
+    { page, size: 20 }
   );
 
   const timeline = buildTimeline(allContents);
@@ -82,24 +76,14 @@ export function GenerationsTimeline({
     return () => observer.disconnect();
   }, [hasMore, isFetching]);
 
-  // Reset pagination when filter changes
-  useEffect(() => {
-    setPage(1);
-    setAllContents([]);
-    setHasMore(true);
-  }, [selectedType]);
-
-  if (isAuthenticating || (isLoading && page === 1)) {
+  if (isAuthenticating || !session || (isLoading && page === 1)) {
     return <SpinnerFullPage text="Loading generations..." />;
   }
 
-  if (!timeline.length && !isLoading) {
-    const filterText = selectedType
-      ? ` of type "${selectedType}"`
-      : '';
+  if (!timeline.length && !isLoading && session) {
     return (
       <div className="text-tg-hint text-center text-sm">
-        You have no generations{filterText} yet.
+        You have no generations yet.
       </div>
     );
   }
@@ -130,24 +114,21 @@ export function GenerationsTimeline({
 }
 
 function SingleContent({ content }: { content: Content }) {
-  const isUnrevealed = content.revealedAt === null;
-
-  // Wrap in Link for navigation
-  const contentElement = (
+  return (
     <div className="flex items-center gap-3 overflow-hidden rounded-xl px-2 py-3">
       {/* Thumbnail Image - Left */}
-      <div className="relative flex-shrink-0">
+      <Link
+        to="/content/$promptId/success"
+        params={{ promptId: String(content.promptId) }}
+        search={{ executionId: content.executionId || content.id }}
+        className="flex-shrink-0"
+      >
         <img
           src={content.url || ''}
           alt="Generated content"
-          className={`h-20 w-20 rounded-lg object-cover transition-opacity ${
-            isUnrevealed ? 'blur-sm' : 'hover:opacity-90'
-          }`}
+          className="h-20 w-20 cursor-pointer rounded-lg object-cover transition-opacity hover:opacity-90"
         />
-        {isUnrevealed && (
-          <div className="bg-tg-button border-tg-bg absolute right-1 bottom-1 h-3 w-3 rounded-full border-2"></div>
-        )}
-      </div>
+      </Link>
 
       {/* Content Info - Middle */}
       <div className="min-w-0 flex-1">
@@ -159,6 +140,11 @@ function SingleContent({ content }: { content: Content }) {
             {content.token.contract.name} #{content.token.id}
           </p>
         )}
+        <div>
+          <div className="bg-tg-button text-tg-button-text inline-flex items-center justify-center rounded-2xl px-2">
+            <span className="text-sm">{content.type}</span>
+          </div>
+        </div>
       </div>
 
       {/* Actions - Right */}
@@ -174,39 +160,8 @@ function SingleContent({ content }: { content: Content }) {
         >
           {content.status}
         </span>
-        {!isUnrevealed && (
-          <button
-            onClick={() => {
-              if (content.url) {
-                navigator.clipboard.writeText(content.url);
-              }
-            }}
-            className="text-tg-link text-xs hover:underline"
-          >
-            Copy
-          </button>
-        )}
       </div>
     </div>
-  );
-
-  // If unrevealed, link to notifications; otherwise link to success page
-  if (isUnrevealed) {
-    return (
-      <Link to="/profile/notifications" className="cursor-pointer">
-        {contentElement}
-      </Link>
-    );
-  }
-
-  return (
-    <Link
-      to="/content/$promptId/success"
-      params={{ promptId: String(content.promptId) }}
-      search={{ executionId: content.executionId || content.id }}
-    >
-      {contentElement}
-    </Link>
   );
 }
 

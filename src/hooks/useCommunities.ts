@@ -171,24 +171,34 @@ export function useGetCommunityCollections(communityId?: string) {
   return { data, isLoading, error };
 }
 
-export function useGetCommunities() {
+export function useGetCommunities(params?: { type?: string; status?: string }) {
   const { session } = useSession();
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['communities'],
+    queryKey: ['communities', params],
     queryFn: async () => {
       if (!session) return [];
 
-      const response = await fetch(
-        `${import.meta.env.VITE_PUBLIC_API_URL}/communities`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: session.authToken,
-          },
-        }
-      );
+      const queryParams = new URLSearchParams();
+      if (params?.type) {
+        queryParams.append('type', params.type);
+      }
+      if (params?.status) {
+        queryParams.append('status', params.status);
+      }
+
+      const queryString = queryParams.toString();
+      const url = queryString
+        ? `${import.meta.env.VITE_PUBLIC_API_URL}/communities?${queryString}`
+        : `${import.meta.env.VITE_PUBLIC_API_URL}/communities`;
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: session.authToken,
+        },
+      });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);

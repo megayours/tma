@@ -1,5 +1,15 @@
 {
   "projects": {
     "default": "mini-tma"
-  }
+  },
+  "targets": {
+    "mini-tma": {
+      "hosting": {
+        "candidate": [
+          "mini-tma-candidate"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }

@@ -12,7 +12,7 @@
       ]
     },
     {
-      "site": "mini-tma-candidate",
+      "target": "candidate",
       "public": "dist",
       "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
       "rewrites": [

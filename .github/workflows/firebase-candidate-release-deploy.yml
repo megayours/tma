@@ -89,11 +89,11 @@ jobs:
 
       - name: Deploy to Firebase (preview channel)
         run: |
-          echo "Starting Firebase deployment to preview channel 'candidate-prod'..."
+          echo "Starting Firebase deployment to preview channel 'candidate-prod' (target 'candidate')..."
           firebase --version
           firebase hosting:channel:deploy candidate-prod \
             --project mini-tma \
-            --site mini-tma-candidate \
+            --only hosting:candidate \
             --non-interactive \
             --debug
           echo "Preview deployment completed successfully!"

@@ -14,7 +14,28 @@ function RenderAdmin() {
     return <div>No session available</div>;
   }
   if (isNaN(parseInt(session.role)) || parseInt(session.role) < 1) {
-    return <div>You are not an admin</div>;
+    return (
+      <div className="flex min-h-screen flex-col items-center gap-6 px-4">
+        <div className="relative h-80 w-full max-w-xs">
+          <img
+            src="/no-access.jpg"
+            alt="Access Denied"
+            className="h-full w-full object-contain"
+          />
+        </div>
+        <div className="flex flex-col items-center gap-2 text-center">
+          <h2 className="text-tg-text text-2xl font-bold">Access Denied</h2>
+          <p className="text-tg-hint text-base">
+            You don't have permission to access this area, yet.
+          </p>
+        </div>
+        <Link to="/profile">
+          <div className="bg-tg-button flex cursor-pointer items-center justify-center rounded-full px-6 py-3 text-base font-semibold">
+            <span className="text-tg-button-text">Go Back to Profile</span>
+          </div>
+        </Link>
+      </div>
+    );
   }
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-4">

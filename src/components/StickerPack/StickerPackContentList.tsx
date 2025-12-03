@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import type { StickerPackItem } from '@/hooks/useStickerPacks';
 
 interface StickerPackContentListProps {
@@ -12,7 +11,7 @@ interface ContentItemProps {
   index: number;
 }
 
-const ContentItem = ({ item, packName, index }: ContentItemProps) => {
+const ContentItem = ({ item }: ContentItemProps) => {
   return (
     <div className="bg-tg-hint/10 relative aspect-square overflow-hidden rounded-lg">
       {item.preview_url ? (

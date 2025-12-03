@@ -13,7 +13,7 @@ interface PreviewItemProps {
   index: number;
 }
 
-const PreviewItem = ({ item, packName, index }: PreviewItemProps) => {
+const PreviewItem = ({ item }: PreviewItemProps) => {
   const [videoLoading, setVideoLoading] = useState(true);
   const [videoError, setVideoError] = useState(false);
 
@@ -35,7 +35,7 @@ const PreviewItem = ({ item, packName, index }: PreviewItemProps) => {
       }}
     >
       {videoLoading && (
-        <div className="absolute inset-0 bg-gray-300 animate-pulse rounded-lg" />
+        <div className="absolute inset-0 animate-pulse rounded-lg bg-gray-300" />
       )}
       {!videoError ? (
         <video
@@ -49,7 +49,7 @@ const PreviewItem = ({ item, packName, index }: PreviewItemProps) => {
           onError={handleVideoError}
         />
       ) : (
-        <div className="flex h-full w-full items-center justify-center text-xs text-tg-hint">
+        <div className="text-tg-hint flex h-full w-full items-center justify-center text-xs">
           N/A
         </div>
       )}

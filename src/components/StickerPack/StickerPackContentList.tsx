@@ -13,25 +13,16 @@ interface ContentItemProps {
 }
 
 const ContentItem = ({ item, packName, index }: ContentItemProps) => {
-  const [imageLoading, setImageLoading] = useState(true);
-
-  const handleImageLoad = () => {
-    setImageLoading(false);
-  };
-
   return (
     <div className="bg-tg-hint/10 relative aspect-square overflow-hidden rounded-lg">
-      {imageLoading && (
-        <div className="absolute inset-0 animate-pulse rounded-lg bg-gray-300" />
-      )}
       {item.preview_url ? (
-        <img
+        <video
           src={item.preview_url}
-          alt={`${packName || 'Sticker'} ${index + 1}`}
-          className="h-full w-full object-cover"
-          loading="lazy"
-          decoding="async"
-          onLoad={handleImageLoad}
+          className="object-fit"
+          autoPlay
+          loop
+          muted
+          playsInline
         />
       ) : (
         <div className="bg-tg-hint/20 flex h-full w-full items-center justify-center">

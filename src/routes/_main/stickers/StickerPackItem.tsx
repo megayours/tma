@@ -52,14 +52,15 @@ export function StickerPackItem({
                 index < 5 && (
                   <div
                     key={item.content_id || index}
-                    className="relative aspect-square overflow-hidden rounded-lg"
+                    className="relative overflow-hidden rounded-lg"
                   >
-                    <img
+                    <video
                       src={item.preview_url}
-                      alt={`${stickerPack.name} preview ${index + 1}`}
-                      className="h-full w-full object-contain p-1"
-                      loading="lazy"
-                      decoding="async"
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      controls={false}
                     />
                   </div>
                 )

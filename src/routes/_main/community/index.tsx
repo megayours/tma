@@ -79,7 +79,7 @@ export function Feed() {
     excludeUsed: false,
     pagination: {
       page: currentPage,
-      size: 50,
+      size: 6,
     },
     community: selectedCommunity,
     tokenCollections:
@@ -194,7 +194,7 @@ export function Feed() {
       },
       {
         root: scrollContainer,
-        rootMargin: '100px',
+        rootMargin: '50px',
         threshold: 0.1,
       }
     );

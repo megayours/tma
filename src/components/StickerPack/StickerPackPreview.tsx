@@ -13,17 +13,17 @@ interface PreviewItemProps {
   index: number;
 }
 
-const PreviewItem = ({ item, packName, index }: PreviewItemProps) => {
-  const [imageLoading, setImageLoading] = useState(true);
-  const [imageError, setImageError] = useState(false);
+const PreviewItem = ({ item }: PreviewItemProps) => {
+  const [videoLoading, setVideoLoading] = useState(true);
+  const [videoError, setVideoError] = useState(false);
 
-  const handleImageLoad = () => {
-    setImageLoading(false);
+  const handleVideoLoad = () => {
+    setVideoLoading(false);
   };
 
-  const handleImageError = () => {
-    setImageLoading(false);
-    setImageError(true);
+  const handleVideoError = () => {
+    setVideoLoading(false);
+    setVideoError(true);
   };
 
   return (
@@ -34,21 +34,22 @@ const PreviewItem = ({ item, packName, index }: PreviewItemProps) => {
         height: '250px',
       }}
     >
-      {imageLoading && (
-        <div className="absolute inset-0 bg-gray-300 animate-pulse rounded-lg" />
+      {videoLoading && (
+        <div className="absolute inset-0 animate-pulse rounded-lg bg-gray-300" />
       )}
-      {!imageError ? (
-        <img
+      {!videoError ? (
+        <video
           src={item.preview_url}
-          alt={`${packName} preview ${index + 1}`}
           className="h-full w-full object-cover transition-transform hover:scale-110"
-          loading="lazy"
-          decoding="async"
-          onLoad={handleImageLoad}
-          onError={handleImageError}
+          autoPlay
+          loop
+          muted
+          playsInline
+          onLoadedData={handleVideoLoad}
+          onError={handleVideoError}
         />
       ) : (
-        <div className="flex h-full w-full items-center justify-center text-xs text-tg-hint">
+        <div className="text-tg-hint flex h-full w-full items-center justify-center text-xs">
           N/A
         </div>
       )}

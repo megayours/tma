@@ -81,6 +81,8 @@ export const useGetRecommendedPrompts = ({
       community?.id,
     ],
     enabled: enabled && !!community?.id,
+    staleTime: 1000 * 60 * 3, // 3 minutes
+    gcTime: 1000 * 60 * 10, // 10 minutes
     queryFn: async () => {
       try {
         // Build query parameters manually to support multiple token_collection_ids

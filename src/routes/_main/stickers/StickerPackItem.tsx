@@ -41,7 +41,7 @@ export function StickerPackItem({
       </div>
 
       {/* Sticker preview grid */}
-      <div className="flex flex-row items-end justify-center gap-1 px-4 pb-4">
+      <div className="flex flex-row items-end justify-end gap-1 px-4 pb-4">
         <Link
           to="/sticker-packs/$stickerPackId"
           params={{ stickerPackId: stickerPack.id.toString() }}

@@ -54,14 +54,9 @@ export function StickerPackItem({
                     key={item.content_id || index}
                     className="relative overflow-hidden rounded-lg"
                   >
-                    <video
-                      src={item.preview_url}
-                      autoPlay
-                      loop
-                      muted
-                      playsInline
-                      controls={false}
-                    />
+                    <video autoPlay muted playsInline loop controls={false}>
+                      <source src={item.preview_url} type="video/webm"></source>
+                    </video>
                   </div>
                 )
             )}

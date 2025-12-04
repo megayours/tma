@@ -1,4 +1,5 @@
 import type { StickerPackExecution } from '@/hooks/useStickerPack';
+import { MediaDisplay } from '../lib/LatestContent/MediaDisplay';
 
 // Loading dots animation component
 export function LoadingDots() {
@@ -28,12 +29,11 @@ export function StickerPackVisualization({
           >
             {item.status === 'completed' && item.generated_content_url ? (
               // Completed sticker - show image
-              <img
+              <MediaDisplay
                 src={item.generated_content_url}
                 alt={item.bundle_item.prompt.name}
                 className="h-full w-full object-contain p-1"
                 loading="lazy"
-                decoding="async"
               />
             ) : item.status === 'processing' || item.status === 'pending' ? (
               // Processing or pending - show loading dots

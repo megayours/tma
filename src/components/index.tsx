@@ -1,5 +1,4 @@
 // Main components
-export { ExampleApp } from './ExampleApp';
 export { TelegramThemeDemo } from './TelegramThemeDemo';
 export { TelegramThemeStatus } from './TelegramThemeStatus';
 export { TelegramUIComponentsDemo } from './TelegramUIComponentsDemo';

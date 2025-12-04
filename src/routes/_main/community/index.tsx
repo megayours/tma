@@ -10,6 +10,7 @@ import gsap from 'gsap';
 import { FeedFilters } from './FeedFilters';
 import { useSelectCommunity } from '../../../contexts/SelectCommunityContext';
 import { Reshared } from '../stickers/Reshared';
+import { MediaDisplay } from '@/components/lib/LatestContent/MediaDisplay';
 
 export const Route = createFileRoute('/_main/community/')({
   component: Feed,
@@ -87,8 +88,6 @@ export function Feed() {
     enabled: !isLoadingCommunity, // Only enable when community is loaded
   });
 
-  console.log('Supported collections:', selectedCommunity);
-
   // Toggle content type selection
   const toggleType = (type: ContentTypeFilter | 'all') => {
     const currentQueryType =
@@ -153,7 +152,6 @@ export function Feed() {
       data.prompts.length > 0 &&
       !loadedPagesRef.current.has(currentPage)
     ) {
-      console.log('Loading page:', currentPage);
       setAllPrompts(prev => {
         // Avoid duplicates by checking if page was already added
         const existingIds = new Set(prev.map(p => p.id));
@@ -333,13 +331,11 @@ export function Feed() {
 
                 <div className="justify-cente flex h-full w-full items-center">
                   {prompt.latestContentUrl ? (
-                    <img
+                    <MediaDisplay
                       src={prompt.latestContentUrl}
                       alt={prompt.name}
-                      className="h-full w-full object-contain"
-                      loading={index < 4 ? 'eager' : 'lazy'}
-                      decoding="async"
-                      {...(index < 4 && { fetchpriority: 'high' as const })}
+                      className="h-full w-full"
+                      priority={index < 4}
                     />
                   ) : (
                     <div className="text-tg-hint flex h-full w-full items-center justify-center">

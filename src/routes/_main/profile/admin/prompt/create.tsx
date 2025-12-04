@@ -13,8 +13,12 @@ export const Route = createFileRoute('/_main/profile/admin/prompt/create')({
 
 function CreatePromptComponent() {
   const { session } = useSession();
-  const isMegaAdmin = session && parseInt(session.role) >= 2;
   const { selectedCommunity } = useSelectCommunity();
+  const isMegaAdmin = session?.communityPermissions.some(
+    perm =>
+      perm.communityId === selectedCommunity?.id &&
+      perm.permissions.includes('admin')
+  );
   const navigate = useNavigate();
   const { mutateAsync: createPrompt, isPending } = useCreatePromptMutation();
   const [selectedType, setSelectedType] = useState<
@@ -139,10 +143,13 @@ function CreatePromptComponent() {
                 onClick={() => handleTypeSelect('animated_stickers')}
                 className="cursor-pointer"
               >
-                {/* <div className="border-tg-section-separator flex flex-row items-center gap-2 overflow-hidden rounded-2xl border p-4">
+                <div className="border-tg-section-separator flex flex-row items-center gap-2 overflow-hidden rounded-2xl border p-4">
                   <span className="text-5xl">✨</span>
                   <span className="text-lg">Animated Sticker</span>
-                </div> */}
+                </div>
+                {!isMegaAdmin && (
+                  <span className="text-tg-hint">(Coming Soon)</span>
+                )}
               </div>
             </div>
           </>
@@ -150,7 +157,9 @@ function CreatePromptComponent() {
           <>
             <div className="p-6">
               <button
-                onClick={() => setSelectedType(null)}
+                onClick={() =>
+                  !isMegaAdmin ? null : handleTypeSelect('animated_stickers')
+                }
                 className="text-tg-link mb-4 flex items-center gap-2 text-base hover:opacity-80"
               >
                 ← Back

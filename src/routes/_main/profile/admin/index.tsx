@@ -3,6 +3,7 @@ import { ProtectedRoute } from '@/auth/ProtectedRoute';
 import MyPrompts from '@/components/MyPrompts';
 import { RecentlyUsedPrompts } from '@/components/RecentlyUsedPrompts';
 import { useSession } from '@/auth/SessionProvider';
+import { useSelectCommunity } from '../../../../contexts/SelectCommunityContext';
 
 export const Route = createFileRoute('/_main/profile/admin/')({
   component: ProfileLayout,
@@ -10,10 +11,18 @@ export const Route = createFileRoute('/_main/profile/admin/')({
 
 function RenderAdmin() {
   const { session } = useSession();
-  if (!session) {
+  const { selectedCommunity } = useSelectCommunity();
+
+  const canCreatePrompts = session?.communityPermissions.some(
+    perm =>
+      perm.communityId === selectedCommunity?.id &&
+      perm.permissions.includes('prompt_editor')
+  );
+  if (!session && !selectedCommunity) {
     return <div>No session available</div>;
   }
-  if (isNaN(parseInt(session.role)) || parseInt(session.role) < 1) {
+  console.log('ACCOUNT ROLE:', session);
+  if (canCreatePrompts !== true) {
     return (
       <div className="flex min-h-screen flex-col items-center gap-6 px-4">
         <div className="relative h-80 w-full max-w-xs">

@@ -8,6 +8,7 @@ import { useStickerPackExecutions } from '@/hooks/useStickerPack';
 import { useTelegramTheme } from '@/auth/useTelegram';
 import { useGetContents } from '@/hooks/useContents';
 import { GenerationsTimeline } from './GenerationsTimeline';
+import { useSelectCommunity } from '../../../contexts/SelectCommunityContext';
 
 export const Route = createFileRoute('/_main/profile/')({
   component: ProfileLayout,
@@ -48,7 +49,13 @@ function NotificationButton() {
 
 function CreatePromptDropdownButton() {
   const { session } = useSession();
-  if (session?.role && parseInt(session.role) < 1) return null;
+  const { selectedCommunity } = useSelectCommunity();
+  const canCreatePrompts = session?.communityPermissions.some(
+    perm =>
+      perm.communityId === selectedCommunity?.id &&
+      perm.permissions.includes('prompt_editor')
+  );
+  if (canCreatePrompts !== true) return null;
   return (
     <Link to="/profile/admin">
       <Button mode="plain" size="l">

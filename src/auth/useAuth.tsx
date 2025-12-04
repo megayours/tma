@@ -3,7 +3,6 @@ import { Buffer } from 'buffer';
 import { isTMA } from '@telegram-apps/bridge';
 import { popup, hapticFeedback } from '@telegram-apps/sdk-react';
 import { useTelegramRawInitData } from './useTelegram';
-import { permission } from 'process';
 
 export type Session = {
   auth_provider: 'discord' | 'telegram';

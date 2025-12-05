@@ -102,10 +102,11 @@ interface UseStickerPacksParams {
   pagination?: Pagination;
   type?: StickerPackType;
   communityId?: string;
+  preferredFormats?: string;
 }
 
 export const useStickerPacks = (params: UseStickerPacksParams) => {
-  const { pagination, type, communityId } = params;
+  const { pagination, type, communityId, preferredFormats = 'webm' } = params;
 
   // Extract page and size with null checking
   const page = pagination?.page || 1;
@@ -130,6 +131,9 @@ export const useStickerPacks = (params: UseStickerPacksParams) => {
         if (type) {
           queryParams.append('type', type);
         }
+
+        // HOTFIX: Add preferred_format parameter hardcoded as 'webm' for sticker packs
+        queryParams.append('preferred_formats', preferredFormats);
 
         const queryString = queryParams.toString();
         const url = `${import.meta.env.VITE_PUBLIC_API_URL}/sticker-pack${queryString ? `?${queryString}` : ''}`;
@@ -271,7 +275,8 @@ export type StickerPackDetail = z.infer<typeof StickerPackDetailSchema>;
 export const useStickerPack = (
   id: number | string,
   session?: Session | null | undefined,
-  tokens?: SupportedCollection[]
+  tokens?: SupportedCollection[],
+  preferredFormats: string = 'webm'
 ) => {
   return useQuery({
     queryKey: ['sticker-pack', id, tokens],
@@ -288,6 +293,9 @@ export const useStickerPack = (
             }
           });
         }
+
+        // HOTFIX: Add preferred_format parameter hardcoded as 'webm' for sticker packs
+        queryParams.append('preferred_formats', preferredFormats);
 
         const queryString = queryParams.toString();
         const url = `${import.meta.env.VITE_PUBLIC_API_URL}/sticker-pack/${id}${queryString ? `?${queryString}` : ''}`;

@@ -108,9 +108,9 @@ export const PromptSettings = ({
   const [isPublishing, setIsPublishing] = useState(false);
   const prevIsOpen = useRef(isOpen);
 
-  // Create a stable reference to the latest values
-  const latestValues = useRef({ hasChanges, editedPrompt });
-  latestValues.current = { hasChanges, editedPrompt };
+  // Use refs to track changes immediately without waiting for render
+  const pendingChangesRef = useRef(false);
+  const pendingPromptRef = useRef(editedPrompt);
 
   // Update local state when prompt prop changes
   useEffect(() => {
@@ -127,6 +127,8 @@ export const PromptSettings = ({
     // This preserves user edits when the prompt is refetched (e.g., after generation)
     if (!hasChanges) {
       setEditedPrompt(newPrompt);
+      pendingPromptRef.current = newPrompt;
+      pendingChangesRef.current = false;
       setContractsError('');
     }
   }, [prompt, hasChanges]);
@@ -163,10 +165,10 @@ export const PromptSettings = ({
   useEffect(() => {
     // Only trigger auto-save when isOpen changes from true to false
     if (prevIsOpen.current && !isOpen && !promptMutation.isPending) {
-      const { hasChanges: currentHasChanges, editedPrompt: currentPrompt } =
-        latestValues.current;
+      // Use refs which are updated immediately, not state which updates on next render
+      if (pendingChangesRef.current && pendingPromptRef.current.id) {
+        const currentPrompt = pendingPromptRef.current;
 
-      if (currentHasChanges && currentPrompt.id) {
         const autoSave = async () => {
           try {
             // Validate contracts before saving
@@ -194,6 +196,7 @@ export const PromptSettings = ({
             });
             if (updatedPrompt) {
               setHasChanges(false);
+              pendingChangesRef.current = false;
               // The query will be invalidated and refetched automatically
             }
           } catch (error) {
@@ -206,10 +209,13 @@ export const PromptSettings = ({
 
     // Update the previous isOpen value
     prevIsOpen.current = isOpen;
-  }, [isOpen, promptMutation]); // Only depend on isOpen and promptMutation
+  }, [isOpen, promptMutation, supportedCollections]); // Only depend on isOpen and promptMutation
 
   // Handle field updates
   const updateField = (field: keyof Prompt, value: any) => {
+    let valueChanged = false;
+    let updatedPrompt: Prompt | null = null;
+
     setEditedPrompt(prev => {
       // Special handling for fields that exist at both prompt and version levels
       // Update both prompt-level and version[0]-level
@@ -218,7 +224,13 @@ export const PromptSettings = ({
         prev.versions &&
         prev.versions.length > 0
       ) {
-        return {
+        // Check if value actually changed at either level
+        if (prev[field] === value && prev.versions[0][field] === value) {
+          return prev; // No change needed
+        }
+
+        valueChanged = true;
+        updatedPrompt = {
           ...prev,
           [field]: value,
           versions: prev.versions.map((version, index) =>
@@ -226,10 +238,25 @@ export const PromptSettings = ({
             index === 0 ? { ...version, [field]: value } : version
           ),
         };
+        return updatedPrompt;
       }
-      return { ...prev, [field]: value };
+
+      // For other fields, simple comparison
+      if (prev[field] === value) {
+        return prev; // No change needed
+      }
+
+      valueChanged = true;
+      updatedPrompt = { ...prev, [field]: value };
+      return updatedPrompt;
     });
-    setHasChanges(true);
+
+    // Update refs immediately so auto-save has correct values
+    if (valueChanged && updatedPrompt) {
+      pendingChangesRef.current = true;
+      pendingPromptRef.current = updatedPrompt;
+      setHasChanges(true);
+    }
   };
 
   // Handle immediate publication toggle
@@ -296,7 +323,12 @@ export const PromptSettings = ({
       });
     }
 
-    setEditedPrompt(prev => ({ ...prev, contracts: updatedContracts }));
+    const updatedPrompt = { ...editedPrompt, contracts: updatedContracts };
+    setEditedPrompt(updatedPrompt);
+
+    // Update refs immediately so auto-save has correct values
+    pendingChangesRef.current = true;
+    pendingPromptRef.current = updatedPrompt;
     setHasChanges(true);
 
     // Clear any existing error when user makes changes

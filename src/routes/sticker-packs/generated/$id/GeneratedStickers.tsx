@@ -6,6 +6,7 @@ import { useRegenerateItem } from '@/hooks/useStickerPack';
 import { useSession } from '@/auth/SessionProvider';
 import { useState } from 'react';
 import { FaRedo } from 'react-icons/fa';
+import { MediaDisplay } from '@/components/lib/LatestContent/MediaDisplay';
 
 interface GeneratedStickersProps {
   execution: StickerPackExecution;
@@ -42,12 +43,11 @@ function StickerItem({
   const renderStickerContent = () => {
     if (item.status === 'completed' && item.generated_content_url) {
       return (
-        <img
+        <MediaDisplay
           src={item.generated_content_url}
           alt={item.bundle_item.prompt.name}
-          className="h-full w-full object-contain"
-          loading={index < 10 ? 'eager' : 'lazy'}
-          decoding="async"
+          className="h-full w-full"
+          priority={index < 10}
         />
       );
     }

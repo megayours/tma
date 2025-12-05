@@ -84,10 +84,12 @@ export const usePreviewContentMutation = (
       promptId,
       contentIds,
       tokens,
+      overrideExisting = false,
     }: {
       promptId: number;
       contentIds: number[];
       tokens: Token[];
+      overrideExisting?: boolean;
     }) => {
       if (!session) return;
       const response = await fetch(
@@ -109,6 +111,7 @@ export const usePreviewContentMutation = (
               } as Contract,
               id: token.id,
             })),
+            override_existing: overrideExisting,
           }),
         }
       );
@@ -141,41 +144,72 @@ export const useGetPreviewContent = (
     queryFn: async () => {
       if (!session || !promptId) return;
 
-      // Build query parameters
-      const queryParams = new URLSearchParams({
-        page: paginationParams.page.toString(),
-        size: paginationParams.size.toString(),
-        sort_by: 'created_at',
-        sort_order: 'desc',
-      });
+      try {
+        // Build query parameters
+        const queryParams = new URLSearchParams({
+          page: paginationParams.page.toString(),
+          size: paginationParams.size.toString(),
+          sort_by: 'created_at',
+          sort_order: 'desc',
+        });
 
-      const response = await fetch(
-        `${import.meta.env.VITE_PUBLIC_API_URL}/prompts/${promptId}/previews?${queryParams.toString()}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: session?.authToken,
-          },
+        const response = await fetch(
+          `${import.meta.env.VITE_PUBLIC_API_URL}/prompts/${promptId}/previews?${queryParams.toString()}`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: session?.authToken,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          const errorText = await response.text().catch(() => 'Unknown error');
+          console.error(
+            `Failed to get preview content: ${response.status} ${response.statusText}`,
+            errorText
+          );
+          throw new Error(
+            `Failed to get preview content: ${response.status} ${response.statusText}`
+          );
         }
-      );
-      if (!response.ok) {
-        throw new Error('Failed to get preview content');
-      }
-      const data = await response.json();
 
-      // Validate and transform with Zod schema
-      const result = safeParse(RawContentListResponseSchema, data);
-      if (!result) {
-        const errors = getValidationErrors(RawContentListResponseSchema, data);
-        console.error('Preview content validation errors:', errors);
-        throw new Error('Invalid preview content response format');
-      }
+        const data = await response.json();
 
-      return {
-        pagination: result.pagination,
-        content: result.data as Content[],
-      };
+        // Validate and transform with Zod schema
+        const result = safeParse(RawContentListResponseSchema, data);
+        if (!result) {
+          const errors = getValidationErrors(RawContentListResponseSchema, data);
+          console.error('Preview content validation errors:', errors);
+          console.error('Raw response data:', data);
+          throw new Error(
+            `Invalid preview content response format: ${JSON.stringify(errors)}`
+          );
+        }
+
+        return {
+          pagination: result.pagination,
+          content: result.data as Content[],
+        };
+      } catch (error) {
+        // Enhanced error logging
+        console.error('Error in useGetPreviewContent queryFn:', {
+          error,
+          message: error instanceof Error ? error.message : 'Unknown error',
+          stack: error instanceof Error ? error.stack : undefined,
+          promptId,
+          pagination: paginationParams,
+        });
+
+        // Re-throw with more context
+        if (error instanceof Error) {
+          throw error;
+        }
+        throw new Error(
+          `Unexpected error fetching preview content: ${String(error)}`
+        );
+      }
     },
     enabled: !!session && !!promptId,
     refetchInterval: query => {

@@ -94,6 +94,7 @@ export const ContentStatusSchema = z.enum([
   'processing',
   'completed',
   'failed',
+  'error',
 ]);
 export type ContentStatus = z.infer<typeof ContentStatusSchema>;
 

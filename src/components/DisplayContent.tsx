@@ -1,16 +1,21 @@
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import type { Content } from '@/types/content';
+import { MdRefresh } from 'react-icons/md';
 
 interface DisplayContentProps {
   content: Content;
   className?: string;
   showVersion?: boolean;
+  onRetry?: () => void;
+  isRetrying?: boolean;
 }
 
 export const DisplayContent = ({
   content,
   className = '',
   showVersion = false,
+  onRetry,
+  isRetrying = false,
 }: DisplayContentProps) => {
   const baseClasses = `rounded-lg ${className}`.trim();
 
@@ -65,6 +70,19 @@ export const DisplayContent = ({
             className={`${baseClasses} flex items-center justify-center bg-red-100 text-xs text-red-600`}
           >
             FAILED
+          </div>
+        );
+
+      case 'error':
+        return (
+          <div
+            className={`${baseClasses} flex flex-col items-center justify-center gap-1 bg-red-100 text-xs text-red-600 ${
+              onRetry && !isRetrying ? 'cursor-pointer transition-all hover:bg-red-200 active:scale-95' : ''
+            } ${isRetrying ? 'opacity-50 cursor-not-allowed' : ''}`}
+            onClick={isRetrying ? undefined : onRetry}
+          >
+            <MdRefresh className={`h-5 w-5 ${isRetrying ? 'animate-spin' : ''}`} />
+            <span>{isRetrying ? 'RETRYING...' : 'RETRY'}</span>
           </div>
         );
 

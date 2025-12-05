@@ -19,6 +19,11 @@ function CreatePromptComponent() {
       perm.communityId === selectedCommunity?.id &&
       perm.permissions.includes('admin')
   );
+  const isEditor = session?.communityPermissions.some(
+    perm =>
+      perm.communityId === selectedCommunity?.id &&
+      perm.permissions.includes('prompt_editor')
+  );
   const navigate = useNavigate();
   const { mutateAsync: createPrompt, isPending } = useCreatePromptMutation();
   const [selectedType, setSelectedType] = useState<
@@ -95,35 +100,25 @@ function CreatePromptComponent() {
             <div className="text-tg-text mx-4 flex flex-col gap-2">
               <h1 className="text-sm">MEMEs </h1>
               <div
-                onClick={() =>
-                  !isMegaAdmin ? null : handleTypeSelect('images')
-                }
+                onClick={() => isEditor && handleTypeSelect('images')}
                 className="cursor-pointer"
               >
                 <div
-                  className={`border-tg-section-separator flex flex-row items-center gap-2 overflow-hidden rounded-2xl border p-4 ${!isMegaAdmin && 'bg-tg-secondary-bg'}`}
+                  className={`border-tg-section-separator flex flex-row items-center gap-2 overflow-hidden rounded-2xl border p-4 ${!isEditor && 'bg-tg-secondary-bg'}`}
                 >
                   <span className="text-5xl">🖼️</span>
                   <span className="text-lg">Image</span>
-                  {!isMegaAdmin && (
-                    <span className="text-tg-hint">(Coming Soon)</span>
-                  )}
                 </div>
               </div>
               <div
-                onClick={() =>
-                  !isMegaAdmin ? null : handleTypeSelect('videos')
-                }
+                onClick={() => isEditor && handleTypeSelect('videos')}
                 className="cursor-pointer"
               >
                 <div
-                  className={`border-tg-section-separator flex flex-row items-center gap-2 overflow-hidden rounded-2xl border p-4 ${!isMegaAdmin && 'bg-tg-secondary-bg'}`}
+                  className={`border-tg-section-separator flex flex-row items-center gap-2 overflow-hidden rounded-2xl border p-4 ${!isEditor && 'bg-tg-secondary-bg'}`}
                 >
                   <span className="text-5xl">🎬</span>
                   <span className="text-lg">GIF</span>
-                  {!isMegaAdmin && (
-                    <span className="text-tg-hint">(Coming Soon)</span>
-                  )}
                 </div>
               </div>
             </div>
@@ -140,16 +135,18 @@ function CreatePromptComponent() {
                 </div>
               </div>
               <div
-                onClick={() => handleTypeSelect('animated_stickers')}
+                onClick={() =>
+                  isMegaAdmin && handleTypeSelect('animated_stickers')
+                }
                 className="cursor-pointer"
               >
                 <div className="border-tg-section-separator flex flex-row items-center gap-2 overflow-hidden rounded-2xl border p-4">
                   <span className="text-5xl">✨</span>
                   <span className="text-lg">Animated Sticker</span>
+                  {!isMegaAdmin && (
+                    <span className="text-tg-hint">(Coming Soon)</span>
+                  )}
                 </div>
-                {!isMegaAdmin && (
-                  <span className="text-tg-hint">(Coming Soon)</span>
-                )}
               </div>
             </div>
           </>
@@ -157,9 +154,7 @@ function CreatePromptComponent() {
           <>
             <div className="p-6">
               <button
-                onClick={() =>
-                  !isMegaAdmin ? null : handleTypeSelect('animated_stickers')
-                }
+                onClick={() => setSelectedType(null)}
                 className="text-tg-link mb-4 flex items-center gap-2 text-base hover:opacity-80"
               >
                 ← Back

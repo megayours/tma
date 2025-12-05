@@ -9,10 +9,13 @@ export type Session = {
   id: string;
   username: string;
   jwt: string;
-  role: string;
   expiration?: number | null;
   rawUser: string;
   authToken: string;
+  communityPermissions: Array<{
+    communityId: string;
+    permissions: string[];
+  }>;
 };
 
 export type AuthError = {
@@ -128,10 +131,12 @@ export function useAuth() {
           id: data.id,
           username: data.name,
           jwt: discordToken,
-          role: data.role,
           expiration: tokenExpirationTime,
           rawUser: JSON.stringify(data),
           authToken: 'Bearer ' + discordToken,
+          communityPermissions: data.community_permissions.map((c: any) => {
+            return { communityId: c.community_id, permissions: c.permissions };
+          }),
         };
 
         localStorage.setItem('session', JSON.stringify(session));
@@ -224,10 +229,12 @@ export function useAuth() {
           id: data.id,
           username: data.name,
           jwt: telegramUser.initData,
-          role: data.role,
           expiration: getExpTimestamp(telegramUser.initData),
           rawUser: JSON.stringify(data),
           authToken: 'tma ' + telegramUser.initData,
+          communityPermissions: data.community_permissions.map((c: any) => {
+            return { communityId: c.community_id, permissions: c.permissions };
+          }),
         };
 
         localStorage.setItem('session', JSON.stringify(session));

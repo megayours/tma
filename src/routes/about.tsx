@@ -4,7 +4,6 @@ import {
   TelegramThemeStatus,
   TelegramThemeDemo,
   TelegramUIComponentsDemo,
-  ExampleApp,
   ThemeDemo,
   ThemeUsageExamples,
 } from '../components';
@@ -64,9 +63,7 @@ function Demo() {
         </Cell>
         <Cell
           subtitle="Environment"
-          onClick={() =>
-            copyToClipboard(buildInfo.environment, 'environment')
-          }
+          onClick={() => copyToClipboard(buildInfo.environment, 'environment')}
         >
           <span
             className={`font-semibold ${
@@ -88,9 +85,7 @@ function Demo() {
           onClick={testSentry}
           className="cursor-pointer"
         >
-          <span className="text-red-600 font-semibold">
-            Throw Test Error
-          </span>
+          <span className="font-semibold text-red-600">Throw Test Error</span>
         </Cell>
       </Section>
 
@@ -101,7 +96,6 @@ function Demo() {
       <TelegramThemeStatus />
       <TelegramThemeDemo />
       <TelegramUIComponentsDemo />
-      <ExampleApp />
       <ThemeDemo />
       <ThemeUsageExamples />
 

@@ -1,5 +1,17 @@
 import type { PromptWithContent } from '../../../types/content';
 
+// Utility function to detect webm files, handling URLs with query parameters
+const isWebm = (url: string): boolean => {
+  try {
+    // Try parsing as URL to extract pathname
+    const urlObj = new URL(url);
+    return urlObj.pathname.toLowerCase().includes('.webm');
+  } catch {
+    // If URL parsing fails, fall back to simple check
+    return url.toLowerCase().includes('.webm');
+  }
+};
+
 export function LatestAnimatedSticker({
   prompt,
   bg,
@@ -18,7 +30,7 @@ export function LatestAnimatedSticker({
       }}
     >
       <div className="flex h-full w-full items-center justify-center bg-white/50 p-5">
-        {prompt.latestContentUrl?.endsWith('.webm') ? (
+        {prompt.latestContentUrl && isWebm(prompt.latestContentUrl) ? (
           <video
             src={prompt.latestContentUrl}
             className="max-h-full max-w-2/3 rounded-2xl object-contain"

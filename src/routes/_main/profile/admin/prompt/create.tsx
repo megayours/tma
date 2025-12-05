@@ -154,9 +154,7 @@ function CreatePromptComponent() {
           <>
             <div className="p-6">
               <button
-                onClick={() =>
-                  !isMegaAdmin ? null : handleTypeSelect('animated_stickers')
-                }
+                onClick={() => setSelectedType(null)}
                 className="text-tg-link mb-4 flex items-center gap-2 text-base hover:opacity-80"
               >
                 ← Back

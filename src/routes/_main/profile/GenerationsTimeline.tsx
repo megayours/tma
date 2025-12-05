@@ -5,6 +5,7 @@ import type { Content } from '@/types/content';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { StickerList } from './StickerList';
 import { useState, useEffect, useRef } from 'react';
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 
 // Minimum number of timeline items to show before stopping initial fetch
 const MIN_TIMELINE_ITEMS = 10;
@@ -114,21 +115,43 @@ export function GenerationsTimeline() {
 }
 
 function SingleContent({ content }: { content: Content }) {
+  const linkProps =
+    content.status === 'processing'
+      ? {
+          to: '/content/$promptId/processing/$executionId' as const,
+          params: {
+            promptId: String(content.promptId),
+            executionId: String(content.executionId || content.id),
+          },
+        }
+      : {
+          to: '/content/$promptId/success' as const,
+          params: { promptId: String(content.promptId) },
+          search: { executionId: content.executionId || content.id },
+        };
+
   return (
-    <div className="flex items-center gap-3 overflow-hidden rounded-xl px-2 py-3">
+    <Link
+      {...linkProps}
+      className="flex items-center gap-3 overflow-hidden rounded-xl px-2 py-3 transition-opacity hover:opacity-80 active:scale-[0.99]"
+    >
       {/* Thumbnail Image - Left */}
-      <Link
-        to="/content/$promptId/success"
-        params={{ promptId: String(content.promptId) }}
-        search={{ executionId: content.executionId || content.id }}
-        className="flex-shrink-0"
-      >
+      {content.status === 'processing' ? (
+        <div className="bg-tg-hint/30 flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-lg">
+          <DotLottieReact
+            src="/lotties/loader.lottie"
+            loop
+            autoplay
+            className="h-20 w-20"
+          />
+        </div>
+      ) : (
         <img
           src={content.url || ''}
           alt="Generated content"
-          className="h-20 w-20 cursor-pointer rounded-lg object-cover transition-opacity hover:opacity-90"
+          className="h-20 w-20 flex-shrink-0 rounded-lg object-cover"
         />
-      </Link>
+      )}
 
       {/* Content Info - Middle */}
       <div className="min-w-0 flex-1">
@@ -161,7 +184,7 @@ function SingleContent({ content }: { content: Content }) {
           {content.status}
         </span>
       </div>
-    </div>
+    </Link>
   );
 }
 

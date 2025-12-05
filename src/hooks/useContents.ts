@@ -451,35 +451,57 @@ export const useShareContent = (session: Session | null | undefined) => {
         throw new Error('Session required');
       }
 
-      const response = await fetch(
-        `${import.meta.env.VITE_PUBLIC_API_URL}/content/${contentId}/share`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: session.authToken,
-          },
-        }
-      );
+      // Create AbortController for 90-second timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 90000);
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(
-          errorData.message || `Failed to share content: ${response.status}`
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_PUBLIC_API_URL}/content/${contentId}/share`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: session.authToken,
+            },
+            signal: controller.signal,
+          }
         );
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(
+            errorData.message || `Failed to share content: ${response.status}`
+          );
+        }
+
+        const data = await response.json();
+
+        // Validate and transform with Zod schema
+        const result = safeParse(ShareResponseSchema, data);
+        if (!result) {
+          const errors = getValidationErrors(ShareResponseSchema, data);
+          console.error('Share response validation errors:', errors);
+          throw new Error('Invalid share response format');
+        }
+
+        return result as ShareResponse;
+      } catch (error) {
+        clearTimeout(timeoutId);
+
+        // Distinguish timeout errors from other failures
+        if (error instanceof Error && error.name === 'AbortError') {
+          throw new Error(
+            'Request timed out. Giphy upload is taking longer than expected.'
+          );
+        }
+
+        throw error;
       }
-
-      const data = await response.json();
-
-      // Validate and transform with Zod schema
-      const result = safeParse(ShareResponseSchema, data);
-      if (!result) {
-        const errors = getValidationErrors(ShareResponseSchema, data);
-        console.error('Share response validation errors:', errors);
-        throw new Error('Invalid share response format');
-      }
-
-      return result as ShareResponse;
     },
+    retry: 2, // Retry up to 2 times on failure
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 10000), // Exponential backoff: 1s, 2s, max 10s
   });
 };

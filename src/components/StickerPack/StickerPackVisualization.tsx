@@ -32,7 +32,7 @@ export function StickerPackVisualization({
               <MediaDisplay
                 src={item.generated_content_url}
                 alt={item.bundle_item.prompt.name}
-                className="h-full w-full object-contain p-1"
+                className="h-full w-full rounded-lg object-contain p-1"
                 loading="lazy"
               />
             ) : item.status === 'processing' || item.status === 'pending' ? (

@@ -1,6 +1,6 @@
 import type { Prompt, PromptVersion } from '@/types/prompt';
 import { useSession } from '../../auth/SessionProvider';
-import { useGetPreviewContent } from '../../hooks/useContents';
+import { useGetPreviewContent, usePreviewContentMutation } from '../../hooks/useContents';
 import type { Content } from '@/types/response';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { DisplayContent } from '../DisplayContent';
@@ -18,6 +18,8 @@ export const ContentPreviews = ({
   const [hasMorePages, setHasMorePages] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const { mutateAsync: retryPreview, isPending: isRetrying } = usePreviewContentMutation(session);
+  const [retryingContentId, setRetryingContentId] = useState<string | null>(null);
 
   const {
     data: { content, pagination: paginationData } = {
@@ -91,6 +93,25 @@ export const ContentPreviews = ({
     }
   }, [groupedContent]);
 
+  // Retry handler for failed/error content
+  const handleRetry = async (content: Content) => {
+    if (!content.token || !prompt.id || isRetrying || retryingContentId === content.id) return;
+
+    setRetryingContentId(content.id);
+    try {
+      await retryPreview({
+        promptId: prompt.id,
+        contentIds: [],
+        tokens: [content.token],
+        overrideExisting: true,
+      });
+    } catch (error) {
+      console.error('Failed to retry preview:', error);
+    } finally {
+      setRetryingContentId(null);
+    }
+  };
+
   return (
     <div className="flex h-full w-full flex-col">
       <div className="relative flex min-h-0 w-full flex-1 items-center justify-center overflow-hidden p-4">
@@ -99,8 +120,10 @@ export const ContentPreviews = ({
             <div className="aspect-square max-h-full max-w-full">
               <DisplayContent
                 content={selectedContent}
-                className="h-full w-full overflow-hidden rounded-lg object-cover"
+                className="h-full min-h-24 w-full min-w-24 overflow-hidden rounded-lg object-cover"
                 showVersion={true}
+                onRetry={() => handleRetry(selectedContent)}
+                isRetrying={retryingContentId === selectedContent.id}
               />
             </div>
           </div>
@@ -130,7 +153,12 @@ export const ContentPreviews = ({
                     }`}
                     onClick={() => setSelectedContent(content)}
                   >
-                    <DisplayContent content={content} className="h-14 w-14" />
+                    <DisplayContent
+                      content={content}
+                      className="h-14 w-14"
+                      onRetry={() => handleRetry(content)}
+                      isRetrying={retryingContentId === content.id}
+                    />
                   </div>
                 )),
                 // Version separator (except for the last group)

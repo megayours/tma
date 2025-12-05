@@ -26,7 +26,7 @@ export interface Content {
   gif?: string;
   image?: string;
   url?: string;
-  status: 'processing' | 'completed' | 'failed';
+  status: 'processing' | 'completed' | 'failed' | 'error';
   error?: string | null;
   creatorId: string;
   revealedAt: string | number | null;

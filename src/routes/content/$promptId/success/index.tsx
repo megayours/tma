@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { createFileRoute, useNavigate, Link } from '@tanstack/react-router';
 import { z } from 'zod';
 import { useState, useRef, useEffect } from 'react';
 import { useSession } from '@/auth/SessionProvider';
@@ -235,9 +235,13 @@ function SuccessPage() {
         <div className="flex flex-col pt-6 pb-10 sm:px-6">
           {/* Success Title */}
           <div className="flex flex-row items-center justify-between px-6">
-            <h1 className="text-tg-text text-lg font-semibold">
+            <Link
+              to="/content/$promptId/details"
+              params={{ promptId }}
+              className="text-tg-link text-lg font-semibold underline hover:opacity-80 transition-opacity active:scale-95"
+            >
               {content?.prompt?.name || 'Tadaa! 🎉'}
-            </h1>
+            </Link>
           </div>
 
           {/* Generated Content Display */}

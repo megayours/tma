@@ -7,13 +7,13 @@ import {
 } from '@/hooks/useCollections';
 import { NFTSelector } from './NFTSelector';
 import type { Token } from '@/types/response';
-import { useSelectedNFTsSafe } from '../../../../contexts/SelectedNFTsContext';
 import { encodeNFT } from '@/utils/nftEncoding';
 import { useWebAppStartParam } from '@/hooks/useWebAppStartParam';
 import { useStickerPack } from '@/hooks/useStickerPacks';
 import { useSession } from '@/auth/SessionProvider';
 import { useSelectCommunity } from '@/contexts/SelectCommunityContext';
 import { usePurchase } from '@/hooks/usePurchase';
+import { useGetFavorites } from '@/hooks/useFavorites';
 
 export const Route = createFileRoute(
   '/sticker-packs/$stickerPackId/select-nfts/'
@@ -143,7 +143,7 @@ function RouteComponent() {
   });
 
   const { data: collections } = useGetSupportedCollections();
-  const { selectedFavorite } = useSelectedNFTsSafe();
+  const { selectedFavorite, isLoadingSelected } = useGetFavorites(session);
   const { collections: communityCollections } = useWebAppStartParam() || {
     collections: [],
   };
@@ -188,12 +188,14 @@ function RouteComponent() {
 
   // Pre-populate with selectedFavorite if available and nothing is selected yet
   useEffect(() => {
+    if (isLoadingSelected) return; // Wait for selectedFavorite to load
+
     if (selectedFavorite && selectedNFTs.length === 0) {
       setSelectedNFTs([selectedFavorite.token]);
     } else if (!selectedFavorite && defaultToken && selectedNFTs.length === 0) {
       setSelectedNFTs([defaultToken]);
     }
-  }, [selectedFavorite, defaultToken, selectedNFTs.length]);
+  }, [selectedFavorite, defaultToken, selectedNFTs.length, isLoadingSelected]);
 
   // Open selector if no NFT selected, close if one is selected
   useEffect(() => {

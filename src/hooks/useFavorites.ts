@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import type { Session } from '@/auth/useAuth';
 import type { Token } from '../types/response';
 import { setCachedFavorite } from '@/utils/favoriteCache';
-import { useSelectedNFTsSafe } from '@/contexts/SelectedNFTsContext';
 
 export type Favorite = {
   token: Token;
@@ -12,8 +11,7 @@ export type Favorite = {
 };
 
 export function useGetFavorites(session: Session | null) {
-  const { selectedFavorite, setSelectedFavorite: setSelectedFavoriteGlobal } =
-    useSelectedNFTsSafe();
+  const [selectedFavorite, setSelectedFavoriteInternal] = useState<Favorite | null>(null);
   const [isLoadingSelected, setIsLoadingSelected] = useState(true);
 
   const { data, isLoading } = useQuery({
@@ -55,19 +53,19 @@ export function useGetFavorites(session: Session | null) {
     if (data.length > 0) {
       // Always select the most-used favorite (sorted by usage)
       const mostUsedFavorite = data[0];
-      setSelectedFavoriteGlobal(mostUsedFavorite);
+      setSelectedFavoriteInternal(mostUsedFavorite);
       setCachedFavorite(session.id, mostUsedFavorite);
     } else {
-      setSelectedFavoriteGlobal(null);
+      setSelectedFavoriteInternal(null);
     }
 
     setIsLoadingSelected(false);
-  }, [data, session?.id, setSelectedFavoriteGlobal]);
+  }, [data, session?.id]);
 
   const setSelectedFavorite = (favorite: Favorite) => {
     if (!session?.id) return;
 
-    setSelectedFavoriteGlobal(favorite);
+    setSelectedFavoriteInternal(favorite);
     setCachedFavorite(session.id, favorite);
   };
 

@@ -12,7 +12,8 @@ import type { Token } from '@/types/response';
 
 interface NFTSelectorProps {
   collections?: SupportedCollection[];
-  onTokenSelect: (token: Token) => void;
+  index: number;
+  onTokenSelect: (token: Token, index: number) => void;
   selectedNFT?: Token | null;
   onCancel?: () => void;
 }

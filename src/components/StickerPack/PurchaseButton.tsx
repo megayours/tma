@@ -3,7 +3,7 @@ import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { FaTimes, FaPalette } from 'react-icons/fa';
 import { usePurchase } from '@/hooks/usePurchase';
 import { useSession } from '@/auth/SessionProvider';
-import { useSelectedNFTsSafe } from '@/contexts/SelectedNFTsContext';
+import { useGetFavorites } from '@/hooks/useFavorites';
 import { useStickerPackAnimationContext } from '@/contexts/StickerPackAnimationContext';
 import { redirectToTelegramBot } from '@/utils/telegramRedirect';
 
@@ -17,7 +17,7 @@ export function PurchaseButton({
   price = '$9.99',
 }: PurchaseButtonProps) {
   const { session } = useSession();
-  const { selectedFavorite } = useSelectedNFTsSafe();
+  const { selectedFavorite } = useGetFavorites(session);
   const { triggerAnimation } = useStickerPackAnimationContext();
 
   const { purchaseStickerPack, isPending, state } = usePurchase(session, {

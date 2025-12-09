@@ -5,8 +5,8 @@
  */
 export function isFreshLaunch(currentAuthDate: number | null): boolean {
   if (currentAuthDate === null) {
-    // No auth_date available, treat as fresh launch to process community
-    return false;
+    // No auth_date available (web/Discord), treat as fresh launch to process community
+    return true;
   }
 
   try {

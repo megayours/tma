@@ -7,6 +7,7 @@ import type { Prompt } from '@/types/prompt';
 import { useNavigate } from '@tanstack/react-router';
 import { useGetPreviewContent } from '../hooks/useContents';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+import { useSelectCommunity } from '@/contexts/SelectCommunityContext';
 
 const SkeletonBlock = () => (
   <div className="h-full w-full animate-pulse rounded-md bg-gray-300 dark:bg-zinc-700" />
@@ -59,6 +60,7 @@ export const RenderPreview = ({ prompt }: { prompt: Prompt }) => {
 export default function MyPrompts() {
   const navigate = useNavigate();
   const { session } = useSession();
+  const { selectedCommunity } = useSelectCommunity();
   const [pagination, setPagination] = useState<PaginationType>({
     page: 1,
     size: 6,
@@ -74,7 +76,8 @@ export default function MyPrompts() {
     },
     undefined,
     'created_at',
-    'desc'
+    'desc',
+    selectedCommunity
   );
 
   useEffect(() => {

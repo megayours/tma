@@ -170,7 +170,7 @@ export const useGetPrompt = (promptId: string, session: Session | null) => {
     queryFn: async () => {
       if (!session) return;
       const response = await fetch(
-        `${import.meta.env.VITE_PUBLIC_API_URL}/prompts/${promptId}`,
+        `${import.meta.env.VITE_PUBLIC_API_URL}/prompts/${promptId}?preferred_formats=webm`,
         {
           method: 'GET',
           headers: {
@@ -262,7 +262,7 @@ export const useGetRecommendedPromptsWithDetails = ({
       const detailPromises = recommendedQuery.data.prompts.map(async prompt => {
         try {
           const response = await fetch(
-            `${import.meta.env.VITE_PUBLIC_API_URL}/prompts/${prompt.id}`,
+            `${import.meta.env.VITE_PUBLIC_API_URL}/prompts/${prompt.id}?preferred_formats=webm`,
             {
               method: 'GET',
               headers: {
@@ -359,6 +359,8 @@ export const useGetPrompts = ({
       if (community?.id) {
         params.set('community_id', community.id);
       }
+
+      params.set('preferred_formats', 'webm');
 
       const response = await fetch(
         `${import.meta.env.VITE_PUBLIC_API_URL}/prompts?${params.toString()}`,

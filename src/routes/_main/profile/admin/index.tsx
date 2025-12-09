@@ -72,7 +72,7 @@ function ProfileLayout() {
     <ProtectedRoute>
       <div className="profile-layout h-screen">
         {/* This renders the index content when at /profile */}
-        <main className="pb-16">
+        <main className="pt-4 pb-16">
           <div className="bg-tg-bg rounded-l-xl px-2">
             <RenderAdmin />
           </div>

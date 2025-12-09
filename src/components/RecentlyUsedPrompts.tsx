@@ -5,6 +5,7 @@ import { useSession } from '@/auth/SessionProvider';
 import type { Prompt } from '@/types/prompt';
 import { useNavigate } from '@tanstack/react-router';
 import { IoChevronBackOutline, IoChevronForwardOutline } from 'react-icons/io5';
+import { useSelectCommunity } from '@/contexts/SelectCommunityContext';
 
 const SkeletonCard = () => (
   <div className="h-48 w-[150px] shrink-0 animate-pulse rounded-lg bg-gray-300 dark:bg-zinc-700" />
@@ -65,6 +66,7 @@ const PromptCard = ({ prompt }: { prompt: Prompt }) => {
 
 export function RecentlyUsedPrompts() {
   const { session } = useSession();
+  const { selectedCommunity } = useSelectCommunity();
   const [pagination, setPagination] = useState<PaginationType>({
     page: 1,
     size: 10,
@@ -80,7 +82,8 @@ export function RecentlyUsedPrompts() {
     },
     undefined,
     'updated_at',
-    'desc'
+    'desc',
+    selectedCommunity
   );
 
   useEffect(() => {

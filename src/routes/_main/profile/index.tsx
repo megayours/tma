@@ -50,7 +50,7 @@ function NotificationButton() {
 function CreatePromptDropdownButton() {
   const { session } = useSession();
   const { selectedCommunity } = useSelectCommunity();
-  const canCreatePrompts = session?.communityPermissions.some(
+  const canCreatePrompts = session?.communityPermissions?.some(
     perm =>
       perm.communityId === selectedCommunity?.id &&
       perm.permissions.includes('prompt_editor')

@@ -327,6 +327,7 @@ export const useGetPrompts = ({
   session,
   pagination,
   filters,
+  community,
 }: {
   session: Session | null;
   pagination: Pagination;
@@ -334,6 +335,7 @@ export const useGetPrompts = ({
     type: 'images' | 'videos' | 'stickers' | 'animated_stickers' | 'all';
   };
   filters: Filter;
+  community?: { id: string } | null;
 }) => {
   const queryKey = [
     'prompts',
@@ -341,6 +343,7 @@ export const useGetPrompts = ({
     promptFilters,
     filters,
     pagination,
+    community?.id,
   ];
 
   return useQuery({
@@ -353,6 +356,9 @@ export const useGetPrompts = ({
       params.set('type', promptFilters.type || 'all');
       params.set('page', pagination.page.toString());
       params.set('size', pagination.size.toString());
+      if (community?.id) {
+        params.set('community_id', community.id);
+      }
 
       const response = await fetch(
         `${import.meta.env.VITE_PUBLIC_API_URL}/prompts?${params.toString()}`,
@@ -454,7 +460,8 @@ export const useGetMyPrompts = (
   _filtering: Filter,
   type?: 'images' | 'videos' | 'stickers' | 'animated_stickers',
   sortBy: 'created_at' | 'last_used' | 'updated_at' = 'created_at',
-  sortOrder: 'asc' | 'desc' = 'desc'
+  sortOrder: 'asc' | 'desc' = 'desc',
+  community?: { id: string } | null
 ) => {
   return useQuery({
     queryKey: [
@@ -464,6 +471,7 @@ export const useGetMyPrompts = (
       type,
       sortBy,
       sortOrder,
+      community?.id,
     ],
     queryFn: async () => {
       if (!session) return;
@@ -474,6 +482,7 @@ export const useGetMyPrompts = (
         sort_by: sortBy,
         sort_order: sortOrder,
         ...(type && { type }),
+        ...(community?.id && { community_id: community.id }),
       });
       const response = await fetch(
         `${import.meta.env.VITE_PUBLIC_API_URL}/prompts?${params.toString()}`,

@@ -7,6 +7,10 @@ import {
   RawContentResponseSchema,
   ShareResponseSchema,
   type ShareResponse,
+  ContentGenerationStatusSchema,
+  type ContentGenerationStatus,
+  ContentExecutionsResponseSchema,
+  type ContentExecutionsResponse,
 } from '../types/response';
 import type { Session } from '@/auth/useAuth';
 import type { Contract } from '../types/contract';
@@ -227,7 +231,6 @@ export const useGetPreviewContent = (
 export const useGenerateContentMutation = (
   session: Session | null | undefined
 ) => {
-  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({
       promptId,
@@ -241,7 +244,7 @@ export const useGenerateContentMutation = (
       inputs: any[];
       contentIds?: string[];
       overrideExisting?: boolean;
-    }) => {
+    }): Promise<{ execution_id: string }> => {
       if (!session) {
         throw new Error('Session required');
       }
@@ -278,14 +281,97 @@ export const useGenerateContentMutation = (
       }
 
       const data = await response.json();
-      return data;
+      return data as { execution_id: string };
     },
-    onSuccess: () => {
-      // Invalidate relevant queries after successful generation
-      queryClient.invalidateQueries({ queryKey: ['content'] });
-      queryClient.invalidateQueries({ queryKey: ['preview-content'] });
-      queryClient.invalidateQueries({ queryKey: ['favorites'] });
+  });
+};
+
+// Poll content generation status
+export const useContentGenerationStatus = (
+  executionId: string | null,
+  options?: { enabled?: boolean }
+) => {
+  const queryClient = useQueryClient();
+
+  return useQuery<ContentGenerationStatus>({
+    queryKey: ['content-generation-status', executionId],
+    queryFn: async () => {
+      const response = await fetch(
+        `https://api.ultrayours.com/v1/content/generate/${executionId}/status`
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const result = safeParse(ContentGenerationStatusSchema, data);
+      if (!result) {
+        const errors = getValidationErrors(ContentGenerationStatusSchema, data);
+        console.error('Status validation errors:', errors);
+        throw new Error('Invalid status response');
+      }
+
+      // Invalidate content queries when completed
+      if (result.status === 'completed') {
+        queryClient.invalidateQueries({ queryKey: ['content'] });
+        queryClient.invalidateQueries({ queryKey: ['preview-content'] });
+        queryClient.invalidateQueries({ queryKey: ['favorites'] });
+      }
+
+      return result;
     },
+    enabled: !!executionId && options?.enabled !== false,
+    refetchInterval: query => {
+      const status = query.state.data?.status;
+      return status === 'pending' || status === 'processing' ? 2000 : false;
+    },
+    refetchIntervalInBackground: true,
+  });
+};
+
+// Get pending content executions
+export const useContentExecutions = (session: Session | null | undefined) => {
+  return useQuery<ContentExecutionsResponse>({
+    queryKey: ['content-executions', session?.id],
+    queryFn: async () => {
+      if (!session) {
+        throw new Error('Session required');
+      }
+
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/content/generate/executions`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: session.authToken,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch executions: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const result = safeParse(ContentExecutionsResponseSchema, data);
+      if (!result) {
+        const errors = getValidationErrors(ContentExecutionsResponseSchema, data);
+        console.error('Executions validation errors:', errors);
+        throw new Error('Invalid executions response');
+      }
+
+      return result;
+    },
+    enabled: !!session,
+    refetchInterval: query => {
+      const hasProcessing = query.state.data?.executions?.some(
+        e => e.status === 'pending' || e.status === 'processing'
+      );
+      return hasProcessing ? 5000 : false;
+    },
+    refetchIntervalInBackground: true,
   });
 };
 

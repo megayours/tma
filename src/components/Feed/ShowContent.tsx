@@ -2,7 +2,10 @@ import { useState } from 'react';
 import { Button } from '@telegram-apps/telegram-ui';
 import { useGetFavorites } from '@/hooks/useFavorites';
 import { useSession } from '@/auth/SessionProvider';
-import { useGenerateContentMutation } from '@/hooks/useContents';
+import {
+  useGenerateContentMutation,
+  useContentGenerationStatus,
+} from '@/hooks/useContents';
 import { LatestImage } from '@/components/lib/LatestContent/LatestImages';
 import { LatestVideo } from '@/components/lib/LatestContent/LatestVideos';
 import { LatestSticker } from '@/components/lib/LatestContent/LatestStickers';
@@ -37,6 +40,15 @@ export function ShowContent({ prompt }: ShowContentProps) {
   const { selectedFavorite, isLoadingSelected } = useGetFavorites(session);
   const generateContent = useGenerateContentMutation(session);
   const [showTokenSelection, setShowTokenSelection] = useState(false);
+  const [executionId, setExecutionId] = useState<string | null>(null);
+
+  const { data: generationStatus, error: statusError } =
+    useContentGenerationStatus(executionId);
+
+  const isGenerating =
+    generateContent.isPending ||
+    generationStatus?.status === 'pending' ||
+    generationStatus?.status === 'processing';
 
   // Determine if we need token selection
   const needsTokenSelection = () => {
@@ -80,11 +92,16 @@ export function ShowContent({ prompt }: ShowContentProps) {
       },
     ];
 
-    generateContent.mutate({
-      promptId: prompt.id.toString(),
-      type: apiType,
-      inputs: inputs,
-    });
+    generateContent.mutate(
+      {
+        promptId: prompt.id.toString(),
+        type: apiType,
+        inputs: inputs,
+      },
+      {
+        onSuccess: data => setExecutionId(data.execution_id),
+      }
+    );
   };
 
   const handleTokenGenerate = (tokens: Token[]) => {
@@ -117,11 +134,16 @@ export function ShowContent({ prompt }: ShowContentProps) {
       token_id: token.id,
     }));
 
-    generateContent.mutate({
-      promptId: prompt.id.toString(),
-      type: apiType,
-      inputs: inputs,
-    });
+    generateContent.mutate(
+      {
+        promptId: prompt.id.toString(),
+        type: apiType,
+        inputs: inputs,
+      },
+      {
+        onSuccess: data => setExecutionId(data.execution_id),
+      }
+    );
 
     setShowTokenSelection(false);
   };
@@ -175,7 +197,7 @@ export function ShowContent({ prompt }: ShowContentProps) {
                     handleDirectGenerate();
                   }
                 }}
-                disabled={isLoadingSelected || generateContent.isPending}
+                disabled={isLoadingSelected || isGenerating}
                 mode="filled"
                 size="l"
                 stretched
@@ -183,7 +205,7 @@ export function ShowContent({ prompt }: ShowContentProps) {
                 <div className="flex flex-row items-center justify-between gap-2">
                   <div className="flex flex-col">
                     <div>
-                      {generateContent.isPending
+                      {isGenerating
                         ? 'Generating...'
                         : isLoadingSelected
                           ? 'Loading...'
@@ -197,9 +219,7 @@ export function ShowContent({ prompt }: ShowContentProps) {
                         alt={selectedFavorite.token.contract.name}
                       />
                     </div>
-                    {!generateContent.isPending &&
-                      !isLoadingSelected &&
-                      prompt.minTokens && (
+                    {!isGenerating && !isLoadingSelected && prompt.minTokens && (
                         <div className="flex items-center gap-1">
                           {prompt.minTokens > 1 && (
                             <span className="rounded-full bg-blue-500 px-2 py-1 text-xs font-medium text-white">
@@ -217,16 +237,30 @@ export function ShowContent({ prompt }: ShowContentProps) {
                   </div>
                 </div>
               </Button>
-              {generateContent.isError && (
+              {(generateContent.isError ||
+                generationStatus?.status === 'error' ||
+                statusError) && (
                 <div className="mt-2 text-sm text-red-500">
                   Error:{' '}
-                  {generateContent.error?.message ||
+                  {generationStatus?.error ||
+                    generateContent.error?.message ||
+                    statusError?.message ||
                     'Failed to generate content'}
                 </div>
               )}
-              {generateContent.isSuccess && (
+              {generationStatus?.status === 'completed' && (
+                <div className="mt-2 text-sm text-green-600">
+                  Content generated successfully!
+                </div>
+              )}
+              {generationStatus?.status === 'pending' && (
                 <div className="text-tg-hint mt-2 text-sm">
-                  Content in the queue for generation!
+                  Queued for generation...
+                </div>
+              )}
+              {generationStatus?.status === 'processing' && (
+                <div className="text-tg-hint mt-2 text-sm">
+                  Generating your content...
                 </div>
               )}
             </div>

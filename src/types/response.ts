@@ -252,5 +252,36 @@ export type ShareIntegrationResult = z.infer<
 export const ShareResponseSchema = z.array(ShareIntegrationResultSchema);
 export type ShareResponse = z.infer<typeof ShareResponseSchema>;
 
+// Content generation status schema (for async polling)
+export const ContentGenerationStatusSchema = z.object({
+  execution_id: z.string(),
+  content_id: z.string(),
+  status: z.enum(['pending', 'processing', 'completed', 'error']),
+  error: z.string().nullable().optional(),
+  created_at: z.number(),
+  completed_at: z.number().nullable().optional(),
+});
+export type ContentGenerationStatus = z.infer<
+  typeof ContentGenerationStatusSchema
+>;
+
+// Content execution schema (for listing pending executions)
+export const ContentExecutionSchema = z.object({
+  execution_id: z.string(),
+  content_id: z.string(),
+  type: z.enum(['image', 'video', 'gif', 'sticker', 'animated_sticker']),
+  status: z.enum(['pending', 'processing', 'error']),
+  error: z.string().nullable().optional(),
+  created_at: z.number(),
+});
+export type ContentExecution = z.infer<typeof ContentExecutionSchema>;
+
+export const ContentExecutionsResponseSchema = z.object({
+  executions: z.array(ContentExecutionSchema),
+});
+export type ContentExecutionsResponse = z.infer<
+  typeof ContentExecutionsResponseSchema
+>;
+
 // Export the Content type from content.ts
 export type { Content } from './content';

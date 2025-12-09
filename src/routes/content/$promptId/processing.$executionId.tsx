@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, Link } from '@tanstack/react-router';
 import { useEffect, useState, useRef } from 'react';
 import { z } from 'zod';
 import { useSession } from '@/auth/SessionProvider';
-import { useContentExecution } from '@/hooks/useContents';
+import { useContentGenerationStatus } from '@/hooks/useContents';
 import { useLaunchParams, requestWriteAccess } from '@telegram-apps/sdk-react';
 import { useTelegramTheme } from '@/auth/useTelegram';
 import { FaChevronDown } from 'react-icons/fa';
@@ -47,62 +47,47 @@ const EnableNotifications = () => {
 function ProcessingPage() {
   const { promptId, executionId } = Route.useParams();
   const navigate = useNavigate();
-  const { session } = useSession();
+  useSession();
   const { isTelegram } = useTelegramTheme();
 
   // Poll execution status
-  const { data: execution, error } = useContentExecution(executionId, session);
+  const { data: execution, error } = useContentGenerationStatus(executionId);
 
   // Fake timer state
   const [fakeProgress, setFakeProgress] = useState(0);
   const startTimeRef = useRef<number>(Date.now());
 
-  // Calculate duration based on content type
-  const getDurationMs = (type?: string): number => {
-    switch (type) {
-      case 'image':
-        return 90000; // 1.5 minutes
-      case 'sticker':
-      case 'animated_sticker':
-        return 180000; // 3 minutes
-      case 'video':
-        return 300000; // 5 minutes
-      default:
-        return 90000; // default to 1.5 minutes
-    }
-  };
-
-  // Fake timer effect
+  // Fake timer effect - use fixed 90s duration since we don't have type info
   useEffect(() => {
-    if (!execution || execution.status !== 'processing') return;
+    if (!execution || (execution.status !== 'processing' && execution.status !== 'pending')) return;
 
-    const duration = getDurationMs(execution.type);
+    const duration = 90000; // 1.5 minutes default
     const interval = setInterval(() => {
       const elapsed = Date.now() - startTimeRef.current;
       const progress = Math.min((elapsed / duration) * 100, 99);
       setFakeProgress(progress);
-    }, 100); // Update every 100ms for smooth animation
+    }, 100);
 
     return () => clearInterval(interval);
   }, [execution]);
 
   // Auto-navigate to success when completed
   useEffect(() => {
-    if (execution?.status === 'completed') {
+    if (execution?.status === 'completed' && execution.content_id) {
       // Small delay to let user see the completion state
       const timer = setTimeout(() => {
         navigate({
           to: '/content/$promptId/success',
           params: { promptId },
           search: {
-            executionId,
+            executionId: execution.content_id,
           },
         });
       }, 1000);
 
       return () => clearTimeout(timer);
     }
-  }, [execution?.status, promptId, executionId, navigate]);
+  }, [execution?.status, execution?.content_id, promptId, navigate]);
 
   // Error state
   if (error) {
@@ -132,8 +117,8 @@ function ProcessingPage() {
     );
   }
 
-  // Failed execution state
-  if (execution?.status === 'failed') {
+  // Failed/error execution state
+  if (execution?.status === 'error') {
     return (
       <div className="flex h-screen items-center justify-center p-6">
         <div className="text-center">
@@ -160,8 +145,8 @@ function ProcessingPage() {
     );
   }
 
-  // Processing state - use real progress if available, otherwise use fake timer
-  const progressPercentage = execution?.progressPercentage ?? fakeProgress;
+  // Processing state - use fake timer progress
+  const progressPercentage = fakeProgress;
 
   return (
     <div className="flex h-screen flex-col">

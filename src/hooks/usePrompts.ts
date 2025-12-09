@@ -483,6 +483,7 @@ export const useGetMyPrompts = (
         size: pagination.size?.toString() ?? '10',
         sort_by: sortBy,
         sort_order: sortOrder,
+        preferred_formats: 'webm',
         ...(type && { type }),
         ...(community?.id && { community_id: community.id }),
       });

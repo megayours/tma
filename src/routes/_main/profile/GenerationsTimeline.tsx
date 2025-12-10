@@ -6,6 +6,7 @@ import { createFileRoute, Link } from '@tanstack/react-router';
 import { StickerList } from './StickerList';
 import { useState, useEffect, useRef } from 'react';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+import { MediaDisplay } from '@/components/lib/LatestContent/MediaDisplay';
 
 // Minimum number of timeline items to show before stopping initial fetch
 const MIN_TIMELINE_ITEMS = 10;
@@ -146,11 +147,13 @@ function SingleContent({ content }: { content: Content }) {
           />
         </div>
       ) : (
-        <img
-          src={content.url || ''}
-          alt="Generated content"
-          className="h-20 w-20 flex-shrink-0 rounded-lg object-cover"
-        />
+        <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg">
+          <MediaDisplay
+            src={content.url || ''}
+            alt="Generated content"
+            className="h-full w-full object-cover"
+          />
+        </div>
       )}
 
       {/* Content Info - Middle */}

@@ -21,7 +21,8 @@ export const useGetContents = (
   revealed?: boolean,
   pagination?: { page: number; size: number },
   order?: { sort_by: 'created_at'; sort_order: 'asc' | 'desc' },
-  type?: 'image' | 'video' | 'sticker' | 'animated_sticker'
+  type?: 'image' | 'video' | 'sticker' | 'animated_sticker',
+  preferredFormats: string = 'webm'
 ) => {
   const paginationParams = pagination || { page: 1, size: 10 };
   const orderParams = order || { sort_by: 'created_at', sort_order: 'desc' };
@@ -34,6 +35,7 @@ export const useGetContents = (
       paginationParams.size,
       revealed,
       type,
+      preferredFormats,
     ],
     queryFn: async () => {
       if (!session) return;
@@ -47,6 +49,10 @@ export const useGetContents = (
         ...(revealed != null && { revealed: revealed.toString() }),
         ...(type && { type }),
       });
+
+      // Add preferred_formats parameter
+      queryParams.append('preferred_formats', preferredFormats);
+
       const response = await fetch(
         `${import.meta.env.VITE_PUBLIC_API_URL}/content?${queryParams.toString()}`,
         {
@@ -133,7 +139,8 @@ export const usePreviewContentMutation = (
 
 export const useGetAllPreviews = (
   session: Session | null | undefined,
-  pagination?: { page: number; size: number }
+  pagination?: { page: number; size: number },
+  preferredFormats: string = 'webm'
 ) => {
   const paginationParams = pagination || { page: 1, size: 10 };
 
@@ -142,6 +149,7 @@ export const useGetAllPreviews = (
       'all-previews',
       paginationParams.page,
       paginationParams.size,
+      preferredFormats,
     ],
     queryFn: async () => {
       if (!session) return;
@@ -152,6 +160,9 @@ export const useGetAllPreviews = (
         sort_by: 'created_at',
         sort_order: 'desc',
       });
+
+      // Add preferred_formats parameter
+      queryParams.append('preferred_formats', preferredFormats);
 
       const response = await fetch(
         `${import.meta.env.VITE_PUBLIC_API_URL}/prompts/previews?${queryParams.toString()}`,
@@ -208,7 +219,8 @@ export const useGetAllPreviews = (
 export const useGetPreviewContent = (
   session: Session | null | undefined,
   promptId: number | null,
-  pagination?: { page: number; size: number }
+  pagination?: { page: number; size: number },
+  preferredFormats: string = 'webm'
 ) => {
   const paginationParams = pagination || { page: 1, size: 10 };
 
@@ -218,6 +230,7 @@ export const useGetPreviewContent = (
       promptId,
       paginationParams.page,
       paginationParams.size,
+      preferredFormats,
     ],
     queryFn: async () => {
       if (!session || !promptId) return;
@@ -230,6 +243,9 @@ export const useGetPreviewContent = (
           sort_by: 'created_at',
           sort_order: 'desc',
         });
+
+        // Add preferred_formats parameter
+        queryParams.append('preferred_formats', preferredFormats);
 
         const response = await fetch(
           `${import.meta.env.VITE_PUBLIC_API_URL}/prompts/${promptId}/previews?${queryParams.toString()}`,
@@ -557,17 +573,23 @@ export const useContentExecution = (
   session: Session | null | undefined,
   options?: {
     enabled?: boolean;
+    preferredFormats?: string;
   }
 ) => {
+  const preferredFormats = options?.preferredFormats || 'webm';
+
   return useQuery<Content>({
-    queryKey: ['content-execution', executionId],
+    queryKey: ['content-execution', executionId, preferredFormats],
     queryFn: async () => {
       if (!session) {
         throw new Error('Session required');
       }
 
+      const queryParams = new URLSearchParams();
+      queryParams.append('preferred_formats', preferredFormats);
+
       const response = await fetch(
-        `${import.meta.env.VITE_PUBLIC_API_URL}/content/${executionId}`,
+        `${import.meta.env.VITE_PUBLIC_API_URL}/content/${executionId}?${queryParams.toString()}`,
         {
           method: 'GET',
           headers: {

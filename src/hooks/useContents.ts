@@ -131,6 +131,80 @@ export const usePreviewContentMutation = (
   });
 };
 
+export const useGetAllPreviews = (
+  session: Session | null | undefined,
+  pagination?: { page: number; size: number }
+) => {
+  const paginationParams = pagination || { page: 1, size: 10 };
+
+  return useQuery({
+    queryKey: [
+      'all-previews',
+      paginationParams.page,
+      paginationParams.size,
+    ],
+    queryFn: async () => {
+      if (!session) return;
+
+      const queryParams = new URLSearchParams({
+        page: paginationParams.page.toString(),
+        size: paginationParams.size.toString(),
+        sort_by: 'created_at',
+        sort_order: 'desc',
+      });
+
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/prompts/previews?${queryParams.toString()}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: session?.authToken,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to get all previews: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const result = safeParse(RawContentListResponseSchema, data);
+      if (!result) {
+        const errors = getValidationErrors(RawContentListResponseSchema, data);
+        console.error('All previews validation errors:', errors);
+        throw new Error('Invalid all previews response format');
+      }
+
+      // Group by promptId for easy lookup
+      const byPromptId = new Map<number, typeof result.data>();
+      for (const content of result.data) {
+        const pid = content.promptId;
+        if (pid == null) continue;
+        const numPid = typeof pid === 'string' ? parseInt(pid, 10) : pid;
+        if (!byPromptId.has(numPid)) {
+          byPromptId.set(numPid, []);
+        }
+        byPromptId.get(numPid)!.push(content);
+      }
+
+      return {
+        pagination: result.pagination,
+        content: result.data,
+        byPromptId,
+      };
+    },
+    enabled: !!session,
+    refetchInterval: query => {
+      const hasProcessingContent = query.state.data?.content?.some(
+        item => item.status === 'processing'
+      );
+      return hasProcessingContent ? 2000 : false;
+    },
+    refetchIntervalInBackground: true,
+  });
+};
+
 export const useGetPreviewContent = (
   session: Session | null | undefined,
   promptId: number | null,

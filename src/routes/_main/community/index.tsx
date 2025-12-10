@@ -60,6 +60,7 @@ export function Feed() {
   const typeButtonsRef = useRef<{ [key: string]: HTMLButtonElement | null }>(
     {}
   );
+  const measuredWidthsRef = useRef<{ [key: string]: number }>({});
 
   // Fetch used collections
   const {
@@ -227,22 +228,44 @@ export function Feed() {
       const isActive = value === currentQueryType;
       const shouldBeVisible = isExpanded || isActive;
 
-      if (shouldBeVisible) {
-        // Set display before expanding
-        gsap.set(button, { display: 'block' });
-        // Expand: animate to auto width and full opacity
-        gsap.to(button, {
+      // Measure width if not already measured
+      if (!measuredWidthsRef.current[value]) {
+        gsap.set(button, {
           width: 'auto',
-          opacity: 1,
+          display: 'block',
           paddingLeft: '0.75rem',
           paddingRight: '0.75rem',
-          marginRight: isExpanded ? '0.25rem' : 0,
-          duration: 0.45,
-          ease: 'power2.inOut',
-          delay: isExpanded ? index * 0.05 : 0,
         });
+        measuredWidthsRef.current[value] = button.getBoundingClientRect().width;
+      }
+
+      const measuredWidth = measuredWidthsRef.current[value];
+
+      if (shouldBeVisible) {
+        // Expand animation
+        gsap.fromTo(
+          button,
+          {
+            width: 0,
+            opacity: 0,
+            paddingLeft: 0,
+            paddingRight: 0,
+            marginRight: 0,
+            display: 'block',
+          },
+          {
+            width: measuredWidth,
+            opacity: 1,
+            paddingLeft: '0.75rem',
+            paddingRight: '0.75rem',
+            marginRight: isExpanded ? '0.25rem' : 0,
+            duration: 0.45,
+            ease: 'power2.inOut',
+            delay: isExpanded ? index * 0.05 : 0,
+          }
+        );
       } else {
-        // Collapse: animate to 0 width and 0 opacity
+        // Collapse animation
         gsap.to(button, {
           width: 0,
           opacity: 0,
@@ -254,7 +277,6 @@ export function Feed() {
           ease: 'power2.inOut',
           delay: (contentTypes.length - 1 - index) * 0.05,
           onComplete: () => {
-            // Set display none after animation completes
             gsap.set(button, { display: 'none' });
           },
         });
@@ -298,10 +320,11 @@ export function Feed() {
       {isRefetching && <TopLoadingBar />}
       {/* Content type and collection filters */}
       <div
-        className="scrollbar-hide border-tg-section-separator bg-tg-bg/80 sticky top-0 z-10 flex shrink-0 gap-1 overflow-x-hidden border-b py-3 backdrop-blur-md lg:overflow-x-auto"
+        className="scrollbar-hide border-tg-section-separator bg-tg-bg/80 sticky top-0 z-10 flex w-full shrink-0 border-b py-3 backdrop-blur-md"
         style={{
           paddingLeft: '0.5rem',
           paddingRight: isExpanded ? '0.5rem' : '0.25rem',
+          overflowX: isExpanded ? 'auto' : 'hidden',
         }}
       >
         <FeedFilters

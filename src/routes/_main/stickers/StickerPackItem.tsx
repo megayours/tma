@@ -42,33 +42,39 @@ export function StickerPackItem({
 
       {/* Sticker preview grid */}
       <div className="flex flex-row items-end justify-end gap-1 px-4 pb-4">
-        <Link
-          to="/sticker-packs/$stickerPackId"
-          params={{ stickerPackId: stickerPack.id.toString() }}
-        >
-          <div className="grid w-full max-w-2xl grid-cols-3 gap-1">
-            {stickerPack.preview_items.map(
-              (item, index) =>
-                index < 5 && (
-                  <div
-                    key={item.content_id || index}
-                    className="relative overflow-hidden rounded-lg"
-                  >
-                    <video autoPlay muted playsInline loop controls={false}>
-                      <source src={item.preview_url} type="video/webm"></source>
-                    </video>
+        <div className="flex w-full shrink-0 justify-center">
+          <Link
+            to="/sticker-packs/$stickerPackId"
+            params={{ stickerPackId: stickerPack.id.toString() }}
+            className=""
+          >
+            <div className="grid w-full max-w-2xl grid-cols-3 justify-center gap-1">
+              {stickerPack.preview_items.map(
+                (item, index) =>
+                  index < 5 && (
+                    <div
+                      key={item.content_id || index}
+                      className="relative overflow-hidden rounded-lg"
+                    >
+                      <video autoPlay muted playsInline loop controls={false}>
+                        <source
+                          src={item.preview_url}
+                          type="video/webm"
+                        ></source>
+                      </video>
+                    </div>
+                  )
+              )}
+              {stickerPack.item_count > 5 && (
+                <div className="p-4">
+                  <div className="bg-tg-secondary-bg flex h-full w-full items-center justify-center rounded-xl shadow">
+                    {stickerPack.item_count - 5} more
                   </div>
-                )
-            )}
-            {stickerPack.item_count > 5 && (
-              <div className="p-4">
-                <div className="bg-tg-secondary-bg flex h-full w-full items-center justify-center rounded-xl shadow">
-                  {stickerPack.item_count - 5} more
                 </div>
-              </div>
-            )}
-          </div>
-        </Link>
+              )}
+            </div>
+          </Link>
+        </div>
         <div className="flex w-10 flex-col items-center justify-end gap-4 self-end pb-4">
           <Link
             to="/sticker-packs/$stickerPackId"

@@ -41,22 +41,28 @@ export function StickerPackItem({
       </div>
 
       {/* Sticker preview grid */}
-      <div className="flex flex-row items-end justify-end gap-1 px-4 pb-4">
-        <div className="flex w-full shrink-0 justify-center">
+      <div className="flex flex-row items-end gap-1 px-4 pb-4">
+        <div className="flex min-w-0 flex-1 items-center justify-center">
           <Link
             to="/sticker-packs/$stickerPackId"
             params={{ stickerPackId: stickerPack.id.toString() }}
-            className=""
           >
-            <div className="grid w-full max-w-2xl grid-cols-3 justify-center gap-1">
+            <div className="grid grid-cols-3 gap-1">
               {stickerPack.preview_items.map(
                 (item, index) =>
                   index < 5 && (
                     <div
                       key={item.content_id || index}
-                      className="relative overflow-hidden rounded-lg"
+                      className="relative aspect-square w-full max-w-48 overflow-hidden rounded-lg"
                     >
-                      <video autoPlay muted playsInline loop controls={false}>
+                      <video
+                        autoPlay
+                        muted
+                        playsInline
+                        loop
+                        controls={false}
+                        className="h-full w-full object-cover"
+                      >
                         <source
                           src={item.preview_url}
                           type="video/webm"

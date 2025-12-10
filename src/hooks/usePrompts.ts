@@ -63,6 +63,7 @@ export const useGetRecommendedPrompts = ({
   community,
   tokenCollections,
   enabled = true,
+  preferredFormats = 'webm',
 }: {
   type: 'images' | 'videos' | 'gifs' | 'stickers' | 'animated_stickers' | 'all';
   excludeUsed: boolean;
@@ -70,6 +71,7 @@ export const useGetRecommendedPrompts = ({
   community?: { id: string } | null;
   tokenCollections?: Array<{ id?: string }>;
   enabled?: boolean;
+  preferredFormats?: string;
 }) => {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: [
@@ -79,6 +81,7 @@ export const useGetRecommendedPrompts = ({
       pagination,
       tokenCollections,
       community?.id,
+      preferredFormats,
     ],
     enabled: enabled && !!community?.id,
     staleTime: 1000 * 60 * 3, // 3 minutes
@@ -102,6 +105,9 @@ export const useGetRecommendedPrompts = ({
             }
           });
         }
+
+        // Add preferred_formats parameter
+        queryParams.append('preferred_formats', preferredFormats);
 
         const queryString = queryParams.toString();
         const url = `${import.meta.env.VITE_PUBLIC_API_URL}/discovery/prompts/recommended${queryString ? `?${queryString}` : ''}`;

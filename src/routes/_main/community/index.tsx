@@ -11,6 +11,7 @@ import { FeedFilters } from './FeedFilters';
 import { useSelectCommunity } from '../../../contexts/SelectCommunityContext';
 import { Reshared } from '../stickers/Reshared';
 import { MediaDisplay } from '@/components/lib/LatestContent/MediaDisplay';
+import { Link } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/_main/community/')({
   component: Feed,
@@ -87,6 +88,7 @@ export function Feed() {
     tokenCollections:
       selectedCollections.length > 0 ? selectedCollections : undefined,
     enabled: !isLoadingCommunity, // Only enable when community is loaded
+    preferredFormats: 'webm', // Default to webm format
   });
 
   // Toggle content type selection
@@ -343,56 +345,63 @@ export function Feed() {
       <div className="scrollbar-hide feed-scroll-container flex-1 overflow-y-auto">
         <div className="grid grid-cols-2 gap-4 p-4 md:grid-cols-3 lg:grid-cols-4">
           {allPrompts.map((prompt: PromptWithContent, index: number) => (
-            <div key={prompt.id} className="group flex flex-col gap-2">
-              <div className="border-tg-section-separator/50 bg-tg-secondary-bg relative aspect-square w-full overflow-hidden rounded-2xl border">
-                {/* Type Badge */}
-                <div className="absolute top-2 right-2 z-5">
-                  <span className="rounded-full bg-black/60 px-3 py-1 text-xs font-medium text-white shadow-lg backdrop-blur-md">
-                    {getTypeLabel(prompt.type)}
-                  </span>
+            <Link
+              key={prompt.id}
+              to="/content/$promptId/details"
+              params={{ promptId: prompt.id.toString() }}
+              className="cursor-pointer block"
+            >
+              <div className="group flex cursor-pointer flex-col gap-2">
+                <div className="border-tg-section-separator/50 bg-tg-secondary-bg relative aspect-square w-full overflow-hidden rounded-2xl border">
+                  {/* Type Badge */}
+                  <div className="absolute top-2 right-2 z-5">
+                    <span className="rounded-full bg-black/60 px-3 py-1 text-xs font-medium text-white shadow-lg backdrop-blur-md">
+                      {getTypeLabel(prompt.type)}
+                    </span>
+                  </div>
+
+                  <div className="justify-cente flex h-full w-full items-center">
+                    {prompt.latestContentUrl ? (
+                      <MediaDisplay
+                        src={prompt.latestContentUrl}
+                        alt={prompt.name}
+                        className="h-full w-full"
+                        priority={index < 4}
+                      />
+                    ) : (
+                      <div className="text-tg-hint flex h-full w-full items-center justify-center">
+                        No preview
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                <div className="justify-cente flex h-full w-full items-center">
-                  {prompt.latestContentUrl ? (
-                    <MediaDisplay
-                      src={prompt.latestContentUrl}
-                      alt={prompt.name}
-                      className="h-full w-full"
-                      priority={index < 4}
-                    />
-                  ) : (
-                    <div className="text-tg-hint flex h-full w-full items-center justify-center">
-                      No preview
-                    </div>
-                  )}
+                {/* Info below image */}
+                <div className="flex flex-col gap-2">
+                  <div>
+                    <h3 className="text-tg-text line-clamp-1 text-base font-semibold">
+                      {prompt.name}
+                    </h3>
+                    <p className="text-tg-hint text-sm">{prompt.ownerName}</p>
+                  </div>
+
+                  {/* Make it Yours button */}
+                  <div className="flex flex-row items-center gap-2">
+                    {Number(prompt?.usageCount) > 0 && (
+                      <Reshared amount={Number(prompt.usageCount)} />
+                    )}
+                    {session && (
+                      <button
+                        onClick={() => handleMakeItYours(prompt)}
+                        className="bg-tg-button text-tg-button-text flex-1 rounded-xl p-1 text-sm font-semibold whitespace-nowrap shadow-md transition-all active:scale-95"
+                      >
+                        Make it Yours
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
-
-              {/* Info below image */}
-              <div className="flex flex-col gap-2">
-                <div>
-                  <h3 className="text-tg-text line-clamp-1 text-base font-semibold">
-                    {prompt.name}
-                  </h3>
-                  <p className="text-tg-hint text-sm">{prompt.ownerName}</p>
-                </div>
-
-                {/* Make it Yours button */}
-                <div className="flex flex-row items-center gap-2">
-                  {Number(prompt?.usageCount) > 0 && (
-                    <Reshared amount={Number(prompt.usageCount)} />
-                  )}
-                  {session && (
-                    <button
-                      onClick={() => handleMakeItYours(prompt)}
-                      className="bg-tg-button text-tg-button-text flex-1 rounded-xl p-1 text-sm font-semibold whitespace-nowrap shadow-md transition-all active:scale-95"
-                    >
-                      Make it Yours
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
+            </Link>
           ))}
         </div>
 

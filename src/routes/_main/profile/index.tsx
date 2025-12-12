@@ -68,7 +68,7 @@ function CreatePromptDropdownButton() {
 function PendingExecutionsWidget() {
   const { session } = useSession();
   const { data: stickerExecutions } = useStickerPackExecutions(
-    { status: 'processing', pagination: { page: 1, size: 10 } },
+    { status: 'processing', pagination: { page: 1, size: 8 } },
     session
   );
   const { data: contentExecutions } = useContentExecutions(session);
@@ -101,8 +101,7 @@ function PendingExecutionsWidget() {
                   to="/content/$promptId/processing/$executionId"
                   params={{
                     promptId: 'view',
-                    executionId:
-                      contentExecutions.executions[0].execution_id,
+                    executionId: contentExecutions.executions[0].execution_id,
                   }}
                   className="text-tg-link text-xs"
                 >

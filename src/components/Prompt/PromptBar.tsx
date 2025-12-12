@@ -78,7 +78,7 @@ export const PromptBar = ({
     if (promptMutation.isPending) {
       return 'Saving...';
     }
-    return settingsOpen ? 'Save' : 'Settings';
+    return settingsOpen ? 'Close' : 'Settings';
   };
 
   return (

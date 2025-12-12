@@ -4,7 +4,7 @@ import { useGetContents } from '@/hooks/useContents';
 import type { Content } from '@/types/content';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { StickerList } from './StickerList';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import { MediaDisplay } from '@/components/lib/LatestContent/MediaDisplay';
 import { Button } from '@telegram-apps/telegram-ui';
@@ -32,11 +32,15 @@ export function GenerationsTimeline() {
   useEffect(() => {
     if (data?.contents) {
       setAllContents(prev => {
-        // Deduplicate by content ID
-        const newContents = data.contents.filter(
-          newContent => !prev.some(existing => existing.id === newContent.id)
-        );
-        return [...prev, ...newContents];
+        // Create a map to update or add contents (this replaces old content with updated data)
+        const contentMap = new Map(prev.map(c => [c.id, c]));
+
+        // Update existing or add new contents
+        data.contents.forEach(content => {
+          contentMap.set(content.id, content);
+        });
+
+        return Array.from(contentMap.values());
       });
 
       // Update hasMore based on pagination
@@ -126,11 +130,11 @@ function SingleContent({ content }: { content: Content }) {
             src="/lotties/loader.lottie"
             loop
             autoplay
-            className="h-20 w-20"
+            className="h-24 w-24"
           />
         </div>
       ) : (
-        <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg">
+        <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-lg">
           <MediaDisplay
             src={content.url || ''}
             alt="Generated content"
@@ -141,11 +145,11 @@ function SingleContent({ content }: { content: Content }) {
 
       {/* Content Info - Middle */}
       <div className="min-w-0 flex-1">
-        <h3 className="text-tg-text truncate text-sm font-semibold">
+        <h3 className="text-tg-text truncate text-sm font-semibold text-wrap">
           {content.prompt?.name || 'Generated Content'}
         </h3>
         {content.token && (
-          <p className="text-tg-hint truncate text-xs">
+          <p className="text-tg-hint truncate text-xs text-wrap">
             {content.token.contract.name} #{content.token.id}
           </p>
         )}

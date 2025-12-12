@@ -4,6 +4,9 @@ import { SpinnerFullPage } from '@/components/ui';
 import { StickerPackVisualization } from '@/components/StickerPack/StickerPackVisualization';
 import { Link } from '@tanstack/react-router';
 import type { Content } from '@/types/content';
+import { useRevealContent } from '@/hooks/useContents';
+import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 
 export function StickerList({
   selectedContents,
@@ -11,6 +14,9 @@ export function StickerList({
   selectedContents: Content[];
 }) {
   const { session } = useSession();
+  const queryClient = useQueryClient();
+  const [isRevealing, setIsRevealing] = useState(false);
+  const revealMutation = useRevealContent(session);
 
   // Check if any content in the pack is unrevealed
   const hasUnrevealed = selectedContents.some(c => c.revealedAt === null);
@@ -20,6 +26,39 @@ export function StickerList({
     isLoading,
     error,
   } = useStickerPackExecutionById(selectedContents?.[0].executionId!, session);
+
+  const handleReveal = async () => {
+    if (isRevealing) return;
+
+    setIsRevealing(true);
+    try {
+      // Get all unrevealed content IDs
+      const unrevealedIds = selectedContents
+        .filter(c => c.revealedAt === null)
+        .map(c => c.id);
+
+      // Reveal all content in parallel
+      await Promise.all(
+        unrevealedIds.map(contentId => revealMutation.mutateAsync(contentId))
+      );
+
+      // Final invalidation after all reveals complete
+      queryClient.invalidateQueries({
+        queryKey: ['content'],
+        exact: false,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['sticker-pack-execution', selectedContents[0].executionId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['sticker-pack-executions'],
+      });
+    } catch (error) {
+      console.error('Failed to reveal content:', error);
+    } finally {
+      setIsRevealing(false);
+    }
+  };
 
   if (isLoading) {
     return <SpinnerFullPage text="Loading your sticker packs..." />;
@@ -48,8 +87,7 @@ export function StickerList({
     );
   }
 
-  // Wrap entire content in Link if unrevealed
-  const contentElement = (
+  return (
     <div className="space-y-4">
       {/* Executions List */}
       {execution && (
@@ -97,8 +135,25 @@ export function StickerList({
               <div className={hasUnrevealed ? 'blur-sm' : ''}>
                 <StickerPackVisualization execution={execution} />
               </div>
+
+              {/* Reveal Button Overlay */}
               {hasUnrevealed && (
-                <div className="bg-tg-button border-tg-bg absolute right-2 bottom-2 h-3 w-3 rounded-full border-2"></div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <button
+                    onClick={handleReveal}
+                    disabled={isRevealing}
+                    className="bg-tg-button text-tg-button-text hover:bg-tg-button/90 flex items-center gap-2 rounded-full px-6 py-3 font-semibold shadow-lg transition-all active:scale-95 disabled:opacity-50"
+                  >
+                    {isRevealing ? (
+                      <>
+                        <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                        <span>Revealing...</span>
+                      </>
+                    ) : (
+                      'Reveal'
+                    )}
+                  </button>
+                </div>
               )}
             </div>
 
@@ -142,15 +197,4 @@ export function StickerList({
       )}
     </div>
   );
-
-  // If unrevealed, wrap in Link to notifications
-  if (hasUnrevealed) {
-    return (
-      <Link to="/profile/notifications" className="cursor-pointer block">
-        {contentElement}
-      </Link>
-    );
-  }
-
-  return contentElement;
 }

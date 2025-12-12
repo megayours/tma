@@ -20,8 +20,8 @@ export function StickerPackVisualization({
 }) {
   return (
     <div>
-      {/* Sticker Grid - 5 columns like Telegram, compact layout */}
-      <div className="grid grid-cols-5 gap-1.5">
+      {/* Sticker Grid - responsive columns: 5 on mobile, 7 on tablet, 10 on desktop */}
+      <div className="grid grid-cols-5 gap-1.5 md:grid-cols-7 lg:grid-cols-10">
         {execution.items?.map((item, index) => (
           <div
             key={item.id || index}

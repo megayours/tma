@@ -6,6 +6,7 @@ import type { Prompt } from '@/types/prompt';
 import { useNavigate } from '@tanstack/react-router';
 import { IoChevronBackOutline, IoChevronForwardOutline } from 'react-icons/io5';
 import { useSelectCommunity } from '@/contexts/SelectCommunityContext';
+import { MediaDisplay } from './lib/LatestContent/MediaDisplay';
 
 const SkeletonCard = () => (
   <div className="h-48 w-[150px] shrink-0 animate-pulse rounded-lg bg-gray-300 dark:bg-zinc-700" />
@@ -21,7 +22,8 @@ const PromptCard = ({ prompt }: { prompt: Prompt }) => {
     if (prompt.gifs && prompt.gifs.length > 0) return prompt.gifs[0];
     if (prompt.images && prompt.images.length > 0) return prompt.images[0];
     if (prompt.videos && prompt.videos.length > 0) return prompt.videos[0];
-    return null;
+    if (prompt.animatedStickers && prompt.animatedStickers.length > 0)
+      return prompt.animatedStickers[0];
   };
 
   const contentUrl = getContentUrl();
@@ -37,9 +39,9 @@ const PromptCard = ({ prompt }: { prompt: Prompt }) => {
       className="bg-tg-section-bg hover:bg-tg-section-bg/80 flex h-48 w-[150px] shrink-0 cursor-pointer flex-col overflow-hidden rounded-lg transition-colors"
     >
       {/* Content Preview */}
-      <div className="relative flex h-32 w-full items-center justify-center bg-white p-2">
+      <div className="relative flex h-32 w-full items-center justify-center p-2">
         {contentUrl ? (
-          <img
+          <MediaDisplay
             src={contentUrl}
             alt={prompt.name || 'Prompt content'}
             className="h-full w-full object-contain"
@@ -73,7 +75,7 @@ export function RecentlyUsedPrompts() {
   });
   const [totalPages, setTotalPages] = useState(1);
 
-  const { data, isLoading } = useGetMyPrompts(
+  const { data, isLoading, error } = useGetMyPrompts(
     session!,
     pagination,
     {
@@ -86,13 +88,24 @@ export function RecentlyUsedPrompts() {
     selectedCommunity
   );
 
+  console.log('📱 [RecentlyUsedPrompts] Component received data:', data);
+  console.log('📱 [RecentlyUsedPrompts] isLoading:', isLoading);
+  console.log('📱 [RecentlyUsedPrompts] error:', error);
+  console.log('📱 [RecentlyUsedPrompts] pagination:', pagination);
+
   useEffect(() => {
-    if (data?.pagination.totalPages !== totalPages) {
-      setTotalPages(data?.pagination.totalPages);
+    console.log('📱 [RecentlyUsedPrompts useEffect] data?.pagination?.totalPages:', data?.pagination?.totalPages);
+    console.log('📱 [RecentlyUsedPrompts useEffect] current totalPages:', totalPages);
+    if (data?.pagination?.totalPages) {
+      console.log('📱 [RecentlyUsedPrompts useEffect] Setting totalPages to:', data.pagination.totalPages);
+      setTotalPages(data.pagination.totalPages);
     }
-  }, [data]);
+  }, [data?.pagination?.totalPages]);
 
   if (!session) return null;
+
+  console.log('📱 [RecentlyUsedPrompts] Rendering with data?.data:', data?.data);
+  console.log('📱 [RecentlyUsedPrompts] Rendering with data?.data.length:', data?.data?.length);
 
   const handlePrevious = () => {
     if (pagination.page > 1) {
@@ -139,7 +152,7 @@ export function RecentlyUsedPrompts() {
             Array.from({ length: 10 }).map((_, i) => <SkeletonCard key={i} />)}
 
           {!isLoading &&
-            data?.data?.map((prompt: Prompt) => (
+            data?.data?.map(prompt => (
               <PromptCard key={prompt.id} prompt={prompt} />
             ))}
 

@@ -9,12 +9,21 @@ import { useGetAllPreviews } from '../hooks/useContents';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import { useSelectCommunity } from '@/contexts/SelectCommunityContext';
 import type { Content } from '@/types/content';
+import { MediaDisplay } from '@/components/lib/LatestContent/MediaDisplay';
 
 const SkeletonBlock = () => (
   <div className="h-full w-full animate-pulse rounded-md bg-gray-300 dark:bg-zinc-700" />
 );
 
-export const RenderPreview = ({ previews, isLoading, prompt }: { previews: Content[]; isLoading: boolean; prompt: Prompt }) => {
+export const RenderPreview = ({
+  previews,
+  isLoading,
+  prompt,
+}: {
+  previews: Content[];
+  isLoading: boolean;
+  prompt: Prompt;
+}) => {
   if (isLoading) {
     return (
       <div className="flex h-full w-full flex-row gap-2">
@@ -24,13 +33,14 @@ export const RenderPreview = ({ previews, isLoading, prompt }: { previews: Conte
   }
 
   // Fall back to prompt's own images/videos/gifs if no previews
-  const fallbackImage = prompt.images?.[0] || prompt.videos?.[0] || prompt.gifs?.[0];
+  const fallbackImage =
+    prompt.images?.[0] || prompt.videos?.[0] || prompt.gifs?.[0];
 
   if (previews.length === 0 && fallbackImage) {
     return (
       <div className="flex h-full w-full flex-row gap-2">
         <div className="h-full w-full">
-          <img
+          <MediaDisplay
             src={fallbackImage}
             alt={prompt.name}
             className="block h-full w-full object-contain"
@@ -51,7 +61,7 @@ export const RenderPreview = ({ previews, isLoading, prompt }: { previews: Conte
           {content.status == 'processing' ? (
             <DotLottieReact src={'/lotties/loader.lottie'} loop autoplay />
           ) : (
-            <img
+            <MediaDisplay
               src={content.image || content.gif || '/public/gifs/loadings.gif'}
               alt={content.id}
               className="block h-full w-full object-contain"
@@ -79,7 +89,7 @@ export default function MyPrompts() {
   });
   const [totalPages, setTotalPages] = useState(1);
 
-  const { data, isLoading } = useGetMyPrompts(
+  const { data, isLoading, error } = useGetMyPrompts(
     session!,
     pagination,
     {
@@ -92,6 +102,11 @@ export default function MyPrompts() {
     selectedCommunity
   );
 
+  console.log('📱 [MyPrompts] Component received data:', data);
+  console.log('📱 [MyPrompts] isLoading:', isLoading);
+  console.log('📱 [MyPrompts] error:', error);
+  console.log('📱 [MyPrompts] pagination:', pagination);
+
   // Fetch all previews in one batch call instead of N+1 calls
   const { data: previewsData, isLoading: previewsLoading } = useGetAllPreviews(
     session,
@@ -99,12 +114,18 @@ export default function MyPrompts() {
   );
 
   useEffect(() => {
-    if (data?.pagination.totalPages !== totalPages) {
-      setTotalPages(data?.pagination.totalPages);
+    console.log('📱 [MyPrompts useEffect] data?.pagination?.totalPages:', data?.pagination?.totalPages);
+    console.log('📱 [MyPrompts useEffect] current totalPages:', totalPages);
+    if (data?.pagination?.totalPages) {
+      console.log('📱 [MyPrompts useEffect] Setting totalPages to:', data.pagination.totalPages);
+      setTotalPages(data.pagination.totalPages);
     }
-  }, [data]);
+  }, [data?.pagination?.totalPages]);
 
   if (!session) return <div>No session available</div>;
+
+  console.log('📱 [MyPrompts] Rendering with data?.data:', data?.data);
+  console.log('📱 [MyPrompts] Rendering with data?.data.length:', data?.data?.length);
 
   return (
     <div>
@@ -125,13 +146,18 @@ export default function MyPrompts() {
           ))}
 
         {!isLoading &&
-          data?.data.map((prompt: Prompt) => {
-            const promptPreviews = previewsData?.byPromptId.get(prompt.id) ?? [];
+          data?.data.map(prompt => {
+            const promptPreviews =
+              previewsData?.byPromptId.get(prompt.id) ?? [];
             return (
               <div key={prompt.id}>
                 <div className="border-tg-section-separator flex flex-col rounded-lg border p-2">
                   <div className="relative flex h-40 items-center justify-center overflow-hidden">
-                    <RenderPreview previews={promptPreviews as Content[]} isLoading={previewsLoading} prompt={prompt} />
+                    <RenderPreview
+                      previews={promptPreviews as Content[]}
+                      isLoading={previewsLoading}
+                      prompt={prompt}
+                    />
                   </div>
 
                   <h1 className="text-sm font-bold">{prompt.name}</h1>

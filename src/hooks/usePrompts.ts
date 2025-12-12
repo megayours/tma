@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Filter, Pagination } from '@/types/requests';
-import { type RawPrompt } from '@/types/response';
+import { type RawPrompt, RawPromptsResponseSchema, type PaginationResponse } from '@/types/response';
 import type { PromptWithContent } from '@/types/content';
 import type { Session } from '@/auth/useAuth';
 import type {
@@ -14,24 +14,35 @@ import { PromptFeedbackSchema } from '@/types/prompt';
 import { safeParse } from '@/utils/validation';
 
 // Helper function to map raw prompt to expected format
-const mapRawPromptToPrompt = (rawPrompt: RawPrompt) => ({
-  id: Number(rawPrompt.id),
-  name: rawPrompt.name ?? 'Untitled',
-  description: rawPrompt.description ?? '',
-  image: rawPrompt.image,
-  type: rawPrompt.type,
-  additionalContentIds: rawPrompt.additional_content_ids ?? [],
-  published: rawPrompt.published ?? false,
-  lastUsed: rawPrompt.last_used ?? 0,
-  createdAt: rawPrompt.created_at,
-  updatedAt: rawPrompt.updated_at ?? rawPrompt.created_at,
-  usageCount: rawPrompt.usage_count ?? 0,
-  contracts: rawPrompt.contracts ?? [],
-  images: rawPrompt.images ?? [],
-  videos: rawPrompt.videos ?? [],
-  gifs: rawPrompt.gifs ?? [],
-  versions: rawPrompt.versions,
-});
+const mapRawPromptToPrompt = (rawPrompt: RawPrompt): Prompt => {
+  console.log('🔄 [mapRawPromptToPrompt] Mapping raw prompt:', rawPrompt);
+  const mapped = {
+    id: Number(rawPrompt.id),
+    name: rawPrompt.name ?? 'Untitled',
+    description: rawPrompt.description ?? '',
+    image: rawPrompt.image ?? undefined,
+    type: rawPrompt.type,
+    additionalContentIds: rawPrompt.additional_content_ids ?? [],
+    published: rawPrompt.published_at ?? 0,
+    lastUsed: rawPrompt.last_used ?? 0,
+    createdAt: rawPrompt.created_at,
+    updatedAt: rawPrompt.updated_at ?? rawPrompt.created_at,
+    usageCount: rawPrompt.usage_count ?? 0,
+    contracts: rawPrompt.contracts ?? [],
+    images: rawPrompt.images ?? [],
+    videos: rawPrompt.videos ?? [],
+    gifs: rawPrompt.gifs ?? [],
+    stickers: rawPrompt.stickers ?? [],
+    animatedStickers: rawPrompt.animated_stickers ?? [],
+    versions: rawPrompt.versions,
+    minTokens: rawPrompt.min_tokens,
+    maxTokens: rawPrompt.max_tokens,
+    ownerId: rawPrompt.owner_id,
+    latestContentUrl: rawPrompt.latest_content_url ?? undefined,
+  };
+  console.log('✅ [mapRawPromptToPrompt] Mapped prompt:', mapped);
+  return mapped;
+};
 
 const mapRawPromptToPromptWithContent = (
   rawPrompt: RawPrompt
@@ -469,7 +480,8 @@ export const useGetMyPrompts = (
   type?: 'images' | 'videos' | 'stickers' | 'animated_stickers',
   sortBy: 'created_at' | 'last_used' | 'updated_at' = 'created_at',
   sortOrder: 'asc' | 'desc' = 'desc',
-  community?: { id: string } | null
+  community?: { id: string } | null,
+  preferredFormats: string = 'webm'
 ) => {
   return useQuery({
     queryKey: [
@@ -480,36 +492,83 @@ export const useGetMyPrompts = (
       sortBy,
       sortOrder,
       community?.id,
+      preferredFormats,
     ],
     queryFn: async () => {
-      if (!session) return;
-      const params = new URLSearchParams({
-        account: session.id,
-        page: pagination.page?.toString() ?? '1',
-        size: pagination.size?.toString() ?? '10',
-        sort_by: sortBy,
-        sort_order: sortOrder,
-        preferred_formats: 'webm',
-        ...(type && { type }),
-        ...(community?.id && { community_id: community.id }),
-      });
-      const response = await fetch(
-        `${import.meta.env.VITE_PUBLIC_API_URL}/prompts?${params.toString()}`,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: session.authToken,
-          },
+      try {
+        console.log('🚀 [useGetMyPrompts] Query function started');
+        if (!session) {
+          console.log('⚠️ [useGetMyPrompts] No session, returning undefined');
+          return;
         }
-      );
+        const params = new URLSearchParams({
+          account: session.id,
+          page: pagination.page?.toString() ?? '1',
+          size: pagination.size?.toString() ?? '10',
+          sort_by: sortBy,
+          sort_order: sortOrder,
+          ...(type && { type }),
+          ...(community?.id && { community_id: community.id }),
+        });
 
-      if (!response.ok) {
-        throw new Error(`Failed to fetch prompts: ${response.status}`);
+        // Add preferred_formats parameter
+        params.append('preferred_formats', preferredFormats);
+
+        console.log('📡 [useGetMyPrompts] Fetching with params:', params.toString());
+
+        const response = await fetch(
+          `${import.meta.env.VITE_PUBLIC_API_URL}/prompts?${params.toString()}`,
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: session.authToken,
+            },
+          }
+        );
+
+        console.log('📡 [useGetMyPrompts] Response status:', response.status);
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch prompts: ${response.status}`);
+        }
+
+        const rawData = await response.json();
+        console.log('🔍 [useGetMyPrompts] Raw data from API:', rawData);
+
+        // Parse and validate the response using Zod
+        console.log('🔍 [useGetMyPrompts] Starting Zod validation...');
+        const parseResult = RawPromptsResponseSchema.safeParse(rawData);
+
+        if (!parseResult.success) {
+          console.error('❌ [useGetMyPrompts] Zod validation failed:', parseResult.error);
+          console.error('❌ [useGetMyPrompts] Raw data:', JSON.stringify(rawData, null, 2));
+          throw new Error(
+            `Invalid response format from prompts endpoint: ${parseResult.error.message}`
+          );
+        }
+
+        console.log('✅ [useGetMyPrompts] Zod validation passed');
+        const validatedData = parseResult.data;
+        console.log('📦 [useGetMyPrompts] Validated data:', validatedData);
+
+        // Transform snake_case to camelCase
+        console.log('🔄 [useGetMyPrompts] Starting transformation...');
+        const transformedData = {
+          data: validatedData.data.map(mapRawPromptToPrompt),
+          pagination: validatedData.pagination,
+        };
+
+        console.log('🔄 [useGetMyPrompts] Transformed data:', transformedData);
+        console.log('📊 [useGetMyPrompts] Data count:', transformedData.data.length);
+        console.log('📄 [useGetMyPrompts] Pagination:', transformedData.pagination);
+
+        console.log('✅ [useGetMyPrompts] Returning transformed data');
+        return transformedData as { data: Prompt[]; pagination: PaginationResponse };
+      } catch (error) {
+        console.error('💥 [useGetMyPrompts] ERROR in queryFn:', error);
+        console.error('💥 [useGetMyPrompts] Error stack:', error instanceof Error ? error.stack : 'No stack');
+        throw error;
       }
-
-      const data = await response.json();
-
-      return data;
     },
     enabled: !!session,
   });

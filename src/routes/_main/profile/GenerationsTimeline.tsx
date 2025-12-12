@@ -7,9 +7,7 @@ import { StickerList } from './StickerList';
 import { useState, useEffect, useRef } from 'react';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import { MediaDisplay } from '@/components/lib/LatestContent/MediaDisplay';
-
-// Minimum number of timeline items to show before stopping initial fetch
-const MIN_TIMELINE_ITEMS = 10;
+import { Button } from '@telegram-apps/telegram-ui';
 
 export const Route = createFileRoute('/_main/profile/GenerationsTimeline')({
   component: GenerationsTimeline,
@@ -20,7 +18,6 @@ export function GenerationsTimeline() {
   const [page, setPage] = useState(1);
   const [allContents, setAllContents] = useState<Content[]>([]);
   const [hasMore, setHasMore] = useState(true);
-  const observerTarget = useRef<HTMLDivElement>(null);
 
   const { data, isLoading, isFetching } = useGetContents(
     session,
@@ -48,35 +45,11 @@ export function GenerationsTimeline() {
     }
   }, [data, page]);
 
-  // Auto-fetch more pages until we have minimum timeline items
-  useEffect(() => {
-    if (
-      !isLoading &&
-      !isFetching &&
-      timeline.length < MIN_TIMELINE_ITEMS &&
-      hasMore
-    ) {
+  const handleLoadMore = () => {
+    if (hasMore && !isFetching) {
       setPage(prev => prev + 1);
     }
-  }, [timeline.length, hasMore, isLoading, isFetching]);
-
-  // Infinite scroll: load more when scrolling to bottom
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      entries => {
-        if (entries[0].isIntersecting && hasMore && !isFetching) {
-          setPage(prev => prev + 1);
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    if (observerTarget.current) {
-      observer.observe(observerTarget.current);
-    }
-
-    return () => observer.disconnect();
-  }, [hasMore, isFetching]);
+  };
 
   if (isAuthenticating || !session || (isLoading && page === 1)) {
     return <SpinnerFullPage text="Loading generations..." />;
@@ -102,13 +75,23 @@ export function GenerationsTimeline() {
         </div>
       ))}
 
-      {/* Infinite scroll sentinel */}
-      <div
-        ref={observerTarget}
-        className="flex h-10 items-center justify-center"
-      >
-        {isFetching && page > 1 && (
+      {/* Explicit pagination controls */}
+      <div className="mt-6 flex flex-col items-center gap-2">
+        {isFetching && (
           <div className="text-tg-hint text-sm">Loading more...</div>
+        )}
+        {hasMore && !isFetching && (
+          <Button
+            mode="filled"
+            size="l"
+            onClick={handleLoadMore}
+            className="w-full"
+          >
+            Load More
+          </Button>
+        )}
+        {!hasMore && timeline.length > 0 && (
+          <div className="text-tg-hint text-sm">No more items to load</div>
         )}
       </div>
     </div>

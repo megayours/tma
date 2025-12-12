@@ -37,7 +37,7 @@ export const useGetContents = (
       type,
       preferredFormats,
     ],
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
       if (!session) return;
 
       const queryParams = new URLSearchParams({
@@ -61,6 +61,7 @@ export const useGetContents = (
             'Content-Type': 'application/json',
             Authorization: session?.authToken,
           },
+          signal,
         }
       );
       if (!response.ok) {

@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { z } from 'zod';
+import { set, z } from 'zod';
 import { useState, useRef, useEffect } from 'react';
 import { useSession } from '@/auth/SessionProvider';
 import { useContentExecution } from '@/hooks/useContents';
@@ -50,6 +50,7 @@ function SuccessPage() {
   const [isMobileDevice, setIsMobileDevice] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isGiphyEnabled, setIsGiphyEnabled] = useState(false);
+  const [debugInfo, setDebugInfo] = useState<string>('');
   const hasSubmittedFeedback = useRef(false);
 
   useEffect(() => {
@@ -206,8 +207,20 @@ function SuccessPage() {
     try {
       setIsDownloading(true);
 
+      // Set initial debug info
+      setDebugInfo(
+        `
+isTelegram: ${isTelegram}
+isMobileDevice: ${isMobileDevice}
+contentUrl: ${contentUrl ? 'exists' : 'missing'}
+      `.trim()
+      );
+
       // On Telegram Desktop, use direct URL instead of blob
       if (isTelegram && !isMobileDevice) {
+        setDebugInfo(
+          prev => prev + '\n🖥️ Telegram Desktop path - opening in new tab'
+        );
         // Open in new tab for Telegram Desktop
         window.open(contentUrl, '_blank');
 
@@ -217,18 +230,41 @@ function SuccessPage() {
         return; // Early return - finally block will clean up
       }
 
+      setDebugInfo(prev => prev + '\n📱 Fetching blob...');
+
       const response = await fetch(contentUrl);
+      setDebugInfo(prev => prev + `\n✓ Got response: ${response.status}`);
 
       if (!response.ok) {
         throw new Error('Unable to download content');
       }
 
       const blob = await response.blob();
+      setDebugInfo(prev => prev + `\n✓ Got blob: ${blob.size} bytes`);
 
       const mimeType = blob.type || 'image/png';
       const extension = mimeType.split('/')[1]?.split('+')[0] || 'png';
       const fileName = `artwork-${content?.id || promptId}.${extension}`;
       const file = new File([blob], fileName, { type: mimeType });
+      setDebugInfo(prev => prev + `\n✓ Created file: ${fileName}`);
+
+      // Check conditions
+      const canShareThisFile = navigator.canShare
+        ? navigator.canShare({ files: [file] })
+        : false;
+
+      setDebugInfo(
+        prev =>
+          prev +
+          `
+\n---
+isMobile: ${isMobileDevice}
+canShareFiles: ${canShareFiles}
+canShareThisFile: ${canShareThisFile}
+mimeType: ${mimeType}
+blobSize: ${blob.size}
+      `.trim()
+      );
 
       // Check conditions
       const canShareThisFile = navigator.canShare
@@ -237,12 +273,14 @@ function SuccessPage() {
 
       // Mobile: use share API to save to camera roll
       if (isMobileDevice && canShareFiles && canShareThisFile) {
+        setDebugInfo(prev => prev + '\n✅ Opening share dialog...');
         await navigator.share({
           files: [file],
           title: 'Save your artwork',
           text: 'Choose "Save Image" to store this in your camera roll.',
         });
       } else {
+        setDebugInfo(prev => prev + '\n⚠️ Using direct download');
         // Desktop (non-Telegram): direct download
         const objectUrl = URL.createObjectURL(blob);
         const link = document.createElement('a');
@@ -260,9 +298,11 @@ function SuccessPage() {
     } catch (error: any) {
       // User canceled the share dialog - not an error
       if (error?.name === 'AbortError') {
+        setDebugInfo(prev => prev + '\n❌ Share canceled by user');
         return; // Don't show error haptic for user cancellation
       }
 
+      setDebugInfo(prev => prev + `\n❌ ERROR: ${error?.message || error}`);
       console.error('Failed to download content:', error);
       if (isTelegram) {
         triggerHapticNotification('error');
@@ -306,6 +346,14 @@ function SuccessPage() {
               </div>
             </div>
           </div>
+
+          {/* Debug Info */}
+          {debugInfo && (
+            <div className="mx-4 mt-4 rounded-lg bg-yellow-100 p-3 font-mono text-xs dark:bg-yellow-900">
+              <div className="mb-1 font-bold">Debug Info:</div>
+              <pre className="whitespace-pre-wrap">{debugInfo}</pre>
+            </div>
+          )}
 
           {/* Feedback Section */}
           {content?.id && (

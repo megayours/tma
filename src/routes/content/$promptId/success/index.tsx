@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { set, z } from 'zod';
+import { z } from 'zod';
 import { useState, useRef, useEffect } from 'react';
 import { useSession } from '@/auth/SessionProvider';
 import { useContentExecution } from '@/hooks/useContents';
@@ -265,11 +265,6 @@ mimeType: ${mimeType}
 blobSize: ${blob.size}
       `.trim()
       );
-
-      // Check conditions
-      const canShareThisFile = navigator.canShare
-        ? navigator.canShare({ files: [file] })
-        : false;
 
       // Mobile: use share API to save to camera roll
       if (isMobileDevice && canShareFiles && canShareThisFile) {

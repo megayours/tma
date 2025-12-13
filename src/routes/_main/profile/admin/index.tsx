@@ -13,7 +13,7 @@ function RenderAdmin() {
   const { session } = useSession();
   const { selectedCommunity } = useSelectCommunity();
 
-  const canCreatePrompts = session?.communityPermissions.some(
+  const canCreatePrompts = session?.communityPermissions?.some(
     perm =>
       perm.communityId === selectedCommunity?.id &&
       perm.permissions.includes('prompt_editor')
@@ -22,6 +22,8 @@ function RenderAdmin() {
     return <div>No session available</div>;
   }
   console.log('ACCOUNT ROLE:', session);
+  console.log('SELECTED COMMUNITY:', selectedCommunity?.id, selectedCommunity?.name);
+  console.log('CAN CREATE PROMPTS:', canCreatePrompts);
   if (canCreatePrompts !== true) {
     return (
       <div className="flex min-h-screen flex-col items-center gap-6 px-4">
@@ -70,7 +72,7 @@ function ProfileLayout() {
     <ProtectedRoute>
       <div className="profile-layout h-screen">
         {/* This renders the index content when at /profile */}
-        <main className="pb-16">
+        <main className="pt-4 pb-16">
           <div className="bg-tg-bg rounded-l-xl px-2">
             <RenderAdmin />
           </div>

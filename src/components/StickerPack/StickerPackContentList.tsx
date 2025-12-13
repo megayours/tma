@@ -13,11 +13,11 @@ interface ContentItemProps {
 
 const ContentItem = ({ item }: ContentItemProps) => {
   return (
-    <div className="bg-tg-hint/10 relative aspect-square overflow-hidden rounded-lg">
+    <div className="bg-tg-hint/10 relative flex aspect-square overflow-hidden rounded-lg">
       {item.preview_url ? (
         <video
           src={item.preview_url}
-          className="object-fit"
+          className="h-full w-full object-cover"
           autoPlay
           loop
           muted
@@ -45,7 +45,7 @@ export const StickerPackContentList = ({
   }
 
   return (
-    <div className="grid w-full grid-cols-3 gap-2 md:gap-4">
+    <div className="grid w-full grid-cols-3 place-items-center gap-1">
       {items.map((item, index) => (
         <ContentItem
           key={`${item.id}-${index}`}

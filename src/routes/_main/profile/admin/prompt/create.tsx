@@ -14,12 +14,12 @@ export const Route = createFileRoute('/_main/profile/admin/prompt/create')({
 function CreatePromptComponent() {
   const { session } = useSession();
   const { selectedCommunity } = useSelectCommunity();
-  const isMegaAdmin = session?.communityPermissions.some(
+  const isMegaAdmin = session?.communityPermissions?.some(
     perm =>
       perm.communityId === selectedCommunity?.id &&
       perm.permissions.includes('admin')
   );
-  const isEditor = session?.communityPermissions.some(
+  const isEditor = session?.communityPermissions?.some(
     perm =>
       perm.communityId === selectedCommunity?.id &&
       perm.permissions.includes('prompt_editor')

@@ -19,6 +19,7 @@ import { TelegramDualButtons } from '@/components/TelegramDualButtons';
 import { useSelectCommunity } from '@/contexts/SelectCommunityContext';
 import { TelegramShareButton } from './TelegramShareButton';
 import { GiphyShareButton } from './GiphyShareButton';
+import { MediaDisplay } from '@/components/lib/LatestContent/MediaDisplay';
 
 const successSearchSchema = z.object({
   executionId: z.string().optional(),
@@ -48,6 +49,8 @@ function SuccessPage() {
   );
   const [isMobileDevice, setIsMobileDevice] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isGiphyEnabled, setIsGiphyEnabled] = useState(false);
+  const [debugInfo, setDebugInfo] = useState<string>('');
   const hasSubmittedFeedback = useRef(false);
 
   useEffect(() => {
@@ -120,6 +123,40 @@ function SuccessPage() {
     };
   }, [sadLottieInstance]);
 
+  // Check if Giphy integration is enabled for the current content
+  useEffect(() => {
+    if (
+      !content?.token?.contract?.chain ||
+      !content?.token?.contract?.address ||
+      !selectedCommunity?.collections
+    ) {
+      setIsGiphyEnabled(false);
+      return;
+    }
+
+    // Find matching collection by chain + address
+    const contentCollection = selectedCommunity.collections.find(
+      c =>
+        c.chain === content.token?.contract?.chain &&
+        c.address === content.token?.contract?.address
+    );
+
+    if (!contentCollection) {
+      setIsGiphyEnabled(false);
+      return;
+    }
+
+    // Giphy only supports animated content (GIFs, videos, animated stickers)
+    const isGiphyContent = content.type !== 'image';
+
+    const hasGiphyIntegration =
+      contentCollection.integrations?.some(
+        i => i.type === 'giphy' && i.enabled
+      ) || false;
+
+    setIsGiphyEnabled(isGiphyContent && hasGiphyIntegration);
+  }, [content, selectedCommunity]);
+
   const handleFeedback = (sentiment: PromptFeedbackSentiment) => {
     if (!content?.id) return;
 
@@ -170,40 +207,75 @@ function SuccessPage() {
     try {
       setIsDownloading(true);
 
+      // Set initial debug info
+      setDebugInfo(
+        `
+isTelegram: ${isTelegram}
+isMobileDevice: ${isMobileDevice}
+contentUrl: ${contentUrl ? 'exists' : 'missing'}
+      `.trim()
+      );
+
       // On Telegram Desktop, use direct URL instead of blob
       if (isTelegram && !isMobileDevice) {
+        setDebugInfo(
+          prev => prev + '\n🖥️ Telegram Desktop path - opening in new tab'
+        );
         // Open in new tab for Telegram Desktop
         window.open(contentUrl, '_blank');
 
         if (isTelegram) {
           triggerHapticImpact('light');
         }
-        return;
+        return; // Early return - finally block will clean up
       }
 
+      setDebugInfo(prev => prev + '\n📱 Fetching blob...');
+
       const response = await fetch(contentUrl);
+      setDebugInfo(prev => prev + `\n✓ Got response: ${response.status}`);
+
       if (!response.ok) {
         throw new Error('Unable to download content');
       }
 
       const blob = await response.blob();
+      setDebugInfo(prev => prev + `\n✓ Got blob: ${blob.size} bytes`);
+
       const mimeType = blob.type || 'image/png';
       const extension = mimeType.split('/')[1]?.split('+')[0] || 'png';
       const fileName = `artwork-${content?.id || promptId}.${extension}`;
       const file = new File([blob], fileName, { type: mimeType });
+      setDebugInfo(prev => prev + `\n✓ Created file: ${fileName}`);
+
+      // Check conditions
+      const canShareThisFile = navigator.canShare
+        ? navigator.canShare({ files: [file] })
+        : false;
+
+      setDebugInfo(
+        prev =>
+          prev +
+          `
+\n---
+isMobile: ${isMobileDevice}
+canShareFiles: ${canShareFiles}
+canShareThisFile: ${canShareThisFile}
+mimeType: ${mimeType}
+blobSize: ${blob.size}
+      `.trim()
+      );
 
       // Mobile: use share API to save to camera roll
-      if (
-        isMobileDevice &&
-        canShareFiles &&
-        navigator.canShare({ files: [file] })
-      ) {
+      if (isMobileDevice && canShareFiles && canShareThisFile) {
+        setDebugInfo(prev => prev + '\n✅ Opening share dialog...');
         await navigator.share({
           files: [file],
           title: 'Save your artwork',
           text: 'Choose "Save Image" to store this in your camera roll.',
         });
       } else {
+        setDebugInfo(prev => prev + '\n⚠️ Using direct download');
         // Desktop (non-Telegram): direct download
         const objectUrl = URL.createObjectURL(blob);
         const link = document.createElement('a');
@@ -218,7 +290,14 @@ function SuccessPage() {
       if (isTelegram) {
         triggerHapticImpact('light');
       }
-    } catch (error) {
+    } catch (error: any) {
+      // User canceled the share dialog - not an error
+      if (error?.name === 'AbortError') {
+        setDebugInfo(prev => prev + '\n❌ Share canceled by user');
+        return; // Don't show error haptic for user cancellation
+      }
+
+      setDebugInfo(prev => prev + `\n❌ ERROR: ${error?.message || error}`);
       console.error('Failed to download content:', error);
       if (isTelegram) {
         triggerHapticNotification('error');
@@ -229,9 +308,9 @@ function SuccessPage() {
   };
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex flex-col pb-24">
       {/* Content */}
-      <div className="scrollbar-hide flex-1 overflow-y-auto">
+      <div className="scrollbar-hide">
         <div className="flex flex-col pt-6 pb-10 sm:px-6">
           {/* Success Title */}
           <div className="flex flex-row items-center justify-between px-6">
@@ -245,9 +324,9 @@ function SuccessPage() {
             <div className="gap- flex w-full max-w-md flex-col">
               <div className="relative mt-2">
                 <div className="bg-tg-bg relative overflow-hidden rounded-2xl shadow-sm">
-                  <div className="flex aspect-square items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 px-4 dark:from-gray-800 dark:to-gray-900">
+                  <div className="flex aspect-square items-center justify-center rounded-2xl">
                     {contentUrl ? (
-                      <img
+                      <MediaDisplay
                         src={contentUrl}
                         alt="Generated content"
                         className="h-full w-full rounded-xl object-contain"
@@ -262,6 +341,14 @@ function SuccessPage() {
               </div>
             </div>
           </div>
+
+          {/* Debug Info */}
+          {debugInfo && (
+            <div className="mx-4 mt-4 rounded-lg bg-yellow-100 p-3 font-mono text-xs dark:bg-yellow-900">
+              <div className="mb-1 font-bold">Debug Info:</div>
+              <pre className="whitespace-pre-wrap">{debugInfo}</pre>
+            </div>
+          )}
 
           {/* Feedback Section */}
           {content?.id && (
@@ -346,30 +433,71 @@ function SuccessPage() {
               </div>
             )}
 
-            {/* Share Section */}
-            <div className="space-y-2">
+            {/* Primary Actions Section */}
+            <div className="space-y-3">
               <div className="text-tg-hint px-1 text-xs font-medium">
-                Share:
+                Actions:
               </div>
 
-              {/* Share Buttons */}
-              <div className="flex gap-2">
-                <TelegramShareButton
-                  promptId={promptId}
-                  contentPromptName={content?.prompt?.name}
-                  communityId={selectedCommunity?.id}
-                />
+              {/* Telegram Share - Full Width Primary */}
+              <TelegramShareButton
+                fullWidth={true}
+                promptId={promptId}
+                contentPromptName={content?.prompt?.name}
+                communityId={selectedCommunity?.id}
+              />
 
-                {content?.type !== 'image' && content?.id && (
-                  <GiphyShareButton
-                    contentId={content.id}
-                    contentType={content.type}
-                    collectionChain={content.token?.contract?.chain}
-                    collectionAddress={content.token?.contract?.address}
-                    collections={selectedCommunity?.collections}
-                  />
+              {/* Save Content - Full Width Secondary */}
+              <button
+                onClick={handleDownload}
+                disabled={!contentUrl || isDownloading}
+                className="bg-tg-section-bg text-tg-text border-tg-section-separator hover:bg-tg-section-bg/80 flex w-full items-center justify-center gap-2 rounded-lg border px-4 py-3 shadow-sm transition-all duration-200 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isDownloading ? (
+                  <>
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                    <span className="text-base font-medium">Saving...</span>
+                  </>
+                ) : (
+                  <>
+                    <svg
+                      className="h-5 w-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                      />
+                    </svg>
+                    <span className="text-base font-medium">
+                      Save{' '}
+                      {content?.type
+                        ? content.type.charAt(0).toUpperCase() +
+                          content.type.slice(1)
+                        : 'Content'}
+                    </span>
+                  </>
                 )}
-              </div>
+              </button>
+              {/* Giphy Section */}
+              {isGiphyEnabled && content?.id && (
+                <GiphyShareButton
+                  contentId={content.id}
+                  contentType={content.type}
+                  collectionChain={content.token?.contract?.chain}
+                  collectionAddress={content.token?.contract?.address}
+                  collections={selectedCommunity?.collections}
+                  giphyUrl={
+                    content.integrations?.find(i => i.integration === 'giphy')
+                      ?.url
+                  }
+                />
+              )}
             </div>
           </div>
         </div>
@@ -382,13 +510,6 @@ function SuccessPage() {
             text: 'Go to Feed',
             onClick: handleBackToFeed,
             visible: true,
-          }}
-          secondaryButton={{
-            text: 'Save Image',
-            onClick: handleDownload,
-            loading: isDownloading,
-            visible: true,
-            position: 'top',
           }}
         />
       )}

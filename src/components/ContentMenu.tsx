@@ -71,8 +71,17 @@ export function ContentMenu() {
     }
   }, [selectedContentType]);
 
+  const bottomInset =
+    typeof window !== 'undefined' &&
+    window.Telegram?.WebApp?.contentSafeAreaInset?.bottom
+      ? 20 + window.Telegram.WebApp.contentSafeAreaInset.bottom
+      : 20;
+
   return (
-    <div className="fixed right-10 bottom-5 left-10 z-50 px-4">
+    <div
+      className="fixed right-10 left-10 z-50 px-4"
+      style={{ bottom: `${bottomInset}px` }}
+    >
       <div
         ref={containerRef}
         className="relative flex h-11 flex-row items-center overflow-hidden rounded-4xl border border-white/20 bg-white/10 shadow-lg backdrop-blur-lg"

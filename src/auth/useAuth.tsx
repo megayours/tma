@@ -67,6 +67,13 @@ export function useAuth() {
     if (!session) return false;
 
     const sessionData = JSON.parse(session);
+
+    // Check for required fields (communityPermissions added later, old sessions won't have it)
+    if (!sessionData.communityPermissions) {
+      localStorage.removeItem('session');
+      return false;
+    }
+
     if (sessionData.auth_provider === 'discord') {
       const sessionExpirationMargin = 1000 * 60 * 60 * 1; // 1 hour
       if (sessionData.expiration > Date.now() + sessionExpirationMargin) {

@@ -4,11 +4,10 @@ import { useGetContents } from '@/hooks/useContents';
 import type { Content } from '@/types/content';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { StickerList } from './StickerList';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
-
-// Minimum number of timeline items to show before stopping initial fetch
-const MIN_TIMELINE_ITEMS = 10;
+import { MediaDisplay } from '@/components/lib/LatestContent/MediaDisplay';
+import { Button } from '@telegram-apps/telegram-ui';
 
 export const Route = createFileRoute('/_main/profile/GenerationsTimeline')({
   component: GenerationsTimeline,
@@ -19,7 +18,6 @@ export function GenerationsTimeline() {
   const [page, setPage] = useState(1);
   const [allContents, setAllContents] = useState<Content[]>([]);
   const [hasMore, setHasMore] = useState(true);
-  const observerTarget = useRef<HTMLDivElement>(null);
 
   const { data, isLoading, isFetching } = useGetContents(
     session,
@@ -34,11 +32,15 @@ export function GenerationsTimeline() {
   useEffect(() => {
     if (data?.contents) {
       setAllContents(prev => {
-        // Deduplicate by content ID
-        const newContents = data.contents.filter(
-          newContent => !prev.some(existing => existing.id === newContent.id)
-        );
-        return [...prev, ...newContents];
+        // Create a map to update or add contents (this replaces old content with updated data)
+        const contentMap = new Map(prev.map(c => [c.id, c]));
+
+        // Update existing or add new contents
+        data.contents.forEach(content => {
+          contentMap.set(content.id, content);
+        });
+
+        return Array.from(contentMap.values());
       });
 
       // Update hasMore based on pagination
@@ -47,35 +49,11 @@ export function GenerationsTimeline() {
     }
   }, [data, page]);
 
-  // Auto-fetch more pages until we have minimum timeline items
-  useEffect(() => {
-    if (
-      !isLoading &&
-      !isFetching &&
-      timeline.length < MIN_TIMELINE_ITEMS &&
-      hasMore
-    ) {
+  const handleLoadMore = () => {
+    if (hasMore && !isFetching) {
       setPage(prev => prev + 1);
     }
-  }, [timeline.length, hasMore, isLoading, isFetching]);
-
-  // Infinite scroll: load more when scrolling to bottom
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      entries => {
-        if (entries[0].isIntersecting && hasMore && !isFetching) {
-          setPage(prev => prev + 1);
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    if (observerTarget.current) {
-      observer.observe(observerTarget.current);
-    }
-
-    return () => observer.disconnect();
-  }, [hasMore, isFetching]);
+  };
 
   if (isAuthenticating || !session || (isLoading && page === 1)) {
     return <SpinnerFullPage text="Loading generations..." />;
@@ -101,13 +79,23 @@ export function GenerationsTimeline() {
         </div>
       ))}
 
-      {/* Infinite scroll sentinel */}
-      <div
-        ref={observerTarget}
-        className="flex h-10 items-center justify-center"
-      >
-        {isFetching && page > 1 && (
+      {/* Explicit pagination controls */}
+      <div className="mt-6 flex flex-col items-center gap-2">
+        {isFetching && (
           <div className="text-tg-hint text-sm">Loading more...</div>
+        )}
+        {hasMore && !isFetching && (
+          <Button
+            mode="filled"
+            size="l"
+            onClick={handleLoadMore}
+            className="w-full"
+          >
+            Load More
+          </Button>
+        )}
+        {!hasMore && timeline.length > 0 && (
+          <div className="text-tg-hint text-sm">No more items to load</div>
         )}
       </div>
     </div>
@@ -137,29 +125,31 @@ function SingleContent({ content }: { content: Content }) {
     >
       {/* Thumbnail Image - Left */}
       {content.status === 'processing' ? (
-        <div className="bg-tg-hint/30 flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-lg">
+        <div className="bg-tg-hint/30 flex h-24 w-24 flex-shrink-0 items-center justify-center rounded-lg">
           <DotLottieReact
             src="/lotties/loader.lottie"
             loop
             autoplay
-            className="h-20 w-20"
+            className="h-24 w-24"
           />
         </div>
       ) : (
-        <img
-          src={content.url || ''}
-          alt="Generated content"
-          className="h-20 w-20 flex-shrink-0 rounded-lg object-cover"
-        />
+        <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-lg">
+          <MediaDisplay
+            src={content.url || ''}
+            alt="Generated content"
+            className="h-full w-full object-cover"
+          />
+        </div>
       )}
 
       {/* Content Info - Middle */}
       <div className="min-w-0 flex-1">
-        <h3 className="text-tg-text truncate text-sm font-semibold">
+        <h3 className="text-tg-text truncate text-sm font-semibold text-wrap">
           {content.prompt?.name || 'Generated Content'}
         </h3>
         {content.token && (
-          <p className="text-tg-hint truncate text-xs">
+          <p className="text-tg-hint truncate text-xs text-wrap">
             {content.token.contract.name} #{content.token.id}
           </p>
         )}

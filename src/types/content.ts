@@ -39,4 +39,8 @@ export interface Content {
   variant?: string;
   progressPercentage?: number;
   telegramPackURL?: string | null;
+  integrations?: Array<{
+    integration: string;
+    url: string;
+  }>;
 }

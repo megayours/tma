@@ -6,7 +6,7 @@ import { requestWriteAccess } from '@telegram-apps/sdk-react';
 import { useLaunchParams } from '@telegram-apps/sdk-react';
 import { useStickerPackExecutions } from '@/hooks/useStickerPack';
 import { useTelegramTheme } from '@/auth/useTelegram';
-import { useGetContents } from '@/hooks/useContents';
+import { useGetContents, useContentExecutions } from '@/hooks/useContents';
 import { GenerationsTimeline } from './GenerationsTimeline';
 import { useSelectCommunity } from '../../../contexts/SelectCommunityContext';
 
@@ -50,7 +50,7 @@ function NotificationButton() {
 function CreatePromptDropdownButton() {
   const { session } = useSession();
   const { selectedCommunity } = useSelectCommunity();
-  const canCreatePrompts = session?.communityPermissions.some(
+  const canCreatePrompts = session?.communityPermissions?.some(
     perm =>
       perm.communityId === selectedCommunity?.id &&
       perm.permissions.includes('prompt_editor')
@@ -65,16 +65,83 @@ function CreatePromptDropdownButton() {
   );
 }
 
-function AuthorizeBotMessages() {
-  // const isRequesting = useSignal(isRequestingWriteAccess);
-  // const writeAccessPromise = useSignal(requestWriteAccessPromise);
-  const launchParams = useLaunchParams(true);
-  const allowsWriteToPm = launchParams?.tgWebAppData?.user?.allowsWriteToPm;
+function PendingExecutionsWidget() {
   const { session } = useSession();
-  const { data: processingExecutions } = useStickerPackExecutions(
-    { status: 'processing', pagination: { page: 1, size: 1 } },
+  const { data: stickerExecutions } = useStickerPackExecutions(
+    { status: 'processing', pagination: { page: 1, size: 8 } },
     session
   );
+  const { data: contentExecutions } = useContentExecutions(session);
+
+  const stickerCount = stickerExecutions?.data?.length || 0;
+  const contentCount =
+    contentExecutions?.executions?.filter(
+      e => e.status === 'pending' || e.status === 'processing'
+    ).length || 0;
+
+  const totalCount = stickerCount + contentCount;
+
+  if (totalCount === 0) return null;
+
+  return (
+    <div className="bg-tg-secondary-bg rounded-xl p-4">
+      <h2 className="text-tg-text mb-3 text-sm font-semibold">
+        Generations in Progress
+      </h2>
+      <div className="space-y-2">
+        {contentCount > 0 && (
+          <div className="flex items-center justify-between">
+            <span className="text-tg-hint text-xs">Content</span>
+            <div className="flex items-center gap-2">
+              <span className="text-tg-text text-xs font-medium">
+                {contentCount} pending
+              </span>
+              {contentExecutions?.executions?.[0] && (
+                <Link
+                  to="/content/$promptId/processing/$executionId"
+                  params={{
+                    promptId: 'view',
+                    executionId: contentExecutions.executions[0].execution_id,
+                  }}
+                  className="text-tg-link text-xs"
+                >
+                  View →
+                </Link>
+              )}
+            </div>
+          </div>
+        )}
+        {stickerCount > 0 && (
+          <div className="flex items-center justify-between">
+            <span className="text-tg-hint text-xs">Sticker Packs</span>
+            <div className="flex items-center gap-2">
+              <span className="text-tg-text text-xs font-medium">
+                {stickerCount} processing
+              </span>
+              {stickerExecutions?.data?.[0] && (
+                <Link
+                  to="/sticker-packs/$stickerPackId/processing/$executionId"
+                  params={{
+                    stickerPackId:
+                      stickerExecutions.data[0].bundle.id.toString(),
+                    executionId: stickerExecutions.data[0].id,
+                  }}
+                  className="text-tg-link text-xs"
+                >
+                  View →
+                </Link>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function AuthorizeBotMessages() {
+  const launchParams = useLaunchParams(true);
+  const allowsWriteToPm = launchParams?.tgWebAppData?.user?.allowsWriteToPm;
 
   const handleRequestAccess = async () => {
     if (requestWriteAccess.isAvailable()) {
@@ -88,30 +155,6 @@ function AuthorizeBotMessages() {
       console.log('requestWriteAccess is not available');
     }
   };
-
-  if (
-    allowsWriteToPm &&
-    processingExecutions?.data?.length &&
-    processingExecutions.data.length > 0
-  ) {
-    return (
-      <Blockquote type="text">
-        <h1 className="text-tg-accent-text text-sm font-semibold">
-          Generation in progress
-        </h1>
-        <span className="text-tg-button text-xs">
-          You'll receive notifications in the{' '}
-          <a
-            href={import.meta.env.VITE_PUBLIC_BOT_URL}
-            className="text-tg-link underline"
-          >
-            chat
-          </a>{' '}
-          when ready.
-        </span>
-      </Blockquote>
-    );
-  }
 
   if (!allowsWriteToPm) {
     return (
@@ -144,6 +187,7 @@ export function ProfileLayout() {
               <NotificationButton />
             </div>
           </div>
+          <PendingExecutionsWidget />
           {isTelegram && (
             <div>
               <AuthorizeBotMessages />

@@ -7,6 +7,10 @@ import {
   RawContentResponseSchema,
   ShareResponseSchema,
   type ShareResponse,
+  ContentGenerationStatusSchema,
+  type ContentGenerationStatus,
+  ContentExecutionsResponseSchema,
+  type ContentExecutionsResponse,
 } from '../types/response';
 import type { Session } from '@/auth/useAuth';
 import type { Contract } from '../types/contract';
@@ -17,7 +21,8 @@ export const useGetContents = (
   revealed?: boolean,
   pagination?: { page: number; size: number },
   order?: { sort_by: 'created_at'; sort_order: 'asc' | 'desc' },
-  type?: 'image' | 'video' | 'sticker' | 'animated_sticker'
+  type?: 'image' | 'video' | 'sticker' | 'animated_sticker',
+  preferredFormats: string = 'webm'
 ) => {
   const paginationParams = pagination || { page: 1, size: 10 };
   const orderParams = order || { sort_by: 'created_at', sort_order: 'desc' };
@@ -30,8 +35,9 @@ export const useGetContents = (
       paginationParams.size,
       revealed,
       type,
+      preferredFormats,
     ],
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
       if (!session) return;
 
       const queryParams = new URLSearchParams({
@@ -43,6 +49,10 @@ export const useGetContents = (
         ...(revealed != null && { revealed: revealed.toString() }),
         ...(type && { type }),
       });
+
+      // Add preferred_formats parameter
+      queryParams.append('preferred_formats', preferredFormats);
+
       const response = await fetch(
         `${import.meta.env.VITE_PUBLIC_API_URL}/content?${queryParams.toString()}`,
         {
@@ -51,6 +61,7 @@ export const useGetContents = (
             'Content-Type': 'application/json',
             Authorization: session?.authToken,
           },
+          signal,
         }
       );
       if (!response.ok) {
@@ -127,10 +138,90 @@ export const usePreviewContentMutation = (
   });
 };
 
+export const useGetAllPreviews = (
+  session: Session | null | undefined,
+  pagination?: { page: number; size: number },
+  preferredFormats: string = 'webm'
+) => {
+  const paginationParams = pagination || { page: 1, size: 10 };
+
+  return useQuery({
+    queryKey: [
+      'all-previews',
+      paginationParams.page,
+      paginationParams.size,
+      preferredFormats,
+    ],
+    queryFn: async () => {
+      if (!session) return;
+
+      const queryParams = new URLSearchParams({
+        page: paginationParams.page.toString(),
+        size: paginationParams.size.toString(),
+        sort_by: 'created_at',
+        sort_order: 'desc',
+      });
+
+      // Add preferred_formats parameter
+      queryParams.append('preferred_formats', preferredFormats);
+
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/prompts/previews?${queryParams.toString()}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: session?.authToken,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to get all previews: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const result = safeParse(RawContentListResponseSchema, data);
+      if (!result) {
+        const errors = getValidationErrors(RawContentListResponseSchema, data);
+        console.error('All previews validation errors:', errors);
+        throw new Error('Invalid all previews response format');
+      }
+
+      // Group by promptId for easy lookup
+      const byPromptId = new Map<number, typeof result.data>();
+      for (const content of result.data) {
+        const pid = content.promptId;
+        if (pid == null) continue;
+        const numPid = typeof pid === 'string' ? parseInt(pid, 10) : pid;
+        if (!byPromptId.has(numPid)) {
+          byPromptId.set(numPid, []);
+        }
+        byPromptId.get(numPid)!.push(content);
+      }
+
+      return {
+        pagination: result.pagination,
+        content: result.data,
+        byPromptId,
+      };
+    },
+    enabled: !!session,
+    refetchInterval: query => {
+      const hasProcessingContent = query.state.data?.content?.some(
+        item => item.status === 'processing'
+      );
+      return hasProcessingContent ? 2000 : false;
+    },
+    refetchIntervalInBackground: true,
+  });
+};
+
 export const useGetPreviewContent = (
   session: Session | null | undefined,
   promptId: number | null,
-  pagination?: { page: number; size: number }
+  pagination?: { page: number; size: number },
+  preferredFormats: string = 'webm'
 ) => {
   const paginationParams = pagination || { page: 1, size: 10 };
 
@@ -140,6 +231,7 @@ export const useGetPreviewContent = (
       promptId,
       paginationParams.page,
       paginationParams.size,
+      preferredFormats,
     ],
     queryFn: async () => {
       if (!session || !promptId) return;
@@ -152,6 +244,9 @@ export const useGetPreviewContent = (
           sort_by: 'created_at',
           sort_order: 'desc',
         });
+
+        // Add preferred_formats parameter
+        queryParams.append('preferred_formats', preferredFormats);
 
         const response = await fetch(
           `${import.meta.env.VITE_PUBLIC_API_URL}/prompts/${promptId}/previews?${queryParams.toString()}`,
@@ -227,7 +322,6 @@ export const useGetPreviewContent = (
 export const useGenerateContentMutation = (
   session: Session | null | undefined
 ) => {
-  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({
       promptId,
@@ -241,7 +335,7 @@ export const useGenerateContentMutation = (
       inputs: any[];
       contentIds?: string[];
       overrideExisting?: boolean;
-    }) => {
+    }): Promise<{ execution_id: string }> => {
       if (!session) {
         throw new Error('Session required');
       }
@@ -278,14 +372,97 @@ export const useGenerateContentMutation = (
       }
 
       const data = await response.json();
-      return data;
+      return data as { execution_id: string };
     },
-    onSuccess: () => {
-      // Invalidate relevant queries after successful generation
-      queryClient.invalidateQueries({ queryKey: ['content'] });
-      queryClient.invalidateQueries({ queryKey: ['preview-content'] });
-      queryClient.invalidateQueries({ queryKey: ['favorites'] });
+  });
+};
+
+// Poll content generation status
+export const useContentGenerationStatus = (
+  executionId: string | null,
+  options?: { enabled?: boolean }
+) => {
+  const queryClient = useQueryClient();
+
+  return useQuery<ContentGenerationStatus>({
+    queryKey: ['content-generation-status', executionId],
+    queryFn: async () => {
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/content/generate/${executionId}/status`
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const result = safeParse(ContentGenerationStatusSchema, data);
+      if (!result) {
+        const errors = getValidationErrors(ContentGenerationStatusSchema, data);
+        console.error('Status validation errors:', errors);
+        throw new Error('Invalid status response');
+      }
+
+      // Invalidate content queries when completed
+      if (result.status === 'completed') {
+        queryClient.invalidateQueries({ queryKey: ['content'] });
+        queryClient.invalidateQueries({ queryKey: ['preview-content'] });
+        queryClient.invalidateQueries({ queryKey: ['favorites'] });
+      }
+
+      return result;
     },
+    enabled: !!executionId && options?.enabled !== false,
+    refetchInterval: query => {
+      const status = query.state.data?.status;
+      return status === 'pending' || status === 'processing' ? 2000 : false;
+    },
+    refetchIntervalInBackground: true,
+  });
+};
+
+// Get pending content executions
+export const useContentExecutions = (session: Session | null | undefined) => {
+  return useQuery<ContentExecutionsResponse>({
+    queryKey: ['content-executions', session?.id],
+    queryFn: async () => {
+      if (!session) {
+        throw new Error('Session required');
+      }
+
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/content/generate/executions`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: session.authToken,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch executions: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const result = safeParse(ContentExecutionsResponseSchema, data);
+      if (!result) {
+        const errors = getValidationErrors(ContentExecutionsResponseSchema, data);
+        console.error('Executions validation errors:', errors);
+        throw new Error('Invalid executions response');
+      }
+
+      return result;
+    },
+    enabled: !!session,
+    refetchInterval: query => {
+      const hasProcessing = query.state.data?.executions?.some(
+        e => e.status === 'pending' || e.status === 'processing'
+      );
+      return hasProcessing ? 5000 : false;
+    },
+    refetchIntervalInBackground: true,
   });
 };
 
@@ -397,17 +574,23 @@ export const useContentExecution = (
   session: Session | null | undefined,
   options?: {
     enabled?: boolean;
+    preferredFormats?: string;
   }
 ) => {
+  const preferredFormats = options?.preferredFormats || 'webm';
+
   return useQuery<Content>({
-    queryKey: ['content-execution', executionId],
+    queryKey: ['content-execution', executionId, preferredFormats],
     queryFn: async () => {
       if (!session) {
         throw new Error('Session required');
       }
 
+      const queryParams = new URLSearchParams();
+      queryParams.append('preferred_formats', preferredFormats);
+
       const response = await fetch(
-        `${import.meta.env.VITE_PUBLIC_API_URL}/content/${executionId}`,
+        `${import.meta.env.VITE_PUBLIC_API_URL}/content/${executionId}?${queryParams.toString()}`,
         {
           method: 'GET',
           headers: {

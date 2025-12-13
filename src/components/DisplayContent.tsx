@@ -77,11 +77,15 @@ export const DisplayContent = ({
         return (
           <div
             className={`${baseClasses} flex flex-col items-center justify-center gap-1 bg-red-100 text-xs text-red-600 ${
-              onRetry && !isRetrying ? 'cursor-pointer transition-all hover:bg-red-200 active:scale-95' : ''
-            } ${isRetrying ? 'opacity-50 cursor-not-allowed' : ''}`}
+              onRetry && !isRetrying
+                ? 'cursor-pointer transition-all hover:bg-red-200 active:scale-95'
+                : ''
+            } ${isRetrying ? 'cursor-not-allowed opacity-50' : ''}`}
             onClick={isRetrying ? undefined : onRetry}
           >
-            <MdRefresh className={`h-5 w-5 ${isRetrying ? 'animate-spin' : ''}`} />
+            <MdRefresh
+              className={`h-5 w-5 ${isRetrying ? 'animate-spin' : ''}`}
+            />
             <span>{isRetrying ? 'RETRYING...' : 'RETRY'}</span>
           </div>
         );

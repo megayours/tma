@@ -15,14 +15,14 @@ export const RawPromptSchema = z.object({
   id: z.number(),
   name: z.string(),
   description: z.string(),
-  image: z.string().nullable(),
+  image: z.string().nullable().optional(),
   type: z.string(),
   additional_content_ids: z.array(z.string()).optional(),
   published: z.boolean().optional(),
   last_used: z.number().optional(),
   created_at: z.number(),
   updated_at: z.number().optional(),
-  published_at: z.number().optional(),
+  published_at: z.number().nullable().optional(),
   usage_count: z.number(),
   generation_count: z.number().optional(),
   has_generated: z.boolean().optional(),
@@ -33,6 +33,8 @@ export const RawPromptSchema = z.object({
   images: z.array(z.string()).optional(),
   videos: z.array(z.string()).optional(),
   gifs: z.array(z.string()).optional(),
+  stickers: z.array(z.string()).optional(),
+  animated_stickers: z.array(z.string()).optional(),
   versions: z.any().optional(),
   lastestContentUrl: z.string().optional(),
   min_tokens: z.number().optional(),
@@ -130,6 +132,14 @@ export const RawContentResponseSchema = z
     image: z.string().optional(),
     progress_percentage: z.number().optional(),
     telegram_pack_url: z.string().nullable().optional(),
+    integrations: z
+      .array(
+        z.object({
+          integration: z.string(),
+          url: z.string(),
+        })
+      )
+      .optional(),
     session: z.any().optional(),
   })
   .transform(data => {
@@ -174,6 +184,7 @@ export const RawContentResponseSchema = z
       image: data.image,
       progressPercentage: data.progress_percentage,
       telegramPackURL: data.telegram_pack_url,
+      integrations: data.integrations,
     };
   });
 export type RawContentResponse = z.infer<typeof RawContentResponseSchema>;
@@ -251,6 +262,37 @@ export type ShareIntegrationResult = z.infer<
 // Share response schema (array of integration results)
 export const ShareResponseSchema = z.array(ShareIntegrationResultSchema);
 export type ShareResponse = z.infer<typeof ShareResponseSchema>;
+
+// Content generation status schema (for async polling)
+export const ContentGenerationStatusSchema = z.object({
+  execution_id: z.string(),
+  content_id: z.string(),
+  status: z.enum(['pending', 'processing', 'completed', 'error']),
+  error: z.string().nullable().optional(),
+  created_at: z.number(),
+  completed_at: z.number().nullable().optional(),
+});
+export type ContentGenerationStatus = z.infer<
+  typeof ContentGenerationStatusSchema
+>;
+
+// Content execution schema (for listing pending executions)
+export const ContentExecutionSchema = z.object({
+  execution_id: z.string(),
+  content_id: z.string(),
+  type: z.enum(['image', 'video', 'gif', 'sticker', 'animated_sticker']),
+  status: z.enum(['pending', 'processing', 'error']),
+  error: z.string().nullable().optional(),
+  created_at: z.number(),
+});
+export type ContentExecution = z.infer<typeof ContentExecutionSchema>;
+
+export const ContentExecutionsResponseSchema = z.object({
+  executions: z.array(ContentExecutionSchema),
+});
+export type ContentExecutionsResponse = z.infer<
+  typeof ContentExecutionsResponseSchema
+>;
 
 // Export the Content type from content.ts
 export type { Content } from './content';

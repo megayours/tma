@@ -26,7 +26,7 @@ export function GenerateAgainButton({
         to: '/content/$promptId/processing/$executionId',
         params: {
           promptId,
-          executionId: generateMutation.data.id,
+          executionId: generateMutation.data.execution_id,
         },
       });
     }

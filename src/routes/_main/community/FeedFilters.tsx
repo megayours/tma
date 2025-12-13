@@ -33,7 +33,7 @@ export function FeedFilters({
   return (
     <div className="flex w-full flex-col gap-2 lg:flex-row lg:gap-0">
       {/* Content type filters */}
-      <div className="scrollbar-hide flex h-8 w-full flex-row overflow-x-auto lg:w-auto">
+      <div className="flex h-8 flex-row gap-1" style={{ flexShrink: 0 }}>
         {contentTypes.map(({ value, label }) => {
           const isActive =
             value === 'all'
@@ -46,7 +46,6 @@ export function FeedFilters({
                 typeButtonsRef.current[value] = el;
               }}
               onClick={() => toggleType(value)}
-              style={{ minWidth: 0 }}
               className={`shrink-0 overflow-hidden rounded-full px-3 py-1 text-sm font-medium whitespace-nowrap transition-colors ${
                 isActive
                   ? 'bg-tg-button text-tg-button-text shadow-md backdrop-blur-sm'

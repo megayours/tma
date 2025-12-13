@@ -5,6 +5,7 @@ import { SpinnerFullPage } from '@/components/ui';
 import { Banner, Divider } from '@telegram-apps/telegram-ui';
 import { TelegramDualButtons } from '../../../../components/TelegramDualButtons';
 import { Fragment } from 'react/jsx-runtime';
+import { MediaDisplay } from '@/components/lib/LatestContent/MediaDisplay';
 
 export const Route = createFileRoute('/content/$promptId/details/')({
   component: ContentDetails,
@@ -158,12 +159,10 @@ function ContentDetails() {
                       key={index}
                       className="bg-tg-hint/10 relative aspect-square overflow-hidden rounded-lg"
                     >
-                      <img
+                      <MediaDisplay
                         src={imageUrl}
                         alt={`${prompt.name || 'Content'} ${index + 1}`}
                         className="h-full w-full object-cover"
-                        loading="lazy"
-                        decoding="async"
                       />
                     </div>
                   ))}

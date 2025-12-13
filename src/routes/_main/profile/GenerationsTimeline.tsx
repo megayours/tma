@@ -125,7 +125,7 @@ function SingleContent({ content }: { content: Content }) {
     >
       {/* Thumbnail Image - Left */}
       {content.status === 'processing' ? (
-        <div className="bg-tg-hint/30 flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-lg">
+        <div className="bg-tg-hint/30 flex h-24 w-24 flex-shrink-0 items-center justify-center rounded-lg">
           <DotLottieReact
             src="/lotties/loader.lottie"
             loop

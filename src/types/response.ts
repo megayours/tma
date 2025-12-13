@@ -132,6 +132,14 @@ export const RawContentResponseSchema = z
     image: z.string().optional(),
     progress_percentage: z.number().optional(),
     telegram_pack_url: z.string().nullable().optional(),
+    integrations: z
+      .array(
+        z.object({
+          integration: z.string(),
+          url: z.string(),
+        })
+      )
+      .optional(),
     session: z.any().optional(),
   })
   .transform(data => {
@@ -176,6 +184,7 @@ export const RawContentResponseSchema = z
       image: data.image,
       progressPercentage: data.progress_percentage,
       telegramPackURL: data.telegram_pack_url,
+      integrations: data.integrations,
     };
   });
 export type RawContentResponse = z.infer<typeof RawContentResponseSchema>;

@@ -10,12 +10,14 @@ interface TelegramShareButtonProps {
   promptId: string;
   contentPromptName?: string;
   communityId?: string;
+  fullWidth?: boolean;
 }
 
 export function TelegramShareButton({
   promptId,
   contentPromptName,
   communityId,
+  fullWidth = false,
 }: TelegramShareButtonProps) {
   const { isTelegram } = useTelegramTheme();
   const [isSharing, setIsSharing] = useState(false);
@@ -66,15 +68,25 @@ export function TelegramShareButton({
     <button
       onClick={handleShare}
       disabled={isSharing}
-      className="bg-tg-button flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2.5 shadow-md transition-all duration-200 hover:opacity-90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+      className={`bg-tg-button text-tg-button-text flex items-center justify-center gap-2 rounded-lg px-4 shadow-md transition-all duration-200 hover:opacity-90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 ${
+        fullWidth ? 'w-full py-3' : 'flex-1 py-2.5'
+      }`}
     >
       {isSharing ? (
         <>
-          <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-          <span className="text-sm font-medium text-white">Sharing...</span>
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+          <span
+            className={`${fullWidth ? 'text-base font-semibold' : 'text-sm font-medium'}`}
+          >
+            Sharing...
+          </span>
         </>
       ) : (
-        <span className="text-sm font-medium text-white">Telegram</span>
+        <span
+          className={`${fullWidth ? 'text-base font-semibold' : 'text-sm font-medium'}`}
+        >
+          Share
+        </span>
       )}
     </button>
   );

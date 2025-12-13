@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import type { Prompt } from '@/types/prompt';
 import type { Token } from '@/types/response';
-import type { Contract } from '@/types/contract';
 import { List, Button, Switch } from '@telegram-apps/telegram-ui';
 import { TgInput } from '@/components/ui/forms/TgInput';
 import { TgTextarea } from '@/components/ui/forms/TgTextarea';
@@ -165,17 +164,6 @@ export const PromptSettings = ({
     } catch (error) {
       console.error('Failed to save prompt:', error);
     }
-  };
-
-  // Handle cancel - reset form to original values
-  const handleCancel = () => {
-    reset({
-      name: prompt.name || '',
-      description: prompt.description || '',
-      model: prompt.versions?.[0]?.model || prompt.model || '',
-      tokens: prompt.versions?.[0]?.maxTokens || prompt.maxTokens || 0,
-      published: prompt.published || 0,
-    });
   };
 
   // Handle immediate publication toggle

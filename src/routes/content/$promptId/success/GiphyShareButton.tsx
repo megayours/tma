@@ -131,7 +131,9 @@ export function GiphyShareButton({
 
           // Invalidate queries to refetch with new integration URL
           queryClient.invalidateQueries({
-            queryKey: ['content-execution', contentId],
+            predicate: (query) =>
+              query.queryKey[0] === 'content-execution' &&
+              query.queryKey[1] === contentId,
           });
           queryClient.invalidateQueries({
             queryKey: ['content'],
@@ -189,7 +191,9 @@ export function GiphyShareButton({
                 if (isTelegram) {
                   triggerHapticNotification('error');
                 }
-                console.error('Polling timeout: Giphy URL not ready after 60 seconds');
+                console.error(
+                  'Polling timeout: Giphy URL not ready after 60 seconds'
+                );
               }
             }, 60000);
           } else {
@@ -201,7 +205,9 @@ export function GiphyShareButton({
 
             // Invalidate queries
             queryClient.invalidateQueries({
-              queryKey: ['content-execution', contentId],
+              predicate: (query) =>
+                query.queryKey[0] === 'content-execution' &&
+                query.queryKey[1] === contentId,
             });
             queryClient.invalidateQueries({
               queryKey: ['content'],
@@ -258,15 +264,20 @@ export function GiphyShareButton({
   };
 
   // If URL exists and not pending, show two-button layout
-  if (giphyUrl && giphyUrl !== 'pending' && !isGiphySharing && !giphyShareSuccess) {
+  if (
+    giphyUrl &&
+    giphyUrl !== 'pending' &&
+    !isGiphySharing &&
+    !giphyShareSuccess
+  ) {
     return (
-      <div className="flex gap-2">
+      <div className="flex w-full gap-2">
         {/* Open in Giphy */}
         <a
           href={giphyUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-[#6157ff] via-[#a640ff] to-[#ff0099] px-4 py-2.5 shadow-md transition-all duration-200 hover:opacity-90 active:scale-95"
+          className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-[#6157ff] via-[#a640ff] to-[#ff0099] px-4 py-3 shadow-md transition-all duration-200 hover:opacity-90 active:scale-95"
         >
           <svg
             className="h-4 w-4 text-white"
@@ -282,25 +293,28 @@ export function GiphyShareButton({
               d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
             />
           </svg>
-          <span className="text-sm font-medium text-white">Open in Giphy</span>
+          <span className="text-base font-medium text-white">Open in Giphy</span>
         </a>
 
         {/* Copy URL */}
         <button
           onClick={handleCopyUrl}
-          className="flex flex-1 items-center justify-center gap-2 rounded-lg border-2 border-transparent bg-transparent px-4 py-2.5 shadow-md transition-all duration-200 hover:bg-white/10 active:scale-95"
+          className="flex flex-1 items-center justify-center gap-2 rounded-lg border-2 border-transparent bg-transparent px-4 py-3 shadow-md transition-all duration-200 hover:bg-white/10 active:scale-95"
           style={{
-            borderImage: 'linear-gradient(to right, #6157ff, #a640ff, #ff0099) 1',
+            borderImage:
+              'linear-gradient(to right, #6157ff, #a640ff, #ff0099) 1',
           }}
         >
           {showCopied ? (
             <>
-              <span className="text-sm font-medium text-tg-text">✓ Copied!</span>
+              <span className="text-tg-text text-base font-medium">
+                ✓ Copied!
+              </span>
             </>
           ) : (
             <>
               <svg
-                className="h-4 w-4 text-tg-text"
+                className="text-tg-text h-4 w-4"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -313,7 +327,7 @@ export function GiphyShareButton({
                   d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
                 />
               </svg>
-              <span className="text-sm font-medium text-tg-text">Copy URL</span>
+              <span className="text-tg-text text-base font-medium">Copy URL</span>
             </>
           )}
         </button>
@@ -325,25 +339,25 @@ export function GiphyShareButton({
     <button
       onClick={handleShareToGiphy}
       disabled={!contentId || isGiphySharing || !isGiphyEnabled}
-      className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-[#6157ff] via-[#a640ff] to-[#ff0099] px-4 py-2.5 shadow-md transition-all duration-200 hover:opacity-90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+      className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-[#6157ff] via-[#a640ff] to-[#ff0099] px-4 py-3 shadow-md transition-all duration-200 hover:opacity-90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
     >
       {isGiphySharing ? (
         <>
           <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-          <span className="text-sm font-medium text-white">Sharing...</span>
+          <span className="text-base font-medium text-white">Sharing...</span>
         </>
       ) : giphyShareSuccess ? (
         <>
           <span className="animate-pulse text-base font-medium text-white">
             ✓
           </span>
-          <span className="text-sm font-medium text-white">
+          <span className="text-base font-medium text-white">
             Shared to Giphy!
           </span>
         </>
       ) : (
         <>
-          <span className="text-sm font-medium text-white">Giphy</span>
+          <span className="text-base font-medium text-white">Share on Giphy</span>
         </>
       )}
     </button>

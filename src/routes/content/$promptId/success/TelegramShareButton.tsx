@@ -85,7 +85,7 @@ export function TelegramShareButton({
         <span
           className={`${fullWidth ? 'text-base font-semibold' : 'text-sm font-medium'}`}
         >
-          Share
+          Share Prompt
         </span>
       )}
     </button>

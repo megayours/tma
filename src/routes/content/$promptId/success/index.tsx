@@ -273,9 +273,9 @@ function SuccessPage() {
   };
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex flex-col pb-24">
       {/* Content */}
-      <div className="scrollbar-hide flex-1 overflow-y-auto">
+      <div className="scrollbar-hide">
         <div className="flex flex-col pt-6 pb-10 sm:px-6">
           {/* Success Title */}
           <div className="flex flex-row items-center justify-between px-6">
@@ -404,7 +404,7 @@ function SuccessPage() {
                 communityId={selectedCommunity?.id}
               />
 
-              {/* Save Image - Full Width Secondary */}
+              {/* Save Content - Full Width Secondary */}
               <button
                 onClick={handleDownload}
                 disabled={!contentUrl || isDownloading}
@@ -431,18 +431,18 @@ function SuccessPage() {
                         d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
                       />
                     </svg>
-                    <span className="text-base font-medium">Save Image</span>
+                    <span className="text-base font-medium">
+                      Save{' '}
+                      {content?.type
+                        ? content.type.charAt(0).toUpperCase() +
+                          content.type.slice(1)
+                        : 'Content'}
+                    </span>
                   </>
                 )}
               </button>
-            </div>
-
-            {/* Giphy Section */}
-            {isGiphyEnabled && content?.id && (
-              <div className="space-y-2">
-                <div className="text-tg-hint px-1 text-xs font-medium">
-                  Giphy:
-                </div>
+              {/* Giphy Section */}
+              {isGiphyEnabled && content?.id && (
                 <GiphyShareButton
                   contentId={content.id}
                   contentType={content.type}
@@ -454,8 +454,8 @@ function SuccessPage() {
                       ?.url
                   }
                 />
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       </div>

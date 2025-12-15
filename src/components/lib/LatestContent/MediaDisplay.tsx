@@ -40,7 +40,7 @@ export function MediaDisplay({
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isInView, setIsInView] = useState(!lazyLoad || priority);
-  const [shouldAutoPlay, setShouldAutoPlay] = useState(false);
+  const [shouldAutoPlay, setShouldAutoPlay] = useState(!lazyLoad || priority);
 
   // Use video queue for videos with videoId
   const { enqueueVideo, dequeueVideo } = useVideoQueue(

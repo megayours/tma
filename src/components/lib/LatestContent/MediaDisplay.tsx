@@ -40,7 +40,7 @@ export function MediaDisplay({
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isInView, setIsInView] = useState(!lazyLoad || priority);
-  const [shouldAutoPlay, setShouldAutoPlay] = useState(!lazyLoad || priority);
+  const [shouldAutoPlay, setShouldAutoPlay] = useState(false);
 
   // Use video queue for videos with videoId
   const { enqueueVideo, dequeueVideo } = useVideoQueue(
@@ -112,7 +112,11 @@ export function MediaDisplay({
       muted
       playsInline
       preload="metadata"
-      poster={!isInView ? 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7' : undefined}
+      poster={
+        !isInView
+          ? 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'
+          : undefined
+      }
     />
   ) : (
     <img

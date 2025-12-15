@@ -72,7 +72,6 @@ export const useGetRecommendedPrompts = ({
   excludeUsed = true,
   pagination,
   community,
-  tokenCollections,
   enabled = true,
   preferredFormats = 'webm',
 }: {
@@ -80,7 +79,6 @@ export const useGetRecommendedPrompts = ({
   excludeUsed: boolean;
   pagination: Pagination;
   community?: { id: string } | null;
-  tokenCollections?: Array<{ id?: string }>;
   enabled?: boolean;
   preferredFormats?: string;
 }) => {
@@ -90,7 +88,6 @@ export const useGetRecommendedPrompts = ({
       type,
       excludeUsed,
       pagination,
-      tokenCollections,
       community?.id,
       preferredFormats,
     ],
@@ -99,7 +96,7 @@ export const useGetRecommendedPrompts = ({
     gcTime: 1000 * 60 * 10, // 10 minutes
     queryFn: async () => {
       try {
-        // Build query parameters manually to support multiple token_collection_ids
+        // Build query parameters
         const queryParams = new URLSearchParams({
           type,
           exclude_used: String(excludeUsed),
@@ -107,15 +104,6 @@ export const useGetRecommendedPrompts = ({
           size: String(pagination.size),
           community_id: community?.id || '',
         });
-
-        // Add token_collection_ids if provided
-        if (tokenCollections && tokenCollections.length > 0) {
-          tokenCollections.forEach(collection => {
-            if (collection.id) {
-              queryParams.append('token_collection_ids', collection.id);
-            }
-          });
-        }
 
         // Add preferred_formats parameter
         queryParams.append('preferred_formats', preferredFormats);

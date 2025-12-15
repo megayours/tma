@@ -85,8 +85,6 @@ export function Feed() {
       size: 4,
     },
     community: selectedCommunity,
-    tokenCollections:
-      selectedCollections.length > 0 ? selectedCollections : undefined,
     enabled: !isLoadingCommunity, // Only enable when community is loaded
     preferredFormats: 'webm', // Default to webm format
   });

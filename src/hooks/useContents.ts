@@ -388,7 +388,7 @@ export const useContentGenerationStatus = (
     queryKey: ['content-generation-status', executionId],
     queryFn: async () => {
       const response = await fetch(
-        `https://api.ultrayours.com/v1/content/generate/${executionId}/status`
+        `${import.meta.env.VITE_PUBLIC_API_URL}/content/generate/${executionId}/status`
       );
 
       if (!response.ok) {

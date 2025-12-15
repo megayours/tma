@@ -387,7 +387,7 @@ export const PromptSettings = ({
                 control={control}
                 render={({ field }) => (
                   <TgInput
-                    header="Tokens"
+                    header="Number of input assets"
                     type="number"
                     placeholder="Number of tokens"
                     value={field.value.toString()}

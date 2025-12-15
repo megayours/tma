@@ -16,7 +16,7 @@ export const AddInputMenu = ({
         onClick={() => onSelectContent('nft')}
         className="cursor-pointer rounded-lg bg-tg-secondary p-4 text-tg-text transition-colors hover:bg-tg-secondary/80"
       >
-        NFT
+        Input Asset
       </div> */}
       {/* <Divider />
       <div

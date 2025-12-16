@@ -82,7 +82,7 @@ export function Feed() {
     excludeUsed: false,
     pagination: {
       page: currentPage,
-      size: 6,
+      size: 4,
     },
     community: selectedCommunity,
     enabled: !isLoadingCommunity, // Only enable when community is loaded
@@ -364,7 +364,9 @@ export function Feed() {
                         src={prompt.latestContentUrl}
                         alt={prompt.name}
                         className="h-full w-full"
-                        priority={index < 4}
+                        priority={index < 2}
+                        lazyLoad={true}
+                        videoId={`community-${prompt.id}`}
                       />
                     ) : (
                       <div className="text-tg-hint flex h-full w-full items-center justify-center">
@@ -422,6 +424,17 @@ export function Feed() {
               }
               size="lg"
             />
+          </div>
+        )}
+
+        {/* End of feed message */}
+        {allPrompts.length > 0 && !hasMorePages && !isLoading && !isFetchingMore && (
+          <div className="flex items-center justify-center py-8">
+            <div className="text-tg-hint text-center">
+              <div className="mb-2 text-2xl">✨</div>
+              <p className="text-sm font-medium">You've reached the end</p>
+              <p className="text-xs opacity-70">No more content to load</p>
+            </div>
           </div>
         )}
 

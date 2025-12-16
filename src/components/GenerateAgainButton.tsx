@@ -45,7 +45,7 @@ export function GenerateAgainButton({
     }
 
     // Build inputs array from the tokens
-    const inputs = tokensArray.map((token) => ({
+    const inputs = tokensArray.map(token => ({
       chain: token.contract.chain,
       contract_address: token.contract.address,
       token_id: token.id,

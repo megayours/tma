@@ -107,7 +107,7 @@ export function NFTSelector({
 
       {selectedCollection && (
         <div>
-          {selectedCollection.size < 10 ? (
+          {selectedCollection.size < 15 ? (
             <SelectMascot
               collection={selectedCollection}
               onTokenSelect={setSelectedTokenId}

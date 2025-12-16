@@ -7,7 +7,6 @@ import { TelegramDualButtons } from '@/components/TelegramDualButtons';
 import { SpinnerFullPage } from '@/components/ui';
 import { Banner, Divider } from '@telegram-apps/telegram-ui';
 import { Fragment } from 'react/jsx-runtime';
-import { useSelectCommunity } from '@/contexts/SelectCommunityContext';
 
 export const Route = createFileRoute('/sticker-packs/$stickerPackId/details/')({
   component: RouteComponent,
@@ -39,13 +38,12 @@ function RouteComponent() {
   const { stickerPackId } = Route.useParams();
   const navigate = useNavigate();
   const { session } = useSession();
-  const { selectedCommunity } = useSelectCommunity();
 
   const {
     data: stickerPack,
     isLoading,
     error,
-  } = useStickerPack(stickerPackId, session, selectedCommunity?.collections);
+  } = useStickerPack(stickerPackId, session);
 
   const handleGetStarted = () => {
     navigate({

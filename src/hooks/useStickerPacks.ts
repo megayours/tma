@@ -4,10 +4,7 @@ import { safeParse, getValidationErrors } from '@/utils/validation';
 // We'll define our own pagination schema since the API returns total as string
 import type { Pagination } from '../types/requests';
 import type { Session } from '@/auth/useAuth';
-import {
-  SupportedCollectionSchema,
-  type SupportedCollection,
-} from './useCollections';
+import { SupportedCollectionSchema } from './useCollections';
 
 // Custom pagination schema for sticker packs (handles string total)
 const StickerPackPaginationSchema = z.object({
@@ -275,27 +272,23 @@ export type StickerPackDetail = z.infer<typeof StickerPackDetailSchema>;
 export const useStickerPack = (
   id: number | string,
   session?: Session | null | undefined,
-  tokens?: SupportedCollection[],
-  preferredFormats: string = 'webm'
+  preferredFormats: string = 'webm',
+  community?: { id: string } | null
 ) => {
   return useQuery({
-    queryKey: ['sticker-pack', id, tokens],
+    queryKey: ['sticker-pack', id, community?.id],
     queryFn: async (): Promise<StickerPackDetail> => {
       try {
         // Build query parameters
         const queryParams = new URLSearchParams();
 
-        // Add token_collection_ids if provided
-        if (tokens && tokens.length > 0) {
-          tokens.forEach(token => {
-            if (token.id) {
-              queryParams.append('token_collection_ids', token.id.toString());
-            }
-          });
-        }
-
-        // HOTFIX: Add preferred_format parameter hardcoded as 'webm' for sticker packs
+        // Add preferred_formats parameter
         queryParams.append('preferred_formats', preferredFormats);
+
+        // Add community_id if provided
+        if (community?.id) {
+          queryParams.append('community_id', community.id);
+        }
 
         const queryString = queryParams.toString();
         const url = `${import.meta.env.VITE_PUBLIC_API_URL}/sticker-pack/${id}${queryString ? `?${queryString}` : ''}`;

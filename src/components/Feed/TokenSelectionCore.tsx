@@ -1,12 +1,8 @@
 import { useState } from 'react';
 import { Button } from '@telegram-apps/telegram-ui';
 import { TokenSlot } from './TokenSlot';
-import { SelectCollection } from '../NFT/SelectCollection';
-import { SelectTokenId } from '../NFT/SelectTokenId';
-import { DisplayNFT } from '../NFT/DisplayNFT';
-import { PickFavoriteNFTs } from '../NFT/PickFavoriteNFTs';
+import { NFTSelectionFlow } from '../NFT/NFTSelectionFlow';
 import { useGetCollectionsWithPrompt } from '@/hooks/useCollections';
-import type { SupportedCollection } from '@/hooks/useCollections';
 import type { Token } from '@/types/response';
 import type { Prompt } from '@/types/prompt';
 
@@ -31,26 +27,17 @@ export const TokenSelectionCore = ({
   onClose,
   className = '',
 }: TokenSelectionCoreProps) => {
-  // Initialize with selectedFavorite as the first required token
   const [selectedTokens, setSelectedTokens] = useState<(Token | null)[]>(() => {
     const tokens = Array(requiredTokens + optionalTokens).fill(null);
-    tokens[0] = selectedFavorite.token; // First required token is the selectedFavorite
+    tokens[0] = selectedFavorite.token;
     return tokens;
   });
   const [activeSlotIndex, setActiveSlotIndex] = useState<number | null>(null);
-  const [selectedCollection, setSelectedCollection] =
-    useState<SupportedCollection | null>(null);
-  const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null);
-  const [selectionMode, setSelectionMode] = useState<
-    'favorites' | 'collections'
-  >('favorites');
 
   const { data: collections } = useGetCollectionsWithPrompt(prompt);
 
   const handleSlotClick = (index: number) => {
     setActiveSlotIndex(index);
-    setSelectedCollection(null);
-    setSelectedTokenId(null);
   };
 
   const handleTokenSelect = (token: Token) => {
@@ -59,28 +46,11 @@ export const TokenSelectionCore = ({
       newTokens[activeSlotIndex] = token;
       setSelectedTokens(newTokens);
       setActiveSlotIndex(null);
-      setSelectedCollection(null);
-      setSelectedTokenId(null);
     }
-  };
-
-  const handleCollectionSelect = (collection: SupportedCollection) => {
-    setSelectedCollection(collection);
-  };
-
-  const handleBack = () => {
-    setSelectedCollection(null);
-    setSelectedTokenId(null);
-  };
-
-  const handleFavoriteSelect = (favorite: { token: Token }) => {
-    handleTokenSelect(favorite.token);
   };
 
   const handleCloseSelection = () => {
     setActiveSlotIndex(null);
-    setSelectedCollection(null);
-    setSelectedTokenId(null);
   };
 
   const handleGenerate = () => {
@@ -89,7 +59,6 @@ export const TokenSelectionCore = ({
   };
 
   const isGenerationEnabled = () => {
-    // Check if all required tokens are filled (first requiredTokens slots)
     return selectedTokens
       .slice(0, requiredTokens)
       .every(token => token !== null);
@@ -163,68 +132,20 @@ export const TokenSelectionCore = ({
           </div>
         )}
 
-        {/* Selection Interface */}
         {activeSlotIndex !== null && (
           <div className="border-tg-section-separator border-t pt-4">
-            {!selectedCollection && !selectedTokenId && (
-              <div className="space-y-4">
-                <div className="flex justify-center gap-2">
-                  <Button
-                    mode={selectionMode === 'favorites' ? 'filled' : 'outline'}
-                    size="s"
-                    onClick={() => setSelectionMode('favorites')}
-                  >
-                    Favorites
-                  </Button>
-                  <Button
-                    mode={
-                      selectionMode === 'collections' ? 'filled' : 'outline'
-                    }
-                    size="s"
-                    onClick={() => setSelectionMode('collections')}
-                  >
-                    Collections
-                  </Button>
-                </div>
+            <NFTSelectionFlow
+              collections={collections || []}
+              onTokenSelect={handleTokenSelect}
+              enableMascotMode={true}
+              segmentedControlStyle="buttons"
+            />
 
-                {selectionMode === 'favorites' && (
-                  <PickFavoriteNFTs onTokenSelect={handleFavoriteSelect} />
-                )}
-
-                {selectionMode === 'collections' && collections && (
-                  <SelectCollection
-                    collections={collections}
-                    onCollectionSelect={handleCollectionSelect}
-                  />
-                )}
-
-                <div className="flex justify-center">
-                  <Button
-                    mode="outline"
-                    size="s"
-                    onClick={handleCloseSelection}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {selectedCollection && (
-              <SelectTokenId
-                collection={selectedCollection}
-                onTokenSelect={setSelectedTokenId}
-                onBack={handleBack}
-              />
-            )}
-
-            {selectedTokenId && selectedCollection && (
-              <DisplayNFT
-                collection={selectedCollection}
-                tokenId={selectedTokenId}
-                onClick={handleTokenSelect}
-              />
-            )}
+            <div className="flex justify-center mt-4">
+              <Button mode="outline" size="s" onClick={handleCloseSelection}>
+                Cancel
+              </Button>
+            </div>
           </div>
         )}
 

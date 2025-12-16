@@ -253,7 +253,7 @@ export const PromptSettings = ({
     <>
       <div className="scrollbar-hide z-50 flex h-screen w-full flex-col">
         {/* Scrollable Content */}
-        <div className="scrollbar-hide flex-1 overflow-y-auto">
+        <div className="scrollbar-hide flex-1 overflow-y-auto pb-36">
           <List className="bg-tg-secondary m-0 p-5">
             {/* Basic Information Section */}
             <div>
@@ -387,7 +387,7 @@ export const PromptSettings = ({
                 control={control}
                 render={({ field }) => (
                   <TgInput
-                    header="Tokens"
+                    header="Number of input assets"
                     type="number"
                     placeholder="Number of tokens"
                     value={field.value.toString()}

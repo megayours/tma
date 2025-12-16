@@ -2,7 +2,11 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Filter, Pagination } from '@/types/requests';
-import { type RawPrompt, RawPromptsResponseSchema, type PaginationResponse } from '@/types/response';
+import {
+  type RawPrompt,
+  RawPromptsResponseSchema,
+  type PaginationResponse,
+} from '@/types/response';
 import type { PromptWithContent } from '@/types/content';
 import type { Session } from '@/auth/useAuth';
 import type {
@@ -484,11 +488,6 @@ export const useGetMyPrompts = (
     ],
     queryFn: async () => {
       try {
-        console.log('🚀 [useGetMyPrompts] Query function started');
-        if (!session) {
-          console.log('⚠️ [useGetMyPrompts] No session, returning undefined');
-          return;
-        }
         const params = new URLSearchParams({
           account: session.id,
           page: pagination.page?.toString() ?? '1',
@@ -502,8 +501,6 @@ export const useGetMyPrompts = (
         // Add preferred_formats parameter
         params.append('preferred_formats', preferredFormats);
 
-        console.log('📡 [useGetMyPrompts] Fetching with params:', params.toString());
-
         const response = await fetch(
           `${import.meta.env.VITE_PUBLIC_API_URL}/prompts?${params.toString()}`,
           {
@@ -514,22 +511,24 @@ export const useGetMyPrompts = (
           }
         );
 
-        console.log('📡 [useGetMyPrompts] Response status:', response.status);
-
         if (!response.ok) {
           throw new Error(`Failed to fetch prompts: ${response.status}`);
         }
 
         const rawData = await response.json();
-        console.log('🔍 [useGetMyPrompts] Raw data from API:', rawData);
 
         // Parse and validate the response using Zod
-        console.log('🔍 [useGetMyPrompts] Starting Zod validation...');
         const parseResult = RawPromptsResponseSchema.safeParse(rawData);
 
         if (!parseResult.success) {
-          console.error('❌ [useGetMyPrompts] Zod validation failed:', parseResult.error);
-          console.error('❌ [useGetMyPrompts] Raw data:', JSON.stringify(rawData, null, 2));
+          console.error(
+            '❌ [useGetMyPrompts] Zod validation failed:',
+            parseResult.error
+          );
+          console.error(
+            '❌ [useGetMyPrompts] Raw data:',
+            JSON.stringify(rawData, null, 2)
+          );
           throw new Error(
             `Invalid response format from prompts endpoint: ${parseResult.error.message}`
           );
@@ -546,15 +545,16 @@ export const useGetMyPrompts = (
           pagination: validatedData.pagination,
         };
 
-        console.log('🔄 [useGetMyPrompts] Transformed data:', transformedData);
-        console.log('📊 [useGetMyPrompts] Data count:', transformedData.data.length);
-        console.log('📄 [useGetMyPrompts] Pagination:', transformedData.pagination);
-
-        console.log('✅ [useGetMyPrompts] Returning transformed data');
-        return transformedData as { data: Prompt[]; pagination: PaginationResponse };
+        return transformedData as {
+          data: Prompt[];
+          pagination: PaginationResponse;
+        };
       } catch (error) {
         console.error('💥 [useGetMyPrompts] ERROR in queryFn:', error);
-        console.error('💥 [useGetMyPrompts] Error stack:', error instanceof Error ? error.stack : 'No stack');
+        console.error(
+          '💥 [useGetMyPrompts] Error stack:',
+          error instanceof Error ? error.stack : 'No stack'
+        );
         throw error;
       }
     },
@@ -623,11 +623,6 @@ export const usePromptMutation = (session: Session | null | undefined) => {
         model: prompt.model,
         published: prompt.published! > 0 ? true : false,
       };
-
-      console.log('🔄 PUT /prompts request:', {
-        url: `${import.meta.env.VITE_PUBLIC_API_URL}/prompts/${prompt.id}`,
-        body: requestBody,
-      });
 
       const response = await fetch(
         `${import.meta.env.VITE_PUBLIC_API_URL}/prompts/${prompt.id}`,

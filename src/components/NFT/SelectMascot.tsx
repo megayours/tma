@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@telegram-apps/telegram-ui';
-import { useGetNFTByCollectionAndTokenId } from '@/hooks/useCollections';
+import { useGetTokensByCollection } from '@/hooks/useCollections';
 import { type SupportedCollection } from '@/hooks/useCollections';
 import { type Token } from '../../types/response';
 
@@ -19,38 +19,14 @@ export function SelectMascot({
   onTokenSelect,
   onSubmitNFT,
 }: SelectMascotProps) {
-  // Fetch tokens with IDs 1-5
-  const token1 = useGetNFTByCollectionAndTokenId(
-    collection.chain,
-    collection.address,
-    '0'
-  );
-  const token2 = useGetNFTByCollectionAndTokenId(
-    collection.chain,
-    collection.address,
-    '1'
-  );
-  const token3 = useGetNFTByCollectionAndTokenId(
-    collection.chain,
-    collection.address,
-    '2'
-  );
-  const token4 = useGetNFTByCollectionAndTokenId(
-    collection.chain,
-    collection.address,
-    '3'
-  );
-  const token5 = useGetNFTByCollectionAndTokenId(
-    collection.chain,
-    collection.address,
-    '4'
+  // Fetch all tokens based on collection size
+  const { data: tokenData, isLoading } = useGetTokensByCollection(
+    collection,
+    1,
+    collection.size
   );
 
-  // Combine token responses
-  const tokenResponses = [token1, token2, token3, token4, token5];
-  console.log('torknens', token1);
-  const tokens = tokenResponses.map(response => response.data).filter(Boolean);
-  const isLoading = tokenResponses.some(response => response.isLoading);
+  const tokens = tokenData?.tokens || [];
 
   // Calculate middle index based on available tokens
   const middleIndex = Math.floor((tokens.length - 1) / 2);
@@ -270,11 +246,6 @@ export function SelectMascot({
                     className="h-full w-full rounded-full object-contain"
                     loading="lazy"
                   />
-
-                  {/* Token ID badge */}
-                  <div className="bg-tg-secondary text-tg-text absolute -bottom-2 left-1/2 -translate-x-1/2 rounded-full px-3 py-1 text-xs font-bold shadow-md">
-                    #{token.id}
-                  </div>
                 </div>
 
                 {/* Token name */}
@@ -303,7 +274,7 @@ export function SelectMascot({
             }}
             className="max-w-md"
           >
-            Select #{tokens[selectedIndex].id}
+            Select {tokens[selectedIndex].name}
           </Button>
         </div>
       )}

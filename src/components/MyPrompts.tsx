@@ -110,6 +110,7 @@ export default function MyPrompts() {
   // Fetch all previews in one batch call instead of N+1 calls
   const { data: previewsData, isLoading: previewsLoading } = useGetAllPreviews(
     session,
+    selectedCommunity?.id!,
     { page: 1, size: 50 } // Fetch enough previews to cover all prompts
   );
 

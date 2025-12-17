@@ -21,9 +21,7 @@ function RenderAdmin() {
   if (!session && !selectedCommunity) {
     return <div>No session available</div>;
   }
-  console.log('ACCOUNT ROLE:', session);
-  console.log('SELECTED COMMUNITY:', selectedCommunity?.id, selectedCommunity?.name);
-  console.log('CAN CREATE PROMPTS:', canCreatePrompts);
+
   if (canCreatePrompts !== true) {
     return (
       <div className="flex min-h-screen flex-col items-center gap-6 px-4">

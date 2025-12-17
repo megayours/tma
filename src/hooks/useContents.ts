@@ -18,6 +18,7 @@ import type { Contract } from '../types/contract';
 export const useGetContents = (
   session: Session | null | undefined,
   account: string,
+  community_id: string,
   revealed?: boolean,
   pagination?: { page: number; size: number },
   order?: { sort_by: 'created_at'; sort_order: 'asc' | 'desc' },
@@ -31,6 +32,7 @@ export const useGetContents = (
       'content',
       session?.id,
       account,
+      community_id,
       paginationParams.page,
       paginationParams.size,
       revealed,
@@ -40,8 +42,11 @@ export const useGetContents = (
     queryFn: async ({ signal }) => {
       if (!session) return;
 
+      console.log('COMMunity ID IN HOOK:', community_id);
+
       const queryParams = new URLSearchParams({
         account: account,
+        community_id: community_id,
         page: paginationParams?.page.toString(),
         size: paginationParams?.size.toString(),
         sort_by: orderParams?.sort_by,
@@ -82,7 +87,7 @@ export const useGetContents = (
         contents: result.data as Content[],
       };
     },
-    enabled: !!session,
+    enabled: !!session && !!community_id,
   });
 };
 
@@ -140,6 +145,7 @@ export const usePreviewContentMutation = (
 
 export const useGetAllPreviews = (
   session: Session | null | undefined,
+  community_id: string,
   pagination?: { page: number; size: number },
   preferredFormats: string = 'webm'
 ) => {
@@ -148,6 +154,7 @@ export const useGetAllPreviews = (
   return useQuery({
     queryKey: [
       'all-previews',
+      community_id,
       paginationParams.page,
       paginationParams.size,
       preferredFormats,
@@ -156,6 +163,7 @@ export const useGetAllPreviews = (
       if (!session) return;
 
       const queryParams = new URLSearchParams({
+        community_id: community_id,
         page: paginationParams.page.toString(),
         size: paginationParams.size.toString(),
         sort_by: 'created_at',
@@ -206,7 +214,7 @@ export const useGetAllPreviews = (
         byPromptId,
       };
     },
-    enabled: !!session,
+    enabled: !!session && !!community_id,
     refetchInterval: query => {
       const hasProcessingContent = query.state.data?.content?.some(
         item => item.status === 'processing'
@@ -275,7 +283,10 @@ export const useGetPreviewContent = (
         // Validate and transform with Zod schema
         const result = safeParse(RawContentListResponseSchema, data);
         if (!result) {
-          const errors = getValidationErrors(RawContentListResponseSchema, data);
+          const errors = getValidationErrors(
+            RawContentListResponseSchema,
+            data
+          );
           console.error('Preview content validation errors:', errors);
           console.error('Raw response data:', data);
           throw new Error(
@@ -448,7 +459,10 @@ export const useContentExecutions = (session: Session | null | undefined) => {
       const data = await response.json();
       const result = safeParse(ContentExecutionsResponseSchema, data);
       if (!result) {
-        const errors = getValidationErrors(ContentExecutionsResponseSchema, data);
+        const errors = getValidationErrors(
+          ContentExecutionsResponseSchema,
+          data
+        );
         console.error('Executions validation errors:', errors);
         throw new Error('Invalid executions response');
       }
@@ -501,7 +515,10 @@ export const useRevealContent = (session: Session | null | undefined) => {
   });
 };
 
-export const useRevealAllContent = (session: Session | null | undefined) => {
+export const useRevealAllContent = (
+  session: Session | null | undefined,
+  community_id: string
+) => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -519,6 +536,7 @@ export const useRevealAllContent = (session: Session | null | undefined) => {
             'Content-Type': 'application/json',
             Authorization: session.authToken,
           },
+          body: JSON.stringify({ community_id }),
         }
       );
       if (!response.ok) {

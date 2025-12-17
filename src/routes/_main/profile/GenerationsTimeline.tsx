@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import { MediaDisplay } from '@/components/lib/LatestContent/MediaDisplay';
 import { Button } from '@telegram-apps/telegram-ui';
+import { useSelectCommunity } from '../../../contexts/SelectCommunityContext';
 
 export const Route = createFileRoute('/_main/profile/GenerationsTimeline')({
   component: GenerationsTimeline,
@@ -15,6 +16,7 @@ export const Route = createFileRoute('/_main/profile/GenerationsTimeline')({
 
 export function GenerationsTimeline() {
   const { session, isAuthenticating } = useSession();
+  const { selectedCommunity } = useSelectCommunity();
   const [page, setPage] = useState(1);
   const [allContents, setAllContents] = useState<Content[]>([]);
   const [hasMore, setHasMore] = useState(true);
@@ -22,6 +24,7 @@ export function GenerationsTimeline() {
   const { data, isLoading, isFetching } = useGetContents(
     session,
     session?.id!,
+    selectedCommunity?.id!,
     undefined,
     { page, size: 20 }
   );

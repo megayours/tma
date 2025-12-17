@@ -8,6 +8,7 @@ import {
 } from '@/hooks/useContents';
 import { useState } from 'react';
 import type { Content } from '@/types/content';
+import { useSelectCommunity } from '../../../../contexts/SelectCommunityContext';
 
 export const Route = createFileRoute('/_main/profile/notifications/')({
   component: NotificationsPage,
@@ -150,11 +151,12 @@ function NotificationItem({
 
 function NotificationsPage() {
   const { session } = useSession();
+  const { selectedCommunity } = useSelectCommunity();
   const navigate = useNavigate();
-  const { data, isLoading } = useGetContents(session, session?.id!);
+  const { data, isLoading } = useGetContents(session, session?.id!, selectedCommunity?.id!);
   const contents = data?.contents || [];
   const revealMutation = useRevealContent(session);
-  const revealAllMutation = useRevealAllContent(session);
+  const revealAllMutation = useRevealAllContent(session, selectedCommunity?.id!);
   const [revealingIds, setRevealingIds] = useState<Set<string>>(new Set());
   const [isRevealingAll, setIsRevealingAll] = useState(false);
 

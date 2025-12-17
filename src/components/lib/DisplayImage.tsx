@@ -15,7 +15,7 @@ export function DisplayImage({ imageStatus }: { imageStatus: ImageStatus }) {
     <Card type="plain">
       <div style={{ position: 'relative' }}>
         <img
-          src={image?.image}
+          src={image?.image || '/nfts/not-available.png'}
           alt="Latest Image"
           className="block"
           style={{

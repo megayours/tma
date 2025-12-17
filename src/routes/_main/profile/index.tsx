@@ -16,7 +16,8 @@ export const Route = createFileRoute('/_main/profile/')({
 
 function NotificationButton() {
   const { session } = useSession();
-  const { data } = useGetContents(session, session?.id!);
+  const { selectedCommunity } = useSelectCommunity();
+  const { data } = useGetContents(session, session?.id!, selectedCommunity?.id!);
   const unreadCount =
     data?.contents?.filter(c => c.revealedAt === null).length || 0;
 

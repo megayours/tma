@@ -42,8 +42,6 @@ export const useGetContents = (
     queryFn: async ({ signal }) => {
       if (!session) return;
 
-      console.log('COMMunity ID IN HOOK:', community_id);
-
       const queryParams = new URLSearchParams({
         account: account,
         community_id: community_id,

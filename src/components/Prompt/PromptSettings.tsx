@@ -456,7 +456,7 @@ export const PromptSettings = ({
                 </>
               )}
               <p className="text-tg-hint mt-2 text-sm">
-                NFT contracts associated with this prompt.
+                Collections associated with this prompt.
               </p>
             </div>
 
@@ -506,7 +506,7 @@ export const PromptSettings = ({
                     <div className="flex items-center justify-center">
                       <IoPersonOutline className="text-tg-hint h-5 w-5" />
                     </div>
-                    <span className="text-tg-text">Selected NFTs</span>
+                    <span className="text-tg-text">Selected Characters</span>
                   </div>
                   <span className="text-tg-hint text-sm">
                     {selectedNFTs.length}

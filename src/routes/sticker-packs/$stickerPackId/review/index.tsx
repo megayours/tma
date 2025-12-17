@@ -102,7 +102,7 @@ function RouteComponent() {
       <div className="mx-auto max-w-4xl p-4">
         <div className="flex items-center justify-center p-8">
           <div className="text-lg text-red-600">
-            Invalid NFT data. Please go back and select an NFT.
+            Invalid NFT data. Please go back and select a Character.
           </div>
         </div>
       </div>
@@ -130,17 +130,17 @@ function RouteComponent() {
           {/* Selected NFT */}
           <div className="mb-4">
             <h3 className="text-tg-hint mb-2 text-sm font-semibold">
-              Selected NFT
+              Selected Character
             </h3>
             <div className="bg-tg-bg flex items-center gap-3 rounded p-2 text-sm">
               <img
                 src={selectedToken.image || '/nfts/not-available.png'}
-                alt={selectedToken.name || `NFT #${selectedToken.id}`}
+                alt={selectedToken.name || `Character #${selectedToken.id}`}
                 className="h-12 w-12 rounded-full object-cover"
               />
               <div className="flex-1">
                 <div className="text-tg-text font-semibold">
-                  {selectedToken.name || `NFT #${selectedToken.id}`}
+                  {selectedToken.name || `Character #${selectedToken.id}`}
                 </div>
                 <div className="text-tg-hint text-xs">
                   {selectedToken.contract.name} #{selectedToken.id}

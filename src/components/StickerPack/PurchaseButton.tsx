@@ -26,10 +26,15 @@ export function PurchaseButton({
 
       // Trigger animation for successful purchases
       if (data.status === 'processing' || data.status === 'completed') {
-        triggerAnimation(data.status, data.status === 'completed' ? () => {
-          // Redirect to Telegram bot after animation completes
-          redirectToTelegramBot();
-        } : undefined);
+        triggerAnimation(
+          data.status,
+          data.status === 'completed'
+            ? () => {
+                // Redirect to Telegram bot after animation completes
+                redirectToTelegramBot();
+              }
+            : undefined
+        );
       }
     },
     onError: error => {
@@ -63,7 +68,7 @@ export function PurchaseButton({
           {selectedFavorite && (
             <img
               src={selectedFavorite.token.image || ''}
-              alt="Selected NFT"
+              alt="Selected Character"
               className={`h-6 w-6 rounded-full object-cover transition-all ${
                 state === 'success'
                   ? 'border-2 border-purple-300 shadow-md shadow-purple-400/50'

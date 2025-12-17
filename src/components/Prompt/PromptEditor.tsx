@@ -188,7 +188,7 @@ const PromptEditorContent = ({
             </div>
             <div className="flex flex-1 flex-col">
               <textarea
-                placeholder="Example: The NFT1 in a futuristic cityscape, vibrant colors, high detail"
+                placeholder="Example: The Character1 in a futuristic cityscape, vibrant colors, high detail"
                 className={`text-tg-text border-tg-button/20 resize-none rounded-2xl border px-4 py-3 shadow-lg backdrop-blur-lg transition-all duration-200 outline-none ${getTextareaHeight()} scrollbar-hide`}
                 ref={promptTextareaRef}
                 value={promptText}

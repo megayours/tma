@@ -42,7 +42,7 @@ function SelectedNFTDisplay({
             : 'mb-6 h-auto opacity-100'
         }`}
       >
-        Selected NFT
+        Selected Character
       </h2>
       <div
         className={`flex items-center justify-center transition-all duration-500`}
@@ -57,7 +57,7 @@ function SelectedNFTDisplay({
               {nft?.image && (
                 <img
                   src={nft.image}
-                  alt={nft?.name || `NFT #${nft?.id || index}`}
+                  alt={nft?.name || `Character #${nft?.id || index}`}
                   className={`rounded-full object-cover transition-all duration-500 ease-in-out ${
                     isSelectorOpen ? 'h-24 w-24' : 'h-52 w-52'
                   }`}
@@ -96,7 +96,7 @@ function SelectedNFTDisplay({
                   isSelectorOpen ? 'text-sm' : 'text-base'
                 }`}
               >
-                {nft?.name || `NFT #${nft?.id || index}`}
+                {nft?.name || `Character #${nft?.id || index}`}
               </div>
               <div
                 className={`text-tg-hint transition-all duration-500 ease-in-out ${
@@ -347,7 +347,9 @@ function RouteComponent() {
           {isSelectorOpen && (
             <div>
               <h2 className="text-lg font-semibold">
-                {selectedNFTs.length === 0 ? 'Select Your NFT' : 'Change NFT'}
+                {selectedNFTs.length === 0
+                  ? 'Select Your Character'
+                  : 'Change Character'}
               </h2>
               <NFTSelector
                 collections={filteredCollections}

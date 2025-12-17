@@ -181,7 +181,7 @@ const DisabledFavoritesInfo = () => (
  */
 const InvalidPreselectionWarning = () => (
   <Blockquote type="text">
-    <span className="text-tg-text">Selected NFT is not supported</span>
+    <span className="text-tg-text">Selected Character is not supported</span>
   </Blockquote>
 );
 

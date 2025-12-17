@@ -1,67 +1,59 @@
 /**
- * Utility to clear service worker and caches
- * Useful for debugging or when updating cache strategies
+ * One-time migration utility to clean up old service workers
+ * Runs once per user on first load after update
  */
 
-export const clearServiceWorkerCache = async () => {
+const MIGRATION_KEY = 'sw_migration_v1_completed';
+
+export const migrateFromServiceWorker = async (): Promise<void> => {
+  // Check if migration already completed
+  if (localStorage.getItem(MIGRATION_KEY) === 'true') {
+    return;
+  }
+
   try {
+    let hadServiceWorker = false;
+    let hadCaches = false;
+
     // Unregister all service workers
     if ('serviceWorker' in navigator) {
       const registrations = await navigator.serviceWorker.getRegistrations();
-      for (const registration of registrations) {
-        await registration.unregister();
-        console.log('Service worker unregistered:', registration.scope);
+      if (registrations.length > 0) {
+        hadServiceWorker = true;
+        for (const registration of registrations) {
+          await registration.unregister();
+          console.log('[Migration] Service worker unregistered:', registration.scope);
+        }
       }
     }
 
     // Clear all caches
     if ('caches' in window) {
       const cacheNames = await caches.keys();
-      await Promise.all(
-        cacheNames.map(async cacheName => {
-          await caches.delete(cacheName);
-          console.log('Cache deleted:', cacheName);
-        })
-      );
+      if (cacheNames.length > 0) {
+        hadCaches = true;
+        await Promise.all(
+          cacheNames.map(async cacheName => {
+            await caches.delete(cacheName);
+            console.log('[Migration] Cache deleted:', cacheName);
+          })
+        );
+      }
     }
 
-    console.log('✅ All service workers and caches cleared!');
-    console.log('Please refresh the page.');
+    // Mark migration as completed
+    localStorage.setItem(MIGRATION_KEY, 'true');
 
-    return true;
+    if (hadServiceWorker || hadCaches) {
+      console.log('[Migration] ✅ Service worker cleanup completed. The app will use HTTP caching from now on.');
+
+      // Force a hard reload to ensure fresh assets
+      window.location.reload();
+    } else {
+      console.log('[Migration] No service worker found, skipping cleanup.');
+    }
   } catch (error) {
-    console.error('Failed to clear service worker/cache:', error);
-    return false;
+    console.error('[Migration] Failed to clean up service worker:', error);
+    // Don't mark as completed if it failed - will retry next time
   }
 };
-
-// Helper to check current cache status
-export const checkCacheStatus = async () => {
-  try {
-    const status = {
-      serviceWorkers: [] as string[],
-      caches: [] as string[],
-    };
-
-    if ('serviceWorker' in navigator) {
-      const registrations = await navigator.serviceWorker.getRegistrations();
-      status.serviceWorkers = registrations.map(reg => reg.scope);
-    }
-
-    if ('caches' in window) {
-      status.caches = await caches.keys();
-    }
-
-    console.log('Cache Status:', status);
-    return status;
-  } catch (error) {
-    console.error('Failed to check cache status:', error);
-    return null;
-  }
-};
-
-// Add to window for easy access in console
-if (typeof window !== 'undefined') {
-  (window as any).clearSWCache = clearServiceWorkerCache;
-  (window as any).checkSWCache = checkCacheStatus;
-}

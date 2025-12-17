@@ -19,6 +19,18 @@ import { logBuildInfo, attachBuildInfoToWindow } from './utils/buildInfo';
 logBuildInfo();
 attachBuildInfoToWindow();
 
+// Listen for service worker cleanup completion message
+// The self-destructing service worker (public/sw.js) will send this message
+// after it unregisters itself and clears all caches
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('message', (event) => {
+    if (event.data?.type === 'SW_CLEANUP_COMPLETE') {
+      console.log('[SW-Cleanup] Received cleanup complete message, reloading...');
+      window.location.reload();
+    }
+  });
+}
+
 // Import and run one-time migration to clean up old service workers
 import { migrateFromServiceWorker } from './utils/clearServiceWorker';
 migrateFromServiceWorker();

@@ -2,7 +2,6 @@ import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 import { tanstackRouter } from '@tanstack/router-plugin/vite';
 import tailwindcss from '@tailwindcss/vite';
-import { VitePWA } from 'vite-plugin-pwa';
 import { sentryVitePlugin } from '@sentry/vite-plugin';
 import { execSync } from 'child_process';
 
@@ -68,73 +67,6 @@ export default defineConfig(({ mode }) => {
     }),
     react(),
     tailwindcss(),
-    VitePWA({
-      registerType: 'autoUpdate',
-      devOptions: {
-        enabled: false, // Disable service worker in dev to avoid caching issues
-      },
-      includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
-      manifest: {
-        name: 'Yours Mini App',
-        short_name: 'Yours',
-        description: 'Create and manage your sticker packs',
-        theme_color: '#ffffff',
-        icons: [
-          {
-            src: 'pwa-192x192.png',
-            sizes: '192x192',
-            type: 'image/png',
-          },
-          {
-            src: 'pwa-512x512.png',
-            sizes: '512x512',
-            type: 'image/png',
-          },
-        ],
-      },
-      workbox: {
-        runtimeCaching: [
-          {
-            // Cache external API images - more flexible pattern
-            urlPattern: ({ url, request }) =>
-              url.hostname.includes('megayours.com') &&
-              (request.destination === 'image' ||
-                url.pathname.match(/\.(png|jpg|jpeg|webp|gif|webm)(\?.*)?$/i) ||
-                url.pathname.includes('/content/') ||
-                url.pathname.includes('/preview/')),
-            handler: 'NetworkFirst', // Changed to NetworkFirst to avoid serving stale/failed responses
-            options: {
-              cacheName: 'image-cache',
-              expiration: {
-                maxEntries: 500,
-                maxAgeSeconds: 60 * 60 * 24 * 7, // 7 days
-              },
-              cacheableResponse: {
-                statuses: [0, 200],
-              },
-              networkTimeoutSeconds: 10, // Fallback to cache after 10s timeout
-            },
-          },
-          {
-            // Cache API calls with network-first strategy
-            urlPattern: ({ url, request }) =>
-              url.hostname.includes('megayours.com') &&
-              request.destination !== 'image',
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'api-cache',
-              expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 60 * 5, // 5 minutes
-              },
-              cacheableResponse: {
-                statuses: [0, 200],
-              },
-            },
-          },
-        ],
-      },
-    }),
   ];
 
   // Add Sentry plugin only if all required credentials are provided

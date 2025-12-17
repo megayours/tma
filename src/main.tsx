@@ -19,8 +19,9 @@ import { logBuildInfo, attachBuildInfoToWindow } from './utils/buildInfo';
 logBuildInfo();
 attachBuildInfoToWindow();
 
-// Import service worker utilities (adds clearSWCache() and checkSWCache() to window)
-import './utils/clearServiceWorker';
+// Import and run one-time migration to clean up old service workers
+import { migrateFromServiceWorker } from './utils/clearServiceWorker';
+migrateFromServiceWorker();
 
 // Import the generated route tree
 import { routeTree } from './routeTree.gen';

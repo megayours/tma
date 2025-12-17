@@ -215,8 +215,8 @@ export function ShowContent({ prompt }: ShowContentProps) {
                   <div className="flex items-center gap-1">
                     <div className="h-6 w-6 overflow-hidden rounded-full">
                       <img
-                        src={selectedFavorite.token.image}
-                        alt={selectedFavorite.token.contract.name}
+                        src={selectedFavorite.token?.image || '/nfts/not-available.png'}
+                        alt={selectedFavorite.token?.contract?.name || 'Token'}
                       />
                     </div>
                     {!isGenerating && !isLoadingSelected && prompt.minTokens && (

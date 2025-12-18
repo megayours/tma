@@ -62,6 +62,7 @@ export function StickerPackItem({
                         lazyLoad={true}
                         className="h-full w-full object-cover"
                         videoId={`sticker-${stickerPack.id}-${item.content_id || index}`}
+                        autoplay={false}
                       />
                     </div>
                   )

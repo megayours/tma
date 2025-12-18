@@ -1,3 +1,9 @@
+// Initialize Sentry
+import * as Sentry from '@sentry/react';
+import { initSentry } from './utils/sentry';
+initSentry();
+import { ErrorFallback } from './components/ErrorFallback';
+
 import { StrictMode } from 'react';
 import ReactDOM from 'react-dom/client';
 import { RouterProvider, createRouter } from '@tanstack/react-router';
@@ -7,10 +13,6 @@ import { AppRoot } from '@telegram-apps/telegram-ui';
 import { ThemeProvider } from './auth/ThemeProvider';
 import { AuthProvider } from './auth/AuthProvider';
 import './style.css';
-
-// Initialize Sentry
-import { initSentry } from './utils/sentry';
-initSentry();
 
 // Import and initialize build info logging
 import { logBuildInfo, attachBuildInfoToWindow } from './utils/buildInfo';
@@ -23,9 +25,11 @@ attachBuildInfoToWindow();
 // The self-destructing service worker (public/sw.js) will send this message
 // after it unregisters itself and clears all caches
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.addEventListener('message', (event) => {
+  navigator.serviceWorker.addEventListener('message', event => {
     if (event.data?.type === 'SW_CLEANUP_COMPLETE') {
-      console.log('[SW-Cleanup] Received cleanup complete message, reloading...');
+      console.log(
+        '[SW-Cleanup] Received cleanup complete message, reloading...'
+      );
       window.location.reload();
     }
   });
@@ -64,17 +68,19 @@ if (!rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement);
   root.render(
     <StrictMode>
-      {/* <TonConnectUIProvider manifestUrl="https://ton-connect.github.io/demo-dapp-with-react-ui/tonconnect-manifest.json"> */}
-      <ThemeProvider>
-        <AuthProvider>
-          <AppRoot>
-            <QueryClientProvider client={queryClient}>
-              <RouterProvider router={router} />
-            </QueryClientProvider>
-          </AppRoot>
-        </AuthProvider>
-      </ThemeProvider>
-      {/* </TonConnectUIProvider> */}
+      <Sentry.ErrorBoundary fallback={ErrorFallback} showDialog>
+        {/* <TonConnectUIProvider manifestUrl="https://ton-connect.github.io/demo-dapp-with-react-ui/tonconnect-manifest.json"> */}
+        <ThemeProvider>
+          <AuthProvider>
+            <AppRoot>
+              <QueryClientProvider client={queryClient}>
+                <RouterProvider router={router} />
+              </QueryClientProvider>
+            </AppRoot>
+          </AuthProvider>
+        </ThemeProvider>
+        {/* </TonConnectUIProvider> */}
+      </Sentry.ErrorBoundary>
     </StrictMode>
   );
 }

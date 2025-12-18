@@ -11,6 +11,7 @@ interface MediaDisplayProps {
   containerClassName?: string;
   lazyLoad?: boolean;
   videoId?: string;
+  autoplay?: boolean;
 }
 
 // Utility function to detect webm files, handling URLs with query parameters
@@ -35,6 +36,7 @@ export function MediaDisplay({
   containerClassName = '',
   lazyLoad = false,
   videoId,
+  autoplay = true,
 }: MediaDisplayProps) {
   const isVideo = isWebm(src);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -107,7 +109,7 @@ export function MediaDisplay({
       ref={videoRef}
       src={isInView ? src : undefined}
       className={`object-contain ${className}`}
-      autoPlay={shouldAutoPlay}
+      autoPlay={shouldAutoPlay && autoplay}
       loop
       muted
       playsInline

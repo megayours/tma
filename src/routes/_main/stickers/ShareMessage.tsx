@@ -41,7 +41,7 @@ export function ShareMessage({
       className="bg-tg-button text-tg-button-text flex items-center justify-center rounded-full p-2 shadow-sm transition-all hover:shadow-md active:scale-95"
       aria-label="Share"
     >
-      <FiSend className="h-4 w-4" />
+      <FiSend className="h-5 w-5" />
     </button>
   );
 }

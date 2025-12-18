@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router';
 import type { StickerBundles } from '@/hooks/useStickerPacks';
 import { Reshared } from './Reshared';
 import { ShareMessage } from './ShareMessage';
+import { MediaDisplay } from '@/components/lib/LatestContent/MediaDisplay';
 
 export function StickerPackItem({
   stickerPack,
@@ -55,19 +56,13 @@ export function StickerPackItem({
                       key={item.content_id || index}
                       className="relative aspect-square w-full max-w-48 overflow-hidden rounded-lg"
                     >
-                      <video
-                        autoPlay
-                        muted
-                        playsInline
-                        loop
-                        controls={false}
+                      <MediaDisplay
+                        src={item.preview_url}
+                        alt={`Sticker ${index + 1}`}
+                        lazyLoad={true}
                         className="h-full w-full object-cover"
-                      >
-                        <source
-                          src={item.preview_url}
-                          type="video/webm"
-                        ></source>
-                      </video>
+                        videoId={`sticker-${stickerPack.id}-${item.content_id || index}`}
+                      />
                     </div>
                   )
               )}

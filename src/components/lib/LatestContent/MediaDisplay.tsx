@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useVideoQueue } from '@/hooks/useVideoQueue';
 
 interface MediaDisplayProps {
@@ -34,15 +34,12 @@ export function MediaDisplay({
   priority = false,
   loading,
   containerClassName = '',
-  lazyLoad = false,
   videoId,
   autoplay = true,
 }: MediaDisplayProps) {
   const isVideo = isWebm(src);
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [isInView, setIsInView] = useState(!lazyLoad || priority);
-  const [shouldAutoPlay, setShouldAutoPlay] = useState(false);
 
   // Use video queue for videos with videoId
   const { enqueueVideo, dequeueVideo } = useVideoQueue(
@@ -50,43 +47,9 @@ export function MediaDisplay({
     priority ? 1 : 0
   );
 
-  // Intersection Observer for lazy loading
-  useEffect(() => {
-    if (!lazyLoad || priority) return;
-
-    const container = containerRef.current;
-    if (!container) return;
-
-    const observer = new IntersectionObserver(
-      entries => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            setIsInView(true);
-            // Start autoplay when 50% visible
-            if (entry.intersectionRatio >= 0.5) {
-              setShouldAutoPlay(true);
-            }
-          } else {
-            setShouldAutoPlay(false);
-          }
-        });
-      },
-      {
-        threshold: [0, 0.5],
-        rootMargin: '50px',
-      }
-    );
-
-    observer.observe(container);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [lazyLoad, priority]);
-
   // Enqueue video for managed loading
   useEffect(() => {
-    if (!isVideo || !isInView || !videoRef.current) return;
+    if (!isVideo || !videoRef.current) return;
 
     const video = videoRef.current;
 
@@ -97,7 +60,7 @@ export function MediaDisplay({
         dequeueVideo();
       };
     }
-  }, [isVideo, isInView, videoId, enqueueVideo, dequeueVideo]);
+  }, [isVideo, videoId, enqueueVideo, dequeueVideo]);
 
   // Determine loading strategy
   const loadingAttr = loading || (priority ? 'eager' : 'lazy');
@@ -107,18 +70,14 @@ export function MediaDisplay({
   const mediaElement = isVideo ? (
     <video
       ref={videoRef}
-      src={isInView ? src : undefined}
+      src={src}
       className={`object-contain ${className}`}
-      autoPlay={shouldAutoPlay && autoplay}
+      autoPlay={autoplay}
       loop
       muted
       playsInline
       preload="none"
-      poster={
-        !isInView
-          ? 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'
-          : undefined
-      }
+      poster={'/logo.png'}
     />
   ) : (
     <img

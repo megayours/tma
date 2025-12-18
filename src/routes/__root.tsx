@@ -126,16 +126,6 @@ function TelegramEnvironmentHandler() {
       console.log('Vertical swipe disabled');
     }
 
-    // Request fullscreen mode for immersive experience (only after viewport is mounted)
-    if (
-      isViewportMounted &&
-      requestFullscreen &&
-      requestFullscreen.isAvailable()
-    ) {
-      requestFullscreen();
-      console.log('Telegram Mini App requested fullscreen mode');
-    }
-
     if (!backButton.isMounted()) {
       backButton.mount();
     }

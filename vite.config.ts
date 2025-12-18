@@ -125,10 +125,8 @@ export default defineConfig(({ mode }) => {
       minify: 'terser',
       terserOptions: {
         compress: {
-          // Drop console logs in production and staging, keep them in dev only
-          drop_console: isProd, // Remove in production only
+          // Keep console.error/warn for Sentry breadcrumbs, only remove log/debug
           drop_debugger: isProd || mode === 'staging',
-          // OR keep console.error/warn for Sentry breadcrumbs:
           pure_funcs: isProd ? ['console.log', 'console.debug'] : [],
         },
       },

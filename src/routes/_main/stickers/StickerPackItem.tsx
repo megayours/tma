@@ -24,7 +24,7 @@ export function StickerPackItem({
   return (
     <div className="bg-tg-section-bg flex w-full flex-col rounded-lg">
       {/* Header with title and price button */}
-      <div className="flex items-center justify-between gap-1 px-4 py-2">
+      <div className="flex items-center justify-between gap-2 px-4 py-3">
         <Link
           to="/sticker-packs/$stickerPackId"
           params={{ stickerPackId: stickerPack.id.toString() }}
@@ -42,16 +42,16 @@ export function StickerPackItem({
       </div>
 
       {/* Sticker preview grid */}
-      <div className="flex flex-row items-end gap-1 px-4 pb-4">
+      <div className="flex flex-col items-end gap-1 px-4 pb-4">
         <div className="flex min-w-0 flex-1 items-center justify-center">
           <Link
             to="/sticker-packs/$stickerPackId"
             params={{ stickerPackId: stickerPack.id.toString() }}
           >
-            <div className="grid grid-cols-3 gap-1">
+            <div className="grid grid-cols-2 gap-1">
               {stickerPack.preview_items.map(
                 (item, index) =>
-                  index < 5 && (
+                  index < 3 && (
                     <div
                       key={item.content_id || index}
                       className="relative aspect-square w-full max-w-48 overflow-hidden rounded-lg"
@@ -59,25 +59,25 @@ export function StickerPackItem({
                       <MediaDisplay
                         src={item.preview_url}
                         alt={`Sticker ${index + 1}`}
-                        lazyLoad={false}
+                        lazyLoad={true}
                         className="h-full w-full object-cover"
                         videoId={`sticker-${stickerPack.id}-${item.content_id || index}`}
-                        autoplay={false}
+                        autoplay={true}
                       />
                     </div>
                   )
               )}
-              {stickerPack.item_count > 5 && (
-                <div className="p-4">
-                  <div className="bg-tg-secondary-bg flex h-full w-full items-center justify-center rounded-xl shadow">
-                    {stickerPack.item_count - 5} more
+              {stickerPack.item_count > 3 && (
+                <div className="">
+                  <div className="bg-tg-secondary-bg flex h-full w-full items-center justify-center rounded-xl font-bold shadow">
+                    + {stickerPack.item_count - 3} more
                   </div>
                 </div>
               )}
             </div>
           </Link>
         </div>
-        <div className="flex w-10 flex-col items-center justify-end gap-4 self-end pb-4">
+        <div className="flex w-full flex-row justify-end gap-4 pt-2">
           <Link
             to="/sticker-packs/$stickerPackId"
             params={{ stickerPackId: stickerPack.id.toString() }}

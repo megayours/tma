@@ -34,11 +34,11 @@ export function Landing() {
   return (
     <>
       {isRefetching && <TopLoadingBar />}
-      <div className="bg-tg-secondary-bg scrollbar-hide flex flex-col gap-2 overflow-y-scroll pt-2">
+      <div className="bg-tg-secondary-bg scrollbar-hide flex w-full flex-col items-center gap-2 overflow-y-scroll pt-2">
         {stickerPacks?.data.map(stickerPack => (
           <div
             key={stickerPack.id}
-            className="bg-tg-section-bg flex shrink-0 snap-start flex-col"
+            className="bg-tg-section-bg flex w-full shrink-0 snap-start flex-col items-center"
           >
             <StickerPackItem stickerPack={stickerPack} />
           </div>

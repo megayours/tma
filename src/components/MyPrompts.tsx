@@ -50,31 +50,31 @@ export const RenderPreview = ({
     );
   }
 
+  const firstContent = previews.length > 0 ? previews[0] : null;
+
   return (
-    <div
-      className={`flex h-full flex-row gap-2 ${
-        previews.length === 0 ? '' : 'scrollbar-hide overflow-x-scroll'
-      }`}
-    >
-      {previews.map(content => (
-        <div key={content.id} className="h-full w-full">
-          {content.status == 'processing' ? (
+    <div className="flex h-full w-full flex-row gap-2">
+      {firstContent ? (
+        <div className="h-full w-full">
+          {firstContent.status == 'processing' ? (
             <DotLottieReact src={'/lotties/loader.lottie'} loop autoplay />
           ) : (
             <MediaDisplay
-              src={content.image || content.gif || '/public/gifs/loadings.gif'}
-              alt={content.id}
+              src={
+                firstContent.image ||
+                firstContent.gif ||
+                '/public/gifs/loadings.gif'
+              }
+              alt={firstContent.id}
               className="block h-full w-full object-contain"
             />
           )}
         </div>
-      ))}
-
-      {previews.length === 0 && (
+      ) : previews.length === 0 ? (
         <div className="flex h-full w-full items-center justify-center text-sm opacity-60">
           No content
         </div>
-      )}
+      ) : null}
     </div>
   );
 };
@@ -115,10 +115,16 @@ export default function MyPrompts() {
   );
 
   useEffect(() => {
-    console.log('📱 [MyPrompts useEffect] data?.pagination?.totalPages:', data?.pagination?.totalPages);
+    console.log(
+      '📱 [MyPrompts useEffect] data?.pagination?.totalPages:',
+      data?.pagination?.totalPages
+    );
     console.log('📱 [MyPrompts useEffect] current totalPages:', totalPages);
     if (data?.pagination?.totalPages) {
-      console.log('📱 [MyPrompts useEffect] Setting totalPages to:', data.pagination.totalPages);
+      console.log(
+        '📱 [MyPrompts useEffect] Setting totalPages to:',
+        data.pagination.totalPages
+      );
       setTotalPages(data.pagination.totalPages);
     }
   }, [data?.pagination?.totalPages]);
@@ -126,7 +132,10 @@ export default function MyPrompts() {
   if (!session) return <div>No session available</div>;
 
   console.log('📱 [MyPrompts] Rendering with data?.data:', data?.data);
-  console.log('📱 [MyPrompts] Rendering with data?.data.length:', data?.data?.length);
+  console.log(
+    '📱 [MyPrompts] Rendering with data?.data.length:',
+    data?.data?.length
+  );
 
   return (
     <div>

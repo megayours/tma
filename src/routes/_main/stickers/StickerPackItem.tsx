@@ -42,13 +42,13 @@ export function StickerPackItem({
       </div>
 
       {/* Sticker preview grid */}
-      <div className="flex flex-col items-end gap-1 px-4 pb-4">
+      <div className="flex flex-col items-center gap-1 px-4 pb-4">
         <div className="flex min-w-0 flex-1 items-center justify-center">
           <Link
             to="/sticker-packs/$stickerPackId"
             params={{ stickerPackId: stickerPack.id.toString() }}
           >
-            <div className="grid grid-cols-2 gap-1">
+            <div className="grid grid-cols-2 items-center gap-1 md:grid-cols-4">
               {stickerPack.preview_items.map(
                 (item, index) =>
                   index < 3 && (
@@ -68,10 +68,8 @@ export function StickerPackItem({
                   )
               )}
               {stickerPack.item_count > 3 && (
-                <div className="">
-                  <div className="bg-tg-secondary-bg flex h-full w-full items-center justify-center rounded-xl font-bold shadow">
-                    + {stickerPack.item_count - 3} more
-                  </div>
+                <div className="bg-tg-secondary-bg flex h-full w-full items-center justify-center rounded-xl font-bold shadow">
+                  + {stickerPack.item_count - 3} more
                 </div>
               )}
             </div>

@@ -59,7 +59,7 @@ export function StickerPackItem({
                       <MediaDisplay
                         src={item.preview_url}
                         alt={`Sticker ${index + 1}`}
-                        lazyLoad={true}
+                        lazyLoad={false}
                         className="h-full w-full object-cover"
                         videoId={`sticker-${stickerPack.id}-${item.content_id || index}`}
                         autoplay={false}

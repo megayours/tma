@@ -4,6 +4,7 @@ import type { Session } from '@/auth/useAuth';
 import type { Token } from '../types/response';
 import { setCachedFavorite } from '@/utils/favoriteCache';
 import { useSelectedNFTsSafe } from '@/contexts/SelectedNFTsContext';
+import { useSelectCommunity } from '@/contexts/SelectCommunityContext';
 
 export type Favorite = {
   token: Token;
@@ -14,9 +15,10 @@ export type Favorite = {
 export function useGetFavorites(session: Session | null) {
   const { selectedFavorite, setSelectedFavorite: setSelectedFavoriteGlobal } =
     useSelectedNFTsSafe();
+  const { selectedCommunity } = useSelectCommunity();
   const [isLoadingSelected, setIsLoadingSelected] = useState(true);
 
-  const { data, isLoading } = useQuery({
+  const { data: rawData, isLoading } = useQuery({
     queryKey: ['favorites', session?.id],
     queryFn: async (): Promise<Favorite[]> => {
       if (!session) return [];
@@ -45,7 +47,17 @@ export function useGetFavorites(session: Session | null) {
     enabled: !!session?.id && !!session?.authToken,
   });
 
+  // Filter favorites to only include those from selected community's collections
+  const data = rawData?.filter(favorite =>
+    selectedCommunity?.collections.some(
+      collection =>
+        collection.address === favorite.token.contract.address &&
+        collection.chain === favorite.token.contract.chain
+    )
+  ) || rawData;
+
   // Always select and cache the most-used favorite (data[0])
+  // Data is already filtered to only include favorites from selected community's collections
   useEffect(() => {
     if (!session?.id || !data) {
       setIsLoadingSelected(false);
@@ -53,7 +65,7 @@ export function useGetFavorites(session: Session | null) {
     }
 
     if (data.length > 0) {
-      // Always select the most-used favorite (sorted by usage)
+      // Select the first favorite (most recently used, already filtered by community)
       const mostUsedFavorite = data[0];
       setSelectedFavoriteGlobal(mostUsedFavorite);
       setCachedFavorite(session.id, mostUsedFavorite);

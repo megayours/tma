@@ -6,13 +6,13 @@ import { useGetDefaultAvatar } from '../../../hooks/useCommunities';
 
 export function UserMenuComponent({ size = 40 }: { size?: number }) {
   const { session } = useSession();
+  const { selectedCommunity } = useSelectCommunity();
   const { selectedFavorite } = useGetFavorites(session!);
 
   // Always call hooks before any early returns
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLDivElement>(null);
-  const { selectedCommunity } = useSelectCommunity();
   const { data: token } = useGetDefaultAvatar(selectedCommunity?.id);
 
   // Close menu when clicking outside

@@ -15,7 +15,6 @@ export function SelectCollection({
   className = '',
 }: SelectCollectionProps) {
   const { selectedCommunity } = useSelectCommunity();
-  console.log('GGGGSelectedCOmmnuity', selectedCommunity);
 
   // Filter collections by selected community
   const filteredCollections = useMemo(() => {

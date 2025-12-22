@@ -1,6 +1,7 @@
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import type { Content } from '@/types/content';
 import { MdRefresh } from 'react-icons/md';
+import { MediaDisplay } from '@/components/lib/LatestContent/MediaDisplay';
 
 interface DisplayContentProps {
   content: Content;
@@ -21,27 +22,19 @@ export const DisplayContent = ({
 
   const renderContent = () => {
     switch (content.status) {
-      case 'completed':
-        if (content.type === 'image' && content.image) {
-          return (
-            <img src={content.image} alt={content.id} className={baseClasses} />
-          );
+      case 'completed': {
+        const mediaSrc =
+          (content.type === 'image' || content.type === 'sticker') && content.image
+            ? content.image
+            : (content.type === 'video' || content.type === 'animated_sticker') &&
+                content.gif
+              ? content.gif
+              : null;
+
+        if (mediaSrc) {
+          return <MediaDisplay src={mediaSrc} alt={content.id} className={baseClasses} />;
         }
-        if (content.type === 'video' && content.gif) {
-          return (
-            <img src={content.gif} alt={content.id} className={baseClasses} />
-          );
-        }
-        if (content.type === 'sticker' && content.image) {
-          return (
-            <img src={content.image} alt={content.id} className={baseClasses} />
-          );
-        }
-        if (content.type === 'animated_sticker' && content.gif) {
-          return (
-            <img src={content.gif} alt={content.id} className={baseClasses} />
-          );
-        }
+
         return (
           <div
             className={`${baseClasses} flex items-center justify-center bg-gray-200 text-xs text-gray-500`}
@@ -49,6 +42,7 @@ export const DisplayContent = ({
             No content
           </div>
         );
+      }
 
       case 'processing':
         return (

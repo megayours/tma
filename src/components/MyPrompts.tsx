@@ -4,7 +4,7 @@ import { Pagination } from '@/components/ui';
 import type { Pagination as PaginationType } from '@/types/pagination';
 import { useSession } from '@/auth/SessionProvider';
 import type { Prompt } from '@/types/prompt';
-import { useNavigate } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { useGetAllPreviews } from '../hooks/useContents';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import { useSelectCommunity } from '@/contexts/SelectCommunityContext';
@@ -115,27 +115,12 @@ export default function MyPrompts() {
   );
 
   useEffect(() => {
-    console.log(
-      '📱 [MyPrompts useEffect] data?.pagination?.totalPages:',
-      data?.pagination?.totalPages
-    );
-    console.log('📱 [MyPrompts useEffect] current totalPages:', totalPages);
     if (data?.pagination?.totalPages) {
-      console.log(
-        '📱 [MyPrompts useEffect] Setting totalPages to:',
-        data.pagination.totalPages
-      );
       setTotalPages(data.pagination.totalPages);
     }
   }, [data?.pagination?.totalPages]);
 
   if (!session) return <div>No session available</div>;
-
-  console.log('📱 [MyPrompts] Rendering with data?.data:', data?.data);
-  console.log(
-    '📱 [MyPrompts] Rendering with data?.data.length:',
-    data?.data?.length
-  );
 
   return (
     <div>
@@ -163,11 +148,16 @@ export default function MyPrompts() {
               <div key={prompt.id}>
                 <div className="border-tg-section-separator flex flex-col rounded-lg border p-2">
                   <div className="relative flex h-40 items-center justify-center overflow-hidden">
-                    <RenderPreview
-                      previews={promptPreviews as Content[]}
-                      isLoading={previewsLoading}
-                      prompt={prompt}
-                    />
+                    <Link
+                      to="/profile/admin/prompt/edit/$promptId"
+                      params={{ promptId: prompt.id?.toString() }}
+                    >
+                      <RenderPreview
+                        previews={promptPreviews as Content[]}
+                        isLoading={previewsLoading}
+                        prompt={prompt}
+                      />
+                    </Link>
                   </div>
 
                   <h1 className="text-sm font-bold">{prompt.name}</h1>

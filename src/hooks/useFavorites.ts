@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import type { Session } from '@/auth/useAuth';
 import type { Token } from '../types/response';
 import { setCachedFavorite } from '@/utils/favoriteCache';
@@ -47,17 +47,22 @@ export function useGetFavorites(session: Session | null) {
     enabled: !!session?.id && !!session?.authToken,
   });
 
-  // Filter favorites to only include those from selected community's collections
-  const data = rawData?.filter(favorite =>
-    selectedCommunity?.collections.some(
-      collection =>
-        collection.address === favorite.token.contract.address &&
-        collection.chain === favorite.token.contract.chain
-    )
-  ) || rawData;
+  // Filter favorites by selected community's collections
+  const data = useMemo(() => {
+    if (!selectedCommunity?.collections || !rawData) {
+      return rawData;
+    }
+
+    return rawData.filter(favorite =>
+      selectedCommunity.collections.some(
+        collection =>
+          collection.address === favorite.token.contract.address &&
+          collection.chain === favorite.token.contract.chain
+      )
+    );
+  }, [rawData, selectedCommunity?.id]);
 
   // Always select and cache the most-used favorite (data[0])
-  // Data is already filtered to only include favorites from selected community's collections
   useEffect(() => {
     if (!session?.id || !data) {
       setIsLoadingSelected(false);

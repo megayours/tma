@@ -50,8 +50,8 @@ function SelectCommunityPage() {
           Select Your Community
         </h1>
         {error && (
-          <div className="bg-destructive/10 text-destructive mt-4 rounded-lg border border-red-300 p-3 text-sm">
-            {error.message}
+          <div className="mt-4 rounded-lg bg-red-50 p-3">
+            <p className="text-sm text-red-700">{error.message}</p>
           </div>
         )}
       </div>

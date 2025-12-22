@@ -1,9 +1,9 @@
-import { createFileRoute, useRouter } from '@tanstack/react-router';
+import { createFileRoute, Link, useRouter } from '@tanstack/react-router';
 import { isTMA } from '@telegram-apps/bridge';
 import { useLaunchParams } from '@telegram-apps/sdk-react';
 import { base64UrlDecode } from '@/utils/base64';
-import { useNavigationHistory } from '@/contexts/NavigationHistoryContext';
 import { useEffect, useRef } from 'react';
+import { Cell, Section } from '@telegram-apps/telegram-ui';
 
 const DEEPLINK_CONSUMED_KEY = 'deeplink_consumed';
 
@@ -29,13 +29,9 @@ export const Route = createFileRoute('/')({
   component: Index,
 });
 
-function Index() {
+function TelegramDeepLinkHandler() {
   const router = useRouter();
-  const { lastContentMenuRoute } = useNavigationHistory();
   const hasRedirected = useRef(false);
-
-  // Always call hooks at the top level unconditionally
-  const isTelegramEnv = isTMA();
   const launchParams = useLaunchParams(true);
   const startParam = launchParams?.tgWebAppStartParam;
 
@@ -44,14 +40,12 @@ function Index() {
 
     const deepLinkAlreadyConsumed = isDeepLinkConsumed();
 
-    console.log('[Index Route] Checking redirect...', {
+    console.log('[Index Route] Checking deep link...', {
       hasStartParam: !!startParam,
-      isTMA: isTelegramEnv,
       deepLinkAlreadyConsumed,
-      lastContentMenuRoute,
     });
 
-    // Check if running in Telegram environment with a deep link that hasn't been consumed
+    // Check if we have a deep link that hasn't been consumed
     if (startParam && !deepLinkAlreadyConsumed) {
       try {
         const decodedPath = base64UrlDecode(startParam);
@@ -65,12 +59,74 @@ function Index() {
       }
     }
 
-    // Default redirect to last content menu route
-    console.log('[Index Route] No deep link, redirecting to:', lastContentMenuRoute);
-    hasRedirected.current = true;
-    router.navigate({ to: lastContentMenuRoute });
-  }, [startParam, router, lastContentMenuRoute, isTelegramEnv]);
+    // If no deep link params, redirect to community
+    if (!startParam) {
+      console.log('[Index Route] No deep link, redirecting to community');
+      hasRedirected.current = true;
+      router.navigate({ to: '/community' });
+    }
+  }, [startParam, router]);
 
-  // Return null while redirecting
-  return null;
+  // If we have a deep link, show nothing while redirecting
+  if (startParam && !isDeepLinkConsumed()) {
+    return null;
+  }
+
+  // If no deep link, show nothing while redirecting to community
+  if (!startParam) {
+    return null;
+  }
+
+  return <LandingPage />;
+}
+
+function LandingPage() {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[60vh] p-6">
+      <div className="w-full max-w-md">
+        <h1 className="text-3xl font-bold text-center mb-8">Welcome</h1>
+
+        <Section className="mb-4">
+          <Link to="/stickers" className="block">
+            <Cell
+              subtitle="Browse and create sticker packs"
+              className="hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              Sticker Packs
+            </Cell>
+          </Link>
+
+          <Link to="/community" className="block">
+            <Cell
+              subtitle="Explore community creations"
+              className="hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              Community
+            </Cell>
+          </Link>
+
+          <Link to="/profile" className="block">
+            <Cell
+              subtitle="View your profile and artworks"
+              className="hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              Profile
+            </Cell>
+          </Link>
+        </Section>
+      </div>
+    </div>
+  );
+}
+
+function Index() {
+  const isTelegramEnv = isTMA();
+
+  // Only use Telegram-specific hooks when in Telegram environment
+  if (isTelegramEnv) {
+    return <TelegramDeepLinkHandler />;
+  }
+
+  // Show landing page when not in Telegram
+  return <LandingPage />;
 }

@@ -44,15 +44,21 @@ export function SelectCommunityProvider({ children }: { children: ReactNode }) {
   const { communityId: communityIdFromUrl, authDate } = useCommunityId();
 
   // Fetch community from URL if present
-  const { data: communityFromUrl, isLoading: isLoadingFromUrl } =
-    useGetCommunityCollections(communityIdFromUrl);
+  const {
+    data: communityFromUrl,
+    isLoading: isLoadingFromUrl,
+    error: communityFromURLError,
+  } = useGetCommunityCollections(communityIdFromUrl);
 
   // Fetch all available communities
   const { data: availableCommunities, isLoading, error } = useGetCommunities();
 
   // Refetch community loaded from localStorage to get latest data
-  const { data: refetchedCommunity, isLoading: isRefetching } =
-    useGetCommunityCollections(communityIdToRefetch);
+  const {
+    data: refetchedCommunity,
+    isLoading: isRefetching,
+    error: refetchCommunityError,
+  } = useGetCommunityCollections(communityIdToRefetch);
 
   const defaultCollection = selectedCommunity?.collections.filter(
     t => t.id == selectedCommunity.default_collection_id?.toString()
@@ -92,9 +98,20 @@ export function SelectCommunityProvider({ children }: { children: ReactNode }) {
       console.log(
         `[SelectCommunityContext] URL community detected: communityId=${communityIdFromUrl}, authDate=${authDate}, isNewLaunch=${isNewLaunch}, isLoadingFromUrl=${isLoadingFromUrl}, communityName=${communityFromUrl?.name || 'null'}`
       );
+      console.log('isNewLaunch:', isNewLaunch);
+      console.log('communityFromUrl:', communityFromUrl);
+      console.log('isLoadingFromUrl:', isLoadingFromUrl);
+      console.log('error from URL fetch:', communityFromURLError);
+      console.log('refetchCommunityError:', refetchCommunityError);
 
       // Only process communityId if it's a fresh launch
       if (isNewLaunch) {
+        if (communityFromURLError) {
+          console.error(
+            `[SelectCommunityContext] Error fetching community from URL: ${communityFromURLError}`
+          );
+          return;
+        }
         if (communityFromUrl && !isLoadingFromUrl) {
           console.log(
             `[SelectCommunityContext] Setting community from URL (fresh launch): ${communityFromUrl.name} (${communityFromUrl.id})`

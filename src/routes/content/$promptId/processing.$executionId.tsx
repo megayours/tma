@@ -6,6 +6,7 @@ import { useContentGenerationStatus } from '@/hooks/useContents';
 import { useLaunchParams, requestWriteAccess } from '@telegram-apps/sdk-react';
 import { useTelegramTheme } from '@/auth/useTelegram';
 import { FaChevronDown } from 'react-icons/fa';
+import { ProcessingTimeCountdown } from '@/routes/sticker-packs/generated/$id/ProcessingTimeCountdown';
 
 const processingSearchSchema = z.object({
   nft: z.string().optional(),
@@ -59,7 +60,11 @@ function ProcessingPage() {
 
   // Fake timer effect - use fixed 90s duration since we don't have type info
   useEffect(() => {
-    if (!execution || (execution.status !== 'processing' && execution.status !== 'pending')) return;
+    if (
+      !execution ||
+      (execution.status !== 'processing' && execution.status !== 'pending')
+    )
+      return;
 
     const duration = 90000; // 1.5 minutes default
     const interval = setInterval(() => {
@@ -73,21 +78,21 @@ function ProcessingPage() {
 
   // Auto-navigate to success when completed
   useEffect(() => {
-    if (execution?.status === 'completed' && execution.content_id) {
+    if (execution?.status === 'completed' && execution.contentId) {
       // Small delay to let user see the completion state
       const timer = setTimeout(() => {
         navigate({
           to: '/content/$promptId/success',
           params: { promptId },
           search: {
-            executionId: execution.content_id,
+            executionId: execution.contentId,
           },
         });
       }, 1000);
 
       return () => clearTimeout(timer);
     }
-  }, [execution?.status, execution?.content_id, promptId, navigate]);
+  }, [execution?.status, execution?.contentId, promptId, navigate]);
 
   // Error state
   if (error) {
@@ -164,7 +169,7 @@ function ProcessingPage() {
               </h1>
             </div>
             <p className="text-tg-hint text-sm">
-              This usually takes 1-3 minutes
+              <ProcessingTimeCountdown queueInfo={execution?.queueInfo} />
             </p>
           </div>
 

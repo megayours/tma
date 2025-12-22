@@ -6,15 +6,22 @@ export function initSentry() {
   const environment = import.meta.env.VITE_SENTRY_ENVIRONMENT || 'development';
   const buildInfo = getBuildInfo();
 
-  console.log('Sentry initialization:', {
+  // Always log initialization attempt (even in production) to debug issues
+  // Using console.warn to ensure it shows up in production (console.log is stripped)
+  console.warn('[Sentry] Initialization attempt:', {
     hasDSN: !!dsn,
-    dsnPreview: dsn ? `${dsn.substring(0, 20)}...` : 'none',
+    dsnPreview: dsn ? `${dsn.substring(0, 30)}...${dsn.slice(-10)}` : 'none',
     environment,
+    buildInfo: {
+      version: buildInfo.version,
+      branch: buildInfo.branch,
+      commit: buildInfo.commitHashShort,
+    },
   });
 
   // Only initialize if DSN is provided
   if (!dsn) {
-    console.log('Sentry DSN not provided, skipping initialization');
+    console.warn('[Sentry] DSN not provided, skipping initialization');
     return;
   }
 
@@ -52,8 +59,8 @@ export function initSentry() {
       return event;
     },
   });
-    console.log('✅ Sentry initialized successfully');
+    console.warn('✅ [Sentry] Initialized successfully');
   } catch (error) {
-    console.error('❌ Sentry initialization failed:', error);
+    console.error('❌ [Sentry] Initialization failed:', error);
   }
 }

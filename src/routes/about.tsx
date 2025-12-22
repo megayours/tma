@@ -25,8 +25,54 @@ function Demo() {
     throw new Error('Sentry Test Error - This is intentional!');
   };
 
+  const resetApp = () => {
+    // Confirm with user
+    const confirmed = window.confirm(
+      'This will clear all app data and reload. Continue?'
+    );
+
+    if (!confirmed) return;
+
+    try {
+      // Clear localStorage
+      localStorage.clear();
+
+      // Clear sessionStorage
+      sessionStorage.clear();
+
+      // Clear all cookies
+      document.cookie.split(';').forEach(cookie => {
+        const eqPos = cookie.indexOf('=');
+        const name = eqPos > -1 ? cookie.substring(0, eqPos) : cookie;
+        document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
+      });
+
+      console.log('App data cleared successfully');
+
+      // Reload the page
+      window.location.reload();
+    } catch (error) {
+      console.error('Error clearing app data:', error);
+      alert('Error clearing app data. Check console for details.');
+    }
+  };
+
   return (
     <List className="p-2">
+      <Section header="Troubleshooting">
+        <div className="rounded-lg border-2 border-orange-500 bg-orange-50 p-4 shadow-lg dark:border-orange-400 dark:bg-orange-900/20">
+          <Cell
+            subtitle="Having issues? Clear all app data and reload"
+            onClick={resetApp}
+            className="cursor-pointer transition-transform active:scale-95"
+          >
+            <span className="text-lg font-bold text-orange-600 dark:text-orange-400">
+              🔄 Reset App
+            </span>
+          </Cell>
+        </div>
+      </Section>
+
       <Section header="Build Information">
         <Cell
           subtitle="App Version"

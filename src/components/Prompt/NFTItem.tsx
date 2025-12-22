@@ -73,7 +73,7 @@ export const NFTItem = ({
               // This will be handled by the parent component's click outside handler
             }
           }}
-          src={token.image || '/nfts/not-available.png'}
+          src={token?.image || '/nfts/not-available.png'}
           size={20}
         />
 

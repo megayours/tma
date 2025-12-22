@@ -244,7 +244,7 @@ function AppContent() {
     const pathname = location.pathname;
 
     // Paths that don't require community selection
-    const excludedPaths = ['/selectCommunity'];
+    const excludedPaths = ['/', '/selectCommunity'];
     const isExcludedPath =
       excludedPaths.includes(pathname) || pathname.startsWith('/auth');
 

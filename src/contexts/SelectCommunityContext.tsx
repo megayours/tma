@@ -39,6 +39,7 @@ export function SelectCommunityProvider({ children }: { children: ReactNode }) {
   const [communityIdToRefetch, setCommunityIdToRefetch] = useState<
     string | undefined
   >(undefined);
+  const [localError, setLocalError] = useState<Error | null>(null);
 
   // Get communityId and authDate from URL (priority)
   const { communityId: communityIdFromUrl, authDate } = useCommunityId();
@@ -98,11 +99,6 @@ export function SelectCommunityProvider({ children }: { children: ReactNode }) {
       console.log(
         `[SelectCommunityContext] URL community detected: communityId=${communityIdFromUrl}, authDate=${authDate}, isNewLaunch=${isNewLaunch}, isLoadingFromUrl=${isLoadingFromUrl}, communityName=${communityFromUrl?.name || 'null'}`
       );
-      console.log('isNewLaunch:', isNewLaunch);
-      console.log('communityFromUrl:', communityFromUrl);
-      console.log('isLoadingFromUrl:', isLoadingFromUrl);
-      console.log('error from URL fetch:', communityFromURLError);
-      console.log('refetchCommunityError:', refetchCommunityError);
 
       // Only process communityId if it's a fresh launch
       if (isNewLaunch) {
@@ -110,7 +106,13 @@ export function SelectCommunityProvider({ children }: { children: ReactNode }) {
           console.error(
             `[SelectCommunityContext] Error fetching community from URL: ${communityFromURLError}`
           );
-          // TODO: this should trigger the selection community (as if no community is selected) and also display an error saying "the seelected community could not be found"
+          // Set error message and mark as initialized to trigger community selection UI
+          setLocalError(
+            new Error(
+              'Community not found. Please select one from the available communities.'
+            )
+          );
+          setHasInitialized(true);
           return;
         }
         if (communityFromUrl && !isLoadingFromUrl) {
@@ -212,6 +214,8 @@ export function SelectCommunityProvider({ children }: { children: ReactNode }) {
 
     if (community) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(community));
+      // Clear any previous errors when successfully selecting a community
+      setLocalError(null);
     } else {
       localStorage.removeItem(STORAGE_KEY);
     }
@@ -237,7 +241,7 @@ export function SelectCommunityProvider({ children }: { children: ReactNode }) {
         setSelectedCommunity,
         isLoading: !hasAnyCommunityData && (isLoading || !isReady),
         isRefetching: hasAnyCommunityData && (isLoadingFromUrl || isRefetching),
-        error,
+        error: localError || error,
         defaultCollection,
       }}
     >

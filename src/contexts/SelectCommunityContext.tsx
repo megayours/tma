@@ -110,6 +110,7 @@ export function SelectCommunityProvider({ children }: { children: ReactNode }) {
           console.error(
             `[SelectCommunityContext] Error fetching community from URL: ${communityFromURLError}`
           );
+          // TODO: this should trigger the selection community (as if no community is selected) and also display an error saying "the seelected community could not be found"
           return;
         }
         if (communityFromUrl && !isLoadingFromUrl) {

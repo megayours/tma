@@ -237,7 +237,7 @@ function AppContent() {
     isLoading: isCommunityLoading,
   } = useSelectCommunity();
 
-  // Redirect to community selection if authenticated but no community selected
+  // Redirect to community selection if no community selected
   useEffect(() => {
     const pathname = location.pathname;
 
@@ -257,8 +257,10 @@ function AppContent() {
       selectedCommunity ||
       isExcludedPath;
 
+    // Redirect to community selection if multiple communities available and none selected
+    // This now works regardless of authentication status
     const needsCommunitySelection =
-      isAuthenticated && !shouldSkipRedirect && availableCommunities.length > 1;
+      !shouldSkipRedirect && availableCommunities.length > 1;
 
     console.log(
       `[Community Redirect] pathname=${pathname}, isAuthenticated=${isAuthenticated}, isCommunityLoading=${isCommunityLoading}, selectedCommunity=${selectedCommunity?.name || 'null'}, availableCommunitiesCount=${availableCommunities.length}, isExcludedPath=${isExcludedPath}, needsRedirect=${needsCommunitySelection}`

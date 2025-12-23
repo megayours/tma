@@ -15,7 +15,7 @@ import {
   swipeBehavior,
   closingBehavior,
 } from '@telegram-apps/sdk-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Header } from '@/components/Header';
 import { useTelegramTheme } from '@/auth/useTelegram';
 import { ToastProvider } from '@/components/ui';
@@ -37,9 +37,27 @@ function TelegramEnvironmentHandler() {
   const { isDark, themeParams } = useTelegramTheme();
   const [isViewportMounted, setIsViewportMounted] = useState(false);
   const [isViewportMounting, setIsViewportMounting] = useState(false);
-  const { lastContentMenuRoute } = useNavigationHistory();
+  const { lastContentMenuRoute, isAtEntryPoint, decrementDepth } = useNavigationHistory();
 
   console.log('ROUTE', location);
+
+  // Stable back button click handler
+  const handleBackButtonClick = useCallback(() => {
+    console.log('[BackButton] Clicked', {
+      currentPath: pathname,
+      lastContentMenuRoute,
+    });
+
+    // Decrement depth BEFORE navigating
+    decrementDepth();
+
+    // Smart fallback for Android WebView history issues
+    if (window.history.length > 1) {
+      router.history.back();
+    } else {
+      router.navigate({ to: lastContentMenuRoute });
+    }
+  }, [pathname, router, lastContentMenuRoute, decrementDepth]);
 
   useEffect(() => {
     init();
@@ -135,64 +153,44 @@ function TelegramEnvironmentHandler() {
       closingBehavior.mount();
     }
 
-    // Platform detection
-    const isAndroid = /Android/i.test(navigator.userAgent);
-    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-    // Check if this is the first page (no history to go back to)
-    const hasHistoryStack = window.history.length > 1;
-    const isFirstPage = !hasHistoryStack;
-
     console.log('[Navigation] State', {
       pathname,
-      historyLength: window.history.length,
-      isFirstPage,
+      isAtEntryPoint,
       lastContentMenuRoute,
     });
 
-    if (isFirstPage) {
-      // First page: hide back button, enable close button
+    // Store cleanup function for back button listener
+    let cleanupBackButton: (() => void) | null = null;
+
+    if (isAtEntryPoint) {
+      // Entry point: hide back button, allow close without confirmation
       backButton.hide();
-      if (closingBehavior.enableConfirmation.isAvailable()) {
-        closingBehavior.enableConfirmation();
+      if (closingBehavior.disableConfirmation.isAvailable()) {
+        closingBehavior.disableConfirmation();
       }
-      console.log('[Navigation] First page - showing close behavior');
+      console.log('[Navigation] Entry point - showing close behavior');
     } else {
-      // Not first page: show back button, disable close confirmation
+      // Not entry point: show back button, no close confirmation
       backButton.show();
       if (closingBehavior.disableConfirmation.isAvailable()) {
         closingBehavior.disableConfirmation();
       }
 
-      backButton.onClick(() => {
-        console.log('[BackButton] Clicked', {
-          platform: isAndroid ? 'Android' : isIOS ? 'iOS' : 'Unknown',
-          historyLength: window.history.length,
-          currentPath: pathname,
-          lastContentMenuRoute,
-        });
-
-        // Smart fallback for Android WebView history issues
-        if (window.history.length > 1) {
-          // Try normal history.back() first
-          router.history.back();
-        } else {
-          // History stack is too short (Android issue), use explicit fallback
-          console.log(
-            '[BackButton] History stack too short, falling back to:',
-            lastContentMenuRoute
-          );
-          router.navigate({ to: lastContentMenuRoute });
-        }
-      });
-      console.log('[Navigation] Not first page - showing back button');
+      // onClick returns a cleanup function - store it
+      cleanupBackButton = backButton.onClick(handleBackButtonClick);
+      console.log('[Navigation] Not entry point - showing back button');
     }
 
-    // Cleanup function to restore original console.error
+    // Cleanup function to restore console.error and remove back button listener
     return () => {
       console.error = originalConsoleError;
+
+      // Call cleanup function if it exists
+      if (cleanupBackButton) {
+        cleanupBackButton();
+      }
     };
-  }, [pathname, router, lastContentMenuRoute]);
+  }, [pathname, router, isAtEntryPoint, handleBackButtonClick, lastContentMenuRoute]);
 
   // Separate useEffect to handle fullscreen request after viewport is mounted
   useEffect(() => {

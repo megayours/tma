@@ -58,7 +58,6 @@ export function SelectCommunityProvider({ children }: { children: ReactNode }) {
   const {
     data: refetchedCommunity,
     isLoading: isRefetching,
-    error: refetchCommunityError,
   } = useGetCommunityCollections(communityIdToRefetch);
 
   const defaultCollection = selectedCommunity?.collections.filter(

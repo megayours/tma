@@ -2,7 +2,6 @@ import type { SupportedCollection } from '@/hooks/useCollections';
 
 type ContentTypeFilter =
   | 'images'
-  | 'videos'
   | 'gifs'
   | 'stickers'
   | 'animated_stickers';

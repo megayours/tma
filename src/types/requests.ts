@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const PromptTypeSchema = z
-  .enum(['images', 'videos', 'stickers', 'gifs'])
+  .enum(['images', 'gifs', 'stickers', 'gifs'])
   .optional();
 export type PromptType = z.infer<typeof PromptTypeSchema>;
 
@@ -76,7 +76,7 @@ export const MyRecentGenerationsRequestSchema = z.object({
       'all',
       'sticker_packs',
       'images',
-      'videos',
+      'gifs',
       'stickers',
       'animated_stickers',
     ])

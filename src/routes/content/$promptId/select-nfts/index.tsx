@@ -21,13 +21,12 @@ export const Route = createFileRoute('/content/$promptId/select-nfts/')({
 // Helper function to convert prompt type to content type
 const getContentType = (
   promptType: string
-): 'image' | 'video' | 'sticker' | 'animated_sticker' => {
+): 'image' | 'gif' | 'sticker' | 'animated_sticker' => {
   switch (promptType) {
     case 'images':
       return 'image';
-    case 'videos':
     case 'gifs':
-      return 'video';
+      return 'gif';
     case 'stickers':
       return 'sticker';
     case 'animated_stickers':

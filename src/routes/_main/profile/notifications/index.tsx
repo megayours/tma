@@ -70,7 +70,7 @@ function getNotificationMessage(content: Content): string {
 
   const typeMap = {
     image: 'Image',
-    video: 'Video',
+    gif: 'GIF',
     sticker: 'Sticker',
     animated_sticker: 'Animated sticker',
   };

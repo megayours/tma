@@ -19,20 +19,17 @@ export const Route = createFileRoute('/_main/community/')({
 
 type ContentTypeFilter =
   | 'images'
-  | 'videos'
   | 'gifs'
   | 'stickers'
   | 'animated_stickers';
 
 // Helper function to get display label for prompt type
 const getTypeLabel = (
-  type: 'images' | 'videos' | 'stickers' | 'gifs' | 'animated_stickers'
+  type: 'images' | 'stickers' | 'gifs' | 'animated_stickers'
 ): string => {
   switch (type) {
     case 'images':
       return 'Image';
-    case 'videos':
-      return 'GIF'; // Display videos as GIF
     case 'stickers':
       return 'Sticker';
     case 'gifs':
@@ -212,7 +209,7 @@ export function Feed() {
     { value: 'all', label: 'All' },
     { value: 'images', label: 'Images' },
     { value: 'stickers', label: 'Stickers' },
-    { value: 'videos', label: 'Gifs' },
+    { value: 'gifs', label: 'Gifs' },
     // { value: 'animated_stickers', label: 'Animated Stickers' },
   ];
 

@@ -1,9 +1,10 @@
-import { createFileRoute, Link, useRouter } from '@tanstack/react-router';
+import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { isTMA } from '@telegram-apps/bridge';
 import { useLaunchParams } from '@telegram-apps/sdk-react';
 import { base64UrlDecode } from '@/utils/base64';
 import { useEffect, useRef } from 'react';
-import { Cell, Section } from '@telegram-apps/telegram-ui';
+import { Feed } from './_main/community/Feed';
+import { ContentMenu } from '@/components/ContentMenu';
 
 const DEEPLINK_CONSUMED_KEY = 'deeplink_consumed';
 
@@ -58,26 +59,20 @@ function TelegramDeepLinkHandler() {
         console.error('[Index Route] Failed to decode start param:', error);
       }
     }
-
-    // If no deep link params, redirect to community
-    if (!startParam) {
-      console.log('[Index Route] No deep link, redirecting to community');
-      hasRedirected.current = true;
-      router.navigate({ to: '/community' });
-    }
   }, [startParam, router]);
 
-  // If we have a deep link, show nothing while redirecting
+  // If we have an unconsumed deep link, show nothing while redirecting
   if (startParam && !isDeepLinkConsumed()) {
     return null;
   }
 
-  // If no deep link, show nothing while redirecting to community
-  if (!startParam) {
-    return null;
-  }
-
-  return <LandingPage />;
+  // Otherwise, show the community feed with navbar
+  return (
+    <div className="text-tg-text">
+      <Feed />
+      <ContentMenu />
+    </div>
+  );
 }
 
 function LandingPage() {
@@ -122,11 +117,14 @@ function LandingPage() {
 function Index() {
   const isTelegramEnv = isTMA();
 
-  // Only use Telegram-specific hooks when in Telegram environment
   if (isTelegramEnv) {
     return <TelegramDeepLinkHandler />;
   }
 
-  // Show landing page when not in Telegram
-  return <LandingPage />;
+  return (
+    <div className="text-tg-text">
+      <Feed />
+      <ContentMenu />
+    </div>
+  );
 }

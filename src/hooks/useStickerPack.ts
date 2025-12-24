@@ -94,7 +94,7 @@ export interface StickerPackExecution {
   progress_percentage: number;
   queueInfo?: {
     position: number;
-    estimatedCompletionTime: string;
+    estimatedCompletionTime: number;
   };
 }
 

@@ -64,13 +64,13 @@ export function ShowContent({ prompt }: ShowContentProps) {
     if (!selectedFavorite || !session) return;
 
     // Map prompt type to API type
-    let apiType: 'image' | 'video' | 'sticker' | 'animated_sticker';
+    let apiType: 'image' | 'gif' | 'sticker' | 'animated_sticker';
     switch (prompt.type) {
       case 'images':
         apiType = 'image';
         break;
-      case 'videos':
-        apiType = 'video';
+      case 'gifs':
+        apiType = 'gif';
         break;
       case 'stickers':
         apiType = 'sticker';
@@ -108,13 +108,13 @@ export function ShowContent({ prompt }: ShowContentProps) {
     if (!session || tokens.length === 0) return;
 
     // Map prompt type to API type
-    let apiType: 'image' | 'video' | 'sticker' | 'animated_sticker';
+    let apiType: 'image' | 'gif' | 'sticker' | 'animated_sticker';
     switch (prompt.type) {
       case 'images':
         apiType = 'image';
         break;
-      case 'videos':
-        apiType = 'video';
+      case 'gifs':
+        apiType = 'gif';
         break;
       case 'stickers':
         apiType = 'sticker';
@@ -171,7 +171,7 @@ export function ShowContent({ prompt }: ShowContentProps) {
             {prompt.type === 'images' && (
               <LatestImage prompt={prompt} bg={getRandomBackgroundGif()} />
             )}
-            {prompt.type === 'videos' && (
+            {prompt.type === 'gifs' && (
               <LatestVideo prompt={prompt} bg={getRandomBackgroundGif()} />
             )}
             {prompt.type === 'stickers' && (

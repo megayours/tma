@@ -26,7 +26,7 @@ export const DisplayContent = ({
         const mediaSrc =
           (content.type === 'image' || content.type === 'sticker') && content.image
             ? content.image
-            : (content.type === 'video' || content.type === 'animated_sticker') &&
+            : (content.type === 'gif' || content.type === 'animated_sticker') &&
                 content.gif
               ? content.gif
               : null;

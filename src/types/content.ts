@@ -9,7 +9,7 @@ type ContentPrompt = Partial<Prompt> & {
 export interface PromptWithContent extends Prompt {
   published: number;
   image: string;
-  type: 'images' | 'videos' | 'stickers' | 'animated_stickers' | 'gifs';
+  type: 'images' | 'stickers' | 'animated_stickers' | 'gifs';
   latestContentUrl?: string;
   contentId?: string;
   owner?: string;
@@ -21,7 +21,7 @@ export interface PromptWithContent extends Prompt {
 
 export interface Content {
   id: string;
-  type: 'image' | 'video' | 'sticker' | 'animated_sticker';
+  type: 'image' | 'gif' | 'sticker' | 'animated_sticker';
   video?: string;
   gif?: string;
   image?: string;

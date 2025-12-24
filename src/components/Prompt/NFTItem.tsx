@@ -2,6 +2,25 @@ import type { Token } from '@/types/response';
 import { Avatar } from '@telegram-apps/telegram-ui';
 import { NFTCloud } from '../NFT';
 import type { Prompt } from '../../types/prompt';
+import { useGetNFTByCollectionAndTokenId } from '@/hooks/useCollections';
+
+/**
+ * Avatar component that fetches NFT data if image is missing
+ */
+const NFTAvatar = ({ token, size }: { token: Token; size: 20 | 24 | 28 | 40 | 48 | 96 }) => {
+  // Only fetch if image is missing
+  const shouldFetch = !token.image && !!token.contract?.chain && !!token.contract?.address && !!token.id;
+
+  const { data: fetchedToken } = useGetNFTByCollectionAndTokenId(
+    shouldFetch ? (token.contract?.chain || '') : '',
+    shouldFetch ? (token.contract?.address || '') : '',
+    shouldFetch ? (token.id || '') : ''
+  );
+
+  const imageUrl = fetchedToken?.image || token?.image || '/nfts/not-available.png';
+
+  return <Avatar src={imageUrl} size={size} />;
+};
 
 /**
  * Individual NFT item component
@@ -65,17 +84,16 @@ export const NFTItem = ({
         )}
 
         {/* NFT avatar */}
-        <Avatar
-          className=""
+        <div
           onClick={() => {
             // Close cloud tooltip if it's open
             if (longPressedIndex === index) {
               // This will be handled by the parent component's click outside handler
             }
           }}
-          src={token?.image || '/nfts/not-available.png'}
-          size={20}
-        />
+        >
+          <NFTAvatar token={token} size={20} />
+        </div>
 
         {/* X button to remove optional NFT - only show for optional items */}
         {!isCompulsory && onRemove && isModifyingNFTs && (

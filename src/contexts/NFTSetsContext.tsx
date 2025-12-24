@@ -1,6 +1,7 @@
 import React, { createContext, useContext, type ReactNode } from 'react';
 import { useNFTSets } from '@/hooks/useNFTSets';
 import type { Prompt } from '@/types/prompt';
+import { useSelectCommunity } from './SelectCommunityContext';
 
 interface NFTSetsContextType {
   compulsoryNFTs: any[][];
@@ -29,7 +30,9 @@ export const NFTSetsProvider: React.FC<NFTSetsProviderProps> = ({
   children,
   prompt,
 }) => {
-  const nftSetsHook = useNFTSets(prompt);
+  const { defaultCollection, selectedCommunity } = useSelectCommunity();
+  const allCollections = selectedCommunity?.collections;
+  const nftSetsHook = useNFTSets(prompt, defaultCollection, allCollections);
 
   return (
     <NFTSetsContext.Provider value={nftSetsHook}>

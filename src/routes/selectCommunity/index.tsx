@@ -16,7 +16,7 @@ export const Route = createFileRoute('/selectCommunity/')({
 function SelectCommunityPage() {
   const { redirectTo } = Route.useSearch();
   const navigate = useNavigate();
-  const { availableCommunities, setSelectedCommunity, isLoading } =
+  const { availableCommunities, setSelectedCommunity, isLoading, error } =
     useSelectCommunity();
 
   const handleCommunitySelect = (community: Community) => {
@@ -49,6 +49,11 @@ function SelectCommunityPage() {
         <h1 className="text-tg-text mb-2 text-2xl font-bold">
           Select Your Community
         </h1>
+        {error && (
+          <div className="mt-4 rounded-lg bg-red-50 p-3">
+            <p className="text-sm text-red-700">{error.message}</p>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-4">

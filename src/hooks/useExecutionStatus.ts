@@ -36,12 +36,8 @@ const ExecutionStatusApiSchema = z.object({
   queue_info: z
     .object({
       position: z.number(),
-      estimated_completion_time: z.number(),
+      estimated_completion_time: z.string(),
     })
-    .transform(data => ({
-      position: data.position,
-      estimatedCompletionTime: new Date(data.estimated_completion_time).toDateString(),
-    }))
     .nullish(),
 });
 

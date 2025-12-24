@@ -245,10 +245,10 @@ function SelectNFTsPage() {
       <div className="scrollbar-hide flex-1 overflow-y-auto">
         <div className="mx-auto max-w-2xl p-6">
           <h1 className="text-tg-text mb-2 text-center text-2xl font-bold">
-            Select Your NFT
+            Select Your Character
           </h1>
           <p className="text-tg-hint mb-6 text-center">
-            Choose an NFT to personalize your {prompt.type}
+            Choose a Character to personalize your {prompt.type}
           </p>
 
           {/* Selected NFT Display */}

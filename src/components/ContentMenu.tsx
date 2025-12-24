@@ -23,7 +23,7 @@ export function ContentMenu() {
     if (path.startsWith('/stickers')) return 'Packs';
     if (path.startsWith('/community')) return 'Community';
     if (path.startsWith('/profile')) return 'UserMenu';
-    return 'Packs';
+    return 'Community';
   };
 
   const selectedContentType = getSelectedContentType();
@@ -38,7 +38,7 @@ export function ContentMenu() {
       case 'UserMenu':
         return '/profile';
       default:
-        return '/stickers';
+        return '/community';
     }
   };
 

@@ -15,7 +15,6 @@ import { Link } from '@tanstack/react-router';
 
 type ContentTypeFilter =
   | 'images'
-  | 'videos'
   | 'gifs'
   | 'stickers'
   | 'animated_stickers';
@@ -27,8 +26,6 @@ const getTypeLabel = (
   switch (type) {
     case 'images':
       return 'Image';
-    case 'videos':
-      return 'GIF'; // Display videos as GIF
     case 'stickers':
       return 'Sticker';
     case 'gifs':
@@ -208,7 +205,7 @@ export function Feed() {
     { value: 'all', label: 'All' },
     { value: 'images', label: 'Images' },
     { value: 'stickers', label: 'Stickers' },
-    { value: 'videos', label: 'Gifs' },
+    { value: 'gifs', label: 'Gifs' },
     // { value: 'animated_stickers', label: 'Animated Stickers' },
   ];
 

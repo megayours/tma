@@ -75,44 +75,44 @@ function TelegramDeepLinkHandler() {
   );
 }
 
-function LandingPage() {
-  return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] p-6">
-      <div className="w-full max-w-md">
-        <h1 className="text-3xl font-bold text-center mb-8">Welcome</h1>
+// function LandingPage() {
+//   return (
+//     <div className="flex flex-col items-center justify-center min-h-[60vh] p-6">
+//       <div className="w-full max-w-md">
+//         <h1 className="text-3xl font-bold text-center mb-8">Welcome</h1>
 
-        <Section className="mb-4">
-          <Link to="/stickers" className="block">
-            <Cell
-              subtitle="Browse and create sticker packs"
-              className="hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-            >
-              Sticker Packs
-            </Cell>
-          </Link>
+//         <Section className="mb-4">
+//           <Link to="/stickers" className="block">
+//             <Cell
+//               subtitle="Browse and create sticker packs"
+//               className="hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+//             >
+//               Sticker Packs
+//             </Cell>
+//           </Link>
 
-          <Link to="/community" className="block">
-            <Cell
-              subtitle="Explore community creations"
-              className="hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-            >
-              Community
-            </Cell>
-          </Link>
+//           <Link to="/community" className="block">
+//             <Cell
+//               subtitle="Explore community creations"
+//               className="hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+//             >
+//               Community
+//             </Cell>
+//           </Link>
 
-          <Link to="/profile" className="block">
-            <Cell
-              subtitle="View your profile and artworks"
-              className="hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-            >
-              Profile
-            </Cell>
-          </Link>
-        </Section>
-      </div>
-    </div>
-  );
-}
+//           <Link to="/profile" className="block">
+//             <Cell
+//               subtitle="View your profile and artworks"
+//               className="hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+//             >
+//               Profile
+//             </Cell>
+//           </Link>
+//         </Section>
+//       </div>
+//     </div>
+//   );
+// }
 
 function Index() {
   const isTelegramEnv = isTMA();

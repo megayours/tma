@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 interface ProcessingTimeCountdownProps {
   queueInfo?: {
     position: number;
-    estimatedCompletionTime: string;
+    estimatedCompletionTime: number;
   };
   showCountdown?: boolean;
 }
@@ -19,15 +19,9 @@ export function ProcessingTimeCountdown({
       return null;
     }
 
-    const completionTime = new Date(
-      queueInfo.estimatedCompletionTime
-    ).getTime();
-
-    if (Number.isNaN(completionTime)) {
-      return null;
-    }
-
-    const diffMs = completionTime * 1000 - Date.now();
+    // API returns Unix timestamp in seconds
+    const completionTimeMs = queueInfo.estimatedCompletionTime * 1000;
+    const diffMs = completionTimeMs - Date.now();
     const paddedMs = diffMs * 1.1; // add 10% padding
     return Math.max(Math.ceil(paddedMs / 1000), 0);
   }, [queueInfo?.estimatedCompletionTime]);

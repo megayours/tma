@@ -275,9 +275,9 @@ export const ContentGenerationStatusSchema = z
     queue_info: z
       .object({
         position: z.number(),
-        estimated_completion_time: z.string(),
+        estimated_completion_time: z.number(),
       })
-      .optional(),
+      .nullish(),
   })
   .transform(data => ({
     executionId: data.execution_id,

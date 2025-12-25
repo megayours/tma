@@ -20,7 +20,6 @@ const ContentItem = ({ item }: ContentItemProps) => {
           src={displayUrl}
           className="h-full w-full object-cover"
           alt="Sticker preview"
-          crossOrigin="anonymous"
         />
       ) : (
         <div className="bg-tg-hint/20 flex h-full w-full items-center justify-center">

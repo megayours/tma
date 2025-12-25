@@ -34,7 +34,6 @@ const PreviewItem = ({ item }: PreviewItemProps) => {
           src={displayUrl}
           className="h-full w-full object-cover transition-transform hover:scale-110"
           alt="Sticker preview"
-          crossOrigin="anonymous"
           onLoad={() => setLoading(false)}
           onError={() => { setLoading(false); setError(true); }}
         />

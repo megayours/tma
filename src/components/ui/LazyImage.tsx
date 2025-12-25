@@ -104,7 +104,6 @@ export function LazyImage({
           } transition-opacity duration-300`}
           loading={priority ? 'eager' : 'lazy'}
           decoding="async"
-          crossOrigin="anonymous"
           onLoad={handleLoad}
           onError={handleError}
         />

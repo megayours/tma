@@ -86,7 +86,6 @@ export function MediaDisplay({
       className={`object-contain ${className}`}
       loading={loadingAttr}
       decoding="async"
-      crossOrigin="anonymous"
       {...(fetchPriority && { fetchpriority: fetchPriority })}
     />
   );

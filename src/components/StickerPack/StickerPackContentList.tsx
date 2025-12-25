@@ -12,16 +12,14 @@ interface ContentItemProps {
 }
 
 const ContentItem = ({ item }: ContentItemProps) => {
+  const displayUrl = item.thumbnailUrl || item.preview_url;
   return (
     <div className="bg-tg-hint/10 relative flex aspect-square overflow-hidden rounded-lg">
-      {item.preview_url ? (
-        <video
-          src={item.preview_url}
+      {displayUrl ? (
+        <img
+          src={displayUrl}
           className="h-full w-full object-cover"
-          autoPlay
-          loop
-          muted
-          playsInline
+          alt="Sticker preview"
         />
       ) : (
         <div className="bg-tg-hint/20 flex h-full w-full items-center justify-center">

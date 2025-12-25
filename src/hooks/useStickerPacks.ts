@@ -21,11 +21,17 @@ const StickerPackTypeSchema = z.enum(['stickers', 'animated_stickers']);
 type StickerPackType = z.infer<typeof StickerPackTypeSchema>;
 
 // Preview item for sticker pack
-const StickerPackPreviewItemSchema = z.object({
-  content_id: z.string(),
-  preview_url: z.string(),
-  sort_order: z.number(),
-});
+const StickerPackPreviewItemSchema = z
+  .object({
+    content_id: z.string(),
+    preview_url: z.string(),
+    thumbnail_url: z.string().optional(),
+    sort_order: z.number(),
+  })
+  .transform(data => ({
+    ...data,
+    thumbnailUrl: data.thumbnail_url,
+  }));
 type StickerPackPreviewItem = z.infer<typeof StickerPackPreviewItemSchema>;
 
 // Pricing tier schema
@@ -219,24 +225,30 @@ const StickerPackItemContentSchema = z.object({
     .optional(),
 });
 
-const StickerPackItemSchema = z.object({
-  id: z.number(),
-  bundle_id: z.number(),
-  prompt_collection_id: z.number(),
-  sort_order: z.number(),
-  created_at: z.number(),
-  content: StickerPackItemContentSchema.optional(),
-  preview_url: z.string(),
-  prompt: z
-    .object({
-      id: z.number(),
-      version: z.number().optional(),
-      text: z.string().optional(),
-      model: z.string().optional(),
-      created_at: z.number().optional(),
-    })
-    .optional(),
-});
+const StickerPackItemSchema = z
+  .object({
+    id: z.number(),
+    bundle_id: z.number(),
+    prompt_collection_id: z.number(),
+    sort_order: z.number(),
+    created_at: z.number(),
+    content: StickerPackItemContentSchema.optional(),
+    preview_url: z.string(),
+    thumbnail_url: z.string().optional(),
+    prompt: z
+      .object({
+        id: z.number(),
+        version: z.number().optional(),
+        text: z.string().optional(),
+        model: z.string().optional(),
+        created_at: z.number().optional(),
+      })
+      .optional(),
+  })
+  .transform(data => ({
+    ...data,
+    thumbnailUrl: data.thumbnail_url,
+  }));
 
 // Single sticker pack schema (detailed)
 const StickerPackDetailSchema = z

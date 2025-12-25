@@ -127,6 +127,7 @@ export const RawContentResponseSchema = z
     token: TokenSchema.optional(),
     tokens: z.array(TokenSchema).optional(),
     url: z.string().optional(),
+    thumbnail_url: z.string().optional(),
     video: z.string().optional(),
     gif: z.string().optional(),
     image: z.string().optional(),
@@ -179,6 +180,7 @@ export const RawContentResponseSchema = z
       token: data.token,
       tokens: data.tokens,
       url: data.url,
+      thumbnailUrl: data.thumbnail_url,
       video: data.video,
       gif: data.gif,
       image: data.image,
@@ -264,14 +266,35 @@ export const ShareResponseSchema = z.array(ShareIntegrationResultSchema);
 export type ShareResponse = z.infer<typeof ShareResponseSchema>;
 
 // Content generation status schema (for async polling)
-export const ContentGenerationStatusSchema = z.object({
-  execution_id: z.string(),
-  content_id: z.string(),
-  status: z.enum(['pending', 'processing', 'completed', 'error']),
-  error: z.string().nullable().optional(),
-  created_at: z.number(),
-  completed_at: z.number().nullable().optional(),
-});
+export const ContentGenerationStatusSchema = z
+  .object({
+    execution_id: z.string(),
+    content_id: z.string(),
+    status: z.enum(['pending', 'processing', 'completed', 'error']),
+    error: z.string().nullable().optional(),
+    created_at: z.number(),
+    completed_at: z.number().nullable().optional(),
+    queue_info: z
+      .object({
+        position: z.number(),
+        estimated_completion_time: z.number(),
+      })
+      .nullish(),
+  })
+  .transform(data => ({
+    executionId: data.execution_id,
+    contentId: data.content_id,
+    status: data.status,
+    error: data.error,
+    createdAt: data.created_at,
+    completedAt: data.completed_at,
+    queueInfo: data.queue_info
+      ? {
+          position: data.queue_info.position,
+          estimatedCompletionTime: data.queue_info.estimated_completion_time,
+        }
+      : undefined,
+  }));
 export type ContentGenerationStatus = z.infer<
   typeof ContentGenerationStatusSchema
 >;

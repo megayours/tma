@@ -27,13 +27,13 @@ function CreatePromptComponent() {
   const navigate = useNavigate();
   const { mutateAsync: createPrompt, isPending } = useCreatePromptMutation();
   const [selectedType, setSelectedType] = useState<
-    'images' | 'videos' | 'stickers' | 'animated_stickers' | null
+    'images' | 'gifs' | 'stickers' | 'animated_stickers' | null
   >(null);
   const [promptName, setPromptName] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleTypeSelect = (
-    type: 'images' | 'videos' | 'stickers' | 'animated_stickers'
+    type: 'images' | 'gifs' | 'stickers' | 'animated_stickers'
   ) => {
     setSelectedType(type);
   };
@@ -72,7 +72,7 @@ function CreatePromptComponent() {
     switch (selectedType) {
       case 'images':
         return 'Image';
-      case 'videos':
+      case 'gifs':
         return 'GIF';
       case 'stickers':
         return 'Sticker';
@@ -111,7 +111,7 @@ function CreatePromptComponent() {
                 </div>
               </div>
               <div
-                onClick={() => isEditor && handleTypeSelect('videos')}
+                onClick={() => isEditor && handleTypeSelect('gifs')}
                 className="cursor-pointer"
               >
                 <div

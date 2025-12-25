@@ -36,12 +36,8 @@ const ExecutionStatusApiSchema = z.object({
   queue_info: z
     .object({
       position: z.number(),
-      estimated_completion_time: z.string(),
+      estimated_completion_time: z.number(),
     })
-    .transform(data => ({
-      position: data.position,
-      estimatedCompletionTime: data.estimated_completion_time,
-    }))
     .nullish(),
 });
 
@@ -50,7 +46,12 @@ const ExecutionStatusSchema = ExecutionStatusApiSchema.transform(data => {
   const { queue_info, ...rest } = data;
   return {
     ...rest,
-    queueInfo: queue_info,
+    queueInfo: queue_info
+      ? {
+          position: queue_info.position,
+          estimatedCompletionTime: queue_info.estimated_completion_time,
+        }
+      : undefined,
   };
 });
 

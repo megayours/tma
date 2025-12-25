@@ -4,12 +4,51 @@ import type { Prompt } from '@/types/prompt';
 import { useGetFavorites } from './useFavorites';
 import { useSession } from '@/auth/SessionProvider';
 import { useToast } from '@/components/ui/toast/ToastProvider';
+import type { SupportedCollection } from './useCollections';
 
 /**
  * Function to create compulsory NFT tokens (exactly minTokens)
+ * If no favorites exist, falls back to random token from default collection or any available collection
  */
-const createCompulsoryNFTs = (favorites: any[], minTokens: number): Token[] => {
-  if (!favorites || !minTokens) return [];
+const createCompulsoryNFTs = (
+  favorites: any[] | null,
+  minTokens: number,
+  defaultCollection?: SupportedCollection,
+  allCollections?: SupportedCollection[]
+): Token[] => {
+  if (!minTokens) return [];
+
+  // If no favorites, use random tokenId from default collection or random collection
+  if (!favorites || favorites.length === 0) {
+    let selectedCollection = defaultCollection;
+
+    // If no default collection, pick a random one from all available collections
+    if (!selectedCollection && allCollections && allCollections.length > 0) {
+      const randomCollectionIndex = Math.floor(Math.random() * allCollections.length);
+      selectedCollection = allCollections[randomCollectionIndex];
+    }
+
+    if (!selectedCollection) return [];
+
+    // Generate a random tokenId within the collection size range
+    const randomTokenId = Math.floor(Math.random() * selectedCollection.size).toString();
+
+    const fallbackToken: Token = {
+      id: randomTokenId,
+      name: undefined,
+      image: undefined,
+      description: undefined,
+      attributes: undefined,
+      owner: undefined,
+      contract: {
+        chain: selectedCollection.chain,
+        address: selectedCollection.address,
+        name: selectedCollection.name,
+      },
+    };
+
+    return Array(minTokens).fill(fallbackToken);
+  }
 
   const favoriteTokens = favorites.map(fav => fav.token);
   const compulsoryTokens: Token[] = [];
@@ -27,7 +66,11 @@ const createCompulsoryNFTs = (favorites: any[], minTokens: number): Token[] => {
  * Custom hook for managing NFT sets with compulsory and optional tokens
  * Provides state and functions for managing multiple NFT sets split into compulsory and optional arrays
  */
-export const useNFTSets = (prompt: Prompt | null) => {
+export const useNFTSets = (
+  prompt: Prompt | null,
+  defaultCollection?: SupportedCollection,
+  allCollections?: SupportedCollection[]
+) => {
   const { session } = useSession();
   const { favorites } = useGetFavorites(session);
   const { addToast } = useToast();
@@ -38,7 +81,6 @@ export const useNFTSets = (prompt: Prompt | null) => {
 
   // Load NFT sets from localStorage when prompt changes
   useEffect(() => {
-    console.log('Rechecking NFT sets');
     if (!prompt?.id) {
       setCompulsoryNFTs([]);
       setOptionalNFTs([]);
@@ -57,13 +99,13 @@ export const useNFTSets = (prompt: Prompt | null) => {
 
         // Validate and adjust compulsory NFTs to respect minTokens constraint
         const validatedCompulsoryNFTs = parsedCompulsoryNFTs.map((set: Token[]) => {
-          if (!favorites || !prompt?.minTokens) return set;
+          if (!prompt?.minTokens) return set;
 
           const minTokens = prompt.minTokens;
 
           // Ensure compulsory set has exactly minTokens
           if (set.length !== minTokens) {
-            return createCompulsoryNFTs(favorites, minTokens);
+            return createCompulsoryNFTs(favorites || null, minTokens, defaultCollection, allCollections);
           }
 
           return set;
@@ -87,13 +129,13 @@ export const useNFTSets = (prompt: Prompt | null) => {
       }
     }
 
-    // If no saved sets and we have favorites, create initial compulsory set
-    if (favorites && prompt?.minTokens) {
-      const initialCompulsorySet = createCompulsoryNFTs(favorites, prompt.minTokens);
+    // If no saved sets, create initial compulsory set (from favorites, default collection, or random collection)
+    if (prompt?.minTokens && (favorites || defaultCollection || allCollections)) {
+      const initialCompulsorySet = createCompulsoryNFTs(favorites || null, prompt.minTokens, defaultCollection, allCollections);
       setCompulsoryNFTs([initialCompulsorySet]);
       setOptionalNFTs([[]]);  // Start with empty optional set
     }
-  }, [prompt?.id, prompt?.minTokens, prompt?.maxTokens, favorites]);
+  }, [prompt?.id, prompt?.minTokens, prompt?.maxTokens, favorites, defaultCollection, allCollections]);
 
   // Save NFT sets to localStorage whenever they actually change
   useEffect(() => {
@@ -120,8 +162,8 @@ export const useNFTSets = (prompt: Prompt | null) => {
 
   // Function to add a new NFT set (both compulsory and optional)
   const addNFTSet = () => {
-    if (compulsoryNFTs.length < 5 && favorites && prompt?.minTokens) {
-      const newCompulsorySet = createCompulsoryNFTs(favorites, prompt.minTokens);
+    if (compulsoryNFTs.length < 5 && prompt?.minTokens && (favorites || defaultCollection || allCollections)) {
+      const newCompulsorySet = createCompulsoryNFTs(favorites || null, prompt.minTokens, defaultCollection, allCollections);
       const newOptionalSet: Token[] = [];
       setCompulsoryNFTs(prevSets => [...prevSets, newCompulsorySet]);
       setOptionalNFTs(prevSets => [...prevSets, newOptionalSet]);

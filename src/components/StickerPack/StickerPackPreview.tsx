@@ -14,17 +14,9 @@ interface PreviewItemProps {
 }
 
 const PreviewItem = ({ item }: PreviewItemProps) => {
-  const [videoLoading, setVideoLoading] = useState(true);
-  const [videoError, setVideoError] = useState(false);
-
-  const handleVideoLoad = () => {
-    setVideoLoading(false);
-  };
-
-  const handleVideoError = () => {
-    setVideoLoading(false);
-    setVideoError(true);
-  };
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const displayUrl = item.thumbnailUrl || item.preview_url;
 
   return (
     <div
@@ -34,19 +26,16 @@ const PreviewItem = ({ item }: PreviewItemProps) => {
         height: '250px',
       }}
     >
-      {videoLoading && (
+      {loading && (
         <div className="absolute inset-0 animate-pulse rounded-lg bg-gray-300" />
       )}
-      {!videoError ? (
-        <video
-          src={item.preview_url}
+      {!error ? (
+        <img
+          src={displayUrl}
           className="h-full w-full object-cover transition-transform hover:scale-110"
-          autoPlay
-          loop
-          muted
-          playsInline
-          onLoadedData={handleVideoLoad}
-          onError={handleVideoError}
+          alt="Sticker preview"
+          onLoad={() => setLoading(false)}
+          onError={() => { setLoading(false); setError(true); }}
         />
       ) : (
         <div className="text-tg-hint flex h-full w-full items-center justify-center text-xs">

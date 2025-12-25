@@ -84,8 +84,8 @@ export const PromptSettings = ({
         return 'video'; // animated stickers use video capability
       case 'images':
         return 'image';
-      case 'videos':
-        return 'video';
+      case 'gifs':
+        return 'gif';
       default:
         return promptType;
     }

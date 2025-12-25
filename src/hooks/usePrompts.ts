@@ -56,7 +56,6 @@ const mapRawPromptToPromptWithContent = (
   image: rawPrompt.image ?? '',
   type: rawPrompt.type as
     | 'images'
-    | 'videos'
     | 'stickers'
     | 'gifs'
     | 'animated_stickers',
@@ -79,7 +78,7 @@ export const useGetRecommendedPrompts = ({
   enabled = true,
   preferredFormats = 'webm',
 }: {
-  type: 'images' | 'videos' | 'gifs' | 'stickers' | 'animated_stickers' | 'all';
+  type: 'images' | 'gifs' | 'stickers' | 'animated_stickers' | 'all';
   excludeUsed: boolean;
   pagination: Pagination;
   community?: { id: string } | null;
@@ -242,7 +241,7 @@ export const useGetRecommendedPromptsWithDetails = ({
   enabled = true,
   session,
 }: {
-  type: 'images' | 'videos' | 'gifs' | 'stickers' | 'animated_stickers' | 'all';
+  type: 'images' | 'gifs' | 'stickers' | 'animated_stickers' | 'all';
   excludeUsed: boolean;
   pagination: Pagination;
   community: { id: string };
@@ -341,7 +340,7 @@ export const useGetPrompts = ({
   session: Session | null;
   pagination: Pagination;
   promptFilters: {
-    type: 'images' | 'videos' | 'stickers' | 'animated_stickers' | 'all';
+    type: 'images' | 'gifs' | 'stickers' | 'animated_stickers' | 'all';
   };
   filters: Filter;
   community?: { id: string } | null;
@@ -408,7 +407,7 @@ export const useCreatePromptMutation = () => {
       communityId,
     }: {
       session: Session | null;
-      type: 'images' | 'videos' | 'stickers' | 'animated_stickers';
+      type: 'images' | 'gifs' | 'stickers' | 'animated_stickers';
       name: string;
       communityId: string | undefined;
     }) => {
@@ -469,7 +468,7 @@ export const useGetMyPrompts = (
   session: Session,
   pagination: Pagination,
   _filtering: Filter,
-  type?: 'images' | 'videos' | 'stickers' | 'animated_stickers',
+  type?: 'images' | 'gifs' | 'stickers' | 'animated_stickers',
   sortBy: 'created_at' | 'last_used' | 'updated_at' = 'created_at',
   sortOrder: 'asc' | 'desc' = 'desc',
   community?: { id: string } | null,

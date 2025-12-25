@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { z } from 'zod';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useSession } from '@/auth/SessionProvider';
 import { useContentExecution } from '@/hooks/useContents';
 import { SpinnerFullPage } from '@/components/ui';
@@ -47,29 +47,18 @@ function SuccessPage() {
   const [sadLottieInstance, setSadLottieInstance] = useState<DotLottie | null>(
     null
   );
-  const [isMobileDevice, setIsMobileDevice] = useState(false);
+  const isMobileDevice = useMemo(() => {
+    if (typeof navigator === 'undefined') return false;
+    const nav = navigator as Navigator & { userAgentData?: { mobile?: boolean } };
+    if (nav.userAgentData && typeof nav.userAgentData.mobile === 'boolean') {
+      return nav.userAgentData.mobile;
+    }
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(nav.userAgent);
+  }, []);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isGiphyEnabled, setIsGiphyEnabled] = useState(false);
   const hasSubmittedFeedback = useRef(false);
 
-  useEffect(() => {
-    const detectMobile = () => {
-      if (typeof navigator === 'undefined') return false;
-      const nav = navigator as Navigator & {
-        userAgentData?: { mobile?: boolean };
-      };
-
-      if (nav.userAgentData && typeof nav.userAgentData.mobile === 'boolean') {
-        return nav.userAgentData.mobile;
-      }
-
-      return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-        nav.userAgent
-      );
-    };
-
-    setIsMobileDevice(detectMobile());
-  }, []);
 
   // Fetch execution data if executionId is provided
   const { data: content, isLoading } = useContentExecution(
@@ -77,6 +66,7 @@ function SuccessPage() {
     session,
     {
       enabled: !!search.executionId,
+      preferredFormats: isMobileDevice ? 'gif' : 'webm',
     }
   );
 
@@ -195,6 +185,7 @@ function SuccessPage() {
   }
 
   const contentUrl = content?.url;
+  const displayUrl = contentUrl;
   const canShareFiles =
     typeof navigator !== 'undefined' &&
     typeof navigator.share === 'function' &&
@@ -217,7 +208,7 @@ function SuccessPage() {
         return; // Early return - finally block will clean up
       }
 
-      const response = await fetch(contentUrl);
+      const response = await fetch(contentUrl, { mode: 'cors', cache: 'no-store' });
 
       if (!response.ok) {
         throw new Error('Unable to download content');
@@ -290,9 +281,9 @@ function SuccessPage() {
               <div className="relative mt-2">
                 <div className="bg-tg-bg relative overflow-hidden rounded-2xl shadow-sm">
                   <div className="flex aspect-square items-center justify-center rounded-2xl">
-                    {contentUrl ? (
+                    {displayUrl ? (
                       <MediaDisplay
-                        src={contentUrl}
+                        src={displayUrl}
                         alt="Generated content"
                         className="h-full w-full rounded-xl object-contain"
                       />

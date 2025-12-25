@@ -340,7 +340,7 @@ export const useGenerateContentMutation = (
       overrideExisting = false,
     }: {
       promptId: string;
-      type: 'image' | 'video' | 'sticker' | 'animated_sticker';
+      type: 'image' | 'gif' | 'sticker' | 'animated_sticker';
       inputs: any[];
       contentIds?: string[];
       overrideExisting?: boolean;

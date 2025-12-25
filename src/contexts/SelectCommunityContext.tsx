@@ -39,20 +39,26 @@ export function SelectCommunityProvider({ children }: { children: ReactNode }) {
   const [communityIdToRefetch, setCommunityIdToRefetch] = useState<
     string | undefined
   >(undefined);
+  const [localError, setLocalError] = useState<Error | null>(null);
 
   // Get communityId and authDate from URL (priority)
   const { communityId: communityIdFromUrl, authDate } = useCommunityId();
 
   // Fetch community from URL if present
-  const { data: communityFromUrl, isLoading: isLoadingFromUrl } =
-    useGetCommunityCollections(communityIdFromUrl);
+  const {
+    data: communityFromUrl,
+    isLoading: isLoadingFromUrl,
+    error: communityFromURLError,
+  } = useGetCommunityCollections(communityIdFromUrl);
 
   // Fetch all available communities
   const { data: availableCommunities, isLoading, error } = useGetCommunities();
 
   // Refetch community loaded from localStorage to get latest data
-  const { data: refetchedCommunity, isLoading: isRefetching } =
-    useGetCommunityCollections(communityIdToRefetch);
+  const {
+    data: refetchedCommunity,
+    isLoading: isRefetching,
+  } = useGetCommunityCollections(communityIdToRefetch);
 
   const defaultCollection = selectedCommunity?.collections.filter(
     t => t.id == selectedCommunity.default_collection_id?.toString()
@@ -95,6 +101,19 @@ export function SelectCommunityProvider({ children }: { children: ReactNode }) {
 
       // Only process communityId if it's a fresh launch
       if (isNewLaunch) {
+        if (communityFromURLError) {
+          console.error(
+            `[SelectCommunityContext] Error fetching community from URL: ${communityFromURLError}`
+          );
+          // Set error message and mark as initialized to trigger community selection UI
+          setLocalError(
+            new Error(
+              'Community not found. Please select one from the available communities.'
+            )
+          );
+          setHasInitialized(true);
+          return;
+        }
         if (communityFromUrl && !isLoadingFromUrl) {
           console.log(
             `[SelectCommunityContext] Setting community from URL (fresh launch): ${communityFromUrl.name} (${communityFromUrl.id})`
@@ -194,6 +213,8 @@ export function SelectCommunityProvider({ children }: { children: ReactNode }) {
 
     if (community) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(community));
+      // Clear any previous errors when successfully selecting a community
+      setLocalError(null);
     } else {
       localStorage.removeItem(STORAGE_KEY);
     }
@@ -219,7 +240,7 @@ export function SelectCommunityProvider({ children }: { children: ReactNode }) {
         setSelectedCommunity,
         isLoading: !hasAnyCommunityData && (isLoading || !isReady),
         isRefetching: hasAnyCommunityData && (isLoadingFromUrl || isRefetching),
-        error,
+        error: localError || error,
         defaultCollection,
       }}
     >

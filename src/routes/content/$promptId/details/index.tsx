@@ -13,13 +13,11 @@ export const Route = createFileRoute('/content/$promptId/details/')({
 
 // Helper function to get display label for prompt type
 const getTypeLabel = (
-  type: 'images' | 'videos' | 'stickers' | 'gifs' | 'animated_stickers'
+  type: 'images' | 'stickers' | 'gifs' | 'animated_stickers'
 ): string => {
   switch (type) {
     case 'images':
       return 'Image';
-    case 'videos':
-      return 'GIF';
     case 'stickers':
       return 'Sticker';
     case 'gifs':
@@ -128,7 +126,6 @@ function ContentDetails() {
                     {getTypeLabel(
                       prompt.type as
                         | 'images'
-                        | 'videos'
                         | 'stickers'
                         | 'gifs'
                         | 'animated_stickers'
@@ -140,7 +137,6 @@ function ContentDetails() {
                     {getTypeLabel(
                       prompt.type as
                         | 'images'
-                        | 'videos'
                         | 'stickers'
                         | 'gifs'
                         | 'animated_stickers'
@@ -175,7 +171,7 @@ function ContentDetails() {
         {/* Get Started Button */}
         <TelegramDualButtons
           mainButton={{
-            text: `Get ${getTypeLabel(prompt.type as 'images' | 'videos' | 'stickers' | 'gifs' | 'animated_stickers').toLowerCase()} with your PFP`,
+            text: `Get ${getTypeLabel(prompt.type as 'images' | 'stickers' | 'gifs' | 'animated_stickers').toLowerCase()} with your PFP`,
             onClick: handleContinue,
             visible: true,
           }}

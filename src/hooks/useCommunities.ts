@@ -177,16 +177,26 @@ export function useGetCommunities() {
   const { data, isLoading, error } = useQuery({
     queryKey: ['communities'],
     queryFn: async () => {
-      if (!session) return [];
+      // Build query params - include type if session exists, otherwise fetch all public communities
+      const queryParams = new URLSearchParams({ status: 'live' });
+      if (session?.auth_provider) {
+        queryParams.append('type', session.auth_provider);
+      }
+
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+
+      // Add Authorization header only if session exists
+      if (session?.authToken) {
+        headers['Authorization'] = session.authToken;
+      }
 
       const response = await fetch(
-        `${import.meta.env.VITE_PUBLIC_API_URL}/communities?type=${session.auth_provider}&status=live`,
+        `${import.meta.env.VITE_PUBLIC_API_URL}/communities?${queryParams.toString()}`,
         {
           method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: session.authToken,
-          },
+          headers,
         }
       );
 
@@ -215,7 +225,7 @@ export function useGetCommunities() {
         return community as Community;
       });
     },
-    enabled: !!session,
+    enabled: true, // Always enabled - fetch public communities even without auth
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });
 

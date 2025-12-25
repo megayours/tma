@@ -217,7 +217,7 @@ function SuccessPage() {
         return; // Early return - finally block will clean up
       }
 
-      const response = await fetch(contentUrl);
+      const response = await fetch(contentUrl, { mode: 'cors', cache: 'no-store' });
 
       if (!response.ok) {
         throw new Error('Unable to download content');

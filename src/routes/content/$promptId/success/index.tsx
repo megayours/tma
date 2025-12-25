@@ -185,7 +185,7 @@ function SuccessPage() {
   }
 
   const contentUrl = content?.url;
-  const displayUrl = content?.thumbnailUrl || content?.url;
+  const displayUrl = contentUrl;
   const canShareFiles =
     typeof navigator !== 'undefined' &&
     typeof navigator.share === 'function' &&

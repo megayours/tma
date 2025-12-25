@@ -25,12 +25,13 @@ const StickerPackPreviewItemSchema = z
   .object({
     content_id: z.string(),
     preview_url: z.string(),
-    thumbnail_url: z.string().optional(),
+    thumbnail_url: z.string().nullable().optional(),
+    url: z.string().optional(),
     sort_order: z.number(),
   })
   .transform(data => ({
     ...data,
-    thumbnailUrl: data.thumbnail_url,
+    thumbnailUrl: data.thumbnail_url ?? undefined,
   }));
 type StickerPackPreviewItem = z.infer<typeof StickerPackPreviewItemSchema>;
 
@@ -234,7 +235,7 @@ const StickerPackItemSchema = z
     created_at: z.number(),
     content: StickerPackItemContentSchema.optional(),
     preview_url: z.string(),
-    thumbnail_url: z.string().optional(),
+    thumbnail_url: z.string().nullable().optional(),
     prompt: z
       .object({
         id: z.number(),
@@ -247,7 +248,7 @@ const StickerPackItemSchema = z
   })
   .transform(data => ({
     ...data,
-    thumbnailUrl: data.thumbnail_url,
+    thumbnailUrl: data.thumbnail_url ?? undefined,
   }));
 
 // Single sticker pack schema (detailed)

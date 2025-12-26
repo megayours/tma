@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, Link } from '@tanstack/react-router';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useRef, useReducer } from 'react';
 import { z } from 'zod';
 import { useSession } from '@/auth/SessionProvider';
 import { useContentGenerationStatus } from '@/hooks/useContents';
@@ -54,25 +54,28 @@ function ProcessingPage() {
   // Poll execution status
   const { data: execution, error } = useContentGenerationStatus(executionId);
 
-  // Fake timer state
-  const [fakeProgress, setFakeProgress] = useState(0);
   const startTimeRef = useRef<number>(Date.now());
+  const initialDurationRef = useRef<number | null>(null);
+  const [, forceUpdate] = useReducer(x => x + 1, 0);
 
-  // Fake timer effect - use fixed 90s duration since we don't have type info
+  // Set initial duration from queue_info once
+  if (execution?.queueInfo?.estimatedCompletionTime && !initialDurationRef.current) {
+    const completionTimeMs = execution.queueInfo.estimatedCompletionTime * 1000;
+    const diffMs = completionTimeMs - Date.now();
+    initialDurationRef.current = diffMs * 1.1; // add 10% margin
+  }
+
+  const duration = initialDurationRef.current || 90000; // fallback to 90s
+  const elapsed = Date.now() - startTimeRef.current;
+  const progress = Math.min((elapsed / duration) * 100, 99);
+
+  // Update progress periodically
   useEffect(() => {
-    if (
-      !execution ||
-      (execution.status !== 'processing' && execution.status !== 'pending')
-    )
+    if (!execution || (execution.status !== 'processing' && execution.status !== 'pending')) {
       return;
+    }
 
-    const duration = 90000; // 1.5 minutes default
-    const interval = setInterval(() => {
-      const elapsed = Date.now() - startTimeRef.current;
-      const progress = Math.min((elapsed / duration) * 100, 99);
-      setFakeProgress(progress);
-    }, 100);
-
+    const interval = setInterval(forceUpdate, 100);
     return () => clearInterval(interval);
   }, [execution]);
 
@@ -150,9 +153,6 @@ function ProcessingPage() {
     );
   }
 
-  // Processing state - use fake timer progress
-  const progressPercentage = fakeProgress;
-
   return (
     <div className="flex h-screen flex-col">
       {/* Content */}
@@ -178,11 +178,11 @@ function ProcessingPage() {
             <div className="bg-tg-section-bg relative h-3 overflow-hidden rounded-full shadow-inner">
               <div
                 className="bg-tg-button h-full transition-all duration-300 ease-out"
-                style={{ width: `${progressPercentage}%` }}
+                style={{ width: `${progress}%` }}
               />
             </div>
             <p className="text-tg-hint mt-3 text-center text-base font-semibold">
-              {Math.round(progressPercentage)}%
+              {Math.round(progress)}%
             </p>
           </div>
 

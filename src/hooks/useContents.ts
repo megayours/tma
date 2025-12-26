@@ -77,6 +77,7 @@ export const useGetContents = (
       if (!result) {
         const errors = getValidationErrors(RawContentListResponseSchema, data);
         console.error('Content validation errors:', errors);
+        console.error('Raw data:', JSON.stringify(data, null, 2));
         throw new Error('Invalid content response format');
       }
 
@@ -86,6 +87,7 @@ export const useGetContents = (
       };
     },
     enabled: !!session && !!community_id,
+    retry: false,
   });
 };
 

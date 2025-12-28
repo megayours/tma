@@ -376,7 +376,7 @@ export const PromptSettings = ({
                       .filter(model => model.isEnabled)
                       .map(model => (
                         <option key={model.id} value={model.id}>
-                          {model.name} ({model.provider})
+                          {model.name}
                         </option>
                       ))}
                   </TgSelect>

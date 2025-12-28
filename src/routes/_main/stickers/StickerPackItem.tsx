@@ -57,7 +57,7 @@ export function StickerPackItem({
                       className="relative aspect-square w-full max-w-48 overflow-hidden rounded-lg"
                     >
                       <MediaDisplay
-                        src={item.preview_url}
+                        src={item.thumbnailUrl || item.preview_url}
                         alt={`Sticker ${index + 1}`}
                         lazyLoad={true}
                         className="h-full w-full object-cover"

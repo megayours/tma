@@ -7,6 +7,7 @@ import { StepNavigation } from './StepNavigation';
 import { SelectedNFTDisplay } from '../SelectedNFTDisplay';
 import { NFTSelector } from '../NFTSelector';
 import { useNFTPreselection } from './useNFTPreselection';
+import { NFTsSummary } from '../NFTsSummary';
 
 export interface SelectNFTsProps {
   minTokens: number;
@@ -34,7 +35,6 @@ export function SelectNFTs({
   initialTokens = [],
   heading,
   showStepIndicator,
-  contentType,
 }: SelectNFTsProps) {
   const isSingleToken = minTokens === 1 && maxTokens === 1;
   const useStepper = showStepIndicator ?? (minTokens > 1 || maxTokens > 1);
@@ -43,6 +43,8 @@ export function SelectNFTs({
   const [selectedTokens, setSelectedTokens] = useState<Token[]>(initialTokens);
   const [currentStep, setCurrentStep] = useState(0);
   const [isSelectorOpen, setIsSelectorOpen] = useState(false);
+  const [isConfirmed, setIsConfirmed] = useState(false);
+  const [confirmedTokens, setConfirmedTokens] = useState<Token[]>([]);
 
   // Sync with initialTokens when they change (e.g., from URL params)
   // Don't call onTokensChange - these came FROM the URL, no need to update it back
@@ -62,7 +64,11 @@ export function SelectNFTs({
   // Initialize with preselected tokens (only if no initialTokens)
   // Don't call onTokensChange for auto-preselection - only for manual changes
   useEffect(() => {
-    if (selectedTokens.length === 0 && preselectedTokens.length > 0 && initialTokens.length === 0) {
+    if (
+      selectedTokens.length === 0 &&
+      preselectedTokens.length > 0 &&
+      initialTokens.length === 0
+    ) {
       setSelectedTokens(preselectedTokens);
       // Don't trigger onTokensChange for auto-preselection
     }
@@ -95,14 +101,16 @@ export function SelectNFTs({
   // Navigation handlers
   const handleNext = () => {
     // Only send confirmed tokens (up to and including current step)
-    const confirmedTokens = selectedTokens.slice(0, currentStep + 1);
-    onTokensChange?.(confirmedTokens);
+    const tokensToConfirm = selectedTokens.slice(0, currentStep + 1);
+    onTokensChange?.(tokensToConfirm);
 
     if (currentStep < maxTokens - 1) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Final step - confirm selection with only confirmed tokens
-      onTokensSelected(confirmedTokens);
+      // Final step - show summary, DON'T call onTokensSelected
+      // Let parent route handle button click
+      setIsConfirmed(true);
+      setConfirmedTokens(tokensToConfirm);
     }
   };
 
@@ -163,37 +171,45 @@ export function SelectNFTs({
   // Multi-token stepper mode
   return (
     <div>
-      <h1 className="text-tg-text mb-4 text-center text-2xl font-bold">
-        {heading || 'Select Characters'}
-      </h1>
+      {isConfirmed ? (
+        // Show summary after final confirmation
+        <NFTsSummary tokens={confirmedTokens} heading={heading} />
+      ) : (
+        // Show stepper UI (existing code)
+        <>
+          <h1 className="text-tg-text mb-4 text-center text-2xl font-bold">
+            {heading || 'Select Characters'}
+          </h1>
 
-      {useStepper && (
-        <StepIndicator
-          currentStep={currentStep}
-          totalSteps={maxTokens}
-          requiredSteps={minTokens}
-        />
+          {useStepper && (
+            <StepIndicator
+              currentStep={currentStep}
+              totalSteps={maxTokens}
+              requiredSteps={minTokens}
+            />
+          )}
+
+          <SelectNFTsStep
+            stepNumber={currentStep}
+            totalSteps={maxTokens}
+            isRequired={currentStep < minTokens}
+            collections={collections}
+            selectedToken={selectedTokens[currentStep] || null}
+            onTokenSelect={token => handleTokenSelect(currentStep, token)}
+          />
+
+          <StepNavigation
+            currentStep={currentStep}
+            totalSteps={maxTokens}
+            canGoNext={canGoNext()}
+            canGoPrevious={canGoPrevious}
+            isOptionalStep={isOptionalStep}
+            onPrevious={handlePrevious}
+            onNext={handleNext}
+            onSkip={isOptionalStep ? handleSkip : undefined}
+          />
+        </>
       )}
-
-      <SelectNFTsStep
-        stepNumber={currentStep}
-        totalSteps={maxTokens}
-        isRequired={currentStep < minTokens}
-        collections={collections}
-        selectedToken={selectedTokens[currentStep] || null}
-        onTokenSelect={token => handleTokenSelect(currentStep, token)}
-      />
-
-      <StepNavigation
-        currentStep={currentStep}
-        totalSteps={maxTokens}
-        canGoNext={canGoNext()}
-        canGoPrevious={canGoPrevious}
-        isOptionalStep={isOptionalStep}
-        onPrevious={handlePrevious}
-        onNext={handleNext}
-        onSkip={isOptionalStep ? handleSkip : undefined}
-      />
     </div>
   );
 }

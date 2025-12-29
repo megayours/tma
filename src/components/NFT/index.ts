@@ -9,4 +9,5 @@ export { SelectedNFTDisplay } from './SelectedNFTDisplay';
 export { SelectNFTs } from './SelectNFTs';
 export type { SelectNFTsProps } from './SelectNFTs';
 export { useNFTPreselection } from './SelectNFTs/useNFTPreselection';
+export { NFTsSummary } from './NFTsSummary';
 export { NFTSelector } from './NFTSelector';

@@ -10,6 +10,7 @@ import { useGenerateContentMutation } from '@/hooks/useContents';
 import { SelectNFTs } from '@/components/NFT';
 import { encodeNFTsToParams } from '@/utils/nftUrlParams';
 import { useNFTsFromUrlParams } from '@/hooks/useNFTsFromUrlParams';
+import { ProtectedRoute } from '@/auth/ProtectedRoute';
 import { z } from 'zod';
 
 // Define NFT params schema inline for better type inference (0-based indexing)
@@ -219,37 +220,39 @@ function SelectNFTsPage() {
   }
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden">
-      {/* Content */}
-      <div className="scrollbar-hide flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-2xl p-6">
-          <p className="text-tg-hint mb-6 text-center">
-            Choose a Character to personalize your {prompt.type}
-          </p>
+    <ProtectedRoute>
+      <div className="flex h-screen flex-col overflow-hidden">
+        {/* Content */}
+        <div className="scrollbar-hide flex-1 overflow-y-auto">
+          <div className="mx-auto max-w-2xl p-6">
+            <p className="text-tg-hint mb-6 text-center">
+              Choose a Character to personalize your {prompt.type}
+            </p>
 
-          <SelectNFTs
-            minTokens={prompt.minTokens || 1}
-            maxTokens={prompt.maxTokens || 1}
-            collections={collections}
-            onTokensSelected={() => {}}
-            onTokensChange={handleTokensChange}
-            initialTokens={selectedTokens}
-            heading="Select Your Character"
-            contentType={getContentType(prompt.type || 'images')}
-          />
+            <SelectNFTs
+              minTokens={prompt.minTokens || 1}
+              maxTokens={prompt.maxTokens || 1}
+              collections={collections}
+              onTokensSelected={() => {}}
+              onTokensChange={handleTokensChange}
+              initialTokens={selectedTokens}
+              heading="Select Your Character"
+              contentType={getContentType(prompt.type || 'images')}
+            />
+          </div>
         </div>
-      </div>
 
-      {/* Bottom Button */}
-      <TelegramDualButtons
-        mainButton={{
-          text: generateMutation.isPending ? 'Generating...' : 'Generate',
-          onClick: () => handleTokensSelected(selectedTokens),
-          disabled: selectedTokens.length === 0,
-          loading: generateMutation.isPending,
-          visible: true,
-        }}
-      />
-    </div>
+        {/* Bottom Button */}
+        <TelegramDualButtons
+          mainButton={{
+            text: generateMutation.isPending ? 'Generating...' : 'Generate',
+            onClick: () => handleTokensSelected(selectedTokens),
+            disabled: selectedTokens.length === 0,
+            loading: generateMutation.isPending,
+            visible: true,
+          }}
+        />
+      </div>
+    </ProtectedRoute>
   );
 }

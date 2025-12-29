@@ -1,5 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
-import type { Token } from '@/types/response';
+import { useMemo } from 'react';
 import type { SupportedCollection } from '@/hooks/useCollections';
 import { useGetFavorites } from '@/hooks/useFavorites';
 import { useSession } from '@/auth/SessionProvider';

@@ -34,7 +34,6 @@ export function SelectedNFTDisplay({
   isSelectorOpen,
   onToggleSelector,
   heading,
-  displayMode = 'first',
 }: SelectedNFTDisplayProps) {
   // Normalize input to always work with an array
   const nftArray = useMemo(() => {

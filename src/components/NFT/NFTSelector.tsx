@@ -1,7 +1,7 @@
 import { Button } from '@telegram-apps/telegram-ui';
 import { NFTSelectionFlow } from '@/components/NFT/NFTSelectionFlow';
-import { useGetFavorites } from '../../../../hooks/useFavorites';
-import { useSession } from '../../../../auth/SessionProvider';
+import { useGetFavorites } from '@/hooks/useFavorites';
+import { useSession } from '@/auth/SessionProvider';
 import { type SupportedCollection } from '@/hooks/useCollections';
 import type { Token } from '@/types/response';
 

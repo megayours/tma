@@ -10,7 +10,7 @@ import type { SupportedCollection } from './useCollections';
  * Function to create compulsory NFT tokens (exactly minTokens)
  * If no favorites exist, falls back to random token from default collection or any available collection
  */
-const createCompulsoryNFTs = (
+export const createCompulsoryNFTs = (
   favorites: any[] | null,
   minTokens: number,
   defaultCollection?: SupportedCollection,

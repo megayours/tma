@@ -51,6 +51,10 @@ export function SelectNFTs({
   useEffect(() => {
     if (initialTokens.length > 0) {
       setSelectedTokens(initialTokens);
+      // If tokens are loaded from URL, move to the next unfilled step
+      // This ensures we show the next step after the pre-filled ones
+      const nextStep = Math.min(initialTokens.length, maxTokens - 1);
+      setCurrentStep(nextStep);
     }
   }, [initialTokens]);
 

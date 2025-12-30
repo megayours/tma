@@ -177,7 +177,14 @@ export function SelectNFTs({
     <div>
       {isConfirmed ? (
         // Show summary after final confirmation
-        <NFTsSummary tokens={confirmedTokens} heading={heading} />
+        <NFTsSummary
+          tokens={confirmedTokens}
+          heading={heading}
+          onModify={() => {
+            setIsConfirmed(false);
+            setCurrentStep(0);
+          }}
+        />
       ) : (
         // Show stepper UI (existing code)
         <>

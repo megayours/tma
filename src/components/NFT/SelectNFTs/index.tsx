@@ -73,9 +73,12 @@ export function SelectNFTs({
       initialTokens.length === 0
     ) {
       setSelectedTokens(preselectedTokens);
-      onTokensChange?.(preselectedTokens);
+      // Only notify parent for single token mode
+      if (maxTokens === 1) {
+        onTokensChange?.(preselectedTokens);
+      }
     }
-  }, [preselectedTokens, selectedTokens.length, initialTokens.length, onTokensChange]);
+  }, [preselectedTokens, selectedTokens.length, initialTokens.length, maxTokens, onTokensChange]);
 
   // Open selector if no tokens selected (single token mode only)
   useEffect(() => {

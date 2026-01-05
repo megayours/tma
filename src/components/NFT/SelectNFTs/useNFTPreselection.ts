@@ -1,6 +1,9 @@
 import { useMemo } from 'react';
 import type { SupportedCollection } from '@/hooks/useCollections';
-import { useGetFavorites } from '@/hooks/useFavorites';
+import {
+  useGetFavorites,
+  filterFavoritesByCollections,
+} from '@/hooks/useFavorites';
 import { useSession } from '@/auth/SessionProvider';
 import { useSelectCommunity } from '@/contexts/SelectCommunityContext';
 import { useGetNFTByCollectionAndTokenId } from '@/hooks/useCollections';
@@ -61,9 +64,13 @@ export function useNFTPreselection(options: UseNFTPreselectionOptions) {
   const preselectedTokens = useMemo(() => {
     if (!enabled || count === 0) return [];
 
-    // Priority 1: Use first N favorites
+    // Priority 1: Use first N favorites (filtered by collections if provided)
     if (favorites && favorites.length > 0) {
-      return favorites.slice(0, count).map(fav => fav.token);
+      const filteredFavorites =
+        collections && collections.length > 0
+          ? filterFavoritesByCollections(favorites, collections)
+          : favorites;
+      return filteredFavorites.slice(0, count).map(fav => fav.token);
     }
 
     // Priority 2: Use fetched token (repeated N times for multi-token requirements)
@@ -72,7 +79,7 @@ export function useNFTPreselection(options: UseNFTPreselectionOptions) {
     }
 
     return [];
-  }, [favorites, fetchedToken, count, enabled]);
+  }, [favorites, fetchedToken, count, enabled, collections]);
 
   return {
     preselectedTokens,

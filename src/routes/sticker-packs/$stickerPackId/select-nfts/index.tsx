@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { TelegramDualButtons } from '@/components/TelegramDualButtons';
 import { useGetSupportedCollections } from '@/hooks/useCollections';
 import type { Token } from '@/types/response';
@@ -9,6 +9,10 @@ import { useStickerPack } from '@/hooks/useStickerPacks';
 import { useSession } from '@/auth/SessionProvider';
 import { usePurchase } from '@/hooks/usePurchase';
 import { SelectNFTs } from '@/components/NFT';
+import {
+  useGetFavorites,
+  filterFavoritesByCollections,
+} from '@/hooks/useFavorites';
 import { encodeNFTsToParams } from '@/utils/nftUrlParams';
 import { useNFTsFromUrlParams } from '@/hooks/useNFTsFromUrlParams';
 import { z } from 'zod';
@@ -59,6 +63,7 @@ function RouteComponent() {
   const navigate = useNavigate();
   const { session } = useSession();
   const search = Route.useSearch();
+  const { favorites, isLoadingFavorites } = useGetFavorites(session);
 
   // State management
   const [selectedTokens, setSelectedTokens] = useState<Token[]>([]);
@@ -94,21 +99,34 @@ function RouteComponent() {
     collections: [],
   };
 
-  if (stickerPack?.supportedCollections.length == 0) {
-    stickerPack.supportedCollections = collections || [];
-  }
+  // Compute filtered collections (memoized to prevent race conditions)
+  const filteredCollections = useMemo(() => {
+    // Get pack's supported collections, falling back to all collections if empty
+    const packCollections =
+      stickerPack?.supportedCollections?.length === 0
+        ? collections || []
+        : stickerPack?.supportedCollections || [];
 
-  // get the overlap between communityCollections and collections
-  // if communityCollections is empty, use all collections
-  const filteredCollections =
-    !communityCollections || communityCollections.length === 0
-      ? stickerPack?.supportedCollections || []
-      : stickerPack?.supportedCollections?.filter(collection =>
-          communityCollections.some(
-            c =>
-              c.address === collection.address && c.chain === collection.chain
-          )
-        ) || [];
+    // If no community collections filter, return all pack collections
+    if (!communityCollections || communityCollections.length === 0) {
+      return packCollections;
+    }
+
+    // Return intersection of pack collections and community collections
+    return packCollections.filter(collection =>
+      communityCollections.some(
+        c => c.address === collection.address && c.chain === collection.chain
+      )
+    );
+  }, [stickerPack?.supportedCollections, collections, communityCollections]);
+
+  // Filter favorites by pack-specific collections (memoized to prevent race conditions)
+  const packFavorites = useMemo(() => {
+    if (!favorites || !filteredCollections) return [];
+    return filterFavoritesByCollections(favorites, filteredCollections);
+  }, [favorites, filteredCollections]);
+
+  const favoriteToken = packFavorites?.[0]?.token;
 
   // Fetch NFTs from URL params
   const {
@@ -135,8 +153,26 @@ function RouteComponent() {
       return;
     }
 
-    // Priority 2: SelectNFTs will handle preselection
-    if (!isLoadingUrlTokens && !hasUrlParams) {
+    // Priority 2: Auto-select favorite when single token is required
+    // Wait for favorites to finish loading before checking favoriteToken
+    if (
+      !hasUrlParams &&
+      !isLoadingFavorites &&
+      stickerPack?.max_tokens_required === 1 &&
+      favoriteToken
+    ) {
+      setSelectedTokens([favoriteToken]);
+      setHasInitialized(true);
+      return;
+    }
+
+    // Priority 3: SelectNFTs will handle preselection
+    // Wait for all data to load before initializing
+    if (
+      !isLoadingUrlTokens &&
+      !hasUrlParams &&
+      (stickerPack?.max_tokens_required !== 1 || !isLoadingFavorites)
+    ) {
       setHasInitialized(true);
     }
   }, [
@@ -145,6 +181,8 @@ function RouteComponent() {
     isLoadingUrlTokens,
     hasInitialized,
     stickerPack?.max_tokens_required,
+    favoriteToken,
+    isLoadingFavorites,
   ]);
 
   // Auto-update URL when tokens change

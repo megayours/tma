@@ -5,12 +5,44 @@ import type { Token } from '../types/response';
 import { setCachedFavorite } from '@/utils/favoriteCache';
 import { useSelectedNFTsSafe } from '@/contexts/SelectedNFTsContext';
 import { useSelectCommunity } from '@/contexts/SelectCommunityContext';
+import type { SupportedCollection } from '@/hooks/useCollections';
 
 export type Favorite = {
   token: Token;
   createdAt: string;
   updatedAt: string;
 };
+
+/**
+ * Filters favorites to only include those from the provided collections.
+ * Works as an additional filter on top of community-level filtering.
+ *
+ * @param favorites - Array of favorites to filter
+ * @param collections - Array of collections to filter by (address + chain matching)
+ * @returns Filtered favorites array, or all favorites if collections is empty/undefined
+ */
+export function filterFavoritesByCollections(
+  favorites: Favorite[] | undefined,
+  collections?: SupportedCollection[]
+): Favorite[] {
+  if (!favorites || favorites.length === 0) {
+    return [];
+  }
+
+  // If no collections provided or empty, return all favorites
+  if (!collections || collections.length === 0) {
+    return favorites;
+  }
+
+  // Filter favorites to match provided collections by address and chain
+  return favorites.filter(favorite =>
+    collections.some(
+      collection =>
+        collection.address === favorite.token.contract.address &&
+        collection.chain === favorite.token.contract.chain
+    )
+  );
+}
 
 export function useGetFavorites(session: Session | null) {
   const { selectedFavorite, setSelectedFavorite: setSelectedFavoriteGlobal } =

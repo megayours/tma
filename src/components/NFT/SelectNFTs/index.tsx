@@ -66,7 +66,6 @@ export function SelectNFTs({
   });
 
   // Initialize with preselected tokens (only if no initialTokens)
-  // Don't call onTokensChange for auto-preselection - only for manual changes
   useEffect(() => {
     if (
       selectedTokens.length === 0 &&
@@ -74,9 +73,9 @@ export function SelectNFTs({
       initialTokens.length === 0
     ) {
       setSelectedTokens(preselectedTokens);
-      // Don't trigger onTokensChange for auto-preselection
+      onTokensChange?.(preselectedTokens);
     }
-  }, [preselectedTokens, selectedTokens.length, initialTokens.length]);
+  }, [preselectedTokens, selectedTokens.length, initialTokens.length, onTokensChange]);
 
   // Open selector if no tokens selected (single token mode only)
   useEffect(() => {

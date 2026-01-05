@@ -8,6 +8,7 @@ import { useSession } from '@/auth/SessionProvider';
 import { SpinnerFullPage } from '@/components/ui';
 import { useGenerateContentMutation } from '@/hooks/useContents';
 import { SelectNFTs } from '@/components/NFT';
+import { useGetFavorites } from '@/hooks/useFavorites';
 import { encodeNFTsToParams } from '@/utils/nftUrlParams';
 import { useNFTsFromUrlParams } from '@/hooks/useNFTsFromUrlParams';
 import { ProtectedRoute } from '@/auth/ProtectedRoute';
@@ -75,6 +76,8 @@ function SelectNFTsPage() {
   const navigate = useNavigate();
   const { session } = useSession();
   const search = Route.useSearch();
+  const { favorites, isLoadingFavorites } = useGetFavorites(session);
+  const favoriteToken = favorites?.[0]?.token;
 
   // State management
   const [selectedTokens, setSelectedTokens] = useState<Token[]>([]);
@@ -114,8 +117,19 @@ function SelectNFTsPage() {
       return;
     }
 
-    // Priority 2: SelectNFTs will handle preselection
-    if (!isLoadingUrlTokens && !hasUrlParams) {
+    // Priority 2: Auto-select favorite when single token is required
+    if (!hasUrlParams && prompt?.maxTokens === 1 && favoriteToken) {
+      setSelectedTokens([favoriteToken]);
+      setHasInitialized(true);
+      return;
+    }
+
+    // Priority 3: SelectNFTs will handle preselection
+    if (
+      !isLoadingUrlTokens &&
+      !hasUrlParams &&
+      (prompt?.maxTokens !== 1 || !isLoadingFavorites)
+    ) {
       setHasInitialized(true);
     }
   }, [
@@ -124,6 +138,8 @@ function SelectNFTsPage() {
     isLoadingUrlTokens,
     hasInitialized,
     prompt?.maxTokens,
+    favoriteToken,
+    isLoadingFavorites,
   ]);
 
   // Auto-navigate to processing when generation succeeds

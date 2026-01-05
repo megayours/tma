@@ -3,10 +3,23 @@ import type { Token } from '@/types/response';
 interface NFTsSummaryProps {
   tokens: Token[];
   heading?: string;
-  onModify?: () => void;
+  onModify?: (index?: number) => void;
+  maxTokens?: number; // Total number of slots to display
 }
 
-export function NFTsSummary({ tokens, heading, onModify }: NFTsSummaryProps) {
+export function NFTsSummary({
+  tokens,
+  heading,
+  onModify,
+  maxTokens,
+}: NFTsSummaryProps) {
+  // Create an array that includes both selected tokens and empty slots
+  const totalSlots = maxTokens || tokens.length;
+  const displaySlots = Array.from(
+    { length: totalSlots },
+    (_, i) => tokens[i] || null
+  );
+
   return (
     <div className="animate-fade-in flex flex-col items-center justify-center gap-6 py-8">
       {heading && (
@@ -16,17 +29,25 @@ export function NFTsSummary({ tokens, heading, onModify }: NFTsSummaryProps) {
       )}
 
       <div className="grid grid-cols-2 gap-4 px-4 sm:grid-cols-3 lg:grid-cols-4">
-        {tokens.map(token => (
+        {displaySlots.map((token, index) => (
           <div
-            key={`${token.contract.address}-${token.id}`}
+            key={
+              token ? `${token.contract.address}-${token.id}` : `empty-${index}`
+            }
             className="relative cursor-pointer"
-            onClick={onModify}
+            onClick={() => onModify?.(index)}
           >
-            <img
-              src={token.image}
-              alt={token.name || `NFT #${token.id}`}
-              className="border-tg-button aspect-square w-full rounded-full border-2 object-cover"
-            />
+            {token ? (
+              <img
+                src={token.image}
+                alt={token.name || `NFT #${token.id}`}
+                className="border-tg-button aspect-square w-full rounded-full border-2 object-cover"
+              />
+            ) : (
+              <div className="bg-tg-secondary border-tg-hint/30 text-tg-hint flex aspect-square w-full items-center justify-center rounded-full border-2 text-4xl font-bold">
+                #{index + 1}
+              </div>
+            )}
 
             {/* Edit Icon - Positioned overlay */}
             {onModify && (

@@ -51,12 +51,19 @@ export function SelectNFTs({
   useEffect(() => {
     if (initialTokens.length > 0) {
       setSelectedTokens(initialTokens);
-      // If tokens are loaded from URL, move to the next unfilled step
-      // This ensures we show the next step after the pre-filled ones
-      const nextStep = Math.min(initialTokens.length, maxTokens - 1);
-      setCurrentStep(nextStep);
+
+      // If all tokens are preselected, show summary
+      if (initialTokens.length === maxTokens) {
+        setIsConfirmed(true);
+        setConfirmedTokens(initialTokens);
+      } else {
+        // If tokens are loaded from URL, move to the next unfilled step
+        // This ensures we show the next step after the pre-filled ones
+        const nextStep = Math.min(initialTokens.length, maxTokens - 1);
+        setCurrentStep(nextStep);
+      }
     }
-  }, [initialTokens]);
+  }, [initialTokens, maxTokens]);
 
   // Preselection hook - disabled if initialTokens are provided
   const { preselectedTokens } = useNFTPreselection({
@@ -78,7 +85,13 @@ export function SelectNFTs({
         onTokensChange?.(preselectedTokens);
       }
     }
-  }, [preselectedTokens, selectedTokens.length, initialTokens.length, maxTokens, onTokensChange]);
+  }, [
+    preselectedTokens,
+    selectedTokens.length,
+    initialTokens.length,
+    maxTokens,
+    onTokensChange,
+  ]);
 
   // Open selector if no tokens selected (single token mode only)
   useEffect(() => {
@@ -129,6 +142,19 @@ export function SelectNFTs({
   const handleSkip = () => {
     // For optional tokens, user can skip
     handleNext();
+  };
+
+  const handleStepClick = (step: number) => {
+    // If clicking on the current step, show summary
+    if (step === currentStep) {
+      const tokensToConfirm = selectedTokens.slice(0, currentStep + 1);
+      setIsConfirmed(true);
+      setConfirmedTokens(tokensToConfirm);
+      onTokensChange?.(tokensToConfirm);
+    } else if (step >= 0 && step < maxTokens) {
+      // Otherwise, navigate to the clicked step
+      setCurrentStep(step);
+    }
   };
 
   // Validation
@@ -182,9 +208,10 @@ export function SelectNFTs({
         <NFTsSummary
           tokens={confirmedTokens}
           heading={heading}
-          onModify={() => {
+          maxTokens={maxTokens}
+          onModify={index => {
             setIsConfirmed(false);
-            setCurrentStep(0);
+            setCurrentStep(index ?? 0);
           }}
         />
       ) : (
@@ -199,6 +226,8 @@ export function SelectNFTs({
               currentStep={currentStep}
               totalSteps={maxTokens}
               requiredSteps={minTokens}
+              selectedTokens={selectedTokens}
+              onStepClick={handleStepClick}
             />
           )}
 

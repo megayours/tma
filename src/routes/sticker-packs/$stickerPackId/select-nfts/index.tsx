@@ -142,8 +142,8 @@ function RouteComponent() {
   useEffect(() => {
     if (hasInitialized) return;
 
-    // Priority 1: URL params
-    if (hasUrlParams && urlTokens.length > 0) {
+    // Priority 1: URL params - wait for all queries to finish loading
+    if (hasUrlParams && !isLoadingUrlTokens && urlTokens.length > 0) {
       const validTokens = urlTokens.slice(
         0,
         stickerPack?.max_tokens_required || 10

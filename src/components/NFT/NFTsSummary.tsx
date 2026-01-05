@@ -33,7 +33,7 @@ export function NFTsSummary({ tokens, heading, onModify }: NFTsSummaryProps) {
               <div className="bg-tg-accent-text absolute right-1 bottom-1 rounded-full p-1.5 transition-all duration-300 ease-in-out hover:opacity-90">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="h-3 w-3 text-white"
+                  className="h-7 w-7 text-white"
                   viewBox="0 0 20 20"
                   fill="currentColor"
                 >

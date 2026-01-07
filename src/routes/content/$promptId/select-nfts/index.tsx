@@ -13,6 +13,8 @@ import { encodeNFTsToParams } from '@/utils/nftUrlParams';
 import { useNFTsFromUrlParams } from '@/hooks/useNFTsFromUrlParams';
 import { ProtectedRoute } from '@/auth/ProtectedRoute';
 import { z } from 'zod';
+import { shareTelegramMessage, canShareMessage } from '@/utils/telegramShare';
+import { buildShareUrl } from '@/utils/shareUrl';
 
 // Define NFT params schema inline for better type inference (0-based indexing)
 const nftParamsSchema = z.object({
@@ -218,6 +220,22 @@ function SelectNFTsPage() {
     });
   };
 
+  const handleShareWithFriend = () => {
+    const botUrl = import.meta.env.VITE_PUBLIC_BOT_URL || '';
+
+    // Get the current path including search params
+    const currentPath = window.location.pathname + window.location.search;
+
+    // Build the share URL with encoded path
+    const shareUrl = buildShareUrl(botUrl, currentPath);
+
+    try {
+      shareTelegramMessage(shareUrl, 'Create content with me!');
+    } catch (error) {
+      console.error('Failed to share:', error);
+    }
+  };
+
   if (isLoadingPrompt || (hasUrlParams && isLoadingUrlTokens)) {
     return <SpinnerFullPage text="Loading..." />;
   }
@@ -241,10 +259,6 @@ function SelectNFTsPage() {
         {/* Content */}
         <div className="scrollbar-hide flex-1 overflow-y-auto">
           <div className="mx-auto max-w-2xl p-6">
-            <p className="text-tg-hint mb-6 text-center">
-              Choose a Character to personalize your {prompt.type}
-            </p>
-
             <SelectNFTs
               minTokens={prompt.minTokens || 1}
               maxTokens={prompt.maxTokens || 1}
@@ -266,6 +280,13 @@ function SelectNFTsPage() {
             disabled: selectedTokens.length === 0,
             loading: generateMutation.isPending,
             visible: true,
+          }}
+          secondaryButton={{
+            text: 'Create with a friend',
+            disabled: false,
+            visible: selectedTokens.length > 0 && canShareMessage(),
+            onClick: handleShareWithFriend,
+            hasShineEffect: false,
           }}
         />
       </div>

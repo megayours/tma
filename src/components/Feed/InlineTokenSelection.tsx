@@ -17,7 +17,7 @@ export const InlineTokenSelection = ({
   optionalTokens,
   onGenerate,
   prompt,
-  className = "",
+  className = '',
 }: InlineTokenSelectionProps) => {
   return (
     <TokenSelectionCore

@@ -8,11 +8,10 @@ import {
 import { NFTSelector } from '@/routes/sticker-packs/$stickerPackId/select-nfts/NFTSelector';
 import type { Token } from '@/types/response';
 import { useSelectedNFTsSafe } from '@/contexts/SelectedNFTsContext';
-import { useGetPrompt } from '@/hooks/usePrompts';
 import { useSession } from '@/auth/SessionProvider';
-import { SpinnerFullPage } from '@/components/ui';
 import { useGenerateContentMutation } from '@/hooks/useContents';
 import { useSelectCommunity } from '@/contexts/SelectCommunityContext';
+import { usePromptContext } from '@/contexts/PromptContext';
 
 export const Route = createFileRoute('/content/$promptId/select-nfts/')({
   component: SelectNFTsPage,
@@ -121,12 +120,7 @@ function SelectNFTsPage() {
   const { promptId } = Route.useParams();
   const navigate = useNavigate();
   const { session } = useSession();
-
-  // Fetch prompt data
-  const { data: prompt, isLoading: isLoadingPrompt } = useGetPrompt(
-    promptId,
-    session
-  );
+  const { prompt } = usePromptContext();
 
   const { data: collections } = useGetSupportedCollections();
 
@@ -221,23 +215,6 @@ function SelectNFTsPage() {
       ],
     });
   };
-
-  if (isLoadingPrompt) {
-    return <SpinnerFullPage text="Loading..." />;
-  }
-
-  if (!prompt) {
-    return (
-      <div className="flex h-screen items-center justify-center p-6">
-        <div className="text-center">
-          <div className="mb-4 text-4xl">⚠️</div>
-          <h2 className="text-tg-text mb-2 text-xl font-bold">
-            Prompt not found
-          </h2>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">

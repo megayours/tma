@@ -1,11 +1,9 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useGetPrompt } from '@/hooks/usePrompts';
-import { useSession } from '@/auth/SessionProvider';
-import { SpinnerFullPage } from '@/components/ui';
 import { Banner, Divider } from '@telegram-apps/telegram-ui';
 import { TelegramDualButtons } from '../../../../components/TelegramDualButtons';
 import { Fragment } from 'react/jsx-runtime';
 import { MediaDisplay } from '@/components/lib/LatestContent/MediaDisplay';
+import { usePromptContext } from '@/contexts/PromptContext';
 
 export const Route = createFileRoute('/content/$promptId/details/')({
   component: ContentDetails,
@@ -32,9 +30,7 @@ const getTypeLabel = (
 function ContentDetails() {
   const { promptId } = Route.useParams();
   const navigate = useNavigate();
-  const { session, isAuthenticating } = useSession();
-
-  const { data: prompt, isLoading, error } = useGetPrompt(promptId, session);
+  const { prompt } = usePromptContext();
 
   const handleContinue = () => {
     navigate({
@@ -43,32 +39,6 @@ function ContentDetails() {
     });
   };
 
-  if (isAuthenticating) {
-    return <SpinnerFullPage text="Authenticating..." />;
-  }
-  if (isLoading) {
-    return <SpinnerFullPage text="Loading template details..." />;
-  }
-
-  if (error || !prompt) {
-    return (
-      <div className="mx-auto max-w-4xl p-4">
-        <div className="flex items-center justify-center p-8">
-          <div className="text-center">
-            <div className="mb-4 text-4xl">⚠️</div>
-            <h2 className="text-tg-text mb-2 text-xl font-bold">
-              Failed to load prompt
-            </h2>
-            <p className="text-tg-hint mb-4">
-              {error?.message || 'Prompt not found'}
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // TypeScript now knows prompt is defined here
   // Get all preview images
   const getPreviewImages = () => {
     if (prompt.stickers && prompt.stickers.length > 0) return prompt.stickers;

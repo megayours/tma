@@ -16,6 +16,7 @@ import type {
 } from '@/types/prompt';
 import { PromptFeedbackSchema } from '@/types/prompt';
 import { safeParse } from '@/utils/validation';
+import type { Community } from '@/hooks/useCommunities';
 
 // Helper function to map raw prompt to expected format
 const mapRawPromptToPrompt = (rawPrompt: RawPrompt): Prompt => {
@@ -54,11 +55,7 @@ const mapRawPromptToPromptWithContent = (
   ...mapRawPromptToPrompt(rawPrompt),
   published: rawPrompt.published_at ?? 0,
   image: rawPrompt.image ?? '',
-  type: rawPrompt.type as
-    | 'images'
-    | 'stickers'
-    | 'gifs'
-    | 'animated_stickers',
+  type: rawPrompt.type as 'images' | 'stickers' | 'gifs' | 'animated_stickers',
   contentId: (rawPrompt as any).content_id,
   owner: rawPrompt.owner_id,
   ownerName: rawPrompt.owner_name ?? '',
@@ -170,15 +167,19 @@ export const useGetRecommendedPrompts = ({
   };
 };
 
-export const useGetPrompt = (promptId: string, session: Session | null) => {
+export const useGetPrompt = (
+  promptId: string,
+  session: Session | null,
+  community: Community | null
+) => {
   const queryKey = ['prompt', promptId, session?.authToken];
 
   return useQuery({
     queryKey,
     queryFn: async () => {
-      if (!session) return;
+      if (!session || !community) return;
       const response = await fetch(
-        `${import.meta.env.VITE_PUBLIC_API_URL}/prompts/${promptId}?preferred_formats=webm`,
+        `${import.meta.env.VITE_PUBLIC_API_URL}/prompts/${promptId}?preferred_formats=webm&community_id=${community.id}`,
         {
           method: 'GET',
           headers: {
@@ -228,7 +229,7 @@ export const useGetPrompt = (promptId: string, session: Session | null) => {
       };
       return prompt;
     },
-    enabled: !!session,
+    enabled: !!session && !!community,
   });
 };
 

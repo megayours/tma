@@ -12,6 +12,7 @@ import { NFTSetsProvider } from '@/contexts/NFTSetsContext';
 import { useToast } from '@/components/ui/toast';
 import { useGetPrompt, usePromptMutation } from '@/hooks/usePrompts';
 import { viewport, useSignal } from '@telegram-apps/sdk-react';
+import { useSelectCommunity } from '@/contexts/SelectCommunityContext';
 
 const PromptEditorContent = ({
   promptId,
@@ -25,9 +26,14 @@ const PromptEditorContent = ({
   const [hasChanges, setHasChanges] = useState(false);
   const [isTextareaFocused, setIsTextareaFocused] = useState(false);
   const promptTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const { selectedCommunity } = useSelectCommunity();
 
   // Use React Query to get the prompt data
-  const { data: prompt, isLoading, error } = useGetPrompt(promptId, session);
+  const {
+    data: prompt,
+    isLoading,
+    error,
+  } = useGetPrompt(promptId, session, selectedCommunity);
 
   // Prompt mutation for saving changes
   const promptMutation = usePromptMutation(session);
@@ -240,7 +246,8 @@ export const PromptEditor = ({
   setSelectedNFTs: (nfts: Token[]) => void;
 }) => {
   const { session } = useSession();
-  const { data: prompt } = useGetPrompt(promptId, session);
+  const { selectedCommunity } = useSelectCommunity();
+  const { data: prompt } = useGetPrompt(promptId, session, selectedCommunity);
 
   return (
     <NFTSetsProvider prompt={prompt || null}>

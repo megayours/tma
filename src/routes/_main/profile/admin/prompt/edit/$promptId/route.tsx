@@ -11,8 +11,11 @@ import { PromptContext } from '@/contexts/PromptContext';
 import { SpinnerFullPage } from '@/components/ui';
 import { useSignal } from '@telegram-apps/sdk-react';
 import { viewport } from '@telegram-apps/sdk-react';
+import { useSelectCommunity } from '@/contexts/SelectCommunityContext';
 
-export const Route = createFileRoute('/_main/profile/admin/prompt/edit/$promptId')({
+export const Route = createFileRoute(
+  '/_main/profile/admin/prompt/edit/$promptId'
+)({
   component: RouteComponent,
 });
 
@@ -27,7 +30,12 @@ function RouteComponent() {
 function RouteContent() {
   const { promptId } = Route.useParams();
   const { session } = useSession();
-  const { data: prompt, isLoading, error } = useGetPrompt(promptId, session);
+  const { selectedCommunity } = useSelectCommunity();
+  const {
+    data: prompt,
+    isLoading,
+    error,
+  } = useGetPrompt(promptId, session, selectedCommunity);
   const { selectedNFTs, setSelectedNFTs } = useSelectedNFTs();
   const { settingsOpen, setSettingsOpen } = useSettings();
   const isViewportMounted = useSignal(viewport.isMounted);

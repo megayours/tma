@@ -60,7 +60,7 @@ export function buildShareUrl(
 
   // Build the payload
   const sharePayload = community
-    ? `${path}?communityId=${community}`
+    ? `${path}${path.includes('?') ? '&' : '?'}communityId=${community}`
     : path;
 
   // Encode and build the final URL

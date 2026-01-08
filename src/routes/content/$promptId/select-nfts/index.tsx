@@ -15,6 +15,7 @@ import { ProtectedRoute } from '@/auth/ProtectedRoute';
 import { z } from 'zod';
 import { shareTelegramMessage, canShareMessage } from '@/utils/telegramShare';
 import { buildShareUrl } from '@/utils/shareUrl';
+import { useSelectCommunity } from '@/contexts/SelectCommunityContext';
 
 // Define NFT params schema inline for better type inference (0-based indexing)
 const nftParamsSchema = z.object({
@@ -80,11 +81,15 @@ function SelectNFTsPage() {
   const search = Route.useSearch();
   const { favorites, isLoadingFavorites } = useGetFavorites(session);
   const favoriteToken = favorites?.[0]?.token;
+  const { selectedCommunity } = useSelectCommunity();
 
   // State management
   const [selectedTokens, setSelectedTokens] = useState<Token[]>([]);
   const [isManuallyModified, setIsManuallyModified] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
+
+  console.log('Selected Community:', selectedCommunity);
+  console.log('selectedTokens:', selectedTokens);
 
   // Fetch prompt data
   const { data: prompt, isLoading: isLoadingPrompt } = useGetPrompt(
@@ -103,6 +108,9 @@ function SelectNFTsPage() {
     urlParams: search,
     enabled: !isManuallyModified && !hasInitialized,
   });
+
+  console.log('URL Tokens:', urlTokens);
+  console.log('hasUrlParams:', hasUrlParams, search);
 
   // Generation mutation
   const generateMutation = useGenerateContentMutation(session);
@@ -226,8 +234,8 @@ function SelectNFTsPage() {
     // Get the current path including search params
     const currentPath = window.location.pathname + window.location.search;
 
-    // Build the share URL with encoded path
-    const shareUrl = buildShareUrl(botUrl, currentPath);
+    // Build the share URL with encoded path and community ID
+    const shareUrl = buildShareUrl(botUrl, currentPath, selectedCommunity?.id);
 
     try {
       shareTelegramMessage(shareUrl, 'Create content with me!');

@@ -54,11 +54,7 @@ const mapRawPromptToPromptWithContent = (
   ...mapRawPromptToPrompt(rawPrompt),
   published: rawPrompt.published_at ?? 0,
   image: rawPrompt.image ?? '',
-  type: rawPrompt.type as
-    | 'images'
-    | 'stickers'
-    | 'gifs'
-    | 'animated_stickers',
+  type: rawPrompt.type as 'images' | 'stickers' | 'gifs' | 'animated_stickers',
   contentId: (rawPrompt as any).content_id,
   owner: rawPrompt.owner_id,
   ownerName: rawPrompt.owner_name ?? '',
@@ -170,20 +166,19 @@ export const useGetRecommendedPrompts = ({
   };
 };
 
-export const useGetPrompt = (promptId: string, session: Session | null) => {
+export const useGetPrompt = (promptId: string, session?: Session | null) => {
   const queryKey = ['prompt', promptId, session?.authToken];
 
   return useQuery({
     queryKey,
     queryFn: async () => {
-      if (!session) return;
       const response = await fetch(
         `${import.meta.env.VITE_PUBLIC_API_URL}/prompts/${promptId}?preferred_formats=webm`,
         {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: session.authToken,
+            ...(session && { Authorization: session.authToken }),
           },
         }
       );
@@ -228,7 +223,7 @@ export const useGetPrompt = (promptId: string, session: Session | null) => {
       };
       return prompt;
     },
-    enabled: !!session,
+    enabled: !!promptId,
   });
 };
 

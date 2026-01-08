@@ -37,7 +37,7 @@ function TelegramEnvironmentHandler() {
   const { isDark, themeParams } = useTelegramTheme();
   const [isViewportMounted, setIsViewportMounted] = useState(false);
   const [isViewportMounting, setIsViewportMounting] = useState(false);
-  const { lastContentMenuRoute, isAtEntryPoint, decrementDepth } = useNavigationHistory();
+  const { lastContentMenuRoute, isAtEntryPoint, onBackClick, navigationDepth } = useNavigationHistory();
 
   console.log('ROUTE', location);
 
@@ -48,8 +48,8 @@ function TelegramEnvironmentHandler() {
       lastContentMenuRoute,
     });
 
-    // Decrement depth BEFORE navigating
-    decrementDepth();
+    // Call context to decrement depth
+    onBackClick();
 
     // Smart fallback for Android WebView history issues
     if (window.history.length > 1) {
@@ -57,7 +57,7 @@ function TelegramEnvironmentHandler() {
     } else {
       router.navigate({ to: lastContentMenuRoute });
     }
-  }, [pathname, router, lastContentMenuRoute, decrementDepth]);
+  }, [pathname, router, lastContentMenuRoute, onBackClick]);
 
   useEffect(() => {
     init();
@@ -156,7 +156,9 @@ function TelegramEnvironmentHandler() {
     console.log('[Navigation] State', {
       pathname,
       isAtEntryPoint,
+      navigationDepth,
       lastContentMenuRoute,
+      browserHistoryLength: window.history.length,
     });
 
     // Store cleanup function for back button listener

@@ -49,16 +49,19 @@ function SuccessPage() {
   );
   const isMobileDevice = useMemo(() => {
     if (typeof navigator === 'undefined') return false;
-    const nav = navigator as Navigator & { userAgentData?: { mobile?: boolean } };
+    const nav = navigator as Navigator & {
+      userAgentData?: { mobile?: boolean };
+    };
     if (nav.userAgentData && typeof nav.userAgentData.mobile === 'boolean') {
       return nav.userAgentData.mobile;
     }
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(nav.userAgent);
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      nav.userAgent
+    );
   }, []);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isGiphyEnabled, setIsGiphyEnabled] = useState(false);
   const hasSubmittedFeedback = useRef(false);
-
 
   // Fetch execution data if executionId is provided
   const { data: content, isLoading } = useContentExecution(
@@ -208,7 +211,10 @@ function SuccessPage() {
         return; // Early return - finally block will clean up
       }
 
-      const response = await fetch(contentUrl, { mode: 'cors', cache: 'no-store' });
+      const response = await fetch(contentUrl, {
+        mode: 'cors',
+        cache: 'no-store',
+      });
 
       if (!response.ok) {
         throw new Error('Unable to download content');
@@ -286,6 +292,7 @@ function SuccessPage() {
                         src={displayUrl}
                         alt="Generated content"
                         className="h-full w-full rounded-xl object-contain"
+                        poster={content?.thumbnailUrl || '/logo.png'}
                       />
                     ) : (
                       <div className="text-tg-hint text-sm">

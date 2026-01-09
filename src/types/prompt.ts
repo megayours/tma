@@ -33,6 +33,7 @@ export const PromptSchema = z.object({
   gifs: z.array(z.string()).optional(),
   stickers: z.array(z.string()).optional(),
   animatedStickers: z.array(z.string()).optional(),
+  thumbnails: z.array(z.string()),
   versions: z.array(PromptVersionSchema).optional(),
   version: z.number().optional(),
   minTokens: z.number().optional(),

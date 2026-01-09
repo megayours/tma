@@ -159,6 +159,7 @@ function ContentDetails() {
                         src={imageUrl}
                         alt={`${prompt.name || 'Content'} ${index + 1}`}
                         className="h-full w-full object-cover"
+                        poster={prompt.thumbnails?.[index] || '/logo.png'}
                       />
                     </div>
                   ))}

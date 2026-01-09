@@ -34,7 +34,11 @@ export const RenderPreview = ({
 
   // Fall back to prompt's own images/videos/gifs if no previews
   const fallbackImage =
-    prompt.images?.[0] || prompt.videos?.[0] || prompt.gifs?.[0];
+    prompt.images?.[0] ||
+    prompt.videos?.[0] ||
+    prompt.gifs?.[0] ||
+    prompt.stickers?.[0] ||
+    prompt.animatedStickers?.[0];
 
   if (previews.length === 0 && fallbackImage) {
     return (
@@ -44,6 +48,7 @@ export const RenderPreview = ({
             src={fallbackImage}
             alt={prompt.name}
             className="block h-full w-full object-contain"
+            poster={prompt.thumbnails?.[0] || '/logo.png'}
           />
         </div>
       </div>
@@ -67,6 +72,7 @@ export const RenderPreview = ({
               }
               alt={firstContent.id}
               className="block h-full w-full object-contain"
+              poster={firstContent.thumbnailUrl || '/logo.png'}
             />
           )}
         </div>
@@ -89,7 +95,7 @@ export default function MyPrompts() {
   });
   const [totalPages, setTotalPages] = useState(1);
 
-  const { data, isLoading, error } = useGetMyPrompts(
+  const { data, isLoading } = useGetMyPrompts(
     session!,
     pagination,
     {
@@ -101,11 +107,6 @@ export default function MyPrompts() {
     'desc',
     selectedCommunity
   );
-
-  console.log('📱 [MyPrompts] Component received data:', data);
-  console.log('📱 [MyPrompts] isLoading:', isLoading);
-  console.log('📱 [MyPrompts] error:', error);
-  console.log('📱 [MyPrompts] pagination:', pagination);
 
   // Fetch all previews in one batch call instead of N+1 calls
   const { data: previewsData, isLoading: previewsLoading } = useGetAllPreviews(

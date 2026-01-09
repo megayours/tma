@@ -37,6 +37,8 @@ export interface StickerPackBundleItem {
   sort_order: number;
   created_at: number;
   preview_url: string;
+  url?: string;
+  thumbnailUrl?: string;
   prompt: {
     id: number;
     name: string;
@@ -61,10 +63,13 @@ export interface StickerPackExecutionItem {
     id: string;
     status: string;
     type: string;
-    variant: string;
+    variant?: string;
     created_at: number;
     creator_id: string;
     prompt_id: number;
+    url?: string;
+    thumbnailUrl?: string;
+    telegramPackUrl?: string;
   };
   generated_content_url?: string;
   can_regenerate: boolean;
@@ -165,18 +170,34 @@ export const useStickerPackExecutions = (
 
       const rawData = await response.json();
 
-      // Transform queue_info to queueInfo with camelCase properties for each execution
+      // Transform snake_case to camelCase for each execution
       const data: StickerPackExecutionsResponse = {
         ...rawData,
         data: rawData.data.map((execution: any) => ({
           ...execution,
-          queueInfo: execution.queueInfo
+          queueInfo: execution.queue_info
             ? {
-                position: execution.queueInfo.position,
+                position: execution.queue_info.position,
                 estimatedCompletionTime:
-                  execution.queueInfo.estimatedCompletionTime,
+                  execution.queue_info.estimated_completion_time,
               }
             : undefined,
+          items: execution.items?.map((item: any) => ({
+            ...item,
+            bundle_item: item.bundle_item
+              ? {
+                  ...item.bundle_item,
+                  thumbnailUrl: item.bundle_item.thumbnail_url,
+                }
+              : undefined,
+            generated_content: item.generated_content
+              ? {
+                  ...item.generated_content,
+                  thumbnailUrl: item.generated_content.thumbnail_url,
+                  telegramPackUrl: item.generated_content.telegram_pack_url,
+                }
+              : undefined,
+          })),
         })),
       };
 
@@ -223,7 +244,7 @@ export const useStickerPackExecutionById = (
 
       const rawData = await response.json();
 
-      // Transform queue_info to queueInfo with camelCase properties
+      // Transform snake_case to camelCase
       const data: StickerPackExecution = {
         ...rawData,
         queueInfo: rawData.queue_info
@@ -235,6 +256,22 @@ export const useStickerPackExecutionById = (
               estimatedTimeMessage: rawData.queue_info.estimated_time_message,
             }
           : undefined,
+        items: rawData.items?.map((item: any) => ({
+          ...item,
+          bundle_item: item.bundle_item
+            ? {
+                ...item.bundle_item,
+                thumbnailUrl: item.bundle_item.thumbnail_url,
+              }
+            : undefined,
+          generated_content: item.generated_content
+            ? {
+                ...item.generated_content,
+                thumbnailUrl: item.generated_content.thumbnail_url,
+                telegramPackUrl: item.generated_content.telegram_pack_url,
+              }
+            : undefined,
+        })),
       };
 
       return data;
@@ -297,7 +334,7 @@ export const useGetExecution = (
 
       const rawData = await response.json();
 
-      // Transform queue_info to queueInfo with camelCase properties for each execution
+      // Transform snake_case to camelCase for each execution
       const data: StickerPackExecutionsResponse = {
         ...rawData,
         data: rawData.data.map((execution: any) => ({
@@ -309,6 +346,22 @@ export const useGetExecution = (
                   execution.queue_info.estimated_completion_time,
               }
             : undefined,
+          items: execution.items?.map((item: any) => ({
+            ...item,
+            bundle_item: item.bundle_item
+              ? {
+                  ...item.bundle_item,
+                  thumbnailUrl: item.bundle_item.thumbnail_url,
+                }
+              : undefined,
+            generated_content: item.generated_content
+              ? {
+                  ...item.generated_content,
+                  thumbnailUrl: item.generated_content.thumbnail_url,
+                  telegramPackUrl: item.generated_content.telegram_pack_url,
+                }
+              : undefined,
+          })),
         })),
       };
 

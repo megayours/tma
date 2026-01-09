@@ -215,11 +215,16 @@ export function ShowContent({ prompt }: ShowContentProps) {
                   <div className="flex items-center gap-1">
                     <div className="h-6 w-6 overflow-hidden rounded-full">
                       <img
-                        src={selectedFavorite.token?.image || '/nfts/not-available.png'}
+                        src={
+                          selectedFavorite.token?.image ||
+                          '/nfts/not-available.png'
+                        }
                         alt={selectedFavorite.token?.contract?.name || 'Token'}
                       />
                     </div>
-                    {!isGenerating && !isLoadingSelected && prompt.minTokens && (
+                    {!isGenerating &&
+                      !isLoadingSelected &&
+                      prompt.minTokens && (
                         <div className="flex items-center gap-1">
                           {prompt.minTokens > 1 && (
                             <span className="rounded-full bg-blue-500 px-2 py-1 text-xs font-medium text-white">
@@ -293,6 +298,7 @@ export function ShowContent({ prompt }: ShowContentProps) {
             additionalContentIds: prompt.additionalContentIds || [],
             minTokens: prompt.minTokens,
             maxTokens: prompt.maxTokens,
+            thumbnails: prompt.thumbnails,
           }}
         />
       )}

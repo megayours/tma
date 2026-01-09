@@ -35,6 +35,7 @@ export const RawPromptSchema = z.object({
   gifs: z.array(z.string()).optional(),
   stickers: z.array(z.string()).optional(),
   animated_stickers: z.array(z.string()).optional(),
+  thumbnail_urls: z.array(z.string()).optional(),
   versions: z.any().optional(),
   lastestContentUrl: z.string().optional(),
   min_tokens: z.number().optional(),

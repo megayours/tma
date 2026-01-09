@@ -34,6 +34,7 @@ export function StickerPackVisualization({
                 alt={item.bundle_item.prompt.name}
                 className="h-full w-full rounded-lg object-contain p-1"
                 loading="lazy"
+                poster={item.bundle_item.thumbnailUrl || '/logo.png'}
               />
             ) : item.status === 'processing' || item.status === 'pending' ? (
               // Processing or pending - show loading dots

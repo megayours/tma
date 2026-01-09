@@ -32,7 +32,14 @@ export const DisplayContent = ({
               : null;
 
         if (mediaSrc) {
-          return <MediaDisplay src={mediaSrc} alt={content.id} className={baseClasses} />;
+          return (
+            <MediaDisplay
+              src={mediaSrc}
+              alt={content.id}
+              className={baseClasses}
+              poster={content.thumbnailUrl || '/logo.png'}
+            />
+          );
         }
 
         return (

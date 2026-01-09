@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { List, Section, Cell } from '@telegram-apps/telegram-ui';
 import {
   TelegramThemeStatus,
@@ -15,6 +15,7 @@ export const Route = createFileRoute('/about')({
 
 function Demo() {
   const buildInfo = getBuildInfo();
+  const navigate = useNavigate();
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
@@ -125,13 +126,22 @@ function Demo() {
         </Cell>
       </Section>
 
-      <Section header="Sentry Test">
+      <Section header="Developer Tools">
         <Cell
           subtitle="Click to test Sentry error tracking"
           onClick={testSentry}
           className="cursor-pointer"
         >
           <span className="font-semibold text-red-600">Throw Test Error</span>
+        </Cell>
+        <Cell
+          subtitle="View safe area insets and margins"
+          onClick={() => navigate({ to: '/constraints' })}
+          className="cursor-pointer"
+        >
+          <span className="font-semibold text-blue-600 dark:text-blue-400">
+            View Constraints
+          </span>
         </Cell>
       </Section>
 

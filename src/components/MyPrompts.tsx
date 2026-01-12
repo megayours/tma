@@ -108,13 +108,6 @@ export default function MyPrompts() {
     selectedCommunity
   );
 
-  // Fetch all previews in one batch call instead of N+1 calls
-  const { data: previewsData, isLoading: previewsLoading } = useGetAllPreviews(
-    session,
-    selectedCommunity?.id!,
-    { page: 1, size: 50 } // Fetch enough previews to cover all prompts
-  );
-
   useEffect(() => {
     if (data?.pagination?.totalPages) {
       setTotalPages(data.pagination.totalPages);
@@ -144,7 +137,13 @@ export default function MyPrompts() {
         {!isLoading &&
           data?.data.map(prompt => {
             const promptPreviews =
-              previewsData?.byPromptId.get(prompt.id) ?? [];
+              prompt.images?.[0] ||
+              prompt.videos?.[0] ||
+              prompt.gifs?.[0] ||
+              prompt.stickers?.[0] ||
+              prompt.animatedStickers?.[0];
+
+            console.log('Prompt Previews:', prompt);
             return (
               <div key={prompt.id}>
                 <div className="border-tg-section-separator flex flex-col rounded-lg border p-2">
@@ -153,10 +152,11 @@ export default function MyPrompts() {
                       to="/profile/admin/prompt/edit/$promptId"
                       params={{ promptId: prompt.id?.toString() }}
                     >
-                      <RenderPreview
-                        previews={promptPreviews as Content[]}
-                        isLoading={previewsLoading}
-                        prompt={prompt}
+                      <MediaDisplay
+                        src={promptPreviews as string}
+                        alt={prompt.name}
+                        className="block h-full w-full object-contain"
+                        poster={prompt.thumbnails?.[0] || '/logo.png'}
                       />
                     </Link>
                   </div>

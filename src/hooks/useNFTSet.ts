@@ -8,7 +8,8 @@ import { usePromptMutation } from './usePrompts';
 
 /**
  * Function to create compulsory NFT tokens (exactly minTokens)
- * If no favorites exist, falls back to random token from default collection or any available collection
+ * Cycles through favorites and default collection NFTs in sequence
+ * Pattern: [fav0, fav1, ..., default0, default1, default2, fav0, fav1, ...]
  */
 export const createCompulsoryNFTs = (
   favorites: any[] | null,
@@ -18,8 +19,38 @@ export const createCompulsoryNFTs = (
 ): Token[] => {
   if (!minTokens) return [];
 
-  // If no favorites, use random tokenId from default collection or random collection
-  if (!favorites || favorites.length === 0) {
+  // Build combined pool of tokens to cycle through
+  const tokenPool: Token[] = [];
+
+  // Add favorite tokens to the pool
+  if (favorites && favorites.length > 0) {
+    const favoriteTokens = favorites.map(fav => fav.token);
+    tokenPool.push(...favoriteTokens);
+  }
+
+  // Add default collection tokens to the pool
+  if (defaultCollection) {
+    // Create tokens for all items in the default collection (0 to size-1)
+    for (let i = 0; i < defaultCollection.size; i++) {
+      const defaultToken: Token = {
+        id: i.toString(),
+        name: undefined,
+        image: undefined,
+        description: undefined,
+        attributes: undefined,
+        owner: undefined,
+        contract: {
+          chain: defaultCollection.chain,
+          address: defaultCollection.address,
+          name: defaultCollection.name,
+        },
+      };
+      tokenPool.push(defaultToken);
+    }
+  }
+
+  // If no tokens in pool, fall back to random collection
+  if (tokenPool.length === 0) {
     let selectedCollection = defaultCollection;
 
     // If no default collection, pick a random one from all available collections
@@ -50,13 +81,11 @@ export const createCompulsoryNFTs = (
     return Array(minTokens).fill(fallbackToken);
   }
 
-  const favoriteTokens = favorites.map(fav => fav.token);
+  // Create compulsory tokens by cycling through the token pool
   const compulsoryTokens: Token[] = [];
-
-  // Create compulsory tokens with minTokens elements, cycling through favorites if needed
   for (let i = 0; i < minTokens; i++) {
-    const tokenIndex = i % favoriteTokens.length;
-    compulsoryTokens.push(favoriteTokens[tokenIndex]);
+    const tokenIndex = i % tokenPool.length;
+    compulsoryTokens.push(tokenPool[tokenIndex]);
   }
 
   return compulsoryTokens;

@@ -221,7 +221,10 @@ export function useGetCommunities() {
  * Hook to get the default avatar NFT for a given community
  * Returns the NFT token (id: '0') from the community's default collection
  */
-export function useGetDefaultAvatar(communityId: string | undefined) {
+export function useGetDefaultAvatar(
+  communityId: string | undefined,
+  index: number = 0
+) {
   const { data: community } = useGetCommunityCollections(communityId);
 
   const selectedCollection = community?.collections.find(
@@ -238,7 +241,7 @@ export function useGetDefaultAvatar(communityId: string | undefined) {
   } = useGetNFTByCollectionAndTokenId(
     selectedCollection?.chain || '',
     selectedCollection?.address || '',
-    '0'
+    index.toString()
   );
 
   return {

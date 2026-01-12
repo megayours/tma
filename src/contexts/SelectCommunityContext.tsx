@@ -55,10 +55,8 @@ export function SelectCommunityProvider({ children }: { children: ReactNode }) {
   const { data: availableCommunities, isLoading, error } = useGetCommunities();
 
   // Refetch community loaded from localStorage to get latest data
-  const {
-    data: refetchedCommunity,
-    isLoading: isRefetching,
-  } = useGetCommunityCollections(communityIdToRefetch);
+  const { data: refetchedCommunity, isLoading: isRefetching } =
+    useGetCommunityCollections(communityIdToRefetch);
 
   const defaultCollection = selectedCommunity?.collections.filter(
     t => t.id == selectedCommunity.default_collection_id?.toString()

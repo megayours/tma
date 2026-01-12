@@ -8,10 +8,11 @@ import { AdditionalContentDisplay } from './AdditionalContentDisplay';
 import { usePromptPreviewGeneration } from '@/hooks/usePromptPreviewGeneration';
 import { useSession } from '@/auth/SessionProvider';
 import { ContentPreviews } from './ContentPreview';
-import { NFTSetsProvider } from '@/contexts/NFTSetsContext';
 import { useToast } from '@/components/ui/toast';
 import { useGetPrompt, usePromptMutation } from '@/hooks/usePrompts';
 import { viewport, useSignal } from '@telegram-apps/sdk-react';
+import { useNFTSet } from '@/hooks/useNFTSet';
+import { useSelectCommunity } from '@/contexts/SelectCommunityContext';
 
 const PromptEditorContent = ({
   promptId,
@@ -31,6 +32,17 @@ const PromptEditorContent = ({
 
   // Prompt mutation for saving changes
   const promptMutation = usePromptMutation(session);
+
+  // Get community data for NFT initialization
+  const { defaultCollection, selectedCommunity } = useSelectCommunity();
+  const allCollections = selectedCommunity?.collections;
+
+  // Use the simplified single NFT set hook
+  const { compulsoryNFTs, optionalNFTs } = useNFTSet(
+    prompt || null,
+    defaultCollection,
+    allCollections
+  );
 
   const [promptText, setPromptText] = useState('');
   const [currentAdditionalContentIds, setCurrentAdditionalContentIds] =
@@ -100,6 +112,8 @@ const PromptEditorContent = ({
       await generatePromptPreview(
         promptText,
         prompt,
+        compulsoryNFTs,
+        optionalNFTs,
         hasChanges,
         setSelectedVersion,
         currentAdditionalContentIds
@@ -149,31 +163,37 @@ const PromptEditorContent = ({
       {/* Bottom toolbar */}
       <div className="safe-area-inset-bottom fixed right-0 bottom-0 left-0 z-30 border-t border-white/20">
         <div className="flex h-full flex-col pb-4">
-          <div className="bg-tg-bg justify-startgap-2 flex flex-row items-center">
+          <div className="bg-tg-bg flex flex-row items-center justify-start gap-2">
             {selectedVersion && (
-              <AdditionalContentDisplay
-                contentIds={currentAdditionalContentIds || []}
-                isMutating={promptMutation.isPending}
-                removeContent={async contentId => {
-                  setCurrentAdditionalContentIds(
-                    currentAdditionalContentIds.filter(id => id !== contentId)
-                  );
+              <div className="flex">
+                <AdditionalContentDisplay
+                  contentIds={currentAdditionalContentIds || []}
+                  isMutating={promptMutation.isPending}
+                  removeContent={async contentId => {
+                    setCurrentAdditionalContentIds(
+                      currentAdditionalContentIds.filter(id => id !== contentId)
+                    );
 
-                  // update prompt with the new additional content ids
-                  await promptMutation.mutateAsync({
-                    prompt: {
-                      ...prompt,
-                      additionalContentIds: currentAdditionalContentIds.filter(
-                        id => id !== contentId
-                      ),
-                    },
-                  });
+                    // update prompt with the new additional content ids
+                    await promptMutation.mutateAsync({
+                      prompt: {
+                        ...prompt,
+                        additionalContentIds:
+                          currentAdditionalContentIds.filter(
+                            id => id !== contentId
+                          ),
+                      },
+                    });
 
-                  setHasChanges(true);
-                }}
-              />
+                    setHasChanges(true);
+                  }}
+                />
+              </div>
             )}
-            <div className="border-tg-section-separator h-12 border-1"></div>
+            {currentAdditionalContentIds &&
+              currentAdditionalContentIds.length > 0 && (
+                <div className="border-tg-section-separator h-12 border-1"></div>
+              )}
             <div className="h-15">
               <InputsEditor prompt={prompt} />
             </div>
@@ -239,16 +259,11 @@ export const PromptEditor = ({
   selectedNFTs: Token[];
   setSelectedNFTs: (nfts: Token[]) => void;
 }) => {
-  const { session } = useSession();
-  const { data: prompt } = useGetPrompt(promptId, session);
-
   return (
-    <NFTSetsProvider prompt={prompt || null}>
-      <PromptEditorContent
-        promptId={promptId}
-        selectedNFTs={selectedNFTs}
-        setSelectedNFTs={setSelectedNFTs}
-      />
-    </NFTSetsProvider>
+    <PromptEditorContent
+      promptId={promptId}
+      selectedNFTs={selectedNFTs}
+      setSelectedNFTs={setSelectedNFTs}
+    />
   );
 };

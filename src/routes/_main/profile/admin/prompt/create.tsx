@@ -143,9 +143,6 @@ function CreatePromptComponent() {
                 <div className="border-tg-section-separator flex flex-row items-center gap-2 overflow-hidden rounded-2xl border p-4">
                   <span className="text-5xl">✨</span>
                   <span className="text-lg">Animated Sticker</span>
-                  {!isMegaAdmin && (
-                    <span className="text-tg-hint">(Coming Soon)</span>
-                  )}
                 </div>
               </div>
             </div>

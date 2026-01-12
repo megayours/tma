@@ -17,6 +17,8 @@ interface MediaDisplayProps {
 
 // Utility function to detect webm files, handling URLs with query parameters
 const isWebm = (url: string): boolean => {
+  if (!url) return false;
+
   try {
     // Try parsing as URL to extract pathname
     const urlObj = new URL(url);

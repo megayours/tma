@@ -5,7 +5,6 @@ import type { Pagination as PaginationType } from '@/types/pagination';
 import { useSession } from '@/auth/SessionProvider';
 import type { Prompt } from '@/types/prompt';
 import { Link, useNavigate } from '@tanstack/react-router';
-import { useGetAllPreviews } from '../hooks/useContents';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import { useSelectCommunity } from '@/contexts/SelectCommunityContext';
 import type { Content } from '@/types/content';

@@ -64,7 +64,7 @@ export const InputsEditor = ({ prompt }: { prompt: Prompt }) => {
 
   return (
     <div
-      className="scrollbar-hide flex h-full min-w-0 flex-row flex-nowrap items-center gap-2 overflow-x-auto px-4"
+      className="flex h-full w-full min-w-0 flex-row flex-nowrap items-center gap-2 px-4"
       onClick={() =>
         !isModifyingInputsEditor &&
         setIsModifyingInputsEditor(!isModifyingInputsEditor)

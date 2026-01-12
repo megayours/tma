@@ -25,6 +25,7 @@ const PromptEditorContent = ({
   const { addToast } = useToast();
   const [hasChanges, setHasChanges] = useState(false);
   const [isTextareaFocused, setIsTextareaFocused] = useState(false);
+  const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
   const promptTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Use React Query to get the prompt data
@@ -156,16 +157,19 @@ const PromptEditorContent = ({
       </div>
 
       {/* Portal container for AddContentButton and NFTCloud */}
-      <div className="bg-tg-bg pointer-events-none fixed right-0 bottom-20 left-0 z-29 overflow-y-hidden pb-16">
+      <div className="bg-tg-secondary-bg pointer-events-none fixed right-0 bottom-20 left-0 z-99 overflow-y-hidden">
         <div id="custom-input-container"></div>
       </div>
 
       {/* Bottom toolbar */}
       <div className="safe-area-inset-bottom fixed right-0 bottom-0 left-0 z-30 border-t border-white/20">
         <div className="flex h-full flex-col pb-4">
-          <div className="bg-tg-bg flex flex-row items-center justify-start gap-2">
+          <div
+            className="scrollbar-hide flex min-w-0 flex-row items-center justify-start overflow-x-scroll"
+            style={{ WebkitOverflowScrolling: 'touch' }}
+          >
             {selectedVersion && (
-              <div className="flex">
+              <div className="flex flex-shrink-20">
                 <AdditionalContentDisplay
                   contentIds={currentAdditionalContentIds || []}
                   isMutating={promptMutation.isPending}
@@ -192,19 +196,16 @@ const PromptEditorContent = ({
             )}
             {currentAdditionalContentIds &&
               currentAdditionalContentIds.length > 0 && (
-                <div className="border-tg-section-separator h-12 border-1"></div>
+                <div className="border-tg-section-separator h-12 flex-shrink-0 border-1"></div>
               )}
-            <div className="h-15">
+            <div className="h-15 flex-shrink-0">
               <InputsEditor prompt={prompt} />
             </div>
           </div>
           <Divider />
           <div className="flex flex-row items-center gap-2 px-2 py-2">
             <div className="bg-tg-button text-tg-button-text flex items-center justify-center overflow-hidden rounded-4xl shadow-lg">
-              <AddInputButton
-                prompt={prompt}
-                promptTextareaRef={promptTextareaRef}
-              />
+              <AddInputButton prompt={prompt} onOpenChange={setIsAddMenuOpen} />
             </div>
             <div className="flex flex-1 flex-col">
               <textarea
@@ -226,13 +227,17 @@ const PromptEditorContent = ({
                 if (
                   !isGenerating &&
                   !promptMutation.isPending &&
+                  !isAddMenuOpen &&
                   promptText.trim()
                 ) {
                   handleGenerate();
                 }
               }}
               className={`bg-tg-button text-tg-button-text flex cursor-pointer items-center justify-center rounded-4xl p-4 shadow-lg transition-all ${
-                isGenerating || promptMutation.isPending || !promptText.trim()
+                isGenerating ||
+                promptMutation.isPending ||
+                isAddMenuOpen ||
+                !promptText.trim()
                   ? 'cursor-not-allowed opacity-50'
                   : 'hover:brightness-110 active:scale-95'
               }`}

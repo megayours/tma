@@ -28,6 +28,7 @@ export const InputsEditor = ({ prompt }: { prompt: Prompt }) => {
     updateOptionalNFT,
     addOptionalNFT,
     removeOptionalNFT,
+    addCompulsoryNFT,
     removeCompulsoryNFT,
     maxOptionalTokens,
   } = useNFTSet(prompt, defaultCollection, allCollections);
@@ -117,7 +118,13 @@ export const InputsEditor = ({ prompt }: { prompt: Prompt }) => {
             e.stopPropagation(); // Prevent event bubbling to parent div
           }}
         ></div>
-        <div className="flex justify-center">
+        <div
+          className="flex cursor-pointer justify-center"
+          onClick={e => {
+            e.stopPropagation(); // Prevent event bubbling to parent div
+            addCompulsoryNFT();
+          }}
+        >
           <IoIosAddCircleOutline size={20} />
         </div>
       </div>

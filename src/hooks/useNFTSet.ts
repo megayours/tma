@@ -147,6 +147,37 @@ export const useNFTSet = (
     });
   };
 
+  // Function to add a compulsory NFT
+  // This also updates the prompt's minTokens and maxTokens by incrementing both by 1
+  const addCompulsoryNFT = async () => {
+    if (!prompt) return;
+
+    // Create a new compulsory NFT token
+    const newCompulsoryNFTs = createCompulsoryNFTs(
+      favorites || null,
+      1,
+      defaultCollection,
+      allCollections
+    );
+
+    if (newCompulsoryNFTs.length === 0) return;
+
+    // Add the NFT to the local state
+    setCompulsoryNFTs(prev => [...prev, newCompulsoryNFTs[0]]);
+
+    // Update the prompt with incremented minTokens and maxTokens
+    const newMinTokens = (prompt.minTokens || 0) + 1;
+    const newMaxTokens = (prompt.maxTokens || 0) + 1;
+
+    await promptMutation.mutateAsync({
+      prompt: {
+        ...prompt,
+        minTokens: newMinTokens,
+        maxTokens: newMaxTokens,
+      },
+    });
+  };
+
   const maxOptionalTokens = (prompt?.maxTokens || prompt?.minTokens || 0) - (prompt?.minTokens || 0);
 
   return {
@@ -156,6 +187,7 @@ export const useNFTSet = (
     updateOptionalNFT,
     addOptionalNFT,
     removeOptionalNFT,
+    addCompulsoryNFT,
     removeCompulsoryNFT,
     maxOptionalTokens,
   };

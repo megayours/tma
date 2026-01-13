@@ -135,9 +135,7 @@ function CreatePromptComponent() {
                 </div>
               </div>
               <div
-                onClick={() =>
-                  isMegaAdmin && handleTypeSelect('animated_stickers')
-                }
+                onClick={() => handleTypeSelect('animated_stickers')}
                 className="cursor-pointer"
               >
                 <div className="border-tg-section-separator flex flex-row items-center gap-2 overflow-hidden rounded-2xl border p-4">

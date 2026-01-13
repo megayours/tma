@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Button } from '@telegram-apps/telegram-ui';
-import { PickFavoriteNFTs } from './PickFavoriteNFTs';
-import { SelectCollection } from './SelectCollection';
-import { SelectTokenId } from './SelectTokenId';
-import { SelectMascot } from './SelectMascot';
-import { DisplayNFT } from './DisplayNFT';
+import { PickFavoriteNFTs } from '../selection/PickFavoriteNFTs';
+import { SelectCollection } from '../selection/SelectCollection';
+import { SelectTokenId } from '../selection/SelectTokenId';
+import { SelectMascot } from '../selection/SelectMascot';
+import { DisplayNFT } from '../display/DisplayNFT';
 import type { SupportedCollection } from '@/hooks/useCollections';
 import type { Token } from '@/types/response';
 

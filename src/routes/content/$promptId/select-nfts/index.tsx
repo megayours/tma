@@ -1,62 +1,24 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useEffect, useState, useCallback } from 'react';
-import { TelegramDualButtons } from '@/components/TelegramDualButtons';
+import { useEffect, useMemo } from 'react';
 import { useGetSupportedCollections } from '@/hooks/useCollections';
-import type { Token } from '@/types/response';
 import { useGetPrompt } from '@/hooks/usePrompts';
 import { useSession } from '@/auth/SessionProvider';
 import { SpinnerFullPage } from '@/components/ui';
 import { useGenerateContentMutation } from '@/hooks/useContents';
-import { SelectNFTs } from '@/components/NFT';
-import { useGetFavorites } from '@/hooks/useFavorites';
-import { encodeNFTsToParams } from '@/utils/nftUrlParams';
-import { useNFTsFromUrlParams } from '@/hooks/useNFTsFromUrlParams';
 import { ProtectedRoute } from '@/auth/ProtectedRoute';
-import { z } from 'zod';
-import { shareTelegramMessage, canShareMessage } from '@/utils/telegramShare';
 import { buildShareUrl } from '@/utils/shareUrl';
 import { useSelectCommunity } from '@/contexts/SelectCommunityContext';
-
-// Define NFT params schema inline for better type inference (0-based indexing)
-const nftParamsSchema = z.object({
-  nft_0_chain: z.string().optional(),
-  nft_0_address: z.string().optional(),
-  nft_0_id: z.string().optional(),
-  nft_1_chain: z.string().optional(),
-  nft_1_address: z.string().optional(),
-  nft_1_id: z.string().optional(),
-  nft_2_chain: z.string().optional(),
-  nft_2_address: z.string().optional(),
-  nft_2_id: z.string().optional(),
-  nft_3_chain: z.string().optional(),
-  nft_3_address: z.string().optional(),
-  nft_3_id: z.string().optional(),
-  nft_4_chain: z.string().optional(),
-  nft_4_address: z.string().optional(),
-  nft_4_id: z.string().optional(),
-  nft_5_chain: z.string().optional(),
-  nft_5_address: z.string().optional(),
-  nft_5_id: z.string().optional(),
-  nft_6_chain: z.string().optional(),
-  nft_6_address: z.string().optional(),
-  nft_6_id: z.string().optional(),
-  nft_7_chain: z.string().optional(),
-  nft_7_address: z.string().optional(),
-  nft_7_id: z.string().optional(),
-  nft_8_chain: z.string().optional(),
-  nft_8_address: z.string().optional(),
-  nft_8_id: z.string().optional(),
-  nft_9_chain: z.string().optional(),
-  nft_9_address: z.string().optional(),
-  nft_9_id: z.string().optional(),
-});
+import { nftParamsSchema } from '@/utils/nftUrlSchema';
+import { NFTSelectionPageUI } from '@/components/NFT/flows';
+import { useNFTSelectionPage } from '@/hooks/useNFTSelectionPage';
+import { TelegramDualButtons } from '@/components/TelegramDualButtons';
+import { shareTelegramMessage, canShareMessage } from '@/utils/telegramShare';
 
 export const Route = createFileRoute('/content/$promptId/select-nfts/')({
   validateSearch: nftParamsSchema,
   component: SelectNFTsPage,
 });
 
-// Helper function to convert prompt type to content type
 const getContentType = (
   promptType: string
 ): 'image' | 'gif' | 'sticker' | 'animated_sticker' => {
@@ -79,80 +41,24 @@ function SelectNFTsPage() {
   const navigate = useNavigate();
   const { session } = useSession();
   const search = Route.useSearch();
-  const { favorites, isLoadingFavorites } = useGetFavorites(session);
-  const favoriteToken = favorites?.[0]?.token;
   const { selectedCommunity } = useSelectCommunity();
 
-  // State management
-  const [selectedTokens, setSelectedTokens] = useState<Token[]>([]);
-  const [isManuallyModified, setIsManuallyModified] = useState(false);
-  const [hasInitialized, setHasInitialized] = useState(false);
-
-  console.log('Selected Community:', selectedCommunity);
-  console.log('selectedTokens:', selectedTokens);
-
-  // Fetch prompt data
   const { data: prompt, isLoading: isLoadingPrompt } = useGetPrompt(
     promptId,
     session
   );
-
   const { data: collections } = useGetSupportedCollections();
-
-  // Fetch NFTs from URL params
-  const {
-    tokens: urlTokens,
-    isLoading: isLoadingUrlTokens,
-    hasUrlParams,
-  } = useNFTsFromUrlParams({
-    urlParams: search,
-    enabled: !isManuallyModified && !hasInitialized,
-  });
-
-  console.log('URL Tokens:', urlTokens);
-  console.log('hasUrlParams:', hasUrlParams, search);
-
-  // Generation mutation
   const generateMutation = useGenerateContentMutation(session);
 
-  // Initialize tokens from URL params
-  useEffect(() => {
-    if (hasInitialized) return;
+  // Use the NFT selection hook
+  const selectionState = useNFTSelectionPage({
+    minTokens: prompt?.minTokens || 1,
+    maxTokens: prompt?.maxTokens || 1,
+    collections,
+    urlParams: search,
+  });
 
-    // Priority 1: URL params - wait for all queries to finish loading
-    if (hasUrlParams && !isLoadingUrlTokens && urlTokens.length > 0) {
-      const validTokens = urlTokens.slice(0, prompt?.maxTokens || 10);
-      setSelectedTokens(validTokens);
-      setHasInitialized(true);
-      return;
-    }
-
-    // Priority 2: Auto-select favorite when single token is required
-    if (!hasUrlParams && prompt?.maxTokens === 1 && favoriteToken) {
-      setSelectedTokens([favoriteToken]);
-      setHasInitialized(true);
-      return;
-    }
-
-    // Priority 3: SelectNFTs will handle preselection
-    if (
-      !isLoadingUrlTokens &&
-      !hasUrlParams &&
-      (prompt?.maxTokens !== 1 || !isLoadingFavorites)
-    ) {
-      setHasInitialized(true);
-    }
-  }, [
-    hasUrlParams,
-    urlTokens,
-    isLoadingUrlTokens,
-    hasInitialized,
-    prompt?.maxTokens,
-    favoriteToken,
-    isLoadingFavorites,
-  ]);
-
-  // Auto-navigate to processing when generation succeeds
+  // Navigate on successful generation
   useEffect(() => {
     if (generateMutation.isSuccess && generateMutation.data) {
       navigate({
@@ -165,7 +71,7 @@ function SelectNFTsPage() {
     }
   }, [generateMutation.isSuccess, generateMutation.data, promptId, navigate]);
 
-  // Handle generation errors
+  // Show error on generation failure
   useEffect(() => {
     if (generateMutation.isError && generateMutation.error) {
       console.error('Generation failed:', generateMutation.error);
@@ -173,53 +79,16 @@ function SelectNFTsPage() {
     }
   }, [generateMutation.isError, generateMutation.error]);
 
-  // Auto-update URL when tokens change
-  const handleTokensChange = useCallback(
-    (tokens: Token[]) => {
-      setSelectedTokens(tokens);
-      setIsManuallyModified(true);
-
-      const currentSearch = search;
-
-      if (tokens.length === 0) {
-        // Clear all nft params (0-based indexing)
-        const clearedParams = Array.from({ length: 10 }, (_, i) => i).reduce(
-          (acc, i) => ({
-            ...acc,
-            [`nft_${i}_chain`]: undefined,
-            [`nft_${i}_address`]: undefined,
-            [`nft_${i}_id`]: undefined,
-          }),
-          {} as Partial<z.infer<typeof nftParamsSchema>>
-        );
-        navigate({
-          to: '.',
-          search: { ...currentSearch, ...clearedParams },
-          replace: true,
-        });
-      } else {
-        const nftParams = encodeNFTsToParams(tokens);
-        navigate({
-          to: '.',
-          search: { ...currentSearch, ...nftParams },
-          replace: true,
-        });
-      }
-    },
-    [navigate, search]
-  );
-
-  const handleTokensSelected = (tokens: Token[]) => {
-    if (!prompt || tokens.length === 0) {
+  const handleGenerate = () => {
+    if (!prompt || !selectionState.canGenerate) {
       alert('Please select an NFT to continue');
       return;
     }
 
-    // Generate content using the selected NFT(s)
     generateMutation.mutate({
       promptId: promptId,
       type: getContentType(prompt.type || 'images'),
-      inputs: tokens.map(token => ({
+      inputs: selectionState.selectedTokens.map(token => ({
         prompt_id: promptId,
         chain: token.contract.chain,
         contract_address: token.contract.address,
@@ -228,23 +97,18 @@ function SelectNFTsPage() {
     });
   };
 
-  const handleShareWithFriend = () => {
+  // Build share URL
+  const shareUrl = useMemo(() => {
     const botUrl = import.meta.env.VITE_PUBLIC_BOT_URL || '';
-
-    // Get the current path including search params
     const currentPath = window.location.pathname + window.location.search;
+    return buildShareUrl(botUrl, currentPath, selectedCommunity?.id);
+  }, [selectedCommunity?.id]);
 
-    // Build the share URL with encoded path and community ID
-    const shareUrl = buildShareUrl(botUrl, currentPath, selectedCommunity?.id);
-
-    try {
-      shareTelegramMessage(shareUrl, 'Create content with me!');
-    } catch (error) {
-      console.error('Failed to share:', error);
-    }
+  const handleShareWithFriend = () => {
+    shareTelegramMessage(shareUrl, 'Create content with me!');
   };
 
-  if (isLoadingPrompt || (hasUrlParams && isLoadingUrlTokens)) {
+  if (isLoadingPrompt || selectionState.isLoading) {
     return <SpinnerFullPage text="Loading..." />;
   }
 
@@ -261,41 +125,79 @@ function SelectNFTsPage() {
     );
   }
 
+  // Compute button configs outside of JSX
+  const showGenerateButton =
+    selectionState.showSummary && !selectionState.hasEmptySlots;
+
+  const mainButtonText = showGenerateButton
+    ? generateMutation.isPending
+      ? 'Generating...'
+      : 'Generate'
+    : 'Next';
+
+  const mainButtonOnClick = showGenerateButton
+    ? handleGenerate
+    : selectionState.handleNext;
+
+  const mainButtonDisabled = showGenerateButton
+    ? !selectionState.canGenerate
+    : !selectionState.canGoNext;
+
+  const mainButtonConfig = {
+    text: mainButtonText,
+    onClick: mainButtonOnClick,
+    disabled: mainButtonDisabled,
+    loading: generateMutation.isPending,
+    visible: true,
+  };
+
+  // Determine secondary button config
+  let secondaryButtonConfig = undefined;
+
+  console.log('MIN TOKENS:', prompt.minTokens, 'MAX TOKENS:', prompt.maxTokens);
+  console.log(
+    'CAN GO NEXT:',
+    selectionState.canGoNext,
+    'Has Empty Slots:',
+    selectionState.hasEmptySlots,
+    'selectionState.selectedTokens.length:',
+    selectionState.selectedTokens.length,
+    'CREATE WITH A FRIENT SHOWN',
+    selectionState.selectedTokens.length > 0 && selectionState.canGoNext
+  );
+
+  // Show "Create with a friend" when:
+  // - On summary screen (showSummary)
+  // - At least 1 token selected
+  // - Not all tokens selected (hasEmptySlots)
+  // - Share functionality is available
+  const shouldShowShareButton =
+    selectionState.selectedTokens.length > 0 &&
+    selectionState.hasEmptySlots &&
+    canShareMessage();
+
+  console.log('SHOULD SHOW SHARE BUTTON:', shouldShowShareButton);
+
+  if (shouldShowShareButton) {
+    secondaryButtonConfig = {
+      text: 'Create with a friend',
+      onClick: handleShareWithFriend,
+      visible: true,
+    };
+  }
+
   return (
     <ProtectedRoute>
-      <div className="flex h-screen flex-col overflow-hidden">
-        {/* Content */}
-        <div className="scrollbar-hide flex-1 overflow-y-auto">
-          <div className="mx-auto max-w-2xl p-6">
-            <SelectNFTs
-              minTokens={prompt.minTokens || 1}
-              maxTokens={prompt.maxTokens || 1}
-              collections={collections}
-              onTokensSelected={() => {}}
-              onTokensChange={handleTokensChange}
-              initialTokens={selectedTokens}
-              heading="Select Your Character"
-              contentType={getContentType(prompt.type || 'images')}
-            />
-          </div>
-        </div>
+      <div className="flex h-screen flex-col">
+        <NFTSelectionPageUI
+          maxTokens={prompt.maxTokens || 1}
+          collections={collections}
+          selectionState={selectionState}
+        />
 
-        {/* Bottom Button */}
         <TelegramDualButtons
-          mainButton={{
-            text: generateMutation.isPending ? 'Generating...' : 'Generate',
-            onClick: () => handleTokensSelected(selectedTokens),
-            disabled: selectedTokens.length === 0,
-            loading: generateMutation.isPending,
-            visible: true,
-          }}
-          secondaryButton={{
-            text: 'Create with a friend',
-            disabled: false,
-            visible: selectedTokens.length > 1 && canShareMessage(), // Only show when multiple NFTs can be selected
-            onClick: handleShareWithFriend,
-            hasShineEffect: false,
-          }}
+          mainButton={mainButtonConfig}
+          secondaryButton={secondaryButtonConfig}
         />
       </div>
     </ProtectedRoute>

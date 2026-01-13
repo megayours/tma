@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@telegram-apps/telegram-ui';
 import { TokenSlot } from './TokenSlot';
-import { NFTSelectionFlow } from '../NFT/NFTSelectionFlow';
+import { NFTSelectionFlow } from '../NFT/flows';
 import { useGetCollectionsWithPrompt } from '@/hooks/useCollections';
 import type { Token } from '@/types/response';
 import type { Prompt } from '@/types/prompt';

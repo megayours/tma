@@ -1,5 +1,5 @@
 import { Button } from '@telegram-apps/telegram-ui';
-import { NFTSelectionFlow } from '@/components/NFT/NFTSelectionFlow';
+import { NFTSelectionFlow } from './NFTSelectionFlow';
 import {
   useGetFavorites,
   filterFavoritesByCollections,
@@ -22,11 +22,15 @@ export function NFTSelector({
   onCancel,
 }: NFTSelectorProps) {
   const { session } = useSession();
-  const { favorites } = useGetFavorites(session);
+  const { favorites, isLoadingFavorites } = useGetFavorites(session);
   const filteredFavorites = filterFavoritesByCollections(
     favorites,
     collections
   );
+
+  if (isLoadingFavorites) {
+    return null;
+  }
 
   return (
     <div className="border-tg-section-separator border-t pt-4">

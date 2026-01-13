@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { Token } from '@/types/response';
 import type { SupportedCollection } from '@/hooks/useCollections';
-import { SelectedNFTDisplay } from '../SelectedNFTDisplay';
+import { SelectedNFTDisplay } from '../../display/SelectedNFTDisplay';
 import { NFTSelector } from '../NFTSelector';
 
 interface SelectNFTsStepProps {

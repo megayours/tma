@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { MdAddCircleOutline } from 'react-icons/md';
-import { NFTSelectionFlow } from '../NFT/NFTSelectionFlow';
+import { NFTSelectionFlow } from '../NFT/flows';
 import { useGetCollectionsWithPrompt } from '@/hooks/useCollections';
 import type { Token } from '@/types/response';
 import type { Prompt } from '../../types/prompt';

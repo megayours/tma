@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useSession } from '@/auth/SessionProvider';
 import { useGetFavorites, useRemoveFromFavorites } from '@/hooks/useFavorites';
 import type { Token } from '@/types/response';
-import type { SupportedCollection } from '../../hooks/useCollections';
+import type { SupportedCollection } from '@/hooks/useCollections';
 import { Blockquote } from '@telegram-apps/telegram-ui';
 
 interface PickFavoriteNFTsProps {

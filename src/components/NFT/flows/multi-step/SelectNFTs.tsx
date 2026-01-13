@@ -4,10 +4,10 @@ import type { SupportedCollection } from '@/hooks/useCollections';
 import { SelectNFTsStep } from './SelectNFTsStep';
 import { StepIndicator } from './StepIndicator';
 import { StepNavigation } from './StepNavigation';
-import { SelectedNFTDisplay } from '../SelectedNFTDisplay';
+import { SelectedNFTDisplay } from '../../display/SelectedNFTDisplay';
 import { NFTSelector } from '../NFTSelector';
 import { useNFTPreselection } from './useNFTPreselection';
-import { NFTsSummary } from '../NFTsSummary';
+import { NFTsSummary } from '../../display/NFTsSummary';
 
 export interface SelectNFTsProps {
   minTokens: number;
@@ -16,9 +16,7 @@ export interface SelectNFTsProps {
   onTokensSelected: (tokens: Token[]) => void;
   onTokensChange?: (tokens: Token[]) => void;
   initialTokens?: Token[];
-  heading?: string;
   showStepIndicator?: boolean;
-  contentType?: 'image' | 'gif' | 'sticker' | 'animated_sticker';
 }
 
 /**
@@ -33,7 +31,6 @@ export function SelectNFTs({
   onTokensSelected,
   onTokensChange,
   initialTokens = [],
-  heading,
   showStepIndicator,
 }: SelectNFTsProps) {
   const isSingleToken = minTokens === 1 && maxTokens === 1;
@@ -43,7 +40,7 @@ export function SelectNFTs({
   const [selectedTokens, setSelectedTokens] = useState<Token[]>(initialTokens);
   const [currentStep, setCurrentStep] = useState(0);
   const [isSelectorOpen, setIsSelectorOpen] = useState(false);
-  const [isConfirmed, setIsConfirmed] = useState(false);
+  const [isSummary, setIsSummary] = useState(true);
   const [confirmedTokens, setConfirmedTokens] = useState<Token[]>([]);
 
   // Sync with initialTokens when they change (e.g., from URL params)
@@ -54,7 +51,7 @@ export function SelectNFTs({
 
       // If all tokens are preselected, show summary
       if (initialTokens.length === maxTokens) {
-        setIsConfirmed(true);
+        setIsSummary(true);
         setConfirmedTokens(initialTokens);
       } else {
         // If tokens are loaded from URL, move to the next unfilled step
@@ -128,7 +125,7 @@ export function SelectNFTs({
     } else {
       // Final step - show summary, DON'T call onTokensSelected
       // Let parent route handle button click
-      setIsConfirmed(true);
+      setIsSummary(true);
       setConfirmedTokens(tokensToConfirm);
     }
   };
@@ -148,7 +145,7 @@ export function SelectNFTs({
     // If clicking on the current step, show summary
     if (step === currentStep) {
       const tokensToConfirm = selectedTokens.slice(0, currentStep + 1);
-      setIsConfirmed(true);
+      setIsSummary(true);
       setConfirmedTokens(tokensToConfirm);
       onTokensChange?.(tokensToConfirm);
     } else if (step >= 0 && step < maxTokens) {
@@ -174,7 +171,7 @@ export function SelectNFTs({
     return (
       <div>
         <h1 className="text-tg-text mb-2 text-center text-2xl font-bold">
-          {heading || 'Select Your Character'}
+          {'Character Selection'}
         </h1>
 
         <SelectedNFTDisplay
@@ -203,24 +200,21 @@ export function SelectNFTs({
   // Multi-token stepper mode
   return (
     <div>
-      {isConfirmed ? (
+      <h1 className="text-tg-text mb-4 text-center text-2xl font-bold">
+        {'Characters Selection'}
+      </h1>
+      {isSummary ? (
         // Show summary after final confirmation
         <NFTsSummary
           tokens={confirmedTokens}
-          heading={heading}
           maxTokens={maxTokens}
           onModify={index => {
-            setIsConfirmed(false);
+            setIsSummary(false);
             setCurrentStep(index ?? 0);
           }}
         />
       ) : (
-        // Show stepper UI (existing code)
         <>
-          <h1 className="text-tg-text mb-4 text-center text-2xl font-bold">
-            {heading || 'Select Characters'}
-          </h1>
-
           {useStepper && (
             <StepIndicator
               currentStep={currentStep}

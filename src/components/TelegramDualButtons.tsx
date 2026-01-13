@@ -201,12 +201,19 @@ export const TelegramDualButtons: React.FC<TelegramDualButtonsProps> = ({
 
   // Update secondary button parameters when props change (only if provided)
   useEffect(() => {
-    if (
-      !secondaryConfig ||
-      !isTelegram ||
-      !secondaryButton.setParams.isAvailable()
-    )
+    if (!isTelegram || !secondaryButton.setParams.isAvailable()) return;
+
+    if (!secondaryConfig) {
+      try {
+        secondaryButton.setParams({ isVisible: false });
+      } catch (error) {
+        console.error(
+          'TelegramDualButtons: Error hiding secondary button:',
+          error
+        );
+      }
       return;
+    }
 
     try {
       const params: any = {

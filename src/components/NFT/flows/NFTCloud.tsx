@@ -1,8 +1,8 @@
 import { createPortal } from 'react-dom';
 import { NFTSelectionFlow } from './NFTSelectionFlow';
 import { useGetCollectionsWithPrompt } from '@/hooks/useCollections';
-import type { Prompt } from '../../types/prompt';
-import type { Token } from '../../types/response';
+import type { Prompt } from '@/types/prompt';
+import type { Token } from '@/types/response';
 
 interface NFTCloudProps {
   nftIndex: number;

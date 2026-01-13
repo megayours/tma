@@ -172,8 +172,14 @@ function ContentDetails() {
         {/* Get Started Button */}
         <TelegramDualButtons
           mainButton={{
-            text: `Get ${getTypeLabel(prompt.type as 'images' | 'stickers' | 'gifs' | 'animated_stickers').toLowerCase()} with your PFP`,
+            text: `Get your ${getTypeLabel(prompt.type as 'images' | 'stickers' | 'gifs' | 'animated_stickers').toLowerCase()}`,
             onClick: handleContinue,
+            visible: true,
+          }}
+          secondaryButton={{
+            text: `Share prompt`,
+            disabled: false,
+            onClick: () => {},
             visible: true,
           }}
         />

@@ -7,10 +7,12 @@ import { useStickerPack } from '@/hooks/useStickerPacks';
 import { useSession } from '@/auth/SessionProvider';
 import { usePurchase } from '@/hooks/usePurchase';
 import { nftParamsSchema } from '@/utils/nftUrlSchema';
+import { buildShareUrl } from '@/utils/shareUrl';
 import { NFTSelectionPageUI } from '@/components/NFT/flows';
 import { useNFTSelectionPage } from '@/hooks/useNFTSelectionPage';
 import { TelegramDualButtons } from '@/components/TelegramDualButtons';
 import { SpinnerFullPage } from '@/components/ui';
+import { getShareSelectionButtonConfig } from '@/utils/nftSelectionShare';
 import type { Token } from '@/types/response';
 
 export const Route = createFileRoute(
@@ -43,9 +45,9 @@ function RouteComponent() {
   });
 
   const { data: collections } = useGetSupportedCollections();
-  const { collections: communityCollections } = useWebAppStartParam() || {
-    collections: [],
-  };
+  const webAppParams = useWebAppStartParam();
+  const communityCollections = webAppParams?.collections ?? [];
+  const communityId = webAppParams?.communityId;
 
   const filteredCollections = useMemo(() => {
     const packCollections =
@@ -135,6 +137,12 @@ function RouteComponent() {
     return 'Generate';
   };
 
+  const shareUrl = useMemo(() => {
+    const botUrl = import.meta.env.VITE_PUBLIC_BOT_URL || '';
+    const currentPath = window.location.pathname + window.location.search;
+    return buildShareUrl(botUrl, currentPath, communityId);
+  }, [communityId]);
+
   if (isLoadingStickerPack || !stickerPack || selectionState.isLoading) {
     return <SpinnerFullPage text="Loading..." />;
   }
@@ -162,13 +170,23 @@ function RouteComponent() {
   // Determine secondary button config
   let secondaryButtonConfig = undefined;
 
-  if (!selectionState.showSummary && !selectionState.isRequired) {
+  const shareButtonConfig = getShareSelectionButtonConfig({
+    selectionState,
+    shareUrl,
+    shareText: 'Create stickers with me!',
+  });
+
+  if (shareButtonConfig) {
+    secondaryButtonConfig = shareButtonConfig;
+  } else if (!selectionState.showSummary && !selectionState.isRequired) {
     secondaryButtonConfig = {
       text: 'Skip',
       onClick: selectionState.handleSkip,
       visible: true,
     };
   }
+
+  console.log('Sticker pack , stickerPack);', stickerPack);
 
   return (
     <div className="flex h-screen flex-col">

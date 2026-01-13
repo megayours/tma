@@ -12,7 +12,7 @@ import { nftParamsSchema } from '@/utils/nftUrlSchema';
 import { NFTSelectionPageUI } from '@/components/NFT/flows';
 import { useNFTSelectionPage } from '@/hooks/useNFTSelectionPage';
 import { TelegramDualButtons } from '@/components/TelegramDualButtons';
-import { shareTelegramMessage, canShareMessage } from '@/utils/telegramShare';
+import { getShareSelectionButtonConfig } from '@/utils/nftSelectionShare';
 
 export const Route = createFileRoute('/content/$promptId/select-nfts/')({
   validateSearch: nftParamsSchema,
@@ -104,9 +104,6 @@ function SelectNFTsPage() {
     return buildShareUrl(botUrl, currentPath, selectedCommunity?.id);
   }, [selectedCommunity?.id]);
 
-  const handleShareWithFriend = () => {
-    shareTelegramMessage(shareUrl, 'Create content with me!');
-  };
 
   if (isLoadingPrompt || selectionState.isLoading) {
     return <SpinnerFullPage text="Loading..." />;
@@ -171,19 +168,16 @@ function SelectNFTsPage() {
   // - At least 1 token selected
   // - Not all tokens selected (hasEmptySlots)
   // - Share functionality is available
-  const shouldShowShareButton =
-    selectionState.selectedTokens.length > 0 &&
-    selectionState.hasEmptySlots &&
-    canShareMessage();
+  const shareButtonConfig = getShareSelectionButtonConfig({
+    selectionState,
+    shareUrl,
+    shareText: 'Create content with me!',
+  });
 
-  console.log('SHOULD SHOW SHARE BUTTON:', shouldShowShareButton);
+  console.log('SHOULD SHOW SHARE BUTTON:', Boolean(shareButtonConfig));
 
-  if (shouldShowShareButton) {
-    secondaryButtonConfig = {
-      text: 'Create with a friend',
-      onClick: handleShareWithFriend,
-      visible: true,
-    };
+  if (shareButtonConfig) {
+    secondaryButtonConfig = shareButtonConfig;
   }
 
   return (

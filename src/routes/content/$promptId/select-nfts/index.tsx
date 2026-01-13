@@ -292,7 +292,7 @@ function SelectNFTsPage() {
           secondaryButton={{
             text: 'Create with a friend',
             disabled: false,
-            visible: selectedTokens.length > 0 && canShareMessage(),
+            visible: selectedTokens.length > 1 && canShareMessage(), // Only show when multiple NFTs can be selected
             onClick: handleShareWithFriend,
             hasShineEffect: false,
           }}

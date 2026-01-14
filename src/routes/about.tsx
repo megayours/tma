@@ -8,10 +8,41 @@ import {
   ThemeUsageExamples,
 } from '../components';
 import { getBuildInfo } from '../utils/buildInfo';
+import { shareURL } from '@telegram-apps/sdk-react';
 
 export const Route = createFileRoute('/about')({
   component: Demo,
 });
+
+function TelegramShareButton() {
+  // Only render if shareURL is available (in Telegram environment)
+  if (!shareURL.isAvailable()) {
+    return null;
+  }
+
+  const handleShare = () => {
+    try {
+      shareURL(
+        'https://t.me/share/url',
+        'Check out this awesome Telegram Mini App! 🚀'
+      );
+    } catch (error) {
+      console.error('Error sharing message:', error);
+    }
+  };
+
+  return (
+    <Cell
+      subtitle="Share a message via Telegram"
+      onClick={handleShare}
+      className="cursor-pointer"
+    >
+      <span className="font-semibold text-purple-600 dark:text-purple-400">
+        Share Message
+      </span>
+    </Cell>
+  );
+}
 
 function Demo() {
   const buildInfo = getBuildInfo();
@@ -143,6 +174,7 @@ function Demo() {
             View Constraints
           </span>
         </Cell>
+        <TelegramShareButton />
       </Section>
 
       <Section>

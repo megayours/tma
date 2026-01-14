@@ -322,7 +322,7 @@ function AppContent() {
         <main className={`h-full`}>
           <Outlet />
         </main>
-        ±{/* <UserMenuComponent size={35} /> */}
+        {/* <UserMenuComponent size={35} /> */}
         {/* <TanStackRouterDevtools /> */}
         {/* <ReactQueryDevtools initialIsOpen={false} /> */}
       </div>

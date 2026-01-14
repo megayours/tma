@@ -6,6 +6,9 @@ import { Banner, Divider } from '@telegram-apps/telegram-ui';
 import { TelegramDualButtons } from '../../../../components/TelegramDualButtons';
 import { Fragment } from 'react/jsx-runtime';
 import { MediaDisplay } from '@/components/lib/LatestContent/MediaDisplay';
+import { buildShareUrl } from '@/utils/shareUrl';
+import { useSelectCommunity } from '@/contexts/SelectCommunityContext';
+import { shareTelegramMessage } from '@/utils/telegramShare';
 
 export const Route = createFileRoute('/content/$promptId/details/')({
   component: ContentDetails,
@@ -33,6 +36,7 @@ function ContentDetails() {
   const { promptId } = Route.useParams();
   const navigate = useNavigate();
   const { session, isAuthenticating } = useSession();
+  const { selectedCommunity } = useSelectCommunity();
 
   const { data: prompt, isLoading, error } = useGetPrompt(promptId, session);
 
@@ -41,6 +45,16 @@ function ContentDetails() {
       to: '/content/$promptId/select-nfts',
       params: { promptId },
     });
+  };
+
+  const handleShare = () => {
+    const shareUrl = buildShareUrl(
+      import.meta.env.VITE_PUBLIC_BOT_URL || '',
+      `/content/${promptId}/details`,
+      selectedCommunity?.id
+    );
+
+    shareTelegramMessage(shareUrl, `Check out this prompt: ${prompt?.name}`);
   };
 
   if (isAuthenticating) {
@@ -172,14 +186,14 @@ function ContentDetails() {
         {/* Get Started Button */}
         <TelegramDualButtons
           mainButton={{
-            text: `Get your ${getTypeLabel(prompt.type as 'images' | 'stickers' | 'gifs' | 'animated_stickers').toLowerCase()}`,
+            text: `Get Yours`,
             onClick: handleContinue,
             visible: true,
           }}
           secondaryButton={{
             text: `Share prompt`,
             disabled: false,
-            onClick: () => {},
+            onClick: handleShare,
             visible: true,
           }}
         />

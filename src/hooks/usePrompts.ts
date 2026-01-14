@@ -38,6 +38,7 @@ const mapRawPromptToPrompt = (rawPrompt: RawPrompt): Prompt => {
     gifs: rawPrompt.gifs ?? [],
     stickers: rawPrompt.stickers ?? [],
     animatedStickers: rawPrompt.animated_stickers ?? [],
+    thumbnails: rawPrompt.thumbnail_urls?.filter((url): url is string => url !== null) ?? [],
     versions: rawPrompt.versions,
     minTokens: rawPrompt.min_tokens,
     maxTokens: rawPrompt.max_tokens,
@@ -54,11 +55,7 @@ const mapRawPromptToPromptWithContent = (
   ...mapRawPromptToPrompt(rawPrompt),
   published: rawPrompt.published_at ?? 0,
   image: rawPrompt.image ?? '',
-  type: rawPrompt.type as
-    | 'images'
-    | 'stickers'
-    | 'gifs'
-    | 'animated_stickers',
+  type: rawPrompt.type as 'images' | 'stickers' | 'gifs' | 'animated_stickers',
   contentId: (rawPrompt as any).content_id,
   owner: rawPrompt.owner_id,
   ownerName: rawPrompt.owner_name ?? '',
@@ -170,20 +167,19 @@ export const useGetRecommendedPrompts = ({
   };
 };
 
-export const useGetPrompt = (promptId: string, session: Session | null) => {
+export const useGetPrompt = (promptId: string, session?: Session | null) => {
   const queryKey = ['prompt', promptId, session?.authToken];
 
   return useQuery({
     queryKey,
     queryFn: async () => {
-      if (!session) return;
       const response = await fetch(
         `${import.meta.env.VITE_PUBLIC_API_URL}/prompts/${promptId}?preferred_formats=webm`,
         {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: session.authToken,
+            ...(session && { Authorization: session.authToken }),
           },
         }
       );
@@ -214,6 +210,7 @@ export const useGetPrompt = (promptId: string, session: Session | null) => {
         videos: data.videos,
         images: data.images,
         gifs: data.gifs,
+        thumbnails: data.thumbnail_urls ?? [],
         versions: data.versions.map((version: any) => ({
           ...version,
           id: Number(version.id),
@@ -228,7 +225,7 @@ export const useGetPrompt = (promptId: string, session: Session | null) => {
       };
       return prompt;
     },
-    enabled: !!session,
+    enabled: !!promptId,
   });
 };
 
@@ -296,6 +293,7 @@ export const useGetRecommendedPromptsWithDetails = ({
             minTokens: data.min_tokens,
             maxTokens: data.max_tokens,
             contracts: data.contracts || [],
+            thumbnails: data.thumbnail_urls ?? [],
           };
         } catch (error) {
           console.warn(
@@ -389,9 +387,26 @@ export const useGetPrompts = ({
       }
 
       const data = await response.json();
-      // rename data as prompts
-      data.prompts = data.data;
-      return data as { prompts: Prompt[]; pagination: Pagination };
+
+      // Map raw prompts to Prompt format
+      const prompts = data.data.map((rawPrompt: any) => ({
+        ...rawPrompt,
+        id: Number(rawPrompt.id),
+        createdAt: rawPrompt.created_at,
+        updatedAt: rawPrompt.updated_at,
+        deletedAt: rawPrompt.deleted_at,
+        lastUsed: rawPrompt.last_used,
+        maxTokens: rawPrompt.max_tokens,
+        minTokens: rawPrompt.min_tokens,
+        ownerId: rawPrompt.owner_id,
+        published: rawPrompt.published_at,
+        usageCount: rawPrompt.usage_count,
+        animatedStickers: rawPrompt.animated_stickers,
+        additionalContentIds: rawPrompt.additional_content_ids,
+        thumbnails: rawPrompt.thumbnail_urls?.filter((url: string | null): url is string => url !== null) ?? [],
+      }));
+
+      return { prompts, pagination: data.pagination };
     },
     enabled: !!session && !!pagination.page && !!pagination.size,
   });
@@ -445,6 +460,7 @@ export const useCreatePromptMutation = () => {
         lastUsed: data.last_used,
         updatedAt: data.updated_at,
         usageCount: data.usage_count,
+        thumbnails: data.thumbnail_urls ?? [],
         versions: data.versions.map((version: any) => ({
           id: Number(version.id),
           model: version.model,
@@ -650,8 +666,27 @@ export const usePromptMutation = (session: Session | null | undefined) => {
         throw new Error(errorMessage);
       }
 
-      const responseData = (await response.json()) as Prompt;
-      console.log('✅ PUT /prompts response:', responseData);
+      const data = await response.json();
+      console.log('✅ PUT /prompts response:', data);
+
+      // Map snake_case to camelCase
+      const responseData: Prompt = {
+        ...data,
+        id: Number(data.id),
+        createdAt: data.created_at,
+        updatedAt: data.updated_at,
+        deletedAt: data.deleted_at,
+        lastUsed: data.last_used,
+        maxTokens: data.max_tokens,
+        minTokens: data.min_tokens,
+        ownerId: data.owner_id,
+        published: data.published_at,
+        usageCount: data.usage_count,
+        animatedStickers: data.animated_stickers,
+        additionalContentIds: data.additional_content_ids,
+        thumbnails: data.thumbnail_urls ?? [],
+      };
+
       return responseData;
     },
     onSuccess: (_data, variables) => {

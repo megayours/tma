@@ -1,10 +1,6 @@
 import type { SupportedCollection } from '@/hooks/useCollections';
 
-type ContentTypeFilter =
-  | 'images'
-  | 'gifs'
-  | 'stickers'
-  | 'animated_stickers';
+type ContentTypeFilter = 'images' | 'gifs' | 'stickers' | 'animated_stickers';
 
 interface FeedFiltersProps {
   contentTypes: { value: ContentTypeFilter | 'all'; label: string }[];
@@ -32,7 +28,10 @@ export function FeedFilters({
   return (
     <div className="flex w-full flex-col gap-2 lg:flex-row lg:gap-0">
       {/* Content type filters */}
-      <div className="flex h-8 flex-row gap-1" style={{ flexShrink: 0 }}>
+      <div
+        className="scrollbar-hide flex h-8 flex-row gap-1 overflow-x-auto"
+        style={{ flexShrink: 0 }}
+      >
         {contentTypes.map(({ value, label }) => {
           const isActive =
             value === 'all'

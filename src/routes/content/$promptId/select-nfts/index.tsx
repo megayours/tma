@@ -1,24 +1,24 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useCallback, useEffect, useState } from 'react';
-import { TelegramDualButtons } from '@/components/TelegramDualButtons';
-import {
-  useGetSupportedCollections,
-  useGetNFTByCollectionAndTokenId,
-} from '@/hooks/useCollections';
-import { NFTSelector } from '@/routes/sticker-packs/$stickerPackId/select-nfts/NFTSelector';
-import type { Token } from '@/types/response';
-import { useSelectedNFTsSafe } from '@/contexts/SelectedNFTsContext';
+import { useEffect } from 'react';
+import { useGetSupportedCollections } from '@/hooks/useCollections';
 import { useGetPrompt } from '@/hooks/usePrompts';
 import { useSession } from '@/auth/SessionProvider';
 import { SpinnerFullPage } from '@/components/ui';
 import { useGenerateContentMutation } from '@/hooks/useContents';
+import { ProtectedRoute } from '@/auth/ProtectedRoute';
 import { useSelectCommunity } from '@/contexts/SelectCommunityContext';
+import { nftParamsSchema } from '@/utils/nftUrlSchema';
+import { NFTSelectionPageUI } from '@/components/NFT/flows';
+import { useNFTSelectionPage } from '@/hooks/useNFTSelectionPage';
+import { TelegramDualButtons } from '@/components/TelegramDualButtons';
+import { getShareSelectionButtonConfig } from '@/utils/nftSelectionShare';
+import { useNFTShareUrl } from '@/hooks/useNFTShareUrl';
 
 export const Route = createFileRoute('/content/$promptId/select-nfts/')({
+  validateSearch: nftParamsSchema,
   component: SelectNFTsPage,
 });
 
-// Helper function to convert prompt type to content type
 const getContentType = (
   promptType: string
 ): 'image' | 'gif' | 'sticker' | 'animated_sticker' => {
@@ -36,140 +36,29 @@ const getContentType = (
   }
 };
 
-// Selected NFT Display Component
-function SelectedNFTDisplay({
-  selectedNFT,
-  isSelectorOpen,
-  onToggleSelector,
-}: {
-  selectedNFT: Token | null;
-  isSelectorOpen: boolean;
-  onToggleSelector: () => void;
-}) {
-  if (!selectedNFT) return null;
-
-  return (
-    <div>
-      <div
-        className={`flex items-center justify-center transition-all duration-500`}
-      >
-        <div className="flex flex-col items-center">
-          {/* NFT Image - Circular with Edit Icon */}
-          <div
-            className="relative cursor-pointer transition-all duration-500 ease-in-out"
-            onClick={onToggleSelector}
-          >
-            {selectedNFT.image && (
-              <img
-                src={selectedNFT.image}
-                alt={selectedNFT.name || `NFT #${selectedNFT.id}`}
-                className={`rounded-full object-cover transition-all duration-500 ease-in-out ${
-                  isSelectorOpen ? 'h-24 w-24' : 'h-52 w-52'
-                }`}
-              />
-            )}
-
-            {/* Edit Icon - Overlay */}
-            <div
-              className={`bg-tg-accent-text absolute rounded-full transition-all duration-500 ease-in-out hover:opacity-90 ${
-                isSelectorOpen
-                  ? 'right-1 bottom-1 p-1.5'
-                  : 'right-3 bottom-3 p-2.5'
-              }`}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className={`text-white transition-all duration-500 ease-in-out ${
-                  isSelectorOpen ? 'h-3 w-3' : 'h-5 w-5'
-                }`}
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-              </svg>
-            </div>
-          </div>
-
-          {/* NFT Info Below */}
-          <div
-            className={`text-tg-text text-center transition-all duration-500 ease-in-out ${
-              isSelectorOpen ? 'opacity-0' : 'opacity-100'
-            }`}
-          >
-            <div
-              className={`font-semibold transition-all duration-500 ease-in-out ${
-                isSelectorOpen ? 'text-sm' : 'text-base'
-              }`}
-            >
-              {selectedNFT.name || `NFT #${selectedNFT.id}`}
-            </div>
-            <div
-              className={`text-tg-hint transition-all duration-500 ease-in-out ${
-                isSelectorOpen ? 'text-xs' : 'text-sm'
-              }`}
-            >
-              {selectedNFT.contract?.name || 'Unknown Collection'}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function SelectNFTsPage() {
   const { promptId } = Route.useParams();
   const navigate = useNavigate();
   const { session } = useSession();
+  const search = Route.useSearch();
+  const { selectedCommunity } = useSelectCommunity();
 
-  // Fetch prompt data
   const { data: prompt, isLoading: isLoadingPrompt } = useGetPrompt(
     promptId,
     session
   );
-
   const { data: collections } = useGetSupportedCollections();
-
-  // Local state for selected NFT
-  const { selectedFavorite } = useSelectedNFTsSafe();
-  const [selectedNFTs, setSelectedNFTs] = useState<Token[]>([]);
-
-  const { defaultCollection } = useSelectCommunity();
-
-  // Generate random token ID for default collection
-  const [randomTokenId] = useState(() =>
-    defaultCollection
-      ? Math.floor(Math.random() * defaultCollection.size).toString()
-      : '0'
-  );
-
-  // Fetch default token (only when needed)
-  const { data: defaultToken } = useGetNFTByCollectionAndTokenId(
-    defaultCollection?.chain || '',
-    defaultCollection?.address || '',
-    randomTokenId
-  );
-  // Pre-populate with selectedFavorite if available and nothing is selected yet
-  useEffect(() => {
-    if (selectedFavorite && selectedNFTs.length === 0) {
-      setSelectedNFTs([selectedFavorite.token]);
-    } else if (!selectedFavorite && defaultToken && selectedNFTs.length === 0) {
-      setSelectedNFTs([defaultToken]);
-    }
-  }, [selectedFavorite, selectedNFTs.length, setSelectedNFTs]);
-
-  // State for selector visibility
-  const [isSelectorOpen, setIsSelectorOpen] = useState(false);
-
-  // Open selector if no NFT selected, close if one is selected
-  useEffect(() => {
-    setIsSelectorOpen(selectedNFTs.length === 0);
-  }, [selectedNFTs.length]);
-
-  // Generation mutation
   const generateMutation = useGenerateContentMutation(session);
 
-  // Auto-navigate to processing when generation succeeds
+  // Use the NFT selection hook
+  const selectionState = useNFTSelectionPage({
+    minTokens: prompt?.minTokens || 1,
+    maxTokens: prompt?.maxTokens || 1,
+    collections,
+    urlParams: search,
+  });
+
+  // Navigate on successful generation
   useEffect(() => {
     if (generateMutation.isSuccess && generateMutation.data) {
       navigate({
@@ -182,7 +71,7 @@ function SelectNFTsPage() {
     }
   }, [generateMutation.isSuccess, generateMutation.data, promptId, navigate]);
 
-  // Handle generation errors
+  // Show error on generation failure
   useEffect(() => {
     if (generateMutation.isError && generateMutation.error) {
       console.error('Generation failed:', generateMutation.error);
@@ -190,39 +79,33 @@ function SelectNFTsPage() {
     }
   }, [generateMutation.isError, generateMutation.error]);
 
-  const handleTokenSelect = useCallback((token: Token) => {
-    setSelectedNFTs(token ? [token] : []);
-    setIsSelectorOpen(false);
-  }, []);
-
-  const handleToggleSelector = () => {
-    setIsSelectorOpen(prev => !prev);
-  };
-
   const handleGenerate = () => {
-    if (!selectedNFTs.length || !prompt) {
+    if (!prompt || !selectionState.canGenerate) {
       alert('Please select an NFT to continue');
       return;
     }
 
-    const selectedToken = selectedNFTs[0];
-
-    // Generate content using the selected NFT
     generateMutation.mutate({
       promptId: promptId,
       type: getContentType(prompt.type || 'images'),
-      inputs: [
-        {
-          prompt_id: promptId,
-          chain: selectedToken.contract.chain,
-          contract_address: selectedToken.contract.address,
-          token_id: selectedToken.id,
-        },
-      ],
+      inputs: selectionState.selectedTokens.map(token => ({
+        prompt_id: promptId,
+        chain: token.contract.chain,
+        contract_address: token.contract.address,
+        token_id: token.id,
+      })),
+      notify: selectionState.notify || [],
     });
   };
 
-  if (isLoadingPrompt) {
+  // Build share URL with notify IDs
+  const shareUrl = useNFTShareUrl({
+    session,
+    notify: selectionState.notify,
+    communityId: selectedCommunity?.id,
+  });
+
+  if (isLoadingPrompt || selectionState.isLoading) {
     return <SpinnerFullPage text="Loading..." />;
   }
 
@@ -239,47 +122,80 @@ function SelectNFTsPage() {
     );
   }
 
+  // Compute button configs outside of JSX
+  const showGenerateButton =
+    selectionState.showSummary && !selectionState.hasEmptySlots;
+
+  const mainButtonText = showGenerateButton
+    ? generateMutation.isPending
+      ? 'Generating...'
+      : 'Generate'
+    : 'Next';
+
+  const mainButtonOnClick = showGenerateButton
+    ? handleGenerate
+    : selectionState.handleNext;
+
+  const mainButtonDisabled = showGenerateButton
+    ? !selectionState.canGenerate
+    : !selectionState.canGoNext;
+
+  const mainButtonConfig = {
+    text: mainButtonText,
+    onClick: mainButtonOnClick,
+    disabled: mainButtonDisabled,
+    loading: generateMutation.isPending,
+    visible: true,
+  };
+
+  // Determine secondary button config
+  let secondaryButtonConfig = undefined;
+
+  console.log('MIN TOKENS:', prompt.minTokens, 'MAX TOKENS:', prompt.maxTokens);
+  console.log(
+    'CAN GO NEXT:',
+    selectionState.canGoNext,
+    'Has Empty Slots:',
+    selectionState.hasEmptySlots,
+    'selectionState.selectedTokens.length:',
+    selectionState.selectedTokens.length,
+    'CREATE WITH A FRIENT SHOWN',
+    selectionState.selectedTokens.length > 0 && selectionState.canGoNext
+  );
+  console.log('URL PARAMS:', search);
+  console.log('NOTIFY IDs:', selectionState.notify);
+
+  // Show "Create with a friend" when:
+  // - On summary screen (showSummary)
+  // - At least 1 token selected
+  // - Not all tokens selected (hasEmptySlots)
+  // - Share functionality is available
+  const shareButtonConfig = getShareSelectionButtonConfig({
+    selectionState,
+    shareUrl,
+    shareText: 'Create content with me!',
+  });
+
+  console.log('SHOULD SHOW SHARE BUTTON:', Boolean(shareButtonConfig));
+
+  if (shareButtonConfig) {
+    secondaryButtonConfig = shareButtonConfig;
+  }
+
   return (
-    <div className="flex h-screen flex-col overflow-hidden">
-      {/* Content */}
-      <div className="scrollbar-hide flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-2xl p-6">
-          <h1 className="text-tg-text mb-2 text-center text-2xl font-bold">
-            Select Your Character
-          </h1>
-          <p className="text-tg-hint mb-6 text-center">
-            Choose a Character to personalize your {prompt.type}
-          </p>
+    <ProtectedRoute>
+      <div className="flex h-screen flex-col">
+        <NFTSelectionPageUI
+          maxTokens={prompt.maxTokens || 1}
+          collections={collections}
+          selectionState={selectionState}
+        />
 
-          {/* Selected NFT Display */}
-          <SelectedNFTDisplay
-            selectedNFT={selectedNFTs[0] || null}
-            isSelectorOpen={isSelectorOpen}
-            onToggleSelector={handleToggleSelector}
-          />
-
-          {/* NFT Selector */}
-          {isSelectorOpen && (
-            <NFTSelector
-              collections={collections}
-              onTokenSelect={handleTokenSelect}
-              selectedNFT={selectedNFTs[0] || null}
-              onCancel={() => setIsSelectorOpen(false)}
-            />
-          )}
-        </div>
+        <TelegramDualButtons
+          mainButton={mainButtonConfig}
+          secondaryButton={secondaryButtonConfig}
+        />
       </div>
-
-      {/* Bottom Button */}
-      <TelegramDualButtons
-        mainButton={{
-          text: generateMutation.isPending ? 'Generating...' : 'Generate',
-          onClick: handleGenerate,
-          disabled: !selectedNFTs.length,
-          loading: generateMutation.isPending,
-          visible: true,
-        }}
-      />
-    </div>
+    </ProtectedRoute>
   );
 }

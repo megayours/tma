@@ -1,5 +1,4 @@
 import { Link, useNavigate, useLocation } from '@tanstack/react-router';
-import { viewport, useSignal } from '@telegram-apps/sdk-react';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import { useStickerPackExecutions } from '../hooks/useStickerPack';
 import { useSession } from '../auth/SessionProvider';
@@ -129,46 +128,13 @@ const HeaderBrand = () => {
 };
 
 export const Header = () => {
-  const isViewportMounted = useSignal(viewport.isMounted);
-  const isViewportMounting = useSignal(viewport.isMounting);
-  const contentSafeAreaInsets = useSignal(viewport.contentSafeAreaInsets);
-  const viewportSafeAreaInsets = useSignal(viewport.safeAreaInsets);
   const location = useLocation();
 
   return (
     <div
-      className={`${location.pathname.startsWith('/profile/admin') && 'bg-tg-button'} `}
+      className={`flex h-12 items-center justify-center p-4 ${location.pathname.startsWith('/profile/admin') && 'bg-tg-button'}`}
     >
-      {isViewportMounted && !isViewportMounting && (
-        // Optimistically take the space
-        <div
-          className="w-full"
-          style={{
-            paddingTop: viewportSafeAreaInsets.top,
-            height: contentSafeAreaInsets.top + viewportSafeAreaInsets.top,
-          }}
-        >
-          <div className={`flex h-full flex-row items-center justify-center`}>
-            <HeaderBrand />
-          </div>
-        </div>
-      )}
-
-      {!isViewportMounted && (
-        <div
-          className={`flex h-12 items-center justify-end p-4`}
-          style={{
-            paddingTop:
-              contentSafeAreaInsets.top + viewportSafeAreaInsets.top + 5 + 16,
-          }}
-        >
-          {!isViewportMounted && (
-            <div className="absolute left-1/2 -translate-x-1/2">
-              <HeaderBrand />
-            </div>
-          )}
-        </div>
-      )}
+      <HeaderBrand />
     </div>
   );
 };

@@ -12,10 +12,13 @@ interface MediaDisplayProps {
   lazyLoad?: boolean;
   videoId?: string;
   autoplay?: boolean;
+  poster?: string;
 }
 
 // Utility function to detect webm files, handling URLs with query parameters
 const isWebm = (url: string): boolean => {
+  if (!url) return false;
+
   try {
     // Try parsing as URL to extract pathname
     const urlObj = new URL(url);
@@ -36,6 +39,7 @@ export function MediaDisplay({
   containerClassName = '',
   videoId,
   autoplay = true,
+  poster,
 }: MediaDisplayProps) {
   const isVideo = isWebm(src);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -77,7 +81,7 @@ export function MediaDisplay({
       muted
       playsInline
       preload="none"
-      poster={'/logo.png'}
+      poster={poster || '/logo.png'}
     />
   ) : (
     <img

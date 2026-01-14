@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { mainButton, secondaryButton } from '@telegram-apps/sdk-react';
 import { useTelegramTheme } from '@/auth/useTelegram';
 
@@ -23,47 +23,73 @@ export const TelegramDualButtons: React.FC<TelegramDualButtonsProps> = ({
   secondaryButton: secondaryConfig,
 }) => {
   const { isTelegram } = useTelegramTheme();
+  const [visibilityTick, setVisibilityTick] = useState(0);
   const mainClickHandlerRef = useRef<(() => void) | null>(null);
   const secondaryClickHandlerRef = useRef<(() => void) | null>(null);
   const mainDisabledRef = useRef(mainConfig.disabled);
   const mainLoadingRef = useRef(mainConfig.loading);
   const secondaryDisabledRef = useRef(secondaryConfig?.disabled);
   const secondaryLoadingRef = useRef(secondaryConfig?.loading);
+  const retryTimersRef = useRef<number[]>([]);
+  const log = (...args: unknown[]) => {
+    if (import.meta.env.DEV) {
+      console.log('[TelegramDualButtons]', ...args);
+    }
+  };
 
   // Update refs when props change
+  // Telegram may drop secondary button handlers when app is backgrounded.
+  // Re-trigger wiring on focus/visibility so the click handler is restored.
   useEffect(() => {
     mainDisabledRef.current = mainConfig.disabled;
     mainLoadingRef.current = mainConfig.loading;
     secondaryDisabledRef.current = secondaryConfig?.disabled;
     secondaryLoadingRef.current = secondaryConfig?.loading;
-  }, [mainConfig.disabled, mainConfig.loading, secondaryConfig?.disabled, secondaryConfig?.loading]);
+  }, [
+    mainConfig.disabled,
+    mainConfig.loading,
+    secondaryConfig?.disabled,
+    secondaryConfig?.loading,
+  ]);
+
+  useEffect(() => {
+    const bump = () => setVisibilityTick(tick => tick + 1);
+    document.addEventListener('visibilitychange', bump);
+    window.addEventListener('focus', bump);
+    return () => {
+      document.removeEventListener('visibilitychange', bump);
+      window.removeEventListener('focus', bump);
+    };
+  }, []);
 
   // Render normal buttons when not in Telegram
   if (!isTelegram) {
     return (
-      <>
+      <div className="bg-tg-secondary-bg fixed right-0 bottom-0 left-0 z-50">
         {secondaryConfig && secondaryConfig.visible && (
-          <div className="fixed bottom-20 left-0 right-0 z-50 p-4">
+          <div className="px-4 pt-2">
             <button
               onClick={secondaryConfig.onClick}
               disabled={secondaryConfig.disabled || secondaryConfig.loading}
-              className="bg-tg-button text-tg-button-text w-full rounded-lg px-6 py-3 text-center font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90"
+              className="text-tg-link w-full rounded-lg px-6 py-3 text-center font-semibold"
             >
               <span className="flex items-center justify-center gap-2">
                 {secondaryConfig.loading && (
-                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-t-transparent"></div>
                 )}
-                {secondaryConfig.loading ? 'Processing...' : secondaryConfig.text}
+                {secondaryConfig.loading
+                  ? 'Processing...'
+                  : secondaryConfig.text}
               </span>
             </button>
           </div>
         )}
         {mainConfig.visible && (
-          <div className="fixed bottom-0 left-0 right-0 z-50 p-4">
+          <div className="px-4 py-2">
             <button
               onClick={mainConfig.onClick}
               disabled={mainConfig.disabled || mainConfig.loading}
-              className="bg-tg-button text-tg-button-text w-full rounded-lg px-6 py-3 text-center font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90"
+              className="bg-tg-button text-tg-button-text w-full rounded-lg px-6 py-3 text-center font-semibold"
             >
               <span className="flex items-center justify-center gap-2">
                 {mainConfig.loading && (
@@ -74,35 +100,71 @@ export const TelegramDualButtons: React.FC<TelegramDualButtonsProps> = ({
             </button>
           </div>
         )}
-      </>
+      </div>
     );
   }
 
   // Mount both buttons and set up click handlers
   useEffect(() => {
     if (!isTelegram) return;
+    log('Mounting or reattaching buttons', {
+      mainVisible: mainConfig.visible,
+      secondaryVisible: secondaryConfig?.visible,
+      visibilityTick,
+    });
+
+    const clearRetries = () => {
+      retryTimersRef.current.forEach(timerId => window.clearTimeout(timerId));
+      retryTimersRef.current = [];
+    };
+
+    clearRetries();
 
     // Mount main button
     if (mainButton.mount.isAvailable()) {
       try {
         mainButton.mount();
+        log('Mounted main button');
       } catch (error) {
-        console.error('TelegramDualButtons: Error mounting main button:', error);
+        console.error(
+          'TelegramDualButtons: Error mounting main button:',
+          error
+        );
       }
     }
 
     // Mount secondary button (only if provided)
-    if (secondaryConfig && secondaryButton.isSupported() && secondaryButton.mount.isAvailable()) {
+    if (
+      secondaryConfig &&
+      secondaryButton.isSupported() &&
+      secondaryButton.mount.isAvailable()
+    ) {
       try {
         secondaryButton.mount();
+        log('Mounted secondary button');
       } catch (error) {
-        console.error('TelegramDualButtons: Error mounting secondary button:', error);
+        console.error(
+          'TelegramDualButtons: Error mounting secondary button:',
+          error
+        );
       }
     }
 
     // Set up main button click handler
     let offMainClick: (() => void) | undefined;
-    if (mainButton.onClick.isAvailable()) {
+    const attachMainClick = (attempt = 0) => {
+      if (!mainButton.onClick.isAvailable()) {
+        if (attempt < 3) {
+          log('Main button onClick unavailable, retrying', { attempt });
+          const timerId = window.setTimeout(
+            () => attachMainClick(attempt + 1),
+            50
+          );
+          retryTimersRef.current.push(timerId);
+        }
+        return;
+      }
+
       mainClickHandlerRef.current = mainConfig.onClick;
       offMainClick = mainButton.onClick(() => {
         if (
@@ -110,14 +172,31 @@ export const TelegramDualButtons: React.FC<TelegramDualButtonsProps> = ({
           !mainDisabledRef.current &&
           !mainLoadingRef.current
         ) {
+          log('Main button click');
           mainClickHandlerRef.current();
         }
       });
-    }
+    };
+
+    attachMainClick();
 
     // Set up secondary button click handler (only if provided)
     let offSecondaryClick: (() => void) | undefined;
-    if (secondaryConfig && secondaryButton.onClick.isAvailable()) {
+    const attachSecondaryClick = (attempt = 0) => {
+      if (!secondaryConfig) return;
+
+      if (!secondaryButton.onClick.isAvailable()) {
+        if (attempt < 3) {
+          log('Secondary button onClick unavailable, retrying', { attempt });
+          const timerId = window.setTimeout(
+            () => attachSecondaryClick(attempt + 1),
+            50
+          );
+          retryTimersRef.current.push(timerId);
+        }
+        return;
+      }
+
       secondaryClickHandlerRef.current = secondaryConfig.onClick;
       offSecondaryClick = secondaryButton.onClick(() => {
         if (
@@ -125,17 +204,27 @@ export const TelegramDualButtons: React.FC<TelegramDualButtonsProps> = ({
           !secondaryDisabledRef.current &&
           !secondaryLoadingRef.current
         ) {
+          log('Secondary button click');
           secondaryClickHandlerRef.current();
         }
       });
-    }
+    };
+
+    attachSecondaryClick();
 
     // Cleanup function - only remove click handlers
     return () => {
+      log('Detaching button click handlers');
+      clearRetries();
       offMainClick?.();
       offSecondaryClick?.();
     };
-  }, [isTelegram]);
+  }, [
+    isTelegram,
+    mainConfig.visible,
+    secondaryConfig?.visible,
+    visibilityTick,
+  ]);
 
   // Update click handler references when onClick changes
   useEffect(() => {
@@ -166,7 +255,10 @@ export const TelegramDualButtons: React.FC<TelegramDualButtonsProps> = ({
 
       mainButton.setParams(params);
     } catch (error) {
-      console.error('TelegramDualButtons: Error updating main button params:', error);
+      console.error(
+        'TelegramDualButtons: Error updating main button params:',
+        error
+      );
     }
   }, [
     isTelegram,
@@ -181,7 +273,19 @@ export const TelegramDualButtons: React.FC<TelegramDualButtonsProps> = ({
 
   // Update secondary button parameters when props change (only if provided)
   useEffect(() => {
-    if (!secondaryConfig || !isTelegram || !secondaryButton.setParams.isAvailable()) return;
+    if (!isTelegram || !secondaryButton.setParams.isAvailable()) return;
+
+    if (!secondaryConfig) {
+      try {
+        secondaryButton.setParams({ isVisible: false });
+      } catch (error) {
+        console.error(
+          'TelegramDualButtons: Error hiding secondary button:',
+          error
+        );
+      }
+      return;
+    }
 
     try {
       const params: any = {
@@ -203,7 +307,10 @@ export const TelegramDualButtons: React.FC<TelegramDualButtonsProps> = ({
 
       secondaryButton.setParams(params);
     } catch (error) {
-      console.error('TelegramDualButtons: Error updating secondary button params:', error);
+      console.error(
+        'TelegramDualButtons: Error updating secondary button params:',
+        error
+      );
     }
   }, [
     isTelegram,
@@ -230,7 +337,10 @@ export const TelegramDualButtons: React.FC<TelegramDualButtonsProps> = ({
           mainButton.setParams({ isVisible: false });
         }
       } catch (error) {
-        console.error('TelegramDualButtons: Error hiding main button during cleanup:', error);
+        console.error(
+          'TelegramDualButtons: Error hiding main button during cleanup:',
+          error
+        );
       }
 
       try {
@@ -238,7 +348,10 @@ export const TelegramDualButtons: React.FC<TelegramDualButtonsProps> = ({
           secondaryButton.setParams({ isVisible: false });
         }
       } catch (error) {
-        console.error('TelegramDualButtons: Error hiding secondary button during cleanup:', error);
+        console.error(
+          'TelegramDualButtons: Error hiding secondary button during cleanup:',
+          error
+        );
       }
     };
   }, []); // Empty dependency array - only runs on mount/unmount

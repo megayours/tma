@@ -43,10 +43,12 @@ export const usePurchase = (
       stickerPackId,
       tokens,
       effectStyle = 'basic',
+      notify = [],
     }: {
       stickerPackId: number;
       tokens?: Token[];
       effectStyle?: 'basic' | 'gold' | 'legendary';
+      notify?: string[];
     }): Promise<ExecuteResponse> => {
       if (!session?.authToken) {
         throw new Error('Authentication required for purchase');
@@ -65,6 +67,7 @@ export const usePurchase = (
                 token_id: token.id,
               })),
             }),
+          ...(notify.length > 0 && { notify }),
         };
 
         const response = await fetch(url, {
@@ -120,9 +123,10 @@ export const usePurchase = (
   const purchaseStickerPack = (
     stickerPackId: number,
     tokens?: Token[],
-    effectStyle: 'basic' | 'gold' | 'legendary' = 'basic'
+    effectStyle: 'basic' | 'gold' | 'legendary' = 'basic',
+    notify?: string[]
   ) => {
-    return mutation.mutate({ stickerPackId, tokens, effectStyle });
+    return mutation.mutate({ stickerPackId, tokens, effectStyle, notify });
   };
 
   return {

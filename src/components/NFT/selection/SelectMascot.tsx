@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Button } from '@telegram-apps/telegram-ui';
 import { useGetTokensByCollection } from '@/hooks/useCollections';
 import { type SupportedCollection } from '@/hooks/useCollections';
-import { type Token } from '../../types/response';
+import { type Token } from '@/types/response';
 
 export interface SelectMascotProps {
   collection: SupportedCollection;

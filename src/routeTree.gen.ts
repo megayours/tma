@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as StickerPacksRouteImport } from './routes/sticker-packs'
+import { Route as ConstraintsRouteImport } from './routes/constraints'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as MainRouteImport } from './routes/_main'
 import { Route as IndexRouteImport } from './routes/index'
@@ -59,6 +60,11 @@ import { Route as MainProfileAdminPromptEditPromptIdIndexRouteImport } from './r
 const StickerPacksRoute = StickerPacksRouteImport.update({
   id: '/sticker-packs',
   path: '/sticker-packs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConstraintsRoute = ConstraintsRouteImport.update({
+  id: '/constraints',
+  path: '/constraints',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AboutRoute = AboutRouteImport.update({
@@ -312,6 +318,7 @@ const MainProfileAdminPromptEditPromptIdIndexRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/constraints': typeof ConstraintsRoute
   '/sticker-packs': typeof StickerPacksRouteWithChildren
   '/auth/refresh': typeof AuthRefreshRoute
   '/content/$promptId': typeof ContentPromptIdRouteWithChildren
@@ -359,6 +366,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/constraints': typeof ConstraintsRoute
   '/auth/refresh': typeof AuthRefreshRoute
   '/demo2': typeof Demo2IndexRoute
   '/demo3': typeof Demo3IndexRoute
@@ -404,6 +412,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_main': typeof MainRouteWithChildren
   '/about': typeof AboutRoute
+  '/constraints': typeof ConstraintsRoute
   '/sticker-packs': typeof StickerPacksRouteWithChildren
   '/auth/refresh': typeof AuthRefreshRoute
   '/content/$promptId': typeof ContentPromptIdRouteWithChildren
@@ -453,6 +462,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
+    | '/constraints'
     | '/sticker-packs'
     | '/auth/refresh'
     | '/content/$promptId'
@@ -500,6 +510,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/about'
+    | '/constraints'
     | '/auth/refresh'
     | '/demo2'
     | '/demo3'
@@ -544,6 +555,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_main'
     | '/about'
+    | '/constraints'
     | '/sticker-packs'
     | '/auth/refresh'
     | '/content/$promptId'
@@ -593,6 +605,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   MainRoute: typeof MainRouteWithChildren
   AboutRoute: typeof AboutRoute
+  ConstraintsRoute: typeof ConstraintsRoute
   StickerPacksRoute: typeof StickerPacksRouteWithChildren
   AuthRefreshRoute: typeof AuthRefreshRoute
   ContentPromptIdRoute: typeof ContentPromptIdRouteWithChildren
@@ -617,6 +630,13 @@ declare module '@tanstack/react-router' {
       path: '/sticker-packs'
       fullPath: '/sticker-packs'
       preLoaderRoute: typeof StickerPacksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/constraints': {
+      id: '/constraints'
+      path: '/constraints'
+      fullPath: '/constraints'
+      preLoaderRoute: typeof ConstraintsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about': {
@@ -1072,6 +1092,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   MainRoute: MainRouteWithChildren,
   AboutRoute: AboutRoute,
+  ConstraintsRoute: ConstraintsRoute,
   StickerPacksRoute: StickerPacksRouteWithChildren,
   AuthRefreshRoute: AuthRefreshRoute,
   ContentPromptIdRoute: ContentPromptIdRouteWithChildren,

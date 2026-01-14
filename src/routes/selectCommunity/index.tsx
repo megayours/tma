@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { useSelectCommunity } from '@/contexts/SelectCommunityContext';
 import { SpinnerFullPage } from '@/components/ui';
 import type { Community } from '@/hooks/useCommunities';
+import { useState, useRef } from 'react';
 
 const selectCommunitySearchSchema = z.object({
   redirectTo: z.string().optional(),
@@ -18,6 +19,31 @@ function SelectCommunityPage() {
   const navigate = useNavigate();
   const { availableCommunities, setSelectedCommunity, isLoading, error } =
     useSelectCommunity();
+
+  const [tapCount, setTapCount] = useState(0);
+  const tapTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleTitleTap = () => {
+    const newTapCount = tapCount + 1;
+    setTapCount(newTapCount);
+
+    // Clear existing timeout
+    if (tapTimeoutRef.current) {
+      clearTimeout(tapTimeoutRef.current);
+    }
+
+    // Navigate to about page after 5 taps
+    if (newTapCount >= 5) {
+      setTapCount(0);
+      navigate({ to: '/about' });
+      return;
+    }
+
+    // Reset tap count after 1 second of inactivity
+    tapTimeoutRef.current = setTimeout(() => {
+      setTapCount(0);
+    }, 1000);
+  };
 
   const handleCommunitySelect = (community: Community) => {
     setSelectedCommunity(community);
@@ -46,7 +72,10 @@ function SelectCommunityPage() {
   return (
     <div className="flex min-h-screen flex-col p-4">
       <div className="mb-6 text-center">
-        <h1 className="text-tg-text mb-2 text-2xl font-bold">
+        <h1
+          className="text-tg-text mb-2 cursor-pointer text-2xl font-bold"
+          onClick={handleTitleTap}
+        >
           Select Your Community
         </h1>
         {error && (

@@ -12,12 +12,12 @@ export const AddInputMenu = ({
   console.log('additionalImagesEnabled', additionalImagesEnabled);
   return (
     <div className="flex w-full flex-col gap-2 p-4">
-      {/* <div
+      <div
         onClick={() => onSelectContent('nft')}
-        className="cursor-pointer rounded-lg bg-tg-secondary p-4 text-tg-text transition-colors hover:bg-tg-secondary/80"
+        className="bg-tg-secondary text-tg-text hover:bg-tg-secondary/80 cursor-pointer rounded-lg p-4 transition-colors"
       >
-        Input Asset
-      </div> */}
+        Character
+      </div>
       {/* <Divider />
       <div
         onClick={() => onSelectContent('prompt')}

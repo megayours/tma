@@ -1,16 +1,16 @@
 import { createPortal } from 'react-dom';
 import { NFTSelectionFlow } from './NFTSelectionFlow';
 import { useGetCollectionsWithPrompt } from '@/hooks/useCollections';
-import type { Prompt } from '../../types/prompt';
-import { useNFTSetsContext } from '@/contexts/NFTSetsContext';
-import type { Token } from '../../types/response';
+import type { Prompt } from '@/types/prompt';
+import type { Token } from '@/types/response';
 
 interface NFTCloudProps {
-  setIndex: number;
   nftIndex: number;
   prompt: Prompt;
   onClose: () => void;
   isCompulsory: boolean;
+  updateCompulsoryNFT: (nftIndex: number, newToken: Token) => void;
+  updateOptionalNFT: (nftIndex: number, newToken: Token) => void;
 }
 
 /**
@@ -20,20 +20,19 @@ interface NFTCloudProps {
  */
 export const NFTCloud = ({
   prompt,
-  setIndex,
   nftIndex,
   onClose,
   isCompulsory,
+  updateCompulsoryNFT,
+  updateOptionalNFT,
 }: NFTCloudProps) => {
   const { data: collections } = useGetCollectionsWithPrompt(prompt);
-  const { updateCompulsoryNFTInSet, updateOptionalNFTInSet } =
-    useNFTSetsContext();
 
   const handleTokenSelect = (token: Token) => {
     if (isCompulsory) {
-      updateCompulsoryNFTInSet(setIndex, nftIndex, token);
+      updateCompulsoryNFT(nftIndex, token);
     } else {
-      updateOptionalNFTInSet(setIndex, nftIndex, token);
+      updateOptionalNFT(nftIndex, token);
     }
     onClose();
   };
@@ -50,7 +49,7 @@ export const NFTCloud = ({
 
   const cloudContent = (
     <div
-      className="bg-tg-bg border-tg-hint/20 relative min-h-16 overflow-y-auto rounded-lg border shadow-lg"
+      className="nft-cloud bg-tg-bg border-tg-hint/20 relative min-h-16 overflow-y-auto rounded-lg border shadow-lg"
       style={{
         maxHeight: '60vh',
         minHeight: '64px',
@@ -61,7 +60,6 @@ export const NFTCloud = ({
         pointerEvents: 'auto',
         userSelect: 'auto',
       }}
-      data-cloud-index={`${setIndex}-${nftIndex}`}
       onClick={handleCloudClick}
       onWheel={e => {
         e.stopPropagation();

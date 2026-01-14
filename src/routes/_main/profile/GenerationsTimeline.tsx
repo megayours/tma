@@ -142,6 +142,7 @@ function SingleContent({ content }: { content: Content }) {
             src={content.url || ''}
             alt="Generated content"
             className="h-full w-full object-cover"
+            poster={content.thumbnailUrl || '/logo.png'}
           />
         </div>
       )}

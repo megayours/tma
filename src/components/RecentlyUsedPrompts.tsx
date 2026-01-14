@@ -45,6 +45,7 @@ const PromptCard = ({ prompt }: { prompt: Prompt }) => {
             src={contentUrl}
             alt={prompt.name || 'Prompt content'}
             className="h-full w-full object-contain"
+            poster={prompt.thumbnails?.[0] || '/logo.png'}
           />
         ) : (
           <div className="text-tg-hint flex h-full w-full items-center justify-center text-xs">

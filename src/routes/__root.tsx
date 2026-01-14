@@ -14,6 +14,7 @@ import {
   miniApp,
   swipeBehavior,
   closingBehavior,
+  useSignal,
 } from '@telegram-apps/sdk-react';
 import { useEffect, useState, useCallback } from 'react';
 import { Header } from '@/components/Header';
@@ -37,7 +38,8 @@ function TelegramEnvironmentHandler() {
   const { isDark, themeParams } = useTelegramTheme();
   const [isViewportMounted, setIsViewportMounted] = useState(false);
   const [isViewportMounting, setIsViewportMounting] = useState(false);
-  const { lastContentMenuRoute, isAtEntryPoint, onBackClick, navigationDepth } = useNavigationHistory();
+  const { lastContentMenuRoute, isAtEntryPoint, onBackClick, navigationDepth } =
+    useNavigationHistory();
 
   console.log('ROUTE', location);
 
@@ -192,7 +194,13 @@ function TelegramEnvironmentHandler() {
         cleanupBackButton();
       }
     };
-  }, [pathname, router, isAtEntryPoint, handleBackButtonClick, lastContentMenuRoute]);
+  }, [
+    pathname,
+    router,
+    isAtEntryPoint,
+    handleBackButtonClick,
+    lastContentMenuRoute,
+  ]);
 
   // Separate useEffect to handle fullscreen request after viewport is mounted
   useEffect(() => {
@@ -238,6 +246,7 @@ function AppContent() {
     availableCommunities,
     isLoading: isCommunityLoading,
   } = useSelectCommunity();
+  const safeAreaInsets = useSignal(viewport.safeAreaInsets);
 
   // Redirect to community selection if no community selected
   useEffect(() => {
@@ -288,6 +297,13 @@ function AppContent() {
     router,
   ]);
 
+  const safeAreaInset = {
+    top: safeAreaInsets?.top || 0,
+    bottom: safeAreaInsets?.bottom || 0,
+    left: safeAreaInsets?.left || 0,
+    right: safeAreaInsets?.right || 0,
+  };
+
   const content = (
     <>
       {isTelegramEnvironment ? (
@@ -295,13 +311,18 @@ function AppContent() {
       ) : (
         <WebEnvironmentHandler />
       )}
-      <div className="">
+      <div
+        style={
+          isTelegramEnvironment
+            ? { paddingTop: `${safeAreaInset.top}px` }
+            : undefined
+        }
+      >
         <Header />
         <main className={`h-full`}>
           <Outlet />
         </main>
-
-        {/* <UserMenuComponent size={35} /> */}
+        ±{/* <UserMenuComponent size={35} /> */}
         {/* <TanStackRouterDevtools /> */}
         {/* <ReactQueryDevtools initialIsOpen={false} /> */}
       </div>

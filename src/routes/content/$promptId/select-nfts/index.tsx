@@ -1,18 +1,18 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import { useGetSupportedCollections } from '@/hooks/useCollections';
 import { useGetPrompt } from '@/hooks/usePrompts';
 import { useSession } from '@/auth/SessionProvider';
 import { SpinnerFullPage } from '@/components/ui';
 import { useGenerateContentMutation } from '@/hooks/useContents';
 import { ProtectedRoute } from '@/auth/ProtectedRoute';
-import { buildShareUrl } from '@/utils/shareUrl';
 import { useSelectCommunity } from '@/contexts/SelectCommunityContext';
 import { nftParamsSchema } from '@/utils/nftUrlSchema';
 import { NFTSelectionPageUI } from '@/components/NFT/flows';
 import { useNFTSelectionPage } from '@/hooks/useNFTSelectionPage';
 import { TelegramDualButtons } from '@/components/TelegramDualButtons';
 import { getShareSelectionButtonConfig } from '@/utils/nftSelectionShare';
+import { useNFTShareUrl } from '@/hooks/useNFTShareUrl';
 
 export const Route = createFileRoute('/content/$promptId/select-nfts/')({
   validateSearch: nftParamsSchema,
@@ -94,16 +94,16 @@ function SelectNFTsPage() {
         contract_address: token.contract.address,
         token_id: token.id,
       })),
+      notify: selectionState.notify || [],
     });
   };
 
-  // Build share URL
-  const shareUrl = useMemo(() => {
-    const botUrl = import.meta.env.VITE_PUBLIC_BOT_URL || '';
-    const currentPath = window.location.pathname + window.location.search;
-    return buildShareUrl(botUrl, currentPath, selectedCommunity?.id);
-  }, [selectedCommunity?.id]);
-
+  // Build share URL with notify IDs
+  const shareUrl = useNFTShareUrl({
+    session,
+    notify: selectionState.notify,
+    communityId: selectedCommunity?.id,
+  });
 
   if (isLoadingPrompt || selectionState.isLoading) {
     return <SpinnerFullPage text="Loading..." />;
@@ -162,6 +162,8 @@ function SelectNFTsPage() {
     'CREATE WITH A FRIENT SHOWN',
     selectionState.selectedTokens.length > 0 && selectionState.canGoNext
   );
+  console.log('URL PARAMS:', search);
+  console.log('NOTIFY IDs:', selectionState.notify);
 
   // Show "Create with a friend" when:
   // - On summary screen (showSummary)

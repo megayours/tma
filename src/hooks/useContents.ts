@@ -340,12 +340,14 @@ export const useGenerateContentMutation = (
       inputs = [],
       contentIds = [],
       overrideExisting = false,
+      notify = [],
     }: {
       promptId: string;
       type: 'image' | 'gif' | 'sticker' | 'animated_sticker';
       inputs: any[];
       contentIds?: string[];
       overrideExisting?: boolean;
+      notify?: string[];
     }): Promise<{ execution_id: string }> => {
       if (!session) {
         throw new Error('Session required');
@@ -361,6 +363,7 @@ export const useGenerateContentMutation = (
         inputs: inputs,
         content_ids: contentIds.length > 0 ? contentIds : undefined,
         override_existing: overrideExisting,
+        notify: notify.length > 0 ? notify : undefined,
       };
 
       const response = await fetch(

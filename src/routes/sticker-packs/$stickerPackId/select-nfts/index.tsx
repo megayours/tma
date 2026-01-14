@@ -7,12 +7,12 @@ import { useStickerPack } from '@/hooks/useStickerPacks';
 import { useSession } from '@/auth/SessionProvider';
 import { usePurchase } from '@/hooks/usePurchase';
 import { nftParamsSchema } from '@/utils/nftUrlSchema';
-import { buildShareUrl } from '@/utils/shareUrl';
 import { NFTSelectionPageUI } from '@/components/NFT/flows';
 import { useNFTSelectionPage } from '@/hooks/useNFTSelectionPage';
 import { TelegramDualButtons } from '@/components/TelegramDualButtons';
 import { SpinnerFullPage } from '@/components/ui';
 import { getShareSelectionButtonConfig } from '@/utils/nftSelectionShare';
+import { useNFTShareUrl } from '@/hooks/useNFTShareUrl';
 import type { Token } from '@/types/response';
 
 export const Route = createFileRoute(
@@ -111,7 +111,8 @@ function RouteComponent() {
       purchaseStickerPack(
         parseInt(stickerPackId),
         selectionState.selectedTokens,
-        'basic'
+        'basic',
+        selectionState.notify || []
       );
     } else {
       navigate({
@@ -137,11 +138,12 @@ function RouteComponent() {
     return 'Generate';
   };
 
-  const shareUrl = useMemo(() => {
-    const botUrl = import.meta.env.VITE_PUBLIC_BOT_URL || '';
-    const currentPath = window.location.pathname + window.location.search;
-    return buildShareUrl(botUrl, currentPath, communityId);
-  }, [communityId]);
+  // Build share URL with notify IDs
+  const shareUrl = useNFTShareUrl({
+    session,
+    notify: selectionState.notify,
+    communityId,
+  });
 
   if (isLoadingStickerPack || !stickerPack || selectionState.isLoading) {
     return <SpinnerFullPage text="Loading..." />;
@@ -187,6 +189,7 @@ function RouteComponent() {
   }
 
   console.log('Sticker pack , stickerPack);', stickerPack);
+  console.log('NOTIFY IDs:', selectionState.notify);
 
   return (
     <div className="flex h-screen flex-col">

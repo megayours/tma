@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import type { Token } from '@/types/response';
 import type { SupportedCollection } from '@/hooks/useCollections';
@@ -52,6 +52,11 @@ export function useNFTSelectionFlow({
     urlParams,
     enabled: true,
   });
+
+  // Extract notify IDs from URL params
+  const notifyIds = useMemo(() => {
+    return urlParams.notify || [];
+  }, [urlParams.notify]);
 
   // Preselect tokens if no URL params
   const { preselectedTokens, isLoading: isPreselecting } = useNFTPreselection({
@@ -173,6 +178,7 @@ export function useNFTSelectionFlow({
     isSelectorOpen,
     showSummary,
     isRequired,
+    notify: notifyIds,
 
     // Actions
     setIsSelectorOpen,

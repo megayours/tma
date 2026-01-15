@@ -129,12 +129,9 @@ const PromptEditorContent = ({
   if (error) return <div>Error loading prompt: {error.message}</div>;
   if (!prompt) return <div>Prompt not found</div>;
 
-  const isViewportMounted = useSignal(viewport.isMounted);
-  const viewportSafeAreaInsets = useSignal(viewport.safeAreaInsets);
+  const safeAreaInsets = useSignal(viewport.safeAreaInsets);
 
-  const paddingBottom = isViewportMounted
-    ? 300 + (viewportSafeAreaInsets?.top || 0)
-    : 300;
+  const paddingBottom = 300 + (safeAreaInsets?.bottom || 0);
 
   return (
     <div
@@ -162,7 +159,10 @@ const PromptEditorContent = ({
       </div>
 
       {/* Bottom toolbar */}
-      <div className="safe-area-inset-bottom fixed right-0 bottom-0 left-0 z-30 border-t border-white/20">
+      <div
+        className="fixed right-0 left-0 z-30 border-t border-white/20"
+        style={{ bottom: `${safeAreaInsets?.bottom || 0}px` }}
+      >
         <div className="flex h-full flex-col pb-4">
           <div
             className="scrollbar-hide flex min-w-0 flex-row items-center justify-start overflow-x-scroll"

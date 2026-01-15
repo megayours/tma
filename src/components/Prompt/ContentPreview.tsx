@@ -1,6 +1,9 @@
 import type { Prompt, PromptVersion } from '@/types/prompt';
 import { useSession } from '../../auth/SessionProvider';
-import { useGetPreviewContent, usePreviewContentMutation } from '../../hooks/useContents';
+import {
+  useGetPreviewContent,
+  usePreviewContentMutation,
+} from '../../hooks/useContents';
 import type { Content } from '@/types/response';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { DisplayContent } from '../DisplayContent';
@@ -8,6 +11,7 @@ import { Spinner } from '@/components/ui';
 
 export const ContentPreviews = ({
   prompt,
+  selectedVersion,
 }: {
   prompt: Prompt;
   selectedVersion: PromptVersion;
@@ -18,8 +22,11 @@ export const ContentPreviews = ({
   const [hasMorePages, setHasMorePages] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const { mutateAsync: retryPreview, isPending: isRetrying } = usePreviewContentMutation(session);
-  const [retryingContentId, setRetryingContentId] = useState<string | null>(null);
+  const { mutateAsync: retryPreview, isPending: isRetrying } =
+    usePreviewContentMutation(session);
+  const [retryingContentId, setRetryingContentId] = useState<string | null>(
+    null
+  );
 
   const {
     data: { content, pagination: paginationData } = {
@@ -95,7 +102,13 @@ export const ContentPreviews = ({
 
   // Retry handler for failed/error content
   const handleRetry = async (content: Content) => {
-    if (!content.token || !prompt.id || isRetrying || retryingContentId === content.id) return;
+    if (
+      !content.token ||
+      !prompt.id ||
+      isRetrying ||
+      retryingContentId === content.id
+    )
+      return;
 
     setRetryingContentId(content.id);
     try {
@@ -141,6 +154,7 @@ export const ContentPreviews = ({
             className="scrollbar-hide bg-tg-secondary-bg flex max-h-25 w-full flex-shrink-0 flex-row items-center gap-2 overflow-x-auto border border-white/20 p-2 shadow-lg backdrop-blur-lg"
           >
             {groupedContent.flatMap((group, groupIndex) => {
+              const isSelectedVersion = group.version === selectedVersion.version;
               const items = [
                 // Content items for this version
                 ...group.items.map((content: Content) => (
@@ -166,10 +180,12 @@ export const ContentPreviews = ({
                   ? [
                       <div
                         key={`separator-${group.version}`}
-                        className="flex flex-shrink-0 flex-col items-center justify-center"
+                        className={`flex flex-shrink-0 flex-col items-center justify-center ${
+                          isSelectedVersion ? 'opacity-100' : 'opacity-50'
+                        }`}
                       >
-                        <div className="bg-tg-hint/30 h-8 w-px"></div>
-                        <div className="text-tg-hint mt-1 text-xs font-medium">
+                        <div className={`h-8 w-px ${isSelectedVersion ? 'bg-blue-500' : 'bg-tg-hint/30'}`}></div>
+                        <div className={`mt-1 text-xs font-medium ${isSelectedVersion ? 'text-blue-500' : 'text-tg-hint'}`}>
                           v{group.version}
                         </div>
                       </div>,

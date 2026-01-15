@@ -145,7 +145,7 @@ const PromptEditorContent = ({
 
   const safeAreaInsets = useSignal(viewport.safeAreaInsets);
 
-  const paddingBottom = 300 + (safeAreaInsets?.bottom || 0);
+  const paddingBottom = 320 + (safeAreaInsets?.bottom || 0);
 
   return (
     <div
@@ -155,7 +155,10 @@ const PromptEditorContent = ({
       }}
     >
       {/* Main content area */}
-      <div className={`h-full overflow-hidden`}>
+      <div
+        className={`h-full overflow-hidden`}
+        style={{ paddingBottom: `${safeAreaInsets?.bottom || 0}px` }}
+      >
         {/* Your main content goes here */}
         {selectedVersion && (
           <div className="h-full overflow-hidden">

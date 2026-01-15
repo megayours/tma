@@ -33,7 +33,7 @@ export const NFTCloud = ({
     useGetCollectionsWithPrompt(prompt);
 
   const { session } = useSession();
-  const { favorites, isLoadingFavorites } = useGetFavorites(session);
+  const { favorites } = useGetFavorites(session);
 
   const filteredFavorites = filterFavoritesByCollections(
     favorites,

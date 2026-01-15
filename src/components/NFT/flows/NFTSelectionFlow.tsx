@@ -18,6 +18,7 @@ export interface NFTSelectionFlowProps {
   initialMode?: 'favorites' | 'collections';
   hideSegmentedControl?: boolean;
   segmentedControlStyle?: 'inline' | 'buttons';
+  isLoadingCollections?: boolean;
 }
 
 export const NFTSelectionFlow = ({
@@ -30,6 +31,7 @@ export const NFTSelectionFlow = ({
   initialMode = 'favorites',
   hideSegmentedControl = false,
   segmentedControlStyle = 'inline',
+  isLoadingCollections = false,
 }: NFTSelectionFlowProps) => {
   const [selectedCollection, setSelectedCollection] = useState<SupportedCollection | null>(null);
   const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null);
@@ -121,6 +123,7 @@ export const NFTSelectionFlow = ({
             <SelectCollection
               collections={collections}
               onCollectionSelect={handleCollectionSelect}
+              isLoading={isLoadingCollections}
             />
           )}
         </div>

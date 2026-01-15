@@ -34,7 +34,7 @@ export const TokenSelectionCore = ({
   });
   const [activeSlotIndex, setActiveSlotIndex] = useState<number | null>(null);
 
-  const { data: collections } = useGetCollectionsWithPrompt(prompt);
+  const { data: collections, isLoading: isLoadingCollections } = useGetCollectionsWithPrompt(prompt);
 
   const handleSlotClick = (index: number) => {
     setActiveSlotIndex(index);
@@ -139,9 +139,10 @@ export const TokenSelectionCore = ({
               onTokenSelect={handleTokenSelect}
               enableMascotMode={true}
               segmentedControlStyle="buttons"
+              isLoadingCollections={isLoadingCollections}
             />
 
-            <div className="flex justify-center mt-4">
+            <div className="mt-4 flex justify-center">
               <Button mode="outline" size="s" onClick={handleCloseSelection}>
                 Cancel
               </Button>

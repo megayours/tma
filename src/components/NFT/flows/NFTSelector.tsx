@@ -47,7 +47,6 @@ export function NFTSelector({
         }
         segmentedControlStyle="buttons"
       />
-
       <div className="mt-4 flex justify-center">
         <Button mode="outline" size="s" onClick={onCancel}>
           Cancel

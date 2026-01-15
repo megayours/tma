@@ -39,11 +39,17 @@ const PromptEditorContent = ({
   const allCollections = selectedCommunity?.collections;
 
   // Use the simplified single NFT set hook
-  const { compulsoryNFTs, optionalNFTs } = useNFTSet(
-    prompt || null,
-    defaultCollection,
-    allCollections
-  );
+  const {
+    compulsoryNFTs,
+    optionalNFTs,
+    updateCompulsoryNFT,
+    updateOptionalNFT,
+    addOptionalNFT,
+    removeOptionalNFT,
+    addCompulsoryNFT,
+    removeCompulsoryNFT,
+    maxOptionalTokens,
+  } = useNFTSet(prompt || null, defaultCollection, allCollections);
 
   const [promptText, setPromptText] = useState('');
   const [currentAdditionalContentIds, setCurrentAdditionalContentIds] =
@@ -108,6 +114,14 @@ const PromptEditorContent = ({
       console.error('No prompt available');
       return;
     }
+    // console.log(
+    //   'Generating preview with:',
+    //   promptText,
+    //   compulsoryNFTs,
+    //   optionalNFTs,
+    //   hasChanges,
+    //   currentAdditionalContentIds
+    // );
 
     try {
       await generatePromptPreview(
@@ -199,7 +213,18 @@ const PromptEditorContent = ({
                 <div className="border-tg-section-separator h-12 flex-shrink-0 border-1"></div>
               )}
             <div className="h-15 flex-shrink-0">
-              <InputsEditor prompt={prompt} />
+              <InputsEditor
+                prompt={prompt}
+                compulsoryNFTs={compulsoryNFTs}
+                optionalNFTs={optionalNFTs}
+                updateCompulsoryNFT={updateCompulsoryNFT}
+                updateOptionalNFT={updateOptionalNFT}
+                addOptionalNFT={addOptionalNFT}
+                removeOptionalNFT={removeOptionalNFT}
+                addCompulsoryNFT={addCompulsoryNFT}
+                removeCompulsoryNFT={removeCompulsoryNFT}
+                maxOptionalTokens={maxOptionalTokens}
+              />
             </div>
           </div>
           <Divider />

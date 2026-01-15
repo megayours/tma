@@ -143,6 +143,7 @@ function RouteComponent() {
     session,
     notify: selectionState.notify,
     communityId,
+    tokens: selectionState.selectedTokens,
   });
 
   if (isLoadingStickerPack || !stickerPack || selectionState.isLoading) {

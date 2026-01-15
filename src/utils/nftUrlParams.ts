@@ -21,7 +21,7 @@ export function encodeNFTsToParams(tokens: Token[]): Record<string, string> {
     // 0-based indexing
     params[`nft_${index}_chain`] = token.contract.chain;
     params[`nft_${index}_address`] = token.contract.address;
-    params[`nft_${index}_id`] = token.id;
+    params[`nft_${index}_id`] = String(token.id);
   });
 
   return params;
@@ -95,12 +95,15 @@ export function decodeNFTsFromParams(
  * // Returns schema with nft_0_chain, nft_0_address, nft_0_id ... nft_9_chain, nft_9_address, nft_9_id
  */
 export function createNFTParamsSchema(maxNFTs: number = MAX_NFTS) {
-  const schema: Record<string, z.ZodOptional<z.ZodString>> = {};
+  const schema: Record<string, z.ZodTypeAny> = {};
 
   for (let i = 0; i < maxNFTs; i++) {
     schema[`nft_${i}_chain`] = z.string().optional();
     schema[`nft_${i}_address`] = z.string().optional();
-    schema[`nft_${i}_id`] = z.string().optional();
+    schema[`nft_${i}_id`] = z
+      .union([z.string(), z.number()])
+      .optional()
+      .transform(val => (val === undefined ? undefined : String(val)));
   }
 
   return z.object(schema);

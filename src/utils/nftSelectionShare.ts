@@ -23,6 +23,8 @@ export const getShareSelectionButtonConfig = ({
     return undefined;
   }
 
+  console.log(selectionState);
+
   return {
     text: buttonText,
     onClick: () => shareTelegramMessage(shareUrl, shareText),

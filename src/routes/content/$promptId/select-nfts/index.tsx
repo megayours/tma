@@ -103,7 +103,33 @@ function SelectNFTsPage() {
     session,
     notify: selectionState.notify,
     communityId: selectedCommunity?.id,
+    tokens: selectionState.selectedTokens,
   });
+
+  useEffect(() => {
+    if (!prompt) return;
+
+    console.log('MIN TOKENS:', prompt.minTokens, 'MAX TOKENS:', prompt.maxTokens);
+    console.log(
+      'CAN GO NEXT:',
+      selectionState.canGoNext,
+      'Has Empty Slots:',
+      selectionState.hasEmptySlots,
+      'selectionState.selectedTokens.length:',
+      selectionState.selectedTokens.length,
+      'CREATE WITH A FRIENT SHOWN',
+      selectionState.selectedTokens.length > 0 && selectionState.canGoNext
+    );
+    console.log('URL PARAMS:', search);
+    console.log('NOTIFY IDs:', selectionState.notify);
+  }, [
+    prompt,
+    search,
+    selectionState.canGoNext,
+    selectionState.hasEmptySlots,
+    selectionState.notify,
+    selectionState.selectedTokens.length,
+  ]);
 
   if (isLoadingPrompt || selectionState.isLoading) {
     return <SpinnerFullPage text="Loading..." />;
@@ -151,20 +177,6 @@ function SelectNFTsPage() {
   // Determine secondary button config
   let secondaryButtonConfig = undefined;
 
-  console.log('MIN TOKENS:', prompt.minTokens, 'MAX TOKENS:', prompt.maxTokens);
-  console.log(
-    'CAN GO NEXT:',
-    selectionState.canGoNext,
-    'Has Empty Slots:',
-    selectionState.hasEmptySlots,
-    'selectionState.selectedTokens.length:',
-    selectionState.selectedTokens.length,
-    'CREATE WITH A FRIENT SHOWN',
-    selectionState.selectedTokens.length > 0 && selectionState.canGoNext
-  );
-  console.log('URL PARAMS:', search);
-  console.log('NOTIFY IDs:', selectionState.notify);
-
   // Show "Create with a friend" when:
   // - On summary screen (showSummary)
   // - At least 1 token selected
@@ -173,7 +185,7 @@ function SelectNFTsPage() {
   const shareButtonConfig = getShareSelectionButtonConfig({
     selectionState,
     shareUrl,
-    shareText: 'Create content with me!',
+    shareText: 'Create content with me! ',
   });
 
   console.log('SHOULD SHOW SHARE BUTTON:', Boolean(shareButtonConfig));

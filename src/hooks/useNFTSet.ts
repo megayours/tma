@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import type { Token } from '@/types/response';
 import type { Prompt } from '@/types/prompt';
 import { useGetFavorites } from './useFavorites';
@@ -107,25 +107,12 @@ export const useNFTSet = (
   // Initialize state for single NFT set
   const [compulsoryNFTs, setCompulsoryNFTs] = useState<Token[]>([]);
   const [optionalNFTs, setOptionalNFTs] = useState<Token[]>([]);
-  const lastPromptIdRef = useRef<string | null>(null);
 
   // Initialize NFT set when prompt changes
   useEffect(() => {
     if (!prompt?.id) {
       setCompulsoryNFTs([]);
       setOptionalNFTs([]);
-      lastPromptIdRef.current = null;
-      return;
-    }
-
-    const promptChanged = lastPromptIdRef.current !== prompt.id;
-    if (promptChanged) {
-      lastPromptIdRef.current = prompt.id;
-      setCompulsoryNFTs([]);
-      setOptionalNFTs([]);
-    }
-
-    if (compulsoryNFTs.length > 0) {
       return;
     }
 
@@ -135,15 +122,7 @@ export const useNFTSet = (
       setCompulsoryNFTs(initialCompulsorySet);
       setOptionalNFTs([]);  // Start with empty optional set
     }
-  }, [
-    prompt?.id,
-    prompt?.minTokens,
-    prompt?.maxTokens,
-    favorites,
-    defaultCollection,
-    allCollections,
-    compulsoryNFTs.length,
-  ]);
+  }, [prompt?.id, prompt?.minTokens, prompt?.maxTokens, favorites, defaultCollection, allCollections]);
 
   // Function to update a compulsory NFT
   const updateCompulsoryNFT = (nftIndex: number, newToken: Token) => {

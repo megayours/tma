@@ -16,7 +16,7 @@ interface AddElementProps {
 export const AddElement = ({ prompt, addOptionalNFT, optionalNFTs, maxOptionalTokens }: AddElementProps) => {
   const [showAddCloud, setShowAddCloud] = useState(false);
 
-  const { data: collections } = useGetCollectionsWithPrompt(prompt);
+  const { data: collections, isLoading: isLoadingCollections } = useGetCollectionsWithPrompt(prompt);
 
   const currentOptionalCount = optionalNFTs.length;
   const canAddOptionalNFT = currentOptionalCount < maxOptionalTokens;
@@ -106,6 +106,7 @@ export const AddElement = ({ prompt, addOptionalNFT, optionalNFTs, maxOptionalTo
                 enableMascotMode={true}
                 segmentedControlStyle="inline"
                 className="p-2"
+                isLoadingCollections={isLoadingCollections}
               />
             </div>
           );

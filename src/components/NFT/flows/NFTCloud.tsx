@@ -1,8 +1,11 @@
 import { createPortal } from 'react-dom';
 import { NFTSelectionFlow } from './NFTSelectionFlow';
+import { useGetFavorites } from '@/hooks/useFavorites';
 import { useGetCollectionsWithPrompt } from '@/hooks/useCollections';
 import type { Prompt } from '@/types/prompt';
 import type { Token } from '@/types/response';
+import { filterFavoritesByCollections } from '@/hooks/useFavorites';
+import { useSession } from '@/auth/SessionProvider';
 
 interface NFTCloudProps {
   nftIndex: number;
@@ -26,9 +29,18 @@ export const NFTCloud = ({
   updateCompulsoryNFT,
   updateOptionalNFT,
 }: NFTCloudProps) => {
-  const { data: collections } = useGetCollectionsWithPrompt(prompt);
+  const { data: collections, isLoading: isLoadingCollections } =
+    useGetCollectionsWithPrompt(prompt);
 
+  const { session } = useSession();
+  const { favorites } = useGetFavorites(session);
+
+  const filteredFavorites = filterFavoritesByCollections(
+    favorites,
+    collections
+  );
   const handleTokenSelect = (token: Token) => {
+    console.log('Selected token from NFTCloud:', token);
     if (isCompulsory) {
       updateCompulsoryNFT(nftIndex, token);
     } else {
@@ -71,6 +83,12 @@ export const NFTCloud = ({
         enableMascotMode={true}
         segmentedControlStyle="inline"
         className="p-2"
+        initialMode={
+          favorites && filteredFavorites && filteredFavorites?.length > 0
+            ? 'favorites'
+            : 'collections'
+        }
+        isLoadingCollections={isLoadingCollections}
       />
     </div>
   );

@@ -39,11 +39,17 @@ const PromptEditorContent = ({
   const allCollections = selectedCommunity?.collections;
 
   // Use the simplified single NFT set hook
-  const { compulsoryNFTs, optionalNFTs } = useNFTSet(
-    prompt || null,
-    defaultCollection,
-    allCollections
-  );
+  const {
+    compulsoryNFTs,
+    optionalNFTs,
+    updateCompulsoryNFT,
+    updateOptionalNFT,
+    addOptionalNFT,
+    removeOptionalNFT,
+    addCompulsoryNFT,
+    removeCompulsoryNFT,
+    maxOptionalTokens,
+  } = useNFTSet(prompt || null, defaultCollection, allCollections);
 
   const [promptText, setPromptText] = useState('');
   const [currentAdditionalContentIds, setCurrentAdditionalContentIds] =
@@ -108,6 +114,14 @@ const PromptEditorContent = ({
       console.error('No prompt available');
       return;
     }
+    // console.log(
+    //   'Generating preview with:',
+    //   promptText,
+    //   compulsoryNFTs,
+    //   optionalNFTs,
+    //   hasChanges,
+    //   currentAdditionalContentIds
+    // );
 
     try {
       await generatePromptPreview(
@@ -129,12 +143,9 @@ const PromptEditorContent = ({
   if (error) return <div>Error loading prompt: {error.message}</div>;
   if (!prompt) return <div>Prompt not found</div>;
 
-  const isViewportMounted = useSignal(viewport.isMounted);
-  const viewportSafeAreaInsets = useSignal(viewport.safeAreaInsets);
+  const safeAreaInsets = useSignal(viewport.safeAreaInsets);
 
-  const paddingBottom = isViewportMounted
-    ? 300 + (viewportSafeAreaInsets?.top || 0)
-    : 300;
+  const paddingBottom = 320 + (safeAreaInsets?.bottom || 0);
 
   return (
     <div
@@ -144,7 +155,10 @@ const PromptEditorContent = ({
       }}
     >
       {/* Main content area */}
-      <div className={`h-full overflow-hidden`}>
+      <div
+        className={`h-full overflow-hidden`}
+        style={{ paddingBottom: `${safeAreaInsets?.bottom || 0}px` }}
+      >
         {/* Your main content goes here */}
         {selectedVersion && (
           <div className="h-full overflow-hidden">
@@ -162,7 +176,10 @@ const PromptEditorContent = ({
       </div>
 
       {/* Bottom toolbar */}
-      <div className="safe-area-inset-bottom fixed right-0 bottom-0 left-0 z-30 border-t border-white/20">
+      <div
+        className="fixed right-0 left-0 z-30 border-t border-white/20"
+        style={{ bottom: `${safeAreaInsets?.bottom || 0}px` }}
+      >
         <div className="flex h-full flex-col pb-4">
           <div
             className="scrollbar-hide flex min-w-0 flex-row items-center justify-start overflow-x-scroll"
@@ -199,7 +216,18 @@ const PromptEditorContent = ({
                 <div className="border-tg-section-separator h-12 flex-shrink-0 border-1"></div>
               )}
             <div className="h-15 flex-shrink-0">
-              <InputsEditor prompt={prompt} />
+              <InputsEditor
+                prompt={prompt}
+                compulsoryNFTs={compulsoryNFTs}
+                optionalNFTs={optionalNFTs}
+                updateCompulsoryNFT={updateCompulsoryNFT}
+                updateOptionalNFT={updateOptionalNFT}
+                addOptionalNFT={addOptionalNFT}
+                removeOptionalNFT={removeOptionalNFT}
+                addCompulsoryNFT={addCompulsoryNFT}
+                removeCompulsoryNFT={removeCompulsoryNFT}
+                maxOptionalTokens={maxOptionalTokens}
+              />
             </div>
           </div>
           <Divider />

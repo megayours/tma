@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useNFTSet } from '@/hooks/useNFTSet';
-import { useSelectCommunity } from '@/contexts/SelectCommunityContext';
 import type { Prompt } from '../../types/prompt';
+import type { Token } from '@/types/response';
 import { NFTItem } from './NFTItem';
 import { AddElement } from './AddElement';
 import { IoIosAddCircleOutline } from 'react-icons/io';
@@ -11,27 +10,32 @@ import { IoIosAddCircleOutline } from 'react-icons/io';
  * Manages and renders NFT inputs for prompt generation
  * Handles NFT selection, modification, and click state management
  */
-export const InputsEditor = ({ prompt }: { prompt: Prompt }) => {
+export const InputsEditor = ({
+  prompt,
+  compulsoryNFTs,
+  optionalNFTs,
+  updateCompulsoryNFT,
+  updateOptionalNFT,
+  addOptionalNFT,
+  removeOptionalNFT,
+  addCompulsoryNFT,
+  removeCompulsoryNFT,
+  maxOptionalTokens,
+}: {
+  prompt: Prompt;
+  compulsoryNFTs: Token[];
+  optionalNFTs: Token[];
+  updateCompulsoryNFT: (nftIndex: number, newToken: Token) => void;
+  updateOptionalNFT: (nftIndex: number, newToken: Token) => void;
+  addOptionalNFT: (newToken: Token) => void;
+  removeOptionalNFT: (nftIndex: number) => void;
+  addCompulsoryNFT: () => void;
+  removeCompulsoryNFT: (nftIndex: number) => void;
+  maxOptionalTokens: number;
+}) => {
   // State to track whether we're in NFT modification mode
   const [isModifyingInputsEditor, setIsModifyingInputsEditor] = useState(false);
   const [clickedIndex, setClickedIndex] = useState<number | null>(null);
-
-  // Get community data for NFT initialization
-  const { defaultCollection, selectedCommunity } = useSelectCommunity();
-  const allCollections = selectedCommunity?.collections;
-
-  // Use the simplified single NFT set hook
-  const {
-    compulsoryNFTs,
-    optionalNFTs,
-    updateCompulsoryNFT,
-    updateOptionalNFT,
-    addOptionalNFT,
-    removeOptionalNFT,
-    addCompulsoryNFT,
-    removeCompulsoryNFT,
-    maxOptionalTokens,
-  } = useNFTSet(prompt, defaultCollection, allCollections);
 
   // Enhanced onCloudClose that resets clicked state
   const handleCloudClose = () => {

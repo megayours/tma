@@ -54,7 +54,7 @@ export const NFTSelectionOnly = ({
     'favorites' | 'collections'
   >('favorites');
 
-  const { data: collections } = useGetCollectionsWithPrompt(prompt);
+  const { data: collections, isLoading: isLoadingCollections } = useGetCollectionsWithPrompt(prompt);
 
   // Notify parent when tokens change
   useEffect(() => {
@@ -194,10 +194,11 @@ export const NFTSelectionOnly = ({
                   <PickFavoriteNFTs onTokenSelect={handleFavoriteSelect} />
                 )}
 
-                {selectionMode === 'collections' && collections && (
+                {selectionMode === 'collections' && (
                   <SelectCollection
-                    collections={collections}
+                    collections={collections || []}
                     onCollectionSelect={handleCollectionSelect}
+                    isLoading={isLoadingCollections}
                   />
                 )}
 

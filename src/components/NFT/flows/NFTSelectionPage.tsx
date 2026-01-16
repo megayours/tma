@@ -31,6 +31,7 @@ export function NFTSelectionPageUI({
     handleTokenSelect,
     handleModify,
     isLoading,
+    tokenUsernamesByIndex,
   } = selectionState;
 
   if (isLoading) {
@@ -48,6 +49,7 @@ export function NFTSelectionPageUI({
               tokens={selectedTokens}
               maxTokens={maxTokens}
               onModify={handleModify}
+              usernamesByIndex={tokenUsernamesByIndex}
             />
           </>
         ) : (
@@ -63,6 +65,11 @@ export function NFTSelectionPageUI({
               nfts={currentToken}
               isSelectorOpen={isSelectorOpen}
               onToggleSelector={() => setIsSelectorOpen(!isSelectorOpen)}
+              username={
+                currentStep !== null
+                  ? tokenUsernamesByIndex?.[currentStep - 1]
+                  : undefined
+              }
             />
 
             {isSelectorOpen && (

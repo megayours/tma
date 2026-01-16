@@ -16,6 +16,9 @@ export interface SelectedNFTDisplayProps {
 
   /** Display mode - 'first' shows only first NFT, 'grid' shows all (future) */
   displayMode?: 'first' | 'grid';
+
+  /** Optional username to show for the selected NFT */
+  username?: string;
 }
 
 /**
@@ -34,6 +37,7 @@ export function SelectedNFTDisplay({
   isSelectorOpen,
   onToggleSelector,
   heading,
+  username,
 }: SelectedNFTDisplayProps) {
   // Normalize input to always work with an array
   const nftArray = useMemo(() => {
@@ -47,6 +51,12 @@ export function SelectedNFTDisplay({
   // For now, always display first NFT (displayMode='first')
   // Future: support displayMode='grid' for multiple NFTs
   const displayNFT = nftArray[0];
+  const displayUsername =
+    username && username.startsWith('@')
+      ? username
+      : username
+        ? `@${username}`
+        : '';
 
   return (
     <div>
@@ -127,6 +137,16 @@ export function SelectedNFTDisplay({
             >
               {displayNFT.contract?.name || 'Unknown Collection'}
             </div>
+
+            {displayUsername && (
+              <div
+                className={`text-tg-hint transition-all duration-500 ease-in-out ${
+                  isSelectorOpen ? 'text-xs' : 'text-sm'
+                }`}
+              >
+                {displayUsername}
+              </div>
+            )}
           </div>
         </div>
       </div>

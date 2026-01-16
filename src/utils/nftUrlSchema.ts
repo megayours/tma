@@ -14,16 +14,10 @@ export const nftParamsSchema = z.object({
       [`nft_${i}_chain`, z.string().optional()],
       [`nft_${i}_address`, z.string().optional()],
       [`nft_${i}_id`, nftIdSchema],
+      [`nft_${i}_user`, z.string().optional()],
+      [`nft_${i}_username`, z.string().optional()],
     ]).flat()
   ),
-  // Handle notify as either a single string or array, normalize to array
-  notify: z
-    .union([z.string(), z.array(z.string())])
-    .optional()
-    .transform(val => {
-      if (!val) return undefined;
-      return Array.isArray(val) ? val : [val];
-    }),
 });
 
 export type NFTUrlParams = z.infer<typeof nftParamsSchema>;

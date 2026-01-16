@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import type { Token } from '@/types/response';
 import type { SupportedCollection } from '@/hooks/useCollections';
@@ -39,6 +39,12 @@ export function useNFTSelectionFlow({
   const [selectedTokens, setSelectedTokens] = useState<Token[]>([]);
   const [isSelectorOpen, setIsSelectorOpen] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
+  const [tokenUsersByIndex, setTokenUsersByIndex] = useState<
+    Array<string | undefined>
+  >([]);
+  const [tokenUsernamesByIndex, setTokenUsernamesByIndex] = useState<
+    Array<string | undefined>
+  >([]);
 
   // Track programmatic navigation to prevent race conditions
   const isProgrammaticNavigationRef = useRef(false);
@@ -48,15 +54,31 @@ export function useNFTSelectionFlow({
     tokens: urlTokens,
     isLoading: isLoadingUrlTokens,
     hasUrlParams,
+    tokenUsersByIndex: urlTokenUsersByIndex,
+    tokenUsernamesByIndex: urlTokenUsernamesByIndex,
   } = useNFTsFromUrlParams({
     urlParams,
     enabled: true,
   });
 
-  // Extract notify IDs from URL params
-  const notifyIds = useMemo(() => {
-    return urlParams.notify || [];
-  }, [urlParams.notify]);
+  const currentUserId = session?.id;
+  const currentUsername = session?.username;
+
+  const areStringArraysEqual = (
+    left: Array<string | undefined>,
+    right: Array<string | undefined>
+  ) => left.length === right.length && left.every((value, index) => value === right[index]);
+
+  const areTokensEqual = (left: Token[], right: Token[]) =>
+    left.length === right.length &&
+    left.every((token, index) => {
+      const other = right[index];
+      return (
+        token.id === other?.id &&
+        token.contract?.address === other?.contract?.address &&
+        token.contract?.chain === other?.contract?.chain
+      );
+    });
 
   // Preselect tokens if no URL params
   const { preselectedTokens, isLoading: isPreselecting } = useNFTPreselection({
@@ -66,11 +88,15 @@ export function useNFTSelectionFlow({
   });
 
   // Helper to initialize with tokens and mark as programmatic navigation
-  const initializeWithTokens = (tokens: Token[]) => {
+  const initializeWithTokens = (
+    tokens: Token[],
+    userIds?: Array<string | undefined>,
+    usernames?: Array<string | undefined>
+  ) => {
     setSelectedTokens(tokens);
     if (tokens.length > 0) {
       isProgrammaticNavigationRef.current = true;
-      const nftParams = encodeNFTsToParams(tokens);
+      const nftParams = encodeNFTsToParams(tokens, userIds, usernames);
       navigate({ to: '.', search: nftParams, replace: true });
     }
     setHasInitialized(true);
@@ -81,14 +107,44 @@ export function useNFTSelectionFlow({
     if (hasInitialized) return;
 
     if (urlTokens.length > 0) {
-      setSelectedTokens(urlTokens);
+      if (!areTokensEqual(selectedTokens, urlTokens)) {
+        setSelectedTokens(urlTokens);
+      }
+      if (!areStringArraysEqual(tokenUsersByIndex, urlTokenUsersByIndex)) {
+        setTokenUsersByIndex(urlTokenUsersByIndex);
+      }
+      if (!areStringArraysEqual(tokenUsernamesByIndex, urlTokenUsernamesByIndex)) {
+        setTokenUsernamesByIndex(urlTokenUsernamesByIndex);
+      }
       setHasInitialized(true);
     } else if (preselectedTokens.length > 0) {
-      initializeWithTokens(preselectedTokens);
+      const preselectedUsers = preselectedTokens.map(() => currentUserId);
+      const preselectedUsernames = preselectedTokens.map(() => currentUsername);
+      setTokenUsersByIndex(preselectedUsers);
+      setTokenUsernamesByIndex(preselectedUsernames);
+      initializeWithTokens(preselectedTokens, preselectedUsers, preselectedUsernames);
     } else if (favoriteToken && maxTokens === 1) {
-      initializeWithTokens([favoriteToken]);
+      const favoriteUsers = [currentUserId];
+      const favoriteUsernames = [currentUsername];
+      setTokenUsersByIndex(favoriteUsers);
+      setTokenUsernamesByIndex(favoriteUsernames);
+      initializeWithTokens([favoriteToken], favoriteUsers, favoriteUsernames);
     }
-  }, [urlTokens, preselectedTokens, favoriteToken, maxTokens, navigate, hasInitialized]);
+  }, [
+    urlTokens,
+    preselectedTokens,
+    favoriteToken,
+    maxTokens,
+    navigate,
+    hasInitialized,
+    urlTokenUsersByIndex,
+    urlTokenUsernamesByIndex,
+    currentUserId,
+    currentUsername,
+    selectedTokens,
+    tokenUsersByIndex,
+    tokenUsernamesByIndex,
+  ]);
 
   // Sync URL changes after initialization (when user manually changes URL)
   useEffect(() => {
@@ -100,10 +156,27 @@ export function useNFTSelectionFlow({
 
     // Only sync from URL if initialized and has URL params
     if (hasInitialized && hasUrlParams && urlTokens.length > 0) {
-      setSelectedTokens(urlTokens);
+      if (!areTokensEqual(selectedTokens, urlTokens)) {
+        setSelectedTokens(urlTokens);
+      }
+      if (!areStringArraysEqual(tokenUsersByIndex, urlTokenUsersByIndex)) {
+        setTokenUsersByIndex(urlTokenUsersByIndex);
+      }
+      if (!areStringArraysEqual(tokenUsernamesByIndex, urlTokenUsernamesByIndex)) {
+        setTokenUsernamesByIndex(urlTokenUsernamesByIndex);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasUrlParams, urlTokens.length, hasInitialized]);
+  }, [
+    hasUrlParams,
+    urlTokens.length,
+    hasInitialized,
+    urlTokenUsersByIndex,
+    urlTokenUsernamesByIndex,
+    selectedTokens,
+    tokenUsersByIndex,
+    tokenUsernamesByIndex,
+  ]);
 
   // Handle URL hash changes for step navigation
   useEffect(() => {
@@ -147,8 +220,20 @@ export function useNFTSelectionFlow({
     updatedTokens[stepIndex] = token;
     setSelectedTokens(updatedTokens);
 
+    const updatedUsers = [...tokenUsersByIndex];
+    updatedUsers[stepIndex] = currentUserId;
+    setTokenUsersByIndex(updatedUsers);
+
     isProgrammaticNavigationRef.current = true;
-    const nftParams = encodeNFTsToParams(updatedTokens);
+    const updatedUsernames = [...tokenUsernamesByIndex];
+    updatedUsernames[stepIndex] = currentUsername;
+    setTokenUsernamesByIndex(updatedUsernames);
+
+    const nftParams = encodeNFTsToParams(
+      updatedTokens,
+      updatedUsers,
+      updatedUsernames
+    );
     navigate({ to: '.', search: nftParams, replace: true });
 
     navigateToStepOrSummary(currentStep + 1);
@@ -178,7 +263,8 @@ export function useNFTSelectionFlow({
     isSelectorOpen,
     showSummary,
     isRequired,
-    notify: notifyIds,
+    tokenUsersByIndex,
+    tokenUsernamesByIndex,
 
     // Actions
     setIsSelectorOpen,

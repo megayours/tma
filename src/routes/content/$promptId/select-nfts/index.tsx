@@ -58,6 +58,14 @@ function SelectNFTsPage() {
     urlParams: search,
   });
 
+  const notifyUserIds = Array.from(
+    new Set(
+      selectionState.tokenUsersByIndex.filter((userId): userId is string =>
+        Boolean(userId)
+      )
+    )
+  );
+
   // Navigate on successful generation
   useEffect(() => {
     if (generateMutation.isSuccess && generateMutation.data) {
@@ -94,22 +102,27 @@ function SelectNFTsPage() {
         contract_address: token.contract.address,
         token_id: token.id,
       })),
-      notify: selectionState.notify || [],
+      notify: notifyUserIds,
     });
   };
 
-  // Build share URL with notify IDs
+  // Build share URL with slot user IDs
   const shareUrl = useNFTShareUrl({
-    session,
-    notify: selectionState.notify,
     communityId: selectedCommunity?.id,
     tokens: selectionState.selectedTokens,
+    tokenUsersByIndex: selectionState.tokenUsersByIndex,
+    tokenUsernamesByIndex: selectionState.tokenUsernamesByIndex,
   });
 
   useEffect(() => {
     if (!prompt) return;
 
-    console.log('MIN TOKENS:', prompt.minTokens, 'MAX TOKENS:', prompt.maxTokens);
+    console.log(
+      'MIN TOKENS:',
+      prompt.minTokens,
+      'MAX TOKENS:',
+      prompt.maxTokens
+    );
     console.log(
       'CAN GO NEXT:',
       selectionState.canGoNext,
@@ -121,13 +134,19 @@ function SelectNFTsPage() {
       selectionState.selectedTokens.length > 0 && selectionState.canGoNext
     );
     console.log('URL PARAMS:', search);
-    console.log('NOTIFY IDs:', selectionState.notify);
+    console.log(
+      'TOKEN USERS:',
+      selectionState.tokenUsersByIndex,
+      'TOKEN USERNAMES:',
+      selectionState.tokenUsernamesByIndex
+    );
   }, [
     prompt,
     search,
     selectionState.canGoNext,
     selectionState.hasEmptySlots,
-    selectionState.notify,
+    selectionState.tokenUsersByIndex,
+    selectionState.tokenUsernamesByIndex,
     selectionState.selectedTokens.length,
   ]);
 
@@ -188,6 +207,7 @@ function SelectNFTsPage() {
     shareText: 'Create content with me! ',
   });
 
+  console.log('SELECTION STATE:', selectionState);
   console.log('SHOULD SHOW SHARE BUTTON:', Boolean(shareButtonConfig));
 
   if (shareButtonConfig) {

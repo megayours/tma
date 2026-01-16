@@ -91,6 +91,14 @@ function RouteComponent() {
     }
   }, [purchaseData, stickerPackId, navigate]);
 
+  const notifyUserIds = Array.from(
+    new Set(
+      selectionState.tokenUsersByIndex.filter((userId): userId is string =>
+        Boolean(userId)
+      )
+    )
+  );
+
   const handleGenerate = () => {
     if (!stickerPack || !selectionState.canGenerate) {
       alert(
@@ -112,7 +120,7 @@ function RouteComponent() {
         parseInt(stickerPackId),
         selectionState.selectedTokens,
         'basic',
-        selectionState.notify || []
+        notifyUserIds
       );
     } else {
       navigate({
@@ -138,12 +146,12 @@ function RouteComponent() {
     return 'Generate';
   };
 
-  // Build share URL with notify IDs
+  // Build share URL with slot user IDs
   const shareUrl = useNFTShareUrl({
-    session,
-    notify: selectionState.notify,
     communityId,
     tokens: selectionState.selectedTokens,
+    tokenUsersByIndex: selectionState.tokenUsersByIndex,
+    tokenUsernamesByIndex: selectionState.tokenUsernamesByIndex,
   });
 
   if (isLoadingStickerPack || !stickerPack || selectionState.isLoading) {
@@ -190,7 +198,12 @@ function RouteComponent() {
   }
 
   console.log('Sticker pack , stickerPack);', stickerPack);
-  console.log('NOTIFY IDs:', selectionState.notify);
+  console.log(
+    'TOKEN USERS:',
+    selectionState.tokenUsersByIndex,
+    'TOKEN USERNAMES:',
+    selectionState.tokenUsernamesByIndex
+  );
 
   return (
     <div className="flex h-screen flex-col">

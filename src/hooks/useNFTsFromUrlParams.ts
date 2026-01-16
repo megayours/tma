@@ -35,7 +35,6 @@ export function useNFTsFromUrlParams(options: UseNFTsFromUrlParamsOptions) {
     () => (enabled ? decodeNFTsFromParams(urlParams) : []),
     [urlParams, enabled]
   );
-
   // Use TanStack Query's useQueries for parallel fetching
   const queries = useQueries({
     queries: nftIdentifiers.map(({ chain, contractAddress, tokenId }) => ({
@@ -66,11 +65,26 @@ export function useNFTsFromUrlParams(options: UseNFTsFromUrlParamsOptions) {
   });
 
   // Aggregate results from all queries
-  const tokens = useMemo(() => {
-    return queries
-      .map(query => query.data)
-      .filter((token): token is Token => token !== null && token !== undefined);
-  }, [queries]);
+  const { tokens, tokenUsersByIndex, tokenUsernamesByIndex } = useMemo(() => {
+    const resolvedTokens: Token[] = [];
+    const resolvedUsers: Array<string | undefined> = [];
+    const resolvedUsernames: Array<string | undefined> = [];
+
+    queries.forEach((query, index) => {
+      const token = query.data ?? null;
+      if (token) {
+        resolvedTokens.push(token);
+        resolvedUsers.push(nftIdentifiers[index]?.userId);
+        resolvedUsernames.push(nftIdentifiers[index]?.username);
+      }
+    });
+
+    return {
+      tokens: resolvedTokens,
+      tokenUsersByIndex: resolvedUsers,
+      tokenUsernamesByIndex: resolvedUsernames,
+    };
+  }, [queries, nftIdentifiers]);
 
   const isLoading = queries.some(query => query.isLoading);
   const hasError = queries.some(query => query.isError);
@@ -80,5 +94,7 @@ export function useNFTsFromUrlParams(options: UseNFTsFromUrlParamsOptions) {
     isLoading,
     hasError,
     hasUrlParams: nftIdentifiers.length > 0,
+    tokenUsersByIndex,
+    tokenUsernamesByIndex,
   };
 }

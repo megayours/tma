@@ -75,7 +75,8 @@ export function useNFTSelectionPage({
     showSummary: flowState.showSummary,
     isRequired: flowState.isRequired,
     isLoading: flowState.isLoading,
-    notify: flowState.notify,
+    tokenUsersByIndex: flowState.tokenUsersByIndex,
+    tokenUsernamesByIndex: flowState.tokenUsernamesByIndex,
 
     // Actions
     setIsSelectorOpen: flowState.setIsSelectorOpen,

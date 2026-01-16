@@ -12,22 +12,24 @@ interface UseNFTShareUrlParams {
 }
 
 /**
- * Hook for building share URLs with NFT + slot user IDs
+ * Simplified hook for building share URLs with NFT selections
  */
 export function useNFTShareUrl({
   communityId,
-  tokens,
-  tokenUsersByIndex,
-  tokenUsernamesByIndex,
+  tokens = [],
+  tokenUsersByIndex = [],
+  tokenUsernamesByIndex = [],
 }: UseNFTShareUrlParams): string {
   const location = useLocation();
 
   return useMemo(() => {
     const botUrl = import.meta.env.VITE_PUBLIC_BOT_URL || '';
-    const nftParams =
-      tokens?.length
-        ? encodeNFTsToParams(tokens, tokenUsersByIndex, tokenUsernamesByIndex)
-        : null;
+
+    // Build params from current tokens or fall back to current URL
+    const nftParams = tokens.length
+      ? encodeNFTsToParams(tokens, tokenUsersByIndex, tokenUsernamesByIndex)
+      : null;
+
     const baseSearchParams = new URLSearchParams();
 
     if (nftParams) {
@@ -35,6 +37,7 @@ export function useNFTShareUrl({
         baseSearchParams.set(key, value);
       });
     } else if (location.search) {
+      // Fallback to current URL params
       Object.entries(location.search).forEach(([key, value]) => {
         if (Array.isArray(value)) {
           value.forEach(item => {
@@ -54,12 +57,5 @@ export function useNFTShareUrl({
       : location.pathname;
 
     return buildShareUrl(botUrl, currentPath, communityId);
-  }, [
-    communityId,
-    location.pathname,
-    location.search,
-    tokenUsersByIndex,
-    tokenUsernamesByIndex,
-    tokens,
-  ]);
+  }, [communityId, location.pathname, location.search, tokens, tokenUsersByIndex, tokenUsernamesByIndex]);
 }

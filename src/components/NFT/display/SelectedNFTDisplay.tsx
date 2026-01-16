@@ -2,8 +2,8 @@ import { useMemo } from 'react';
 import type { Token } from '@/types/response';
 
 export interface SelectedNFTDisplayProps {
-  /** Single token, array of tokens, or null */
-  nfts: Token | Token[] | null;
+  /** Single token, array of tokens, null, or undefined */
+  nfts: Token | Token[] | null | undefined;
 
   /** Whether the NFT selector is currently open */
   isSelectorOpen: boolean;

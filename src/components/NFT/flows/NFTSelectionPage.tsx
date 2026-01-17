@@ -1,5 +1,4 @@
 import { NFTsSummary } from '../display/NFTsSummary';
-import { SelectedNFTDisplay } from '../display/SelectedNFTDisplay';
 import { NFTSelector } from './NFTSelector';
 import type { NFTSelectionState } from '@/hooks/useNFTSelection';
 import type { SupportedCollection } from '@/hooks/useCollections';
@@ -24,7 +23,6 @@ export function NFTSelectionPageUI({
     selectedTokens,
     currentIndex,
     currentToken,
-    isSelectorOpen,
     showSummary,
     isRequired,
     setIsSelectorOpen,
@@ -86,7 +84,10 @@ export function NFTSelectionPageUI({
                 collections={collections}
                 onTokenSelect={token => handleTokenSelect(currentIndex, token)}
                 selectedNFT={currentToken}
-                onCancel={() => setIsSelectorOpen(false)}
+                onCancel={() => {
+                  handleTokenSelect(currentIndex, null);
+                  setIsSelectorOpen(false);
+                }}
               />
             )}
           </>

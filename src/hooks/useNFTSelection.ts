@@ -27,15 +27,15 @@ export function useNFTSelection({
   const { session } = useSession();
 
   // Initialize arrays with length maxTokens
-  const [selectedTokens, setSelectedTokens] = useState<Array<Token | undefined>>(
-    () => Array(maxTokens).fill(undefined)
-  );
-  const [tokenUsersByIndex, setTokenUsersByIndex] = useState<Array<string | undefined>>(
-    () => Array(maxTokens).fill(undefined)
-  );
-  const [tokenUsernamesByIndex, setTokenUsernamesByIndex] = useState<Array<string | undefined>>(
-    () => Array(maxTokens).fill(undefined)
-  );
+  const [selectedTokens, setSelectedTokens] = useState<
+    Array<Token | undefined>
+  >(() => Array(maxTokens).fill(undefined));
+  const [tokenUsersByIndex, setTokenUsersByIndex] = useState<
+    Array<string | undefined>
+  >(() => Array(maxTokens).fill(undefined));
+  const [tokenUsernamesByIndex, setTokenUsernamesByIndex] = useState<
+    Array<string | undefined>
+  >(() => Array(maxTokens).fill(undefined));
 
   const [currentIndex, setCurrentIndex] = useState<number | null>(null);
   const [isSelectorOpen, setIsSelectorOpen] = useState(false);
@@ -59,23 +59,38 @@ export function useNFTSelection({
   useEffect(() => {
     if (hasInitialized) return;
 
+    // CRITICAL FIX: Wait for loading to complete before initializing
+    // This prevents a race condition where the effect runs with empty urlTokens
+    // and sets hasInitialized=true before the API fetch completes
+    if (isLoadingUrlTokens) return;
+
     if (urlTokens.length > 0) {
       // Pad arrays to maxTokens length
       const paddedTokens: Array<Token | undefined> = [...urlTokens];
       const paddedUsers: Array<string | undefined> = [...urlTokenUsersByIndex];
-      const paddedUsernames: Array<string | undefined> = [...urlTokenUsernamesByIndex];
+      const paddedUsernames: Array<string | undefined> = [
+        ...urlTokenUsernamesByIndex,
+      ];
 
       while (paddedTokens.length < maxTokens) paddedTokens.push(undefined);
       while (paddedUsers.length < maxTokens) paddedUsers.push(undefined);
-      while (paddedUsernames.length < maxTokens) paddedUsernames.push(undefined);
+      while (paddedUsernames.length < maxTokens)
+        paddedUsernames.push(undefined);
 
       setSelectedTokens(paddedTokens.slice(0, maxTokens));
       setTokenUsersByIndex(paddedUsers.slice(0, maxTokens));
       setTokenUsernamesByIndex(paddedUsernames.slice(0, maxTokens));
     }
-    setHasInitialized(true);
-  }, [urlTokens, urlTokenUsersByIndex, urlTokenUsernamesByIndex, hasInitialized, maxTokens]);
 
+    setHasInitialized(true);
+  }, [
+    urlTokens,
+    urlTokenUsersByIndex,
+    urlTokenUsernamesByIndex,
+    hasInitialized,
+    maxTokens,
+    isLoadingUrlTokens,
+  ]);
 
   // Handle URL hash changes for index navigation
   useEffect(() => {
@@ -128,34 +143,50 @@ export function useNFTSelection({
   // Token selection handler - takes index and token
   const handleTokenSelect = (index: number, token: Token | null) => {
     console.log('handleTokenSelect called:', { index, token: token?.id });
-    if (!token || index < 0 || index >= maxTokens) {
-      console.log('handleTokenSelect - invalid params, returning');
+    if (index < 0 || index >= maxTokens) {
+      console.log('handleTokenSelect - invalid index, returning');
       return;
     }
 
     const updatedTokens = [...selectedTokens];
-    updatedTokens[index] = token;
-
     const updatedUsers = [...tokenUsersByIndex];
-    updatedUsers[index] = currentUserId;
-
     const updatedUsernames = [...tokenUsernamesByIndex];
-    updatedUsernames[index] = currentUsername;
 
-    console.log('handleTokenSelect - updating state:', {
-      index,
-      updatedTokens: updatedTokens.map(t => t?.id),
-      currentUserId,
-      currentUsername
-    });
+    if (token) {
+      // Setting a token
+      updatedTokens[index] = token;
+      updatedUsers[index] = currentUserId;
+      updatedUsernames[index] = currentUsername;
 
-    setSelectedTokens(updatedTokens);
-    setTokenUsersByIndex(updatedUsers);
-    setTokenUsernamesByIndex(updatedUsernames);
-    updateUrlWithTokens(updatedTokens, updatedUsers, updatedUsernames);
+      console.log('handleTokenSelect - updating state:', {
+        index,
+        updatedTokens: updatedTokens.map(t => t?.id),
+        currentUserId,
+        currentUsername,
+      });
 
-    // Navigate to next slot or summary
-    navigateToIndexOrSummary(index + 1);
+      setSelectedTokens(updatedTokens);
+      setTokenUsersByIndex(updatedUsers);
+      setTokenUsernamesByIndex(updatedUsernames);
+      updateUrlWithTokens(updatedTokens, updatedUsers, updatedUsernames);
+
+      // Navigate to next slot or summary
+      navigateToIndexOrSummary(index + 1);
+    } else {
+      // Clearing a token (null)
+      updatedTokens[index] = undefined;
+      updatedUsers[index] = undefined;
+      updatedUsernames[index] = undefined;
+
+      console.log('handleTokenSelect - clearing token:', { index });
+
+      setSelectedTokens(updatedTokens);
+      setTokenUsersByIndex(updatedUsers);
+      setTokenUsernamesByIndex(updatedUsernames);
+      updateUrlWithTokens(updatedTokens, updatedUsers, updatedUsernames);
+
+      // Don't navigate when clearing
+    }
   };
 
   // Skip handler
@@ -190,20 +221,27 @@ export function useNFTSelection({
 
   // Computed values
   const showSummary = currentIndex === null;
-  const currentToken = currentIndex !== null ? selectedTokens[currentIndex] : undefined;
+  const currentToken =
+    currentIndex !== null ? selectedTokens[currentIndex] : undefined;
   const isRequired = currentIndex !== null && currentIndex < minTokens;
 
-  const hasEmptySlots = selectedTokens.some((token, i) => i < maxTokens && !token);
+  const hasEmptySlots = selectedTokens.some(
+    (token, i) => i < maxTokens && !token
+  );
 
   const canGoNext = showSummary
     ? hasEmptySlots
     : Boolean(currentToken || !isRequired);
 
-  const filledTokens = selectedTokens.filter((t): t is Token => t !== undefined);
+  const filledTokens = selectedTokens.filter(
+    (t): t is Token => t !== undefined
+  );
   const canGenerate = filledTokens.length >= minTokens;
 
   const notifyUserIds = Array.from(
-    new Set(tokenUsersByIndex.filter((userId): userId is string => Boolean(userId)))
+    new Set(
+      tokenUsersByIndex.filter((userId): userId is string => Boolean(userId))
+    )
   );
 
   console.log('useNFTSelection render:', {

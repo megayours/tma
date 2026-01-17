@@ -241,7 +241,7 @@ export const TelegramDualButtons: React.FC<TelegramDualButtonsProps> = ({
         text: mainConfig.loading ? 'Processing...' : mainConfig.text,
         isEnabled: !mainConfig.disabled && !mainConfig.loading,
         isLoaderVisible: mainConfig.loading,
-        isVisible: mainConfig.visible && !mainConfig.disabled,
+        isVisible: mainConfig.visible,
         hasShineEffect: mainConfig.hasShineEffect || false,
       };
 
@@ -292,7 +292,7 @@ export const TelegramDualButtons: React.FC<TelegramDualButtonsProps> = ({
         text: secondaryConfig.loading ? 'Processing...' : secondaryConfig.text,
         isEnabled: !secondaryConfig.disabled && !secondaryConfig.loading,
         isLoaderVisible: secondaryConfig.loading,
-        isVisible: secondaryConfig.visible && !secondaryConfig.disabled,
+        isVisible: secondaryConfig.visible,
         hasShineEffect: secondaryConfig.hasShineEffect || false,
         position: secondaryConfig.position || 'left',
       };

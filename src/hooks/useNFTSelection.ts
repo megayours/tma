@@ -55,6 +55,16 @@ export function useNFTSelection({
   const currentUserId = session?.id;
   const currentUsername = session?.username;
 
+  // Reset state when minTokens or maxTokens change
+  // This fixes a bug where the hook initializes with fallback values (e.g., maxTokens=1)
+  // before the prompt data loads with the actual values (e.g., maxTokens=2)
+  useEffect(() => {
+    setSelectedTokens(Array(maxTokens).fill(undefined));
+    setTokenUsersByIndex(Array(maxTokens).fill(undefined));
+    setTokenUsernamesByIndex(Array(maxTokens).fill(undefined));
+    setHasInitialized(false);
+  }, [minTokens, maxTokens]);
+
   // Initialize from URL on mount
   useEffect(() => {
     if (hasInitialized) return;

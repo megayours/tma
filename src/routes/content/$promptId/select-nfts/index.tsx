@@ -59,7 +59,9 @@ function SelectNFTsPage() {
   });
 
   // Filter out undefined tokens for generation
-  const definedTokens = selection.selectedTokens.filter((t): t is Token => t !== undefined);
+  const definedTokens = selection.selectedTokens.filter(
+    (t): t is Token => t !== undefined
+  );
 
   // Build share URL with current selection (preserve sparse array for correct indices)
   const shareUrl = useNFTShareUrl({
@@ -67,6 +69,7 @@ function SelectNFTsPage() {
     tokens: selection.selectedTokens,
     tokenUsersByIndex: selection.tokenUsersByIndex,
     tokenUsernamesByIndex: selection.tokenUsernamesByIndex,
+    endpoint: `/content/${promptId}/invitation`,
   });
 
   const handleGenerate = () => {
@@ -98,7 +101,9 @@ function SelectNFTsPage() {
         : 'Generate'
       : 'Next',
     onClick: showGenerateButton ? handleGenerate : selection.handleNext,
-    disabled: showGenerateButton ? !selection.canGenerate : !selection.canGoNext,
+    disabled: showGenerateButton
+      ? !selection.canGenerate
+      : !selection.canGoNext,
     loading: generateMutation.isPending,
     visible: true,
   };
@@ -113,7 +118,8 @@ function SelectNFTsPage() {
   const secondaryButton = shouldShowShareButton
     ? {
         text: 'Create with a friend',
-        onClick: () => shareTelegramMessage(shareUrl, 'Create content with me!'),
+        onClick: () =>
+          shareTelegramMessage(shareUrl, 'Create content with me!'),
         visible: true,
       }
     : undefined;

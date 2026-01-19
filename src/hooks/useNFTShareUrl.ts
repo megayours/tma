@@ -9,6 +9,7 @@ interface UseNFTShareUrlParams {
   tokens?: Array<Token | undefined>;
   tokenUsersByIndex?: Array<string | undefined>;
   tokenUsernamesByIndex?: Array<string | undefined>;
+  endpoint?: string;
 }
 
 /**
@@ -20,6 +21,7 @@ export function useNFTShareUrl({
   tokens = [],
   tokenUsersByIndex = [],
   tokenUsernamesByIndex = [],
+  endpoint,
 }: UseNFTShareUrlParams): string {
   const location = useLocation();
 
@@ -54,10 +56,11 @@ export function useNFTShareUrl({
     }
 
     const searchString = baseSearchParams.toString();
+    const pathToUse = endpoint ?? location.pathname;
     const currentPath = searchString
-      ? `${location.pathname}?${searchString}`
-      : location.pathname;
+      ? `${pathToUse}?${searchString}`
+      : pathToUse;
 
     return buildShareUrl(botUrl, currentPath, communityId);
-  }, [communityId, location.pathname, location.search, tokens, tokenUsersByIndex, tokenUsernamesByIndex]);
+  }, [communityId, endpoint, location.pathname, location.search, tokens, tokenUsersByIndex, tokenUsernamesByIndex]);
 }

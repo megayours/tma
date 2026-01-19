@@ -30,16 +30,32 @@ export interface UseNFTsFromUrlParamsOptions {
 export function useNFTsFromUrlParams(options: UseNFTsFromUrlParamsOptions) {
   const { urlParams, enabled = true } = options;
 
-  // Decode NFT identifiers from URL params
+  // Decode NFT identifiers from URL params (may be sparse array)
   const nftIdentifiers = useMemo(
     () => (enabled ? decodeNFTsFromParams(urlParams) : []),
     [urlParams, enabled]
   );
-  // Use TanStack Query's useQueries for parallel fetching
+
+  // Create array of [index, identifier] pairs for defined identifiers only
+  const definedIdentifiers = useMemo(
+    () =>
+      nftIdentifiers
+        .map((identifier, index) => ({ identifier, originalIndex: index }))
+        .filter((item) => item.identifier !== undefined),
+    [nftIdentifiers]
+  );
+
+  // Use TanStack Query's useQueries for parallel fetching (only for defined identifiers)
   const queries = useQueries({
-    queries: nftIdentifiers.map(({ chain, contractAddress, tokenId }) => ({
-      queryKey: ['nftByCollectionAndTokenId', chain, contractAddress, tokenId],
+    queries: definedIdentifiers.map(({ identifier }) => ({
+      queryKey: [
+        'nftByCollectionAndTokenId',
+        identifier!.chain,
+        identifier!.contractAddress,
+        identifier!.tokenId,
+      ],
       queryFn: async (): Promise<Token | null> => {
+        const { chain, contractAddress, tokenId } = identifier!;
         const response = await fetch(
           `${import.meta.env.VITE_PUBLIC_API_URL}/tokens/${chain}/${contractAddress}/${tokenId}`,
           {
@@ -58,24 +74,37 @@ export function useNFTsFromUrlParams(options: UseNFTsFromUrlParamsOptions) {
         const data = await response.json();
         return data as Token;
       },
-      enabled: enabled && !!chain && !!contractAddress && !!tokenId,
+      enabled:
+        enabled &&
+        !!identifier!.chain &&
+        !!identifier!.contractAddress &&
+        !!identifier!.tokenId,
       retry: 1, // Only retry once to fail fast
       staleTime: 5 * 60 * 1000, // 5 minutes
     })),
   });
 
-  // Aggregate results from all queries
+  // Aggregate results from all queries, preserving sparse array structure
   const { tokens, tokenUsersByIndex, tokenUsernamesByIndex } = useMemo(() => {
-    const resolvedTokens: Token[] = [];
-    const resolvedUsers: Array<string | undefined> = [];
-    const resolvedUsernames: Array<string | undefined> = [];
+    // Create sparse arrays with same length as nftIdentifiers
+    const resolvedTokens: Array<Token | undefined> = Array(
+      nftIdentifiers.length
+    ).fill(undefined);
+    const resolvedUsers: Array<string | undefined> = Array(
+      nftIdentifiers.length
+    ).fill(undefined);
+    const resolvedUsernames: Array<string | undefined> = Array(
+      nftIdentifiers.length
+    ).fill(undefined);
 
-    queries.forEach((query, index) => {
-      const token = query.data ?? null;
+    // Map query results back to their original indices
+    definedIdentifiers.forEach(({ originalIndex }, queryIndex) => {
+      const token = queries[queryIndex].data ?? null;
       if (token) {
-        resolvedTokens.push(token);
-        resolvedUsers.push(nftIdentifiers[index]?.userId);
-        resolvedUsernames.push(nftIdentifiers[index]?.username);
+        resolvedTokens[originalIndex] = token;
+        resolvedUsers[originalIndex] = nftIdentifiers[originalIndex]?.userId;
+        resolvedUsernames[originalIndex] =
+          nftIdentifiers[originalIndex]?.username;
       }
     });
 
@@ -84,7 +113,7 @@ export function useNFTsFromUrlParams(options: UseNFTsFromUrlParamsOptions) {
       tokenUsersByIndex: resolvedUsers,
       tokenUsernamesByIndex: resolvedUsernames,
     };
-  }, [queries, nftIdentifiers]);
+  }, [queries, definedIdentifiers, nftIdentifiers]);
 
   const isLoading = queries.some(query => query.isLoading);
   const hasError = queries.some(query => query.isError);

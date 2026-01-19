@@ -91,7 +91,7 @@ function RouteComponent() {
   }, [purchaseData, stickerPackId, navigate]);
 
 
-  // Filter out undefined tokens
+  // Filter out undefined tokens for purchase/generation
   const definedTokens = selection.selectedTokens.filter((t): t is Token => t !== undefined);
 
   const handleGenerate = () => {
@@ -141,10 +141,10 @@ function RouteComponent() {
     return 'Generate';
   };
 
-  // Build share URL with slot user IDs
+  // Build share URL with slot user IDs (preserve sparse array for correct indices)
   const shareUrl = useNFTShareUrl({
     communityId,
-    tokens: definedTokens,
+    tokens: selection.selectedTokens,
     tokenUsersByIndex: selection.tokenUsersByIndex,
     tokenUsernamesByIndex: selection.tokenUsernamesByIndex,
   });

@@ -6,13 +6,14 @@ import { buildShareUrl } from '@/utils/shareUrl';
 
 interface UseNFTShareUrlParams {
   communityId?: string | null;
-  tokens?: Token[];
+  tokens?: Array<Token | undefined>;
   tokenUsersByIndex?: Array<string | undefined>;
   tokenUsernamesByIndex?: Array<string | undefined>;
 }
 
 /**
  * Simplified hook for building share URLs with NFT selections
+ * Supports sparse arrays to preserve NFT slot positions
  */
 export function useNFTShareUrl({
   communityId,
@@ -26,7 +27,8 @@ export function useNFTShareUrl({
     const botUrl = import.meta.env.VITE_PUBLIC_BOT_URL || '';
 
     // Build params from current tokens or fall back to current URL
-    const nftParams = tokens.length
+    // Check if there's at least one defined token in the sparse array
+    const nftParams = tokens.some(t => t !== undefined)
       ? encodeNFTsToParams(tokens, tokenUsersByIndex, tokenUsernamesByIndex)
       : null;
 

@@ -124,15 +124,16 @@ export function useNFTSelection({
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, [maxTokens, selectedTokens]);
 
-  // Helper: Update URL with tokens (filter out undefined)
+  // Helper: Update URL with tokens (preserve sparse array indices)
   const updateUrlWithTokens = (
     tokens: Array<Token | undefined>,
     userIds: Array<string | undefined>,
     usernames: Array<string | undefined>
   ) => {
-    const definedTokens = tokens.filter((t): t is Token => t !== undefined);
-    if (definedTokens.length > 0) {
-      const nftParams = encodeNFTsToParams(definedTokens, userIds, usernames);
+    // Check if there's at least one defined token
+    if (tokens.some(t => t !== undefined)) {
+      // Pass full sparse array to preserve indices
+      const nftParams = encodeNFTsToParams(tokens, userIds, usernames);
       navigate({ to: '.', search: nftParams, replace: true });
     }
   };

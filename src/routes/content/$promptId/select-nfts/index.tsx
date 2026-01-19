@@ -58,13 +58,13 @@ function SelectNFTsPage() {
     urlParams: search,
   });
 
-  // Filter out undefined tokens for share URL and generation
+  // Filter out undefined tokens for generation
   const definedTokens = selection.selectedTokens.filter((t): t is Token => t !== undefined);
 
-  // Build share URL with current selection
+  // Build share URL with current selection (preserve sparse array for correct indices)
   const shareUrl = useNFTShareUrl({
     communityId: selectedCommunity?.id,
-    tokens: definedTokens,
+    tokens: selection.selectedTokens,
     tokenUsersByIndex: selection.tokenUsersByIndex,
     tokenUsernamesByIndex: selection.tokenUsernamesByIndex,
   });

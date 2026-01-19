@@ -17,23 +17,30 @@ function normalizeParamValue(value: string): string {
 
 /**
  * Converts array of Token objects to indexed URL search params
+ * Handles sparse arrays with undefined values, preserving original indices
  *
- * @param tokens - Array of Token objects to encode
+ * @param tokens - Array of Token objects (may contain undefined for empty slots)
  * @returns Object with indexed parameters (nft_0_chain, nft_0_address, nft_0_id, etc.)
  *
  * @example
  * Input: [{ id: "5", contract: { chain: "ethereum", address: "0x123" } }]
  * Output: { nft_0_chain: "ethereum", nft_0_address: "0x123", nft_0_id: "5" }
+ *
+ * Input: [undefined, { id: "5", contract: { chain: "ethereum", address: "0x123" } }]
+ * Output: { nft_1_chain: "ethereum", nft_1_address: "0x123", nft_1_id: "5" }
  */
 export function encodeNFTsToParams(
-  tokens: Token[],
+  tokens: Array<Token | undefined>,
   userIdsByIndex?: Array<string | undefined>,
   usernamesByIndex?: Array<string | undefined>
 ): Record<string, string> {
   const params: Record<string, string> = {};
-  const validTokens = tokens.slice(0, MAX_NFTS); // Limit to 10 NFTs
+  const tokensToEncode = tokens.slice(0, MAX_NFTS); // Limit to 10 NFTs
 
-  validTokens.forEach((token, index) => {
+  tokensToEncode.forEach((token, index) => {
+    // Skip undefined tokens but preserve their index
+    if (!token) return;
+
     // 0-based indexing
     params[`nft_${index}_chain`] = token.contract.chain;
     params[`nft_${index}_address`] = token.contract.address;
@@ -103,11 +110,14 @@ function parseIndexedParams(
  * Extracts NFT data from indexed URL search params
  *
  * @param params - URL search params object
- * @returns Array of NFT identifiers with chain, contractAddress, tokenId
+ * @returns Sparse array of NFT identifiers with undefined for empty slots
  *
  * @example
  * Input: { nft_0_chain: "ethereum", nft_0_address: "0x123", nft_0_id: "5" }
  * Output: [{ chain: "ethereum", contractAddress: "0x123", tokenId: "5" }]
+ *
+ * Input: { nft_1_chain: "ethereum", nft_1_address: "0x123", nft_1_id: "5" }
+ * Output: [undefined, { chain: "ethereum", contractAddress: "0x123", tokenId: "5" }]
  */
 export function decodeNFTsFromParams(
   params: Record<string, unknown>
@@ -117,19 +127,38 @@ export function decodeNFTsFromParams(
   tokenId: string;
   userId?: string;
   username?: string;
-}> {
+} | undefined> {
   const parsedMap = parseIndexedParams(params);
 
-  // Convert map values to array, preserving order
-  return Array.from(parsedMap.values()).map(
-    ({ chain, address, id, userId, username }) => ({
+  // Return empty array if no NFTs found
+  if (parsedMap.size === 0) {
+    return [];
+  }
+
+  // Find the maximum index to determine array length
+  const maxIndex = Math.max(...Array.from(parsedMap.keys()));
+
+  // Create sparse array with undefined for empty slots
+  const result: Array<{
+    chain: string;
+    contractAddress: string;
+    tokenId: string;
+    userId?: string;
+    username?: string;
+  } | undefined> = Array(maxIndex + 1).fill(undefined);
+
+  // Fill in the defined tokens at their original indices
+  parsedMap.forEach(({ chain, address, id, userId, username }, index) => {
+    result[index] = {
       chain,
       contractAddress: address,
       tokenId: id,
       userId,
       username,
-    })
-  );
+    };
+  });
+
+  return result;
 }
 
 /**

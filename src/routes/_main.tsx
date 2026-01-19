@@ -8,7 +8,7 @@ export const Route = createFileRoute('/_main')({
 function MainLayout() {
   const location = useLocation();
   // Define routes where ContentMenu should be displayed
-  const contentMenuRoutes = ['/', '/community', '/profile', '/stickers'];
+  const contentMenuRoutes = ['/', '/community', '/profile', '/stickers', '/memes'];
   const shouldShowContentMenu = contentMenuRoutes.includes(location.pathname);
 
   return (

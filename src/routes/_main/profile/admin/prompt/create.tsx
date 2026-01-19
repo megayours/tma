@@ -23,14 +23,19 @@ function CreatePromptComponent() {
   const navigate = useNavigate();
   const { mutateAsync: createPrompt, isPending } = useCreatePromptMutation();
   const [selectedType, setSelectedType] = useState<
-    'images' | 'gifs' | 'stickers' | 'animated_stickers' | null
+    'images' | 'gifs' | 'stickers' | 'animated_stickers' | 'memes' | null
   >(null);
   const [promptName, setPromptName] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleTypeSelect = (
-    type: 'images' | 'gifs' | 'stickers' | 'animated_stickers'
+    type: 'images' | 'gifs' | 'stickers' | 'animated_stickers' | 'memes'
   ) => {
+    // For memes, navigate to the meme template creation page
+    if (type === 'memes') {
+      navigate({ to: '/profile/admin/meme/create' });
+      return;
+    }
     setSelectedType(type);
   };
 
@@ -72,8 +77,10 @@ function CreatePromptComponent() {
         return 'GIF';
       case 'stickers':
         return 'Sticker';
-      // case 'animated_stickers':
-      //   return 'Animated Sticker';
+      case 'animated_stickers':
+        return 'Animated Sticker';
+      case 'memes':
+        return 'Meme';
       default:
         return '';
     }
@@ -94,7 +101,6 @@ function CreatePromptComponent() {
             </div>
 
             <div className="text-tg-text mx-4 flex flex-col gap-2">
-              <h1 className="text-sm">MEMEs </h1>
               <div
                 onClick={() => isEditor && handleTypeSelect('images')}
                 className="cursor-pointer"
@@ -117,10 +123,7 @@ function CreatePromptComponent() {
                   <span className="text-lg">GIF</span>
                 </div>
               </div>
-            </div>
 
-            <div className="text-tg-text mx-4 flex flex-col gap-2 pt-4">
-              <h1 className="text-sm">Stickers</h1>
               <div
                 onClick={() => handleTypeSelect('stickers')}
                 className="cursor-pointer"
@@ -139,6 +142,15 @@ function CreatePromptComponent() {
                   <span className="text-lg">Animated Sticker</span>
                 </div>
               </div>
+              <div
+                onClick={() => handleTypeSelect('memes')}
+                className="cursor-pointer"
+              >
+                <div className="border-tg-section-separator flex flex-row items-center gap-2 overflow-hidden rounded-2xl border p-4">
+                  <span className="text-5xl">💀</span>
+                  <span className="text-lg">Meme</span>
+                </div>
+              </div>
             </div>
           </>
         ) : (
@@ -153,7 +165,7 @@ function CreatePromptComponent() {
               <div className="flex items-center gap-4">
                 <div>
                   <h1 className="text-tg-text text-2xl font-bold">
-                    Create {getTypeName()} Prompt
+                    Name of the {getTypeName()}
                   </h1>
                 </div>
               </div>
@@ -182,7 +194,7 @@ function CreatePromptComponent() {
                 onClick={handleCreate}
                 disabled={isPending || !promptName.trim()}
               >
-                {isPending ? 'Creating...' : 'Create Prompt'}
+                {isPending ? 'Creating...' : 'Name of the Prompt'}
               </Button>
             </div>
           </>

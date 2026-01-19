@@ -38,7 +38,9 @@ const mapRawPromptToPrompt = (rawPrompt: RawPrompt): Prompt => {
     gifs: rawPrompt.gifs ?? [],
     stickers: rawPrompt.stickers ?? [],
     animatedStickers: rawPrompt.animated_stickers ?? [],
-    thumbnails: rawPrompt.thumbnail_urls?.filter((url): url is string => url !== null) ?? [],
+    thumbnails:
+      rawPrompt.thumbnail_urls?.filter((url): url is string => url !== null) ??
+      [],
     versions: rawPrompt.versions,
     minTokens: rawPrompt.min_tokens,
     maxTokens: rawPrompt.max_tokens,
@@ -403,7 +405,10 @@ export const useGetPrompts = ({
         usageCount: rawPrompt.usage_count,
         animatedStickers: rawPrompt.animated_stickers,
         additionalContentIds: rawPrompt.additional_content_ids,
-        thumbnails: rawPrompt.thumbnail_urls?.filter((url: string | null): url is string => url !== null) ?? [],
+        thumbnails:
+          rawPrompt.thumbnail_urls?.filter(
+            (url: string | null): url is string => url !== null
+          ) ?? [],
       }));
 
       return { prompts, pagination: data.pagination };
@@ -422,7 +427,7 @@ export const useCreatePromptMutation = () => {
       communityId,
     }: {
       session: Session | null;
-      type: 'images' | 'gifs' | 'stickers' | 'animated_stickers';
+      type: 'images' | 'gifs' | 'stickers' | 'animated_stickers' | 'memes';
       name: string;
       communityId: string | undefined;
     }) => {

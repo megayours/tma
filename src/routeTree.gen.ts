@@ -18,9 +18,11 @@ import { Route as StickerPacksIndexRouteImport } from './routes/sticker-packs/in
 import { Route as SelectCommunityIndexRouteImport } from './routes/selectCommunity/index'
 import { Route as PrivateIndexRouteImport } from './routes/private/index'
 import { Route as PostIndexRouteImport } from './routes/post/index'
+import { Route as MemesIndexRouteImport } from './routes/memes/index'
 import { Route as Demo3IndexRouteImport } from './routes/demo3/index'
 import { Route as Demo2IndexRouteImport } from './routes/demo2/index'
 import { Route as StickerPacksStickerPackIdRouteImport } from './routes/sticker-packs/$stickerPackId'
+import { Route as MemesTemplateIdRouteImport } from './routes/memes/$templateId'
 import { Route as ContentPromptIdRouteImport } from './routes/content/$promptId'
 import { Route as AuthRefreshRouteImport } from './routes/auth/refresh'
 import { Route as StickerPacksStickerPackIdIndexRouteImport } from './routes/sticker-packs/$stickerPackId/index'
@@ -42,6 +44,10 @@ import { Route as StickerPacksStickerPackIdDetailsIndexRouteImport } from './rou
 import { Route as PostCreateVideoIndexRouteImport } from './routes/post/create/video/index'
 import { Route as PostCreateStickerIndexRouteImport } from './routes/post/create/sticker/index'
 import { Route as PostCreateImageIndexRouteImport } from './routes/post/create/image/index'
+import { Route as MemesTemplateIdSuccessIndexRouteImport } from './routes/memes/$templateId/success/index'
+import { Route as MemesTemplateIdSelectCharactersIndexRouteImport } from './routes/memes/$templateId/select-characters/index'
+import { Route as MemesTemplateIdDetailsIndexRouteImport } from './routes/memes/$templateId/details/index'
+import { Route as MemesTemplateIdAddTextIndexRouteImport } from './routes/memes/$templateId/add-text/index'
 import { Route as ContentPromptIdSuccessIndexRouteImport } from './routes/content/$promptId/success/index'
 import { Route as ContentPromptIdSelectNftsIndexRouteImport } from './routes/content/$promptId/select-nfts/index'
 import { Route as ContentPromptIdInvitationIndexRouteImport } from './routes/content/$promptId/invitation/index'
@@ -49,14 +55,19 @@ import { Route as ContentPromptIdDetailsIndexRouteImport } from './routes/conten
 import { Route as MainProfilePurchasesIndexRouteImport } from './routes/_main/profile/purchases/index'
 import { Route as MainProfileNotificationsIndexRouteImport } from './routes/_main/profile/notifications/index'
 import { Route as MainProfileAdminIndexRouteImport } from './routes/_main/profile/admin/index'
+import { Route as MemesTemplateIdProcessingMemeIdRouteImport } from './routes/memes/$templateId/processing.$memeId'
 import { Route as ContentPromptIdProcessingExecutionIdRouteImport } from './routes/content/$promptId/processing.$executionId'
 import { Route as StickerPacksStickerPackIdProcessingExecutionIdIndexRouteImport } from './routes/sticker-packs/$stickerPackId/processing/$executionId/index'
 import { Route as AuthDiscordV1CallbackIndexRouteImport } from './routes/auth/discord/v1/callback/index'
 import { Route as MainProfileAdminPromptIndexRouteImport } from './routes/_main/profile/admin/prompt/index'
 import { Route as MainProfileAdminPromptCreateRouteImport } from './routes/_main/profile/admin/prompt/create'
 import { Route as MainProfileAdminPromptEditRouteRouteImport } from './routes/_main/profile/admin/prompt/edit/route'
+import { Route as MainProfileAdminMemeCreateRouteRouteImport } from './routes/_main/profile/admin/meme/create/route'
+import { Route as MainProfileAdminMemeCreateIndexRouteImport } from './routes/_main/profile/admin/meme/create/index'
 import { Route as MainProfileAdminPromptEditPromptIdRouteRouteImport } from './routes/_main/profile/admin/prompt/edit/$promptId/route'
+import { Route as MainProfileAdminMemeCreateTemplateIdRouteRouteImport } from './routes/_main/profile/admin/meme/create/$templateId/route'
 import { Route as MainProfileAdminPromptEditPromptIdIndexRouteImport } from './routes/_main/profile/admin/prompt/edit/$promptId/index'
+import { Route as MainProfileAdminMemeCreateTemplateIdIndexRouteImport } from './routes/_main/profile/admin/meme/create/$templateId/index'
 
 const StickerPacksRoute = StickerPacksRouteImport.update({
   id: '/sticker-packs',
@@ -102,6 +113,11 @@ const PostIndexRoute = PostIndexRouteImport.update({
   path: '/post/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MemesIndexRoute = MemesIndexRouteImport.update({
+  id: '/memes/',
+  path: '/memes/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const Demo3IndexRoute = Demo3IndexRouteImport.update({
   id: '/demo3/',
   path: '/demo3/',
@@ -118,6 +134,11 @@ const StickerPacksStickerPackIdRoute =
     path: '/$stickerPackId',
     getParentRoute: () => StickerPacksRoute,
   } as any)
+const MemesTemplateIdRoute = MemesTemplateIdRouteImport.update({
+  id: '/memes/$templateId',
+  path: '/memes/$templateId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ContentPromptIdRoute = ContentPromptIdRouteImport.update({
   id: '/content/$promptId',
   path: '/content/$promptId',
@@ -232,6 +253,30 @@ const PostCreateImageIndexRoute = PostCreateImageIndexRouteImport.update({
   path: '/post/create/image/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MemesTemplateIdSuccessIndexRoute =
+  MemesTemplateIdSuccessIndexRouteImport.update({
+    id: '/success/',
+    path: '/success/',
+    getParentRoute: () => MemesTemplateIdRoute,
+  } as any)
+const MemesTemplateIdSelectCharactersIndexRoute =
+  MemesTemplateIdSelectCharactersIndexRouteImport.update({
+    id: '/select-characters/',
+    path: '/select-characters/',
+    getParentRoute: () => MemesTemplateIdRoute,
+  } as any)
+const MemesTemplateIdDetailsIndexRoute =
+  MemesTemplateIdDetailsIndexRouteImport.update({
+    id: '/details/',
+    path: '/details/',
+    getParentRoute: () => MemesTemplateIdRoute,
+  } as any)
+const MemesTemplateIdAddTextIndexRoute =
+  MemesTemplateIdAddTextIndexRouteImport.update({
+    id: '/add-text/',
+    path: '/add-text/',
+    getParentRoute: () => MemesTemplateIdRoute,
+  } as any)
 const ContentPromptIdSuccessIndexRoute =
   ContentPromptIdSuccessIndexRouteImport.update({
     id: '/success/',
@@ -273,6 +318,12 @@ const MainProfileAdminIndexRoute = MainProfileAdminIndexRouteImport.update({
   path: '/profile/admin/',
   getParentRoute: () => MainRoute,
 } as any)
+const MemesTemplateIdProcessingMemeIdRoute =
+  MemesTemplateIdProcessingMemeIdRouteImport.update({
+    id: '/processing/$memeId',
+    path: '/processing/$memeId',
+    getParentRoute: () => MemesTemplateIdRoute,
+  } as any)
 const ContentPromptIdProcessingExecutionIdRoute =
   ContentPromptIdProcessingExecutionIdRouteImport.update({
     id: '/processing/$executionId',
@@ -309,17 +360,41 @@ const MainProfileAdminPromptEditRouteRoute =
     path: '/profile/admin/prompt/edit',
     getParentRoute: () => MainRoute,
   } as any)
+const MainProfileAdminMemeCreateRouteRoute =
+  MainProfileAdminMemeCreateRouteRouteImport.update({
+    id: '/profile/admin/meme/create',
+    path: '/profile/admin/meme/create',
+    getParentRoute: () => MainRoute,
+  } as any)
+const MainProfileAdminMemeCreateIndexRoute =
+  MainProfileAdminMemeCreateIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => MainProfileAdminMemeCreateRouteRoute,
+  } as any)
 const MainProfileAdminPromptEditPromptIdRouteRoute =
   MainProfileAdminPromptEditPromptIdRouteRouteImport.update({
     id: '/$promptId',
     path: '/$promptId',
     getParentRoute: () => MainProfileAdminPromptEditRouteRoute,
   } as any)
+const MainProfileAdminMemeCreateTemplateIdRouteRoute =
+  MainProfileAdminMemeCreateTemplateIdRouteRouteImport.update({
+    id: '/$templateId',
+    path: '/$templateId',
+    getParentRoute: () => MainProfileAdminMemeCreateRouteRoute,
+  } as any)
 const MainProfileAdminPromptEditPromptIdIndexRoute =
   MainProfileAdminPromptEditPromptIdIndexRouteImport.update({
     id: '/',
     path: '/',
     getParentRoute: () => MainProfileAdminPromptEditPromptIdRouteRoute,
+  } as any)
+const MainProfileAdminMemeCreateTemplateIdIndexRoute =
+  MainProfileAdminMemeCreateTemplateIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => MainProfileAdminMemeCreateTemplateIdRouteRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -329,9 +404,11 @@ export interface FileRoutesByFullPath {
   '/sticker-packs': typeof StickerPacksRouteWithChildren
   '/auth/refresh': typeof AuthRefreshRoute
   '/content/$promptId': typeof ContentPromptIdRouteWithChildren
+  '/memes/$templateId': typeof MemesTemplateIdRouteWithChildren
   '/sticker-packs/$stickerPackId': typeof StickerPacksStickerPackIdRouteWithChildren
   '/demo2': typeof Demo2IndexRoute
   '/demo3': typeof Demo3IndexRoute
+  '/memes': typeof MemesIndexRoute
   '/post': typeof PostIndexRoute
   '/private': typeof PrivateIndexRoute
   '/selectCommunity': typeof SelectCommunityIndexRoute
@@ -348,6 +425,7 @@ export interface FileRoutesByFullPath {
   '/post/create': typeof PostCreateIndexRoute
   '/sticker-packs/$stickerPackId/': typeof StickerPacksStickerPackIdIndexRoute
   '/content/$promptId/processing/$executionId': typeof ContentPromptIdProcessingExecutionIdRoute
+  '/memes/$templateId/processing/$memeId': typeof MemesTemplateIdProcessingMemeIdRoute
   '/profile/admin': typeof MainProfileAdminIndexRoute
   '/profile/notifications': typeof MainProfileNotificationsIndexRoute
   '/profile/purchases': typeof MainProfilePurchasesIndexRoute
@@ -355,6 +433,10 @@ export interface FileRoutesByFullPath {
   '/content/$promptId/invitation': typeof ContentPromptIdInvitationIndexRoute
   '/content/$promptId/select-nfts': typeof ContentPromptIdSelectNftsIndexRoute
   '/content/$promptId/success': typeof ContentPromptIdSuccessIndexRoute
+  '/memes/$templateId/add-text': typeof MemesTemplateIdAddTextIndexRoute
+  '/memes/$templateId/details': typeof MemesTemplateIdDetailsIndexRoute
+  '/memes/$templateId/select-characters': typeof MemesTemplateIdSelectCharactersIndexRoute
+  '/memes/$templateId/success': typeof MemesTemplateIdSuccessIndexRoute
   '/post/create/image': typeof PostCreateImageIndexRoute
   '/post/create/sticker': typeof PostCreateStickerIndexRoute
   '/post/create/video': typeof PostCreateVideoIndexRoute
@@ -363,12 +445,16 @@ export interface FileRoutesByFullPath {
   '/sticker-packs/$stickerPackId/select-nfts': typeof StickerPacksStickerPackIdSelectNftsIndexRoute
   '/sticker-packs/$stickerPackId/select-tier': typeof StickerPacksStickerPackIdSelectTierIndexRoute
   '/sticker-packs/generated/$id': typeof StickerPacksGeneratedIdIndexRoute
+  '/profile/admin/meme/create': typeof MainProfileAdminMemeCreateRouteRouteWithChildren
   '/profile/admin/prompt/edit': typeof MainProfileAdminPromptEditRouteRouteWithChildren
   '/profile/admin/prompt/create': typeof MainProfileAdminPromptCreateRoute
   '/profile/admin/prompt': typeof MainProfileAdminPromptIndexRoute
   '/auth/discord/v1/callback': typeof AuthDiscordV1CallbackIndexRoute
   '/sticker-packs/$stickerPackId/processing/$executionId': typeof StickerPacksStickerPackIdProcessingExecutionIdIndexRoute
+  '/profile/admin/meme/create/$templateId': typeof MainProfileAdminMemeCreateTemplateIdRouteRouteWithChildren
   '/profile/admin/prompt/edit/$promptId': typeof MainProfileAdminPromptEditPromptIdRouteRouteWithChildren
+  '/profile/admin/meme/create/': typeof MainProfileAdminMemeCreateIndexRoute
+  '/profile/admin/meme/create/$templateId/': typeof MainProfileAdminMemeCreateTemplateIdIndexRoute
   '/profile/admin/prompt/edit/$promptId/': typeof MainProfileAdminPromptEditPromptIdIndexRoute
 }
 export interface FileRoutesByTo {
@@ -376,8 +462,10 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/constraints': typeof ConstraintsRoute
   '/auth/refresh': typeof AuthRefreshRoute
+  '/memes/$templateId': typeof MemesTemplateIdRouteWithChildren
   '/demo2': typeof Demo2IndexRoute
   '/demo3': typeof Demo3IndexRoute
+  '/memes': typeof MemesIndexRoute
   '/post': typeof PostIndexRoute
   '/private': typeof PrivateIndexRoute
   '/selectCommunity': typeof SelectCommunityIndexRoute
@@ -394,6 +482,7 @@ export interface FileRoutesByTo {
   '/post/create': typeof PostCreateIndexRoute
   '/sticker-packs/$stickerPackId': typeof StickerPacksStickerPackIdIndexRoute
   '/content/$promptId/processing/$executionId': typeof ContentPromptIdProcessingExecutionIdRoute
+  '/memes/$templateId/processing/$memeId': typeof MemesTemplateIdProcessingMemeIdRoute
   '/profile/admin': typeof MainProfileAdminIndexRoute
   '/profile/notifications': typeof MainProfileNotificationsIndexRoute
   '/profile/purchases': typeof MainProfilePurchasesIndexRoute
@@ -401,6 +490,10 @@ export interface FileRoutesByTo {
   '/content/$promptId/invitation': typeof ContentPromptIdInvitationIndexRoute
   '/content/$promptId/select-nfts': typeof ContentPromptIdSelectNftsIndexRoute
   '/content/$promptId/success': typeof ContentPromptIdSuccessIndexRoute
+  '/memes/$templateId/add-text': typeof MemesTemplateIdAddTextIndexRoute
+  '/memes/$templateId/details': typeof MemesTemplateIdDetailsIndexRoute
+  '/memes/$templateId/select-characters': typeof MemesTemplateIdSelectCharactersIndexRoute
+  '/memes/$templateId/success': typeof MemesTemplateIdSuccessIndexRoute
   '/post/create/image': typeof PostCreateImageIndexRoute
   '/post/create/sticker': typeof PostCreateStickerIndexRoute
   '/post/create/video': typeof PostCreateVideoIndexRoute
@@ -414,6 +507,8 @@ export interface FileRoutesByTo {
   '/profile/admin/prompt': typeof MainProfileAdminPromptIndexRoute
   '/auth/discord/v1/callback': typeof AuthDiscordV1CallbackIndexRoute
   '/sticker-packs/$stickerPackId/processing/$executionId': typeof StickerPacksStickerPackIdProcessingExecutionIdIndexRoute
+  '/profile/admin/meme/create': typeof MainProfileAdminMemeCreateIndexRoute
+  '/profile/admin/meme/create/$templateId': typeof MainProfileAdminMemeCreateTemplateIdIndexRoute
   '/profile/admin/prompt/edit/$promptId': typeof MainProfileAdminPromptEditPromptIdIndexRoute
 }
 export interface FileRoutesById {
@@ -425,9 +520,11 @@ export interface FileRoutesById {
   '/sticker-packs': typeof StickerPacksRouteWithChildren
   '/auth/refresh': typeof AuthRefreshRoute
   '/content/$promptId': typeof ContentPromptIdRouteWithChildren
+  '/memes/$templateId': typeof MemesTemplateIdRouteWithChildren
   '/sticker-packs/$stickerPackId': typeof StickerPacksStickerPackIdRouteWithChildren
   '/demo2/': typeof Demo2IndexRoute
   '/demo3/': typeof Demo3IndexRoute
+  '/memes/': typeof MemesIndexRoute
   '/post/': typeof PostIndexRoute
   '/private/': typeof PrivateIndexRoute
   '/selectCommunity/': typeof SelectCommunityIndexRoute
@@ -444,6 +541,7 @@ export interface FileRoutesById {
   '/post/create/': typeof PostCreateIndexRoute
   '/sticker-packs/$stickerPackId/': typeof StickerPacksStickerPackIdIndexRoute
   '/content/$promptId/processing/$executionId': typeof ContentPromptIdProcessingExecutionIdRoute
+  '/memes/$templateId/processing/$memeId': typeof MemesTemplateIdProcessingMemeIdRoute
   '/_main/profile/admin/': typeof MainProfileAdminIndexRoute
   '/_main/profile/notifications/': typeof MainProfileNotificationsIndexRoute
   '/_main/profile/purchases/': typeof MainProfilePurchasesIndexRoute
@@ -451,6 +549,10 @@ export interface FileRoutesById {
   '/content/$promptId/invitation/': typeof ContentPromptIdInvitationIndexRoute
   '/content/$promptId/select-nfts/': typeof ContentPromptIdSelectNftsIndexRoute
   '/content/$promptId/success/': typeof ContentPromptIdSuccessIndexRoute
+  '/memes/$templateId/add-text/': typeof MemesTemplateIdAddTextIndexRoute
+  '/memes/$templateId/details/': typeof MemesTemplateIdDetailsIndexRoute
+  '/memes/$templateId/select-characters/': typeof MemesTemplateIdSelectCharactersIndexRoute
+  '/memes/$templateId/success/': typeof MemesTemplateIdSuccessIndexRoute
   '/post/create/image/': typeof PostCreateImageIndexRoute
   '/post/create/sticker/': typeof PostCreateStickerIndexRoute
   '/post/create/video/': typeof PostCreateVideoIndexRoute
@@ -459,12 +561,16 @@ export interface FileRoutesById {
   '/sticker-packs/$stickerPackId/select-nfts/': typeof StickerPacksStickerPackIdSelectNftsIndexRoute
   '/sticker-packs/$stickerPackId/select-tier/': typeof StickerPacksStickerPackIdSelectTierIndexRoute
   '/sticker-packs/generated/$id/': typeof StickerPacksGeneratedIdIndexRoute
+  '/_main/profile/admin/meme/create': typeof MainProfileAdminMemeCreateRouteRouteWithChildren
   '/_main/profile/admin/prompt/edit': typeof MainProfileAdminPromptEditRouteRouteWithChildren
   '/_main/profile/admin/prompt/create': typeof MainProfileAdminPromptCreateRoute
   '/_main/profile/admin/prompt/': typeof MainProfileAdminPromptIndexRoute
   '/auth/discord/v1/callback/': typeof AuthDiscordV1CallbackIndexRoute
   '/sticker-packs/$stickerPackId/processing/$executionId/': typeof StickerPacksStickerPackIdProcessingExecutionIdIndexRoute
+  '/_main/profile/admin/meme/create/$templateId': typeof MainProfileAdminMemeCreateTemplateIdRouteRouteWithChildren
   '/_main/profile/admin/prompt/edit/$promptId': typeof MainProfileAdminPromptEditPromptIdRouteRouteWithChildren
+  '/_main/profile/admin/meme/create/': typeof MainProfileAdminMemeCreateIndexRoute
+  '/_main/profile/admin/meme/create/$templateId/': typeof MainProfileAdminMemeCreateTemplateIdIndexRoute
   '/_main/profile/admin/prompt/edit/$promptId/': typeof MainProfileAdminPromptEditPromptIdIndexRoute
 }
 export interface FileRouteTypes {
@@ -476,9 +582,11 @@ export interface FileRouteTypes {
     | '/sticker-packs'
     | '/auth/refresh'
     | '/content/$promptId'
+    | '/memes/$templateId'
     | '/sticker-packs/$stickerPackId'
     | '/demo2'
     | '/demo3'
+    | '/memes'
     | '/post'
     | '/private'
     | '/selectCommunity'
@@ -495,6 +603,7 @@ export interface FileRouteTypes {
     | '/post/create'
     | '/sticker-packs/$stickerPackId/'
     | '/content/$promptId/processing/$executionId'
+    | '/memes/$templateId/processing/$memeId'
     | '/profile/admin'
     | '/profile/notifications'
     | '/profile/purchases'
@@ -502,6 +611,10 @@ export interface FileRouteTypes {
     | '/content/$promptId/invitation'
     | '/content/$promptId/select-nfts'
     | '/content/$promptId/success'
+    | '/memes/$templateId/add-text'
+    | '/memes/$templateId/details'
+    | '/memes/$templateId/select-characters'
+    | '/memes/$templateId/success'
     | '/post/create/image'
     | '/post/create/sticker'
     | '/post/create/video'
@@ -510,12 +623,16 @@ export interface FileRouteTypes {
     | '/sticker-packs/$stickerPackId/select-nfts'
     | '/sticker-packs/$stickerPackId/select-tier'
     | '/sticker-packs/generated/$id'
+    | '/profile/admin/meme/create'
     | '/profile/admin/prompt/edit'
     | '/profile/admin/prompt/create'
     | '/profile/admin/prompt'
     | '/auth/discord/v1/callback'
     | '/sticker-packs/$stickerPackId/processing/$executionId'
+    | '/profile/admin/meme/create/$templateId'
     | '/profile/admin/prompt/edit/$promptId'
+    | '/profile/admin/meme/create/'
+    | '/profile/admin/meme/create/$templateId/'
     | '/profile/admin/prompt/edit/$promptId/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -523,8 +640,10 @@ export interface FileRouteTypes {
     | '/about'
     | '/constraints'
     | '/auth/refresh'
+    | '/memes/$templateId'
     | '/demo2'
     | '/demo3'
+    | '/memes'
     | '/post'
     | '/private'
     | '/selectCommunity'
@@ -541,6 +660,7 @@ export interface FileRouteTypes {
     | '/post/create'
     | '/sticker-packs/$stickerPackId'
     | '/content/$promptId/processing/$executionId'
+    | '/memes/$templateId/processing/$memeId'
     | '/profile/admin'
     | '/profile/notifications'
     | '/profile/purchases'
@@ -548,6 +668,10 @@ export interface FileRouteTypes {
     | '/content/$promptId/invitation'
     | '/content/$promptId/select-nfts'
     | '/content/$promptId/success'
+    | '/memes/$templateId/add-text'
+    | '/memes/$templateId/details'
+    | '/memes/$templateId/select-characters'
+    | '/memes/$templateId/success'
     | '/post/create/image'
     | '/post/create/sticker'
     | '/post/create/video'
@@ -561,6 +685,8 @@ export interface FileRouteTypes {
     | '/profile/admin/prompt'
     | '/auth/discord/v1/callback'
     | '/sticker-packs/$stickerPackId/processing/$executionId'
+    | '/profile/admin/meme/create'
+    | '/profile/admin/meme/create/$templateId'
     | '/profile/admin/prompt/edit/$promptId'
   id:
     | '__root__'
@@ -571,9 +697,11 @@ export interface FileRouteTypes {
     | '/sticker-packs'
     | '/auth/refresh'
     | '/content/$promptId'
+    | '/memes/$templateId'
     | '/sticker-packs/$stickerPackId'
     | '/demo2/'
     | '/demo3/'
+    | '/memes/'
     | '/post/'
     | '/private/'
     | '/selectCommunity/'
@@ -590,6 +718,7 @@ export interface FileRouteTypes {
     | '/post/create/'
     | '/sticker-packs/$stickerPackId/'
     | '/content/$promptId/processing/$executionId'
+    | '/memes/$templateId/processing/$memeId'
     | '/_main/profile/admin/'
     | '/_main/profile/notifications/'
     | '/_main/profile/purchases/'
@@ -597,6 +726,10 @@ export interface FileRouteTypes {
     | '/content/$promptId/invitation/'
     | '/content/$promptId/select-nfts/'
     | '/content/$promptId/success/'
+    | '/memes/$templateId/add-text/'
+    | '/memes/$templateId/details/'
+    | '/memes/$templateId/select-characters/'
+    | '/memes/$templateId/success/'
     | '/post/create/image/'
     | '/post/create/sticker/'
     | '/post/create/video/'
@@ -605,12 +738,16 @@ export interface FileRouteTypes {
     | '/sticker-packs/$stickerPackId/select-nfts/'
     | '/sticker-packs/$stickerPackId/select-tier/'
     | '/sticker-packs/generated/$id/'
+    | '/_main/profile/admin/meme/create'
     | '/_main/profile/admin/prompt/edit'
     | '/_main/profile/admin/prompt/create'
     | '/_main/profile/admin/prompt/'
     | '/auth/discord/v1/callback/'
     | '/sticker-packs/$stickerPackId/processing/$executionId/'
+    | '/_main/profile/admin/meme/create/$templateId'
     | '/_main/profile/admin/prompt/edit/$promptId'
+    | '/_main/profile/admin/meme/create/'
+    | '/_main/profile/admin/meme/create/$templateId/'
     | '/_main/profile/admin/prompt/edit/$promptId/'
   fileRoutesById: FileRoutesById
 }
@@ -622,8 +759,10 @@ export interface RootRouteChildren {
   StickerPacksRoute: typeof StickerPacksRouteWithChildren
   AuthRefreshRoute: typeof AuthRefreshRoute
   ContentPromptIdRoute: typeof ContentPromptIdRouteWithChildren
+  MemesTemplateIdRoute: typeof MemesTemplateIdRouteWithChildren
   Demo2IndexRoute: typeof Demo2IndexRoute
   Demo3IndexRoute: typeof Demo3IndexRoute
+  MemesIndexRoute: typeof MemesIndexRoute
   PostIndexRoute: typeof PostIndexRoute
   PrivateIndexRoute: typeof PrivateIndexRoute
   SelectCommunityIndexRoute: typeof SelectCommunityIndexRoute
@@ -701,6 +840,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PostIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/memes/': {
+      id: '/memes/'
+      path: '/memes'
+      fullPath: '/memes'
+      preLoaderRoute: typeof MemesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/demo3/': {
       id: '/demo3/'
       path: '/demo3'
@@ -721,6 +867,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/sticker-packs/$stickerPackId'
       preLoaderRoute: typeof StickerPacksStickerPackIdRouteImport
       parentRoute: typeof StickerPacksRoute
+    }
+    '/memes/$templateId': {
+      id: '/memes/$templateId'
+      path: '/memes/$templateId'
+      fullPath: '/memes/$templateId'
+      preLoaderRoute: typeof MemesTemplateIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/content/$promptId': {
       id: '/content/$promptId'
@@ -869,6 +1022,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PostCreateImageIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/memes/$templateId/success/': {
+      id: '/memes/$templateId/success/'
+      path: '/success'
+      fullPath: '/memes/$templateId/success'
+      preLoaderRoute: typeof MemesTemplateIdSuccessIndexRouteImport
+      parentRoute: typeof MemesTemplateIdRoute
+    }
+    '/memes/$templateId/select-characters/': {
+      id: '/memes/$templateId/select-characters/'
+      path: '/select-characters'
+      fullPath: '/memes/$templateId/select-characters'
+      preLoaderRoute: typeof MemesTemplateIdSelectCharactersIndexRouteImport
+      parentRoute: typeof MemesTemplateIdRoute
+    }
+    '/memes/$templateId/details/': {
+      id: '/memes/$templateId/details/'
+      path: '/details'
+      fullPath: '/memes/$templateId/details'
+      preLoaderRoute: typeof MemesTemplateIdDetailsIndexRouteImport
+      parentRoute: typeof MemesTemplateIdRoute
+    }
+    '/memes/$templateId/add-text/': {
+      id: '/memes/$templateId/add-text/'
+      path: '/add-text'
+      fullPath: '/memes/$templateId/add-text'
+      preLoaderRoute: typeof MemesTemplateIdAddTextIndexRouteImport
+      parentRoute: typeof MemesTemplateIdRoute
+    }
     '/content/$promptId/success/': {
       id: '/content/$promptId/success/'
       path: '/success'
@@ -918,6 +1099,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MainProfileAdminIndexRouteImport
       parentRoute: typeof MainRoute
     }
+    '/memes/$templateId/processing/$memeId': {
+      id: '/memes/$templateId/processing/$memeId'
+      path: '/processing/$memeId'
+      fullPath: '/memes/$templateId/processing/$memeId'
+      preLoaderRoute: typeof MemesTemplateIdProcessingMemeIdRouteImport
+      parentRoute: typeof MemesTemplateIdRoute
+    }
     '/content/$promptId/processing/$executionId': {
       id: '/content/$promptId/processing/$executionId'
       path: '/processing/$executionId'
@@ -960,12 +1148,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MainProfileAdminPromptEditRouteRouteImport
       parentRoute: typeof MainRoute
     }
+    '/_main/profile/admin/meme/create': {
+      id: '/_main/profile/admin/meme/create'
+      path: '/profile/admin/meme/create'
+      fullPath: '/profile/admin/meme/create'
+      preLoaderRoute: typeof MainProfileAdminMemeCreateRouteRouteImport
+      parentRoute: typeof MainRoute
+    }
+    '/_main/profile/admin/meme/create/': {
+      id: '/_main/profile/admin/meme/create/'
+      path: '/'
+      fullPath: '/profile/admin/meme/create/'
+      preLoaderRoute: typeof MainProfileAdminMemeCreateIndexRouteImport
+      parentRoute: typeof MainProfileAdminMemeCreateRouteRoute
+    }
     '/_main/profile/admin/prompt/edit/$promptId': {
       id: '/_main/profile/admin/prompt/edit/$promptId'
       path: '/$promptId'
       fullPath: '/profile/admin/prompt/edit/$promptId'
       preLoaderRoute: typeof MainProfileAdminPromptEditPromptIdRouteRouteImport
       parentRoute: typeof MainProfileAdminPromptEditRouteRoute
+    }
+    '/_main/profile/admin/meme/create/$templateId': {
+      id: '/_main/profile/admin/meme/create/$templateId'
+      path: '/$templateId'
+      fullPath: '/profile/admin/meme/create/$templateId'
+      preLoaderRoute: typeof MainProfileAdminMemeCreateTemplateIdRouteRouteImport
+      parentRoute: typeof MainProfileAdminMemeCreateRouteRoute
     }
     '/_main/profile/admin/prompt/edit/$promptId/': {
       id: '/_main/profile/admin/prompt/edit/$promptId/'
@@ -974,8 +1183,47 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MainProfileAdminPromptEditPromptIdIndexRouteImport
       parentRoute: typeof MainProfileAdminPromptEditPromptIdRouteRoute
     }
+    '/_main/profile/admin/meme/create/$templateId/': {
+      id: '/_main/profile/admin/meme/create/$templateId/'
+      path: '/'
+      fullPath: '/profile/admin/meme/create/$templateId/'
+      preLoaderRoute: typeof MainProfileAdminMemeCreateTemplateIdIndexRouteImport
+      parentRoute: typeof MainProfileAdminMemeCreateTemplateIdRouteRoute
+    }
   }
 }
+
+interface MainProfileAdminMemeCreateTemplateIdRouteRouteChildren {
+  MainProfileAdminMemeCreateTemplateIdIndexRoute: typeof MainProfileAdminMemeCreateTemplateIdIndexRoute
+}
+
+const MainProfileAdminMemeCreateTemplateIdRouteRouteChildren: MainProfileAdminMemeCreateTemplateIdRouteRouteChildren =
+  {
+    MainProfileAdminMemeCreateTemplateIdIndexRoute:
+      MainProfileAdminMemeCreateTemplateIdIndexRoute,
+  }
+
+const MainProfileAdminMemeCreateTemplateIdRouteRouteWithChildren =
+  MainProfileAdminMemeCreateTemplateIdRouteRoute._addFileChildren(
+    MainProfileAdminMemeCreateTemplateIdRouteRouteChildren,
+  )
+
+interface MainProfileAdminMemeCreateRouteRouteChildren {
+  MainProfileAdminMemeCreateTemplateIdRouteRoute: typeof MainProfileAdminMemeCreateTemplateIdRouteRouteWithChildren
+  MainProfileAdminMemeCreateIndexRoute: typeof MainProfileAdminMemeCreateIndexRoute
+}
+
+const MainProfileAdminMemeCreateRouteRouteChildren: MainProfileAdminMemeCreateRouteRouteChildren =
+  {
+    MainProfileAdminMemeCreateTemplateIdRouteRoute:
+      MainProfileAdminMemeCreateTemplateIdRouteRouteWithChildren,
+    MainProfileAdminMemeCreateIndexRoute: MainProfileAdminMemeCreateIndexRoute,
+  }
+
+const MainProfileAdminMemeCreateRouteRouteWithChildren =
+  MainProfileAdminMemeCreateRouteRoute._addFileChildren(
+    MainProfileAdminMemeCreateRouteRouteChildren,
+  )
 
 interface MainProfileAdminPromptEditPromptIdRouteRouteChildren {
   MainProfileAdminPromptEditPromptIdIndexRoute: typeof MainProfileAdminPromptEditPromptIdIndexRoute
@@ -1015,6 +1263,7 @@ interface MainRouteChildren {
   MainProfileAdminIndexRoute: typeof MainProfileAdminIndexRoute
   MainProfileNotificationsIndexRoute: typeof MainProfileNotificationsIndexRoute
   MainProfilePurchasesIndexRoute: typeof MainProfilePurchasesIndexRoute
+  MainProfileAdminMemeCreateRouteRoute: typeof MainProfileAdminMemeCreateRouteRouteWithChildren
   MainProfileAdminPromptEditRouteRoute: typeof MainProfileAdminPromptEditRouteRouteWithChildren
   MainProfileAdminPromptCreateRoute: typeof MainProfileAdminPromptCreateRoute
   MainProfileAdminPromptIndexRoute: typeof MainProfileAdminPromptIndexRoute
@@ -1028,6 +1277,8 @@ const MainRouteChildren: MainRouteChildren = {
   MainProfileAdminIndexRoute: MainProfileAdminIndexRoute,
   MainProfileNotificationsIndexRoute: MainProfileNotificationsIndexRoute,
   MainProfilePurchasesIndexRoute: MainProfilePurchasesIndexRoute,
+  MainProfileAdminMemeCreateRouteRoute:
+    MainProfileAdminMemeCreateRouteRouteWithChildren,
   MainProfileAdminPromptEditRouteRoute:
     MainProfileAdminPromptEditRouteRouteWithChildren,
   MainProfileAdminPromptCreateRoute: MainProfileAdminPromptCreateRoute,
@@ -1110,6 +1361,27 @@ const ContentPromptIdRouteWithChildren = ContentPromptIdRoute._addFileChildren(
   ContentPromptIdRouteChildren,
 )
 
+interface MemesTemplateIdRouteChildren {
+  MemesTemplateIdProcessingMemeIdRoute: typeof MemesTemplateIdProcessingMemeIdRoute
+  MemesTemplateIdAddTextIndexRoute: typeof MemesTemplateIdAddTextIndexRoute
+  MemesTemplateIdDetailsIndexRoute: typeof MemesTemplateIdDetailsIndexRoute
+  MemesTemplateIdSelectCharactersIndexRoute: typeof MemesTemplateIdSelectCharactersIndexRoute
+  MemesTemplateIdSuccessIndexRoute: typeof MemesTemplateIdSuccessIndexRoute
+}
+
+const MemesTemplateIdRouteChildren: MemesTemplateIdRouteChildren = {
+  MemesTemplateIdProcessingMemeIdRoute: MemesTemplateIdProcessingMemeIdRoute,
+  MemesTemplateIdAddTextIndexRoute: MemesTemplateIdAddTextIndexRoute,
+  MemesTemplateIdDetailsIndexRoute: MemesTemplateIdDetailsIndexRoute,
+  MemesTemplateIdSelectCharactersIndexRoute:
+    MemesTemplateIdSelectCharactersIndexRoute,
+  MemesTemplateIdSuccessIndexRoute: MemesTemplateIdSuccessIndexRoute,
+}
+
+const MemesTemplateIdRouteWithChildren = MemesTemplateIdRoute._addFileChildren(
+  MemesTemplateIdRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   MainRoute: MainRouteWithChildren,
@@ -1118,8 +1390,10 @@ const rootRouteChildren: RootRouteChildren = {
   StickerPacksRoute: StickerPacksRouteWithChildren,
   AuthRefreshRoute: AuthRefreshRoute,
   ContentPromptIdRoute: ContentPromptIdRouteWithChildren,
+  MemesTemplateIdRoute: MemesTemplateIdRouteWithChildren,
   Demo2IndexRoute: Demo2IndexRoute,
   Demo3IndexRoute: Demo3IndexRoute,
+  MemesIndexRoute: MemesIndexRoute,
   PostIndexRoute: PostIndexRoute,
   PrivateIndexRoute: PrivateIndexRoute,
   SelectCommunityIndexRoute: SelectCommunityIndexRoute,

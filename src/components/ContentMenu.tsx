@@ -24,6 +24,7 @@ export function ContentMenu() {
   const getSelectedContentType = (): string => {
     const path = location.pathname;
     if (path.startsWith('/stickers')) return 'Packs';
+    if (path.startsWith('/memes')) return 'Memes';
     if (path.startsWith('/community')) return 'Community';
     if (path.startsWith('/profile')) return 'UserMenu';
     return 'Community';
@@ -36,6 +37,8 @@ export function ContentMenu() {
     switch (id) {
       case 'Packs':
         return '/stickers';
+      case 'Memes':
+        return '/memes';
       case 'Community':
         return '/community';
       case 'UserMenu':
@@ -102,6 +105,16 @@ export function ContentMenu() {
           style={{ zIndex: 1 }}
         >
           Packs
+        </div>
+        <div
+          ref={el => {
+            itemRefs.current['Memes'] = el;
+          }}
+          onClick={() => handleItemClick('Memes')}
+          className={`${selectedContentType === 'Memes' ? 'text-tg-button-text' : 'text-tg-text'} relative z-10 flex h-full w-full items-center justify-center p-3`}
+          style={{ zIndex: 1 }}
+        >
+          Memes
         </div>
         <div
           ref={el => {

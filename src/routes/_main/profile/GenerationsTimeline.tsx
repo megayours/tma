@@ -1,10 +1,12 @@
 import { SpinnerFullPage } from '@/components';
 import { useSession } from '@/auth/SessionProvider';
 import { useGetContents } from '@/hooks/useContents';
+import { useGetUserMemes } from '@/hooks/useMemes';
 import type { Content } from '@/types/content';
+import type { Meme } from '@/types/meme';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { StickerList } from './StickerList';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import { MediaDisplay } from '@/components/lib/LatestContent/MediaDisplay';
 import { Button } from '@telegram-apps/telegram-ui';
@@ -13,6 +15,10 @@ import { useSelectCommunity } from '../../../contexts/SelectCommunityContext';
 export const Route = createFileRoute('/_main/profile/GenerationsTimeline')({
   component: GenerationsTimeline,
 });
+
+type TimelineItem =
+  | { kind: 'content'; data: Content }
+  | { kind: 'meme'; data: Meme };
 
 export function GenerationsTimeline() {
   const { session, isAuthenticating } = useSession();
@@ -29,7 +35,24 @@ export function GenerationsTimeline() {
     { page, size: 20 }
   );
 
-  const timeline = buildTimeline(allContents);
+  // Fetch user's memes
+  const { data: memesData } = useGetUserMemes(session, { page, size: 20 });
+
+  // Merge contents and memes, sorted by created_at
+  const allGenerations = useMemo((): TimelineItem[] => {
+    const contents: TimelineItem[] = allContents.map(c => ({ kind: 'content' as const, data: c }));
+    const memes: TimelineItem[] = memesData?.data?.map(m => ({ kind: 'meme' as const, data: m })) || [];
+
+    const combined: TimelineItem[] = [...contents, ...memes];
+
+    return combined.sort((a, b) => {
+      const aTime = a.kind === 'content' ? (a.data.createdAt || 0) : (a.data.created_at || 0);
+      const bTime = b.kind === 'content' ? (b.data.createdAt || 0) : (b.data.created_at || 0);
+      return bTime - aTime;
+    });
+  }, [allContents, memesData]);
+
+  const timeline = buildTimeline(allGenerations);
 
   // Accumulate contents as pages are fetched
   useEffect(() => {
@@ -72,15 +95,45 @@ export function GenerationsTimeline() {
 
   return (
     <div className="pb-20">
-      {timeline.map(({ execId, contents }) => (
-        <div
-          key={execId}
-          className="border-tg-section-separator mb-3 border-b pb-3 last:border-b-0"
-        >
-          {contents.length === 1 && <SingleContent content={contents[0]} />}
-          {contents.length > 1 && <StickerList selectedContents={contents} />}
-        </div>
-      ))}
+      {timeline.map(({ execId, items }) => {
+        const firstItem = items[0];
+
+        if (items.length === 1) {
+          if (firstItem.kind === 'content') {
+            return (
+              <div
+                key={execId}
+                className="border-tg-section-separator mb-3 border-b pb-3 last:border-b-0"
+              >
+                <SingleContent content={firstItem.data} />
+              </div>
+            );
+          } else if (firstItem.kind === 'meme') {
+            return (
+              <div
+                key={execId}
+                className="border-tg-section-separator mb-3 border-b pb-3 last:border-b-0"
+              >
+                <SingleMeme meme={firstItem.data} />
+              </div>
+            );
+          }
+        } else if (items.length > 1 && firstItem.kind === 'content') {
+          const contentItems = items
+            .filter((item): item is { kind: 'content'; data: Content } => item.kind === 'content')
+            .map(item => item.data);
+          return (
+            <div
+              key={execId}
+              className="border-tg-section-separator mb-3 border-b pb-3 last:border-b-0"
+            >
+              <StickerList selectedContents={contentItems} />
+            </div>
+          );
+        }
+
+        return null;
+      })}
 
       {/* Explicit pagination controls */}
       <div className="mt-6 flex flex-col items-center gap-2">
@@ -210,20 +263,103 @@ function SingleContent({ content }: { content: Content }) {
   );
 }
 
-function buildTimeline(contents?: Content[]) {
-  if (!contents) return [];
+function SingleMeme({ meme }: { meme: Meme }) {
+  const linkProps =
+    meme.status === 'processing'
+      ? {
+          to: '/memes/$templateId/processing/$memeId' as const,
+          params: {
+            templateId: String(meme.template.id),
+            memeId: String(meme.id),
+          },
+        }
+      : {
+          to: '/memes/$templateId/success' as const,
+          params: { templateId: String(meme.template.id) },
+          search: { memeId: meme.id },
+        };
 
-  const grouped = contents.reduce<Record<string, Content[]>>((acc, content) => {
-    const execId = String(content.executionId || content.id);
+  return (
+    <div className="flex items-center gap-3 overflow-hidden rounded-xl px-2 py-3">
+      <Link
+        {...linkProps}
+        className="flex flex-1 items-center gap-3 overflow-hidden transition-opacity hover:opacity-80 active:scale-[0.99]"
+      >
+        {/* Thumbnail Image - Left */}
+        {meme.status === 'processing' ? (
+          <div className="bg-tg-hint/30 flex h-24 w-24 flex-shrink-0 items-center justify-center rounded-lg">
+            <DotLottieReact
+              src="/lotties/loader.lottie"
+              loop
+              autoplay
+              className="h-24 w-24"
+            />
+          </div>
+        ) : (
+          <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-lg">
+            <MediaDisplay
+              src={meme.url || ''}
+              alt="Generated meme"
+              className="h-full w-full object-cover"
+              poster={meme.thumbnail_url || '/logo.png'}
+            />
+          </div>
+        )}
+
+        {/* Content Info - Middle */}
+        <div className="min-w-0 flex-1">
+          <h3 className="text-tg-text truncate text-sm font-semibold text-wrap">
+            {meme.template.name}
+          </h3>
+          <p className="text-tg-hint truncate text-xs text-wrap">
+            {meme.tokens.length} character{meme.tokens.length > 1 ? 's' : ''}
+          </p>
+          <div>
+            <div className="bg-tg-button text-tg-button-text inline-flex items-center justify-center rounded-2xl px-2">
+              <span className="text-sm">meme</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Actions - Right */}
+        <div className="flex flex-shrink-0 flex-col items-end gap-1">
+          <span
+            className={`rounded-full px-2 py-0.5 text-xs font-semibold whitespace-nowrap ${
+              meme.status === 'completed'
+                ? 'bg-green-100 text-green-700'
+                : meme.status === 'processing'
+                  ? 'bg-blue-100 text-blue-700'
+                  : 'bg-red-100 text-red-700'
+            }`}
+          >
+            {meme.status}
+          </span>
+        </div>
+      </Link>
+    </div>
+  );
+}
+
+function buildTimeline(items?: TimelineItem[]) {
+  if (!items) return [];
+
+  const grouped = items.reduce<Record<string, TimelineItem[]>>((acc, item) => {
+    let execId: string;
+    if (item.kind === 'content') {
+      execId = String(item.data.executionId || item.data.id);
+    } else {
+      execId = String(item.data.id);
+    }
+
     if (!acc[execId]) {
       acc[execId] = [];
     }
-    acc[execId].push(content);
+    acc[execId].push(item);
     return acc;
   }, {});
 
-  return Object.entries(grouped).map(([execId, groupedContents]) => ({
+  return Object.entries(grouped).map(([execId, groupedItems]) => ({
     execId,
-    contents: groupedContents,
+    items: groupedItems,
   }));
 }

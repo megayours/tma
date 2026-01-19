@@ -9,6 +9,17 @@ export const queryKeys = {
   user: (id: string) => ['user', id] as const,
 };
 
+// Meme query keys
+export const memeQueryKeys = {
+  templates: (page: number, size: number, search?: string) =>
+    ['meme-templates', page, size, search] as const,
+  template: (id: string) => ['meme-template', id] as const,
+  meme: (id: string) => ['meme', id] as const,
+  memeStatus: (id: string) => ['meme-status', id] as const,
+  userMemes: (userId: string, page: number, size: number) =>
+    ['user-memes', userId, page, size] as const,
+};
+
 // Query hooks
 export const usePosts = () => {
   return useQuery({

@@ -107,6 +107,17 @@ function parseIndexedParams(
 }
 
 /**
+ * Decoded NFT identifier from URL params
+ */
+export type DecodedNFT = {
+  chain: string;
+  contractAddress: string;
+  tokenId: string;
+  userId?: string;
+  username?: string;
+};
+
+/**
  * Extracts NFT data from indexed URL search params
  *
  * @param params - URL search params object
@@ -121,13 +132,7 @@ function parseIndexedParams(
  */
 export function decodeNFTsFromParams(
   params: Record<string, unknown>
-): Array<{
-  chain: string;
-  contractAddress: string;
-  tokenId: string;
-  userId?: string;
-  username?: string;
-} | undefined> {
+): Array<DecodedNFT | undefined> {
   const parsedMap = parseIndexedParams(params);
 
   // Return empty array if no NFTs found
@@ -139,13 +144,7 @@ export function decodeNFTsFromParams(
   const maxIndex = Math.max(...Array.from(parsedMap.keys()));
 
   // Create sparse array with undefined for empty slots
-  const result: Array<{
-    chain: string;
-    contractAddress: string;
-    tokenId: string;
-    userId?: string;
-    username?: string;
-  } | undefined> = Array(maxIndex + 1).fill(undefined);
+  const result: Array<DecodedNFT | undefined> = Array(maxIndex + 1).fill(undefined);
 
   // Fill in the defined tokens at their original indices
   parsedMap.forEach(({ chain, address, id, userId, username }, index) => {

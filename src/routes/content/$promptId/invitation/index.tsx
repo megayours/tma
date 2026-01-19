@@ -7,7 +7,7 @@ import { TelegramDualButtons } from '@/components/TelegramDualButtons';
 import { Fragment } from 'react/jsx-runtime';
 import { MediaDisplay } from '@/components/lib/LatestContent/MediaDisplay';
 import { nftParamsSchema } from '@/utils/nftUrlSchema';
-import { decodeNFTsFromParams } from '@/utils/nftUrlParams';
+import { decodeNFTsFromParams, type DecodedNFT } from '@/utils/nftUrlParams';
 import { useGetNFTByCollectionAndTokenId } from '@/hooks/useCollections';
 
 export const Route = createFileRoute('/content/$promptId/invitation/')({
@@ -36,16 +36,9 @@ const getTypeLabel = (
 // Component to display a single character slot with NFT preview
 function CharacterSlot({
   nft,
-  index,
   isFilled,
 }: {
-  nft?: {
-    chain: string;
-    contractAddress: string;
-    tokenId: string;
-    username?: string;
-  };
-  index: number;
+  nft?: DecodedNFT;
   isFilled: boolean;
 }) {
   const { data: nftData, isLoading } = useGetNFTByCollectionAndTokenId(
@@ -211,7 +204,7 @@ function InvitationPage() {
                   <Link
                     to="/content/$promptId/details"
                     params={{ promptId }}
-                    className="text-tg-text text-lg font-medium hover:text-tg-accent-text transition-colors"
+                    className="text-tg-text hover:text-tg-accent-text text-lg font-medium transition-colors"
                   >
                     {prompt.name}
                   </Link>

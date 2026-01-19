@@ -275,7 +275,6 @@ function InvitationPage() {
                       <CharacterSlot
                         key={index}
                         nft={nft}
-                        index={index}
                         isFilled={!!nft}
                       />
                     );

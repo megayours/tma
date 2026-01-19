@@ -165,6 +165,16 @@ function SelectNFTsPage() {
   return (
     <ProtectedRoute>
       <div className="flex h-screen flex-col">
+        {/* Prompt Info Header */}
+        <div className="bg-tg-section-bg border-tg-section-separator border-b px-6 py-4">
+          <h2 className="text-tg-text mb-1 text-lg font-semibold">
+            {prompt.name}
+          </h2>
+          {prompt.description && (
+            <p className="text-tg-hint text-sm">{prompt.description}</p>
+          )}
+        </div>
+
         <NFTSelectionPageUI
           maxTokens={prompt.maxTokens || 1}
           collections={collections}

@@ -53,7 +53,9 @@ function CharacterSlot({
         <div className="bg-tg-hint/20 text-tg-hint flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold">
           ?
         </div>
-        <span className="text-tg-hint text-xs whitespace-nowrap">Empty</span>
+        <span className="text-tg-hint text-xs whitespace-nowrap">
+          That's you!
+        </span>
       </div>
     );
   }
@@ -272,11 +274,7 @@ function InvitationPage() {
                   {Array.from({ length: maxTokens }).map((_, index) => {
                     const nft = selectedNFTs[index];
                     return (
-                      <CharacterSlot
-                        key={index}
-                        nft={nft}
-                        isFilled={!!nft}
-                      />
+                      <CharacterSlot key={index} nft={nft} isFilled={!!nft} />
                     );
                   })}
                 </div>

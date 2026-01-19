@@ -8,11 +8,11 @@ import { useSession } from '@/auth/SessionProvider';
 import { usePurchase } from '@/hooks/usePurchase';
 import { nftParamsSchema } from '@/utils/nftUrlSchema';
 import { NFTSelectionPageUI } from '@/components/NFT/flows';
-import { useNFTSelectionPage } from '@/hooks/useNFTSelectionPage';
+import { useNFTSelection } from '@/hooks/useNFTSelection';
 import { TelegramDualButtons } from '@/components/TelegramDualButtons';
 import { SpinnerFullPage } from '@/components/ui';
-import { getShareSelectionButtonConfig } from '@/utils/nftSelectionShare';
 import { useNFTShareUrl } from '@/hooks/useNFTShareUrl';
+import { canShareMessage, shareTelegramMessage } from '@/utils/telegramShare';
 import type { Token } from '@/types/response';
 
 export const Route = createFileRoute(
@@ -66,11 +66,10 @@ function RouteComponent() {
     );
   }, [stickerPack?.supportedCollections, collections, communityCollections]);
 
-  // Use the NFT selection hook
-  const selectionState = useNFTSelectionPage({
+  // Use the simplified NFT selection hook
+  const selection = useNFTSelection({
     minTokens: stickerPack?.min_tokens_required || 1,
     maxTokens: stickerPack?.max_tokens_required || 1,
-    collections: filteredCollections,
     urlParams: search,
   });
 
@@ -91,15 +90,19 @@ function RouteComponent() {
     }
   }, [purchaseData, stickerPackId, navigate]);
 
+
+  // Filter out undefined tokens for purchase/generation
+  const definedTokens = selection.selectedTokens.filter((t): t is Token => t !== undefined);
+
   const handleGenerate = () => {
-    if (!stickerPack || !selectionState.canGenerate) {
+    if (!stickerPack || !selection.canGenerate || definedTokens.length === 0) {
       alert(
         `Please select at least ${stickerPack?.min_tokens_required} NFT${stickerPack?.min_tokens_required !== 1 ? 's' : ''}.`
       );
       return;
     }
 
-    const encodedNFT = encodeNFT(selectionState.selectedTokens[0]);
+    const encodedNFT = encodeNFT(definedTokens[0]);
 
     const hasPaidTiers =
       stickerPack.pricing.basic.amount_cents !== null ||
@@ -107,12 +110,12 @@ function RouteComponent() {
       stickerPack.pricing.legendary.amount_cents !== null;
 
     if (!hasPaidTiers) {
-      lastSelectedTokensRef.current = selectionState.selectedTokens;
+      lastSelectedTokensRef.current = definedTokens;
       purchaseStickerPack(
         parseInt(stickerPackId),
-        selectionState.selectedTokens,
+        definedTokens,
         'basic',
-        selectionState.notify || []
+        selection.notifyUserIds
       );
     } else {
       navigate({
@@ -138,28 +141,29 @@ function RouteComponent() {
     return 'Generate';
   };
 
-  // Build share URL with notify IDs
+  // Build share URL with slot user IDs (preserve sparse array for correct indices)
   const shareUrl = useNFTShareUrl({
-    session,
-    notify: selectionState.notify,
     communityId,
+    tokens: selection.selectedTokens,
+    tokenUsersByIndex: selection.tokenUsersByIndex,
+    tokenUsernamesByIndex: selection.tokenUsernamesByIndex,
   });
 
-  if (isLoadingStickerPack || !stickerPack || selectionState.isLoading) {
+  if (isLoadingStickerPack || !stickerPack || selection.isLoading) {
     return <SpinnerFullPage text="Loading..." />;
   }
 
   // Compute button configs outside of JSX
   const showGenerateButton =
-    selectionState.showSummary && !selectionState.hasEmptySlots;
+    selection.showSummary && !selection.hasEmptySlots;
 
   const mainButtonText = showGenerateButton ? getButtonText() : 'Next';
   const mainButtonOnClick = showGenerateButton
     ? handleGenerate
-    : selectionState.handleNext;
+    : selection.handleNext;
   const mainButtonDisabled = showGenerateButton
-    ? !selectionState.canGenerate
-    : !selectionState.canGoNext;
+    ? !selection.canGenerate
+    : !selection.canGoNext;
 
   const mainButtonConfig = {
     text: mainButtonText,
@@ -172,31 +176,42 @@ function RouteComponent() {
   // Determine secondary button config
   let secondaryButtonConfig = undefined;
 
-  const shareButtonConfig = getShareSelectionButtonConfig({
-    selectionState,
-    shareUrl,
-    shareText: 'Create stickers with me!',
-  });
+  // Share button (only show on summary with partial selection)
+  const shouldShowShareButton =
+    selection.showSummary &&
+    definedTokens.length > 0 &&
+    selection.hasEmptySlots &&
+    canShareMessage();
 
-  if (shareButtonConfig) {
-    secondaryButtonConfig = shareButtonConfig;
-  } else if (!selectionState.showSummary && !selectionState.isRequired) {
+  if (shouldShowShareButton) {
+    secondaryButtonConfig = {
+      text: 'Create with a friend',
+      onClick: () => shareTelegramMessage(shareUrl, 'Create stickers with me!'),
+      visible: true,
+    };
+  } else if (!selection.showSummary && !selection.isRequired && selection.currentIndex !== null) {
+    const currentIdx = selection.currentIndex;
     secondaryButtonConfig = {
       text: 'Skip',
-      onClick: selectionState.handleSkip,
+      onClick: () => selection.handleSkip(currentIdx),
       visible: true,
     };
   }
 
   console.log('Sticker pack , stickerPack);', stickerPack);
-  console.log('NOTIFY IDs:', selectionState.notify);
+  console.log(
+    'TOKEN USERS:',
+    selection.tokenUsersByIndex,
+    'TOKEN USERNAMES:',
+    selection.tokenUsernamesByIndex
+  );
 
   return (
     <div className="flex h-screen flex-col">
       <NFTSelectionPageUI
         maxTokens={stickerPack.max_tokens_required || 1}
         collections={filteredCollections}
-        selectionState={selectionState}
+        selectionState={selection}
       />
 
       <TelegramDualButtons

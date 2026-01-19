@@ -1,11 +1,10 @@
 import { NFTsSummary } from '../display/NFTsSummary';
-import { SelectedNFTDisplay } from '../display/SelectedNFTDisplay';
 import { NFTSelector } from './NFTSelector';
-import type { NFTSelectionPageState } from '@/hooks/useNFTSelectionPage';
+import type { NFTSelectionState } from '@/hooks/useNFTSelection';
 import type { SupportedCollection } from '@/hooks/useCollections';
 
 interface NFTSelectionPageUIProps {
-  selectionState: NFTSelectionPageState;
+  selectionState: NFTSelectionState;
   maxTokens: number;
   collections?: SupportedCollection[];
 }
@@ -22,20 +21,28 @@ export function NFTSelectionPageUI({
 }: NFTSelectionPageUIProps) {
   const {
     selectedTokens,
-    currentStep,
+    currentIndex,
     currentToken,
-    isSelectorOpen,
     showSummary,
     isRequired,
     setIsSelectorOpen,
     handleTokenSelect,
     handleModify,
     isLoading,
+    tokenUsernamesByIndex,
   } = selectionState;
 
   if (isLoading) {
     return null; // Parent will handle loading state
   }
+
+  // Convert index to step number for display (1-based)
+  const currentStepNumber = currentIndex !== null ? currentIndex + 1 : null;
+
+  console.log('NFTSelectionPage - selectedTokens:', selectedTokens);
+  console.log('NFTSelectionPage - currentIndex:', currentIndex);
+  console.log('NFTSelectionPage - showSummary:', showSummary);
+
   return (
     <div className="scrollbar-hide flex-1 overflow-y-auto">
       <div className="mx-auto max-w-2xl p-6">
@@ -48,29 +55,39 @@ export function NFTSelectionPageUI({
               tokens={selectedTokens}
               maxTokens={maxTokens}
               onModify={handleModify}
+              usernamesByIndex={tokenUsernamesByIndex}
             />
           </>
         ) : (
           <>
             <h1 className="text-tg-text mb-2 text-center text-2xl font-bold">
-              Character {currentStep} of {maxTokens}
+              Character {currentStepNumber} of {maxTokens}
             </h1>
             <p className="text-tg-hint mb-4 text-center text-sm">
               {isRequired ? 'Required' : 'Optional'}
             </p>
 
-            <SelectedNFTDisplay
+            {/* <SelectedNFTDisplay
               nfts={currentToken}
               isSelectorOpen={isSelectorOpen}
               onToggleSelector={() => setIsSelectorOpen(!isSelectorOpen)}
+              username={
+                currentIndex !== null
+                  ? tokenUsernamesByIndex?.[currentIndex]
+                  : undefined
+              }
             />
 
-            {isSelectorOpen && (
+            {isSelectorOpen && */}
+            {currentIndex !== null && (
               <NFTSelector
                 collections={collections}
-                onTokenSelect={handleTokenSelect}
+                onTokenSelect={token => handleTokenSelect(currentIndex, token)}
                 selectedNFT={currentToken}
-                onCancel={() => setIsSelectorOpen(false)}
+                onCancel={() => {
+                  handleTokenSelect(currentIndex, null);
+                  setIsSelectorOpen(false);
+                }}
               />
             )}
           </>

@@ -1,36 +1,66 @@
 import { useMemo } from 'react';
-import type { Session } from '@/auth/useAuth';
+import { useLocation } from '@tanstack/react-router';
+import type { Token } from '@/types/response';
+import { encodeNFTsToParams } from '@/utils/nftUrlParams';
 import { buildShareUrl } from '@/utils/shareUrl';
 
 interface UseNFTShareUrlParams {
-  session: Session | null | undefined;
-  notify: string[] | undefined;
   communityId?: string | null;
+  tokens?: Array<Token | undefined>;
+  tokenUsersByIndex?: Array<string | undefined>;
+  tokenUsernamesByIndex?: Array<string | undefined>;
+  endpoint?: string;
 }
 
 /**
- * Hook for building share URLs with notify IDs
- * Combines existing notify IDs from URL with current user's session ID
+ * Simplified hook for building share URLs with NFT selections
+ * Supports sparse arrays to preserve NFT slot positions
  */
 export function useNFTShareUrl({
-  session,
-  notify,
   communityId,
+  tokens = [],
+  tokenUsersByIndex = [],
+  tokenUsernamesByIndex = [],
+  endpoint,
 }: UseNFTShareUrlParams): string {
+  const location = useLocation();
+
   return useMemo(() => {
     const botUrl = import.meta.env.VITE_PUBLIC_BOT_URL || '';
-    let currentPath = window.location.pathname + window.location.search;
 
-    // Add all existing notify IDs + current user ID to the share URL
-    if (session?.id) {
-      const allNotifyIds = [...(notify || []), session.id];
-      const notifyParams = allNotifyIds
-        .map(id => `notify=${encodeURIComponent(id)}`)
-        .join('&');
-      const separator = currentPath.includes('?') ? '&' : '?';
-      currentPath = `${currentPath}${separator}${notifyParams}`;
+    // Build params from current tokens or fall back to current URL
+    // Check if there's at least one defined token in the sparse array
+    const nftParams = tokens.some(t => t !== undefined)
+      ? encodeNFTsToParams(tokens, tokenUsersByIndex, tokenUsernamesByIndex)
+      : null;
+
+    const baseSearchParams = new URLSearchParams();
+
+    if (nftParams) {
+      Object.entries(nftParams).forEach(([key, value]) => {
+        baseSearchParams.set(key, value);
+      });
+    } else if (location.search) {
+      // Fallback to current URL params
+      Object.entries(location.search).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+          value.forEach(item => {
+            if (item !== undefined && item !== null) {
+              baseSearchParams.append(key, String(item));
+            }
+          });
+        } else if (value !== undefined && value !== null) {
+          baseSearchParams.set(key, String(value));
+        }
+      });
     }
 
+    const searchString = baseSearchParams.toString();
+    const pathToUse = endpoint ?? location.pathname;
+    const currentPath = searchString
+      ? `${pathToUse}?${searchString}`
+      : pathToUse;
+
     return buildShareUrl(botUrl, currentPath, communityId);
-  }, [communityId, notify, session?.id]);
+  }, [communityId, endpoint, location.pathname, location.search, tokens, tokenUsersByIndex, tokenUsernamesByIndex]);
 }

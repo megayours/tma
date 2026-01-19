@@ -91,12 +91,17 @@ export function useGetCollectionsWithPrompt(prompt?: {
   } = useGetSupportedCollections();
 
   const collections = useMemo(() => {
+    // Return undefined while loading to prevent empty state flash
+    if (!supportedCollections) {
+      return undefined;
+    }
+
     // Create a lookup map for supported collections (chain + address -> collection)
     const supportedCollectionsMap = new Map(
-      supportedCollections?.map(collection => [
+      supportedCollections.map(collection => [
         `${collection.chain}:${collection.address}`,
         collection,
-      ]) || []
+      ])
     );
 
     const promptCollections =
@@ -127,7 +132,7 @@ export function useGetCollectionsWithPrompt(prompt?: {
     // Otherwise, return supported collections
     return promptCollections.length > 0
       ? promptCollections
-      : supportedCollections || [];
+      : supportedCollections;
   }, [prompt?.contracts, supportedCollections]);
 
   return { data: collections, isLoading, error };

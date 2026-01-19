@@ -59,7 +59,10 @@ function ProcessingPage() {
   const [, forceUpdate] = useReducer(x => x + 1, 0);
 
   // Set initial duration from queue_info once
-  if (execution?.queueInfo?.estimatedCompletionTime && !initialDurationRef.current) {
+  if (
+    execution?.queueInfo?.estimatedCompletionTime &&
+    !initialDurationRef.current
+  ) {
     const completionTimeMs = execution.queueInfo.estimatedCompletionTime * 1000;
     const diffMs = completionTimeMs - Date.now();
     initialDurationRef.current = diffMs * 1.1; // add 10% margin
@@ -71,7 +74,10 @@ function ProcessingPage() {
 
   // Update progress periodically
   useEffect(() => {
-    if (!execution || (execution.status !== 'processing' && execution.status !== 'pending')) {
+    if (
+      !execution ||
+      (execution.status !== 'processing' && execution.status !== 'pending')
+    ) {
       return;
     }
 
@@ -190,7 +196,7 @@ function ProcessingPage() {
           <div className="space-y-4 px-4">
             <div className="bg-tg-bg rounded-2xl p-4">
               <p className="text-tg-hint text-center text-sm">
-                We're personalizing your content with your NFT
+                We're personalizing your content with your character(s).
               </p>
             </div>
 

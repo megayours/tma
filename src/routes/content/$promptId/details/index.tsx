@@ -8,7 +8,8 @@ import { Fragment } from 'react/jsx-runtime';
 import { MediaDisplay } from '@/components/lib/LatestContent/MediaDisplay';
 import { buildShareUrl } from '@/utils/shareUrl';
 import { useSelectCommunity } from '@/contexts/SelectCommunityContext';
-import { shareTelegramMessage } from '@/utils/telegramShare';
+import { canShareMessage, shareTelegramMessage } from '@/utils/telegramShare';
+import { IoShareOutline } from 'react-icons/io5';
 
 export const Route = createFileRoute('/content/$promptId/details/')({
   component: ContentDetails,
@@ -105,10 +106,19 @@ function ContentDetails() {
             <div className="flex w-full flex-col items-center">
               {/* Collection Info */}
               <div className="w-full">
-                <div className="flex flex-col items-center">
+                <div className="flex items-center justify-center gap-3">
                   <h1 className="text-2xl font-bold">
                     {prompt.name || 'Untitled Prompt'}
                   </h1>
+                  {canShareMessage() && (
+                    <button
+                      onClick={handleShare}
+                      className="text-tg-hint hover:text-tg-accent-text transition-colors active:scale-95"
+                      aria-label="Share prompt"
+                    >
+                      <IoShareOutline className="h-5 w-5" />
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -188,12 +198,6 @@ function ContentDetails() {
           mainButton={{
             text: `Get Yours`,
             onClick: handleContinue,
-            visible: true,
-          }}
-          secondaryButton={{
-            text: `Share prompt`,
-            disabled: false,
-            onClick: handleShare,
             visible: true,
           }}
         />

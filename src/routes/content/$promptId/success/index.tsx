@@ -126,6 +126,11 @@ function SuccessPage() {
       !content?.token?.contract?.address ||
       !selectedCommunity?.collections
     ) {
+      console.log('Giphy check: Missing data', {
+        chain: content?.token?.contract?.chain,
+        address: content?.token?.contract?.address,
+        hasCollections: !!selectedCommunity?.collections,
+      });
       setIsGiphyEnabled(false);
       return;
     }
@@ -136,6 +141,19 @@ function SuccessPage() {
         c.chain === content.token?.contract?.chain &&
         c.address === content.token?.contract?.address
     );
+
+    console.log('Giphy check: Collection match', {
+      searchingFor: {
+        chain: content.token.contract.chain,
+        address: content.token.contract.address,
+      },
+      foundCollection: contentCollection?.name || 'NOT FOUND',
+      allCollections: selectedCommunity.collections.map(c => ({
+        name: c.name,
+        chain: c.chain,
+        address: c.address,
+      })),
+    });
 
     if (!contentCollection) {
       setIsGiphyEnabled(false);
@@ -149,6 +167,14 @@ function SuccessPage() {
       contentCollection.integrations?.some(
         i => i.type === 'giphy' && i.enabled
       ) || false;
+
+    console.log('Giphy check: Final result', {
+      contentType: content.type,
+      isGiphyContent,
+      integrations: contentCollection.integrations,
+      hasGiphyIntegration,
+      enabled: isGiphyContent && hasGiphyIntegration,
+    });
 
     setIsGiphyEnabled(isGiphyContent && hasGiphyIntegration);
   }, [content, selectedCommunity]);

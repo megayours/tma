@@ -122,8 +122,8 @@ export const RawContentResponseSchema = z
       .object({
         id: z.union([z.string(), z.number()]),
         name: z.string(),
-        owner: z.string(),
-        published: z.boolean(),
+        owner: z.string().optional(),
+        published: z.boolean().optional(),
       })
       .nullable()
       .optional(),

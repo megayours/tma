@@ -5,7 +5,6 @@ import { useSession } from '@/auth/SessionProvider';
 import { useGenerateContentMutation } from '@/hooks/useContents';
 import type { Content } from '@/types/content';
 import { FaRedo } from 'react-icons/fa';
-import { exec } from 'child_process';
 
 interface GenerateAgainButtonProps {
   execution: Content | undefined;

@@ -122,6 +122,8 @@ export const RawContentResponseSchema = z
       .object({
         id: z.union([z.string(), z.number()]),
         name: z.string(),
+        owner: z.string().optional(),
+        published: z.boolean().optional(),
       })
       .nullable()
       .optional(),
@@ -153,6 +155,7 @@ export const RawContentResponseSchema = z
     const prompt =
       data.prompt != null
         ? {
+            ...data.prompt,
             id: data.prompt.id,
             name: data.prompt.name,
             ...('version' in data.prompt

@@ -28,6 +28,7 @@ export function GenerationsTimeline() {
     undefined,
     { page, size: 20 }
   );
+  console.log('ALLCONTENTS:', data);
 
   const timeline = buildTimeline(allContents);
 
@@ -106,6 +107,20 @@ export function GenerationsTimeline() {
 }
 
 function SingleContent({ content }: { content: Content }) {
+  const { session } = useSession();
+
+  console.log(
+    'Creator ID:',
+    content.creatorId,
+    'Type:',
+    typeof content.creatorId
+  );
+  console.log('Session ID:', session?.id, 'Type:', typeof session?.id);
+  console.log('Are they equal?', content.creatorId === session?.id);
+
+  console.log('Content object:', content);
+  const isOwner = content.prompt?.owner === session?.id;
+
   const linkProps =
     content.status === 'processing'
       ? {
@@ -122,47 +137,63 @@ function SingleContent({ content }: { content: Content }) {
         };
 
   return (
-    <Link
-      {...linkProps}
-      className="flex items-center gap-3 overflow-hidden rounded-xl px-2 py-3 transition-opacity hover:opacity-80 active:scale-[0.99]"
-    >
-      {/* Thumbnail Image - Left */}
-      {content.status === 'processing' ? (
-        <div className="bg-tg-hint/30 flex h-24 w-24 flex-shrink-0 items-center justify-center rounded-lg">
-          <DotLottieReact
-            src="/lotties/loader.lottie"
-            loop
-            autoplay
-            className="h-24 w-24"
-          />
-        </div>
-      ) : (
-        <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-lg">
-          <MediaDisplay
-            src={content.url || ''}
-            alt="Generated content"
-            className="h-full w-full object-cover"
-            poster={content.thumbnailUrl || '/logo.png'}
-          />
-        </div>
-      )}
-
-      {/* Content Info - Middle */}
-      <div className="min-w-0 flex-1">
-        <h3 className="text-tg-text truncate text-sm font-semibold text-wrap">
-          {content.prompt?.name || 'Generated Content'}
-        </h3>
-        {content.token && (
-          <p className="text-tg-hint truncate text-xs text-wrap">
-            {content.token.contract.name} #{content.token.id}
-          </p>
+    <div className="flex items-center gap-3 overflow-hidden rounded-xl px-2 py-3">
+      <Link
+        {...linkProps}
+        className="flex flex-1 items-center gap-3 overflow-hidden transition-opacity hover:opacity-80 active:scale-[0.99]"
+      >
+        {/* Thumbnail Image - Left */}
+        {content.status === 'processing' ? (
+          <div className="bg-tg-hint/30 flex h-24 w-24 flex-shrink-0 items-center justify-center rounded-lg">
+            <DotLottieReact
+              src="/lotties/loader.lottie"
+              loop
+              autoplay
+              className="h-24 w-24"
+            />
+          </div>
+        ) : (
+          <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-lg">
+            <MediaDisplay
+              src={content.url || ''}
+              alt="Generated content"
+              className="h-full w-full object-cover"
+              poster={content.thumbnailUrl || '/logo.png'}
+            />
+          </div>
         )}
-        <div>
-          <div className="bg-tg-button text-tg-button-text inline-flex items-center justify-center rounded-2xl px-2">
-            <span className="text-sm">{content.type}</span>
+
+        {/* Content Info - Middle */}
+        <div className="min-w-0 flex-1">
+          <h3 className="text-tg-text truncate text-sm font-semibold text-wrap">
+            {content.prompt?.name || 'Generated Content'}
+          </h3>
+          {content.token && (
+            <p className="text-tg-hint truncate text-xs text-wrap">
+              {content.token.contract.name} #{content.token.id}
+            </p>
+          )}
+          <div>
+            <div className="bg-tg-button text-tg-button-text inline-flex items-center justify-center rounded-2xl px-2">
+              <span className="text-sm">{content.type}</span>
+            </div>
           </div>
         </div>
-      </div>
+
+        {/* Modify Button - Only shown if user is the creator */}
+        {isOwner && content.promptId && (
+          <Link
+            to="/profile/admin/prompt/edit/$promptId"
+            params={{ promptId: String(content.promptId) }}
+            className="flex-shrink-0"
+            onClick={e => e.stopPropagation()}
+          >
+            <Button mode="bezeled" size="s" className="whitespace-nowrap">
+              Modify
+            </Button>
+          </Link>
+        )}
+      </Link>
 
       {/* Actions - Right */}
       <div className="flex flex-shrink-0 flex-col items-end gap-1">
@@ -178,7 +209,7 @@ function SingleContent({ content }: { content: Content }) {
           {content.status}
         </span>
       </div>
-    </Link>
+    </div>
   );
 }
 

@@ -74,6 +74,7 @@ export const useGetContents = (
 
       // Validate and transform with Zod schema
       const result = safeParse(RawContentListResponseSchema, data);
+      console.log('1', result);
       if (!result) {
         const errors = getValidationErrors(RawContentListResponseSchema, data);
         console.error('Content validation errors:', errors);

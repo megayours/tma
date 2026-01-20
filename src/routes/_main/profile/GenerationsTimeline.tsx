@@ -28,6 +28,7 @@ export function GenerationsTimeline() {
     undefined,
     { page, size: 20 }
   );
+  console.log('ALLCONTENTS:', data);
 
   const timeline = buildTimeline(allContents);
 
@@ -108,11 +109,17 @@ export function GenerationsTimeline() {
 function SingleContent({ content }: { content: Content }) {
   const { session } = useSession();
 
-  console.log('Creator ID:', content.creatorId, 'Type:', typeof content.creatorId);
+  console.log(
+    'Creator ID:',
+    content.creatorId,
+    'Type:',
+    typeof content.creatorId
+  );
   console.log('Session ID:', session?.id, 'Type:', typeof session?.id);
   console.log('Are they equal?', content.creatorId === session?.id);
 
-  const isOwner = content.creatorId === session?.id;
+  console.log('Content object:', content);
+  const isOwner = content.prompt?.owner === session?.id;
 
   const linkProps =
     content.status === 'processing'
@@ -173,39 +180,35 @@ function SingleContent({ content }: { content: Content }) {
           </div>
         </div>
 
-        {/* Actions - Right */}
-        <div className="flex flex-shrink-0 flex-col items-end gap-1">
-          <span
-            className={`rounded-full px-2 py-0.5 text-xs font-semibold whitespace-nowrap ${
-              content.status === 'completed'
-                ? 'bg-green-100 text-green-700'
-                : content.status === 'processing'
-                  ? 'bg-blue-100 text-blue-700'
-                  : 'bg-red-100 text-red-700'
-            }`}
+        {/* Modify Button - Only shown if user is the creator */}
+        {isOwner && content.promptId && (
+          <Link
+            to="/profile/admin/prompt/edit/$promptId"
+            params={{ promptId: String(content.promptId) }}
+            className="flex-shrink-0"
+            onClick={e => e.stopPropagation()}
           >
-            {content.status}
-          </span>
-        </div>
+            <Button mode="bezeled" size="s" className="whitespace-nowrap">
+              Modify
+            </Button>
+          </Link>
+        )}
       </Link>
 
-      {/* Modify Button - Only shown if user is the creator */}
-      {isOwner && content.promptId && (
-        <Link
-          to="/profile/admin/prompt/edit/$promptId"
-          params={{ promptId: String(content.promptId) }}
-          className="flex-shrink-0"
-          onClick={(e) => e.stopPropagation()}
+      {/* Actions - Right */}
+      <div className="flex flex-shrink-0 flex-col items-end gap-1">
+        <span
+          className={`rounded-full px-2 py-0.5 text-xs font-semibold whitespace-nowrap ${
+            content.status === 'completed'
+              ? 'bg-green-100 text-green-700'
+              : content.status === 'processing'
+                ? 'bg-blue-100 text-blue-700'
+                : 'bg-red-100 text-red-700'
+          }`}
         >
-          <Button
-            mode="bezeled"
-            size="s"
-            className="whitespace-nowrap"
-          >
-            Modify
-          </Button>
-        </Link>
-      )}
+          {content.status}
+        </span>
+      </div>
     </div>
   );
 }

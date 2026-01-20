@@ -1,9 +1,11 @@
 import type { Prompt } from './prompt';
 import type { Token } from './response';
 
-type ContentPrompt = Partial<Prompt> & {
+type ContentPrompt = Omit<Partial<Prompt>, 'published'> & {
   id: string | number;
   name: string;
+  owner: string;
+  published: number;
 };
 
 export interface PromptWithContent extends Prompt {

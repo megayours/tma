@@ -5,6 +5,7 @@ import { useSession } from '@/auth/SessionProvider';
 import { useGenerateContentMutation } from '@/hooks/useContents';
 import type { Content } from '@/types/content';
 import { FaRedo } from 'react-icons/fa';
+import { exec } from 'child_process';
 
 interface GenerateAgainButtonProps {
   execution: Content | undefined;
@@ -38,6 +39,7 @@ export function GenerateAgainButton({
     // Handle both single token and multiple tokens formats
     const tokensArray =
       execution.tokens || (execution.token ? [execution.token] : []);
+    console.log('Tokens for regeneration:', execution, tokensArray);
 
     if (tokensArray.length === 0) {
       console.error('No tokens found in execution');
@@ -63,15 +65,17 @@ export function GenerateAgainButton({
     <div>
       <Button
         mode="plain"
-        size="l"
+        size="s"
         onClick={handleGenerateAgain}
         disabled={!execution || generateMutation.isPending}
       >
-        <div className="flex flex-row items-center justify-center gap-2">
+        <div className="text-tg-link flex flex-row items-center justify-center gap-1.5">
           <FaRedo
-            className={generateMutation.isPending ? 'animate-spin' : ''}
+            className={`text-xs ${generateMutation.isPending ? 'animate-spin' : ''}`}
           />
-          {generateMutation.isPending ? 'Generating...' : 'Generate Again'}
+          <span className="text-xs">
+            {generateMutation.isPending ? 'Generating...' : 'Generate Again'}
+          </span>
         </div>
       </Button>
     </div>

@@ -5,6 +5,7 @@ import { useSession } from '@/auth/SessionProvider';
 import { useContentExecution } from '@/hooks/useContents';
 import { SpinnerFullPage } from '@/components/ui';
 import { FaThumbsUp, FaThumbsDown } from 'react-icons/fa';
+import { IoSend } from 'react-icons/io5';
 import { usePromptFeedbackMutation } from '@/hooks/usePrompts';
 import type { PromptFeedbackSentiment } from '@/types/prompt';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
@@ -17,9 +18,9 @@ import {
 import { GenerateAgainButton } from '@/components/GenerateAgainButton';
 import { TelegramDualButtons } from '@/components/TelegramDualButtons';
 import { useSelectCommunity } from '@/contexts/SelectCommunityContext';
-import { TelegramShareButton } from './TelegramShareButton';
 import { GiphyShareButton } from './GiphyShareButton';
 import { MediaDisplay } from '@/components/lib/LatestContent/MediaDisplay';
+import { buildShareUrl } from '@/utils/shareUrl';
 
 const successSearchSchema = z.object({
   executionId: z.string().optional(),
@@ -60,6 +61,7 @@ function SuccessPage() {
     );
   }, []);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
   const [isGiphyEnabled, setIsGiphyEnabled] = useState(false);
   const hasSubmittedFeedback = useRef(false);
 
@@ -72,6 +74,8 @@ function SuccessPage() {
       preferredFormats: isMobileDevice ? 'gif' : 'webm',
     }
   );
+
+  console.log('EXECUTION CONTENTE:', content);
 
   // Feedback mutation
   const { mutate: submitFeedback } = usePromptFeedbackMutation(session, {
@@ -176,6 +180,42 @@ function SuccessPage() {
         contentId: content.id,
         sentiment,
       });
+    }
+  };
+
+  const handleTelegramShare = async () => {
+    try {
+      setIsSharing(true);
+      const shareUrl = buildShareUrl(
+        import.meta.env.VITE_PUBLIC_BOT_URL || '',
+        `/content/${promptId}/details`,
+        selectedCommunity?.id
+      );
+      const shareTitle = content?.prompt?.name || 'Check out my creation!';
+      const shareText = `${shareTitle} - Created with MegaYours`;
+
+      if (navigator.share) {
+        await navigator.share({
+          title: shareTitle,
+          text: shareText,
+          url: shareUrl,
+        });
+        if (isTelegram) {
+          triggerHapticImpact('light');
+        }
+      } else {
+        await navigator.clipboard.writeText(shareUrl);
+        if (isTelegram) {
+          triggerHapticImpact('light');
+        }
+      }
+    } catch (error) {
+      console.error('Failed to share:', error);
+      if (isTelegram) {
+        triggerHapticNotification('error');
+      }
+    } finally {
+      setIsSharing(false);
     }
   };
 
@@ -307,19 +347,19 @@ function SuccessPage() {
 
           {/* Feedback Section */}
           {content?.id && (
-            <div className="mt-2 flex items-center justify-between gap-2 px-4">
+            <div className="mt-2 flex items-center justify-between gap-1.5 px-4">
               {/* Positive Button (with centered Lottie) */}
-              <div className="relative flex items-center justify-center gap-2">
+              <div className="relative flex items-center justify-center gap-1.5">
                 <button
                   onClick={() => handleFeedback('positive')}
-                  className={`flex h-10 w-14 items-center justify-center rounded-xl border-2 text-2xl transition-all ${
+                  className={`flex h-8 w-10 items-center justify-center rounded-lg border-2 text-lg transition-all ${
                     selectedFeedback === 'positive'
                       ? 'border-tg-button text-tg-button shadow-md'
                       : 'text-tg-hint border-tg-section-separator hover:bg-tg-section-bg/80 active:scale-95'
                   }`}
                   aria-label="Thumbs up"
                 >
-                  <FaThumbsUp className="h-5 w-5" />
+                  <FaThumbsUp className="h-4 w-4" />
                 </button>
 
                 {/* Winner Animation (Perfectly Centered) */}
@@ -336,14 +376,14 @@ function SuccessPage() {
                 {/* Negative Button */}
                 <button
                   onClick={() => handleFeedback('negative')}
-                  className={`flex h-10 w-14 items-center justify-center rounded-xl border-2 text-2xl transition-all ${
+                  className={`flex h-8 w-10 items-center justify-center rounded-lg border-2 text-lg transition-all ${
                     selectedFeedback === 'negative'
                       ? 'border-tg-button text-tg-button shadow-md'
                       : 'text-tg-hint border-tg-section-separator hover:bg-tg-section-bg/80 active:scale-95'
                   }`}
                   aria-label="Thumbs down"
                 >
-                  <FaThumbsDown className="h-5 w-5" />
+                  <FaThumbsDown className="h-4 w-4" />
                 </button>
               </div>
 
@@ -366,57 +406,98 @@ function SuccessPage() {
             </div>
           )}
 
-          {/* Action Buttons */}
-          <div className="mt-6 space-y-3 px-4 pb-6">
-            {/* Add to Telegram Sticker Pack Button */}
+          {/* Action Buttons - Single Line */}
+          <div className="mt-2 px-4 pb-6">
+            {/* With Sticker Pack: All in one row */}
             {content?.telegramPackURL && content?.token && (
               <div className="space-y-2">
-                <div className="text-tg-hint px-1 text-xs font-medium">
-                  Sticker Pack:
+                <div className="flex items-center gap-2">
+                  {/* Share Icon */}
+                  <button
+                    onClick={handleTelegramShare}
+                    disabled={isSharing}
+                    className="border-tg-section-separator bg-tg-section-bg text-tg-text hover:bg-tg-section-bg/80 flex h-12 w-12 items-center justify-center rounded-xl border-2 shadow-sm transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                    aria-label="Share to Telegram"
+                  >
+                    {isSharing ? (
+                      <div className="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                    ) : (
+                      <IoSend className="h-6 w-6" />
+                    )}
+                  </button>
+
+                  {/* Download Icon */}
+                  <button
+                    onClick={handleDownload}
+                    disabled={!contentUrl || isDownloading}
+                    className="border-tg-section-separator bg-tg-section-bg text-tg-text hover:bg-tg-section-bg/80 flex h-12 w-12 items-center justify-center rounded-xl border-2 shadow-sm transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                    aria-label="Download content"
+                  >
+                    {isDownloading ? (
+                      <div className="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                    ) : (
+                      <svg
+                        className="h-6 w-6"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                        />
+                      </svg>
+                    )}
+                  </button>
+
+                  {/* Sticker Pack Button - flex-1 fills remaining space */}
+                  <a
+                    href={content.telegramPackURL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="bg-tg-button text-tg-button-text flex h-12 flex-1 items-center justify-center gap-2 rounded-lg px-4 shadow-md transition-all duration-200 hover:opacity-90 active:scale-95"
+                  >
+                    <span className="text-xs font-medium">
+                      Sticker Pack {content.token.contract.name} #
+                      {content.token.id}
+                    </span>
+                  </a>
                 </div>
-                <a
-                  href={content.telegramPackURL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bg-tg-button text-tg-button-text flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 shadow-md transition-all duration-200 hover:opacity-90 active:scale-95"
-                >
-                  <span className="text-sm font-medium">
-                    Add Sticker Pack {content.token.contract.name} #
-                    {content.token.id}
-                  </span>
-                </a>
               </div>
             )}
 
-            {/* Primary Actions Section */}
-            <div className="space-y-3">
-              <div className="text-tg-hint px-1 text-xs font-medium">
-                Actions:
-              </div>
-
-              {/* Telegram Share - Full Width Primary */}
-              <TelegramShareButton
-                fullWidth={true}
-                promptId={promptId}
-                contentPromptName={content?.prompt?.name}
-                communityId={selectedCommunity?.id}
-              />
-
-              {/* Save Content - Full Width Secondary */}
-              <button
-                onClick={handleDownload}
-                disabled={!contentUrl || isDownloading}
-                className="bg-tg-section-bg text-tg-text border-tg-section-separator hover:bg-tg-section-bg/80 flex w-full items-center justify-center gap-2 rounded-lg border px-4 py-3 shadow-sm transition-all duration-200 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {isDownloading ? (
-                  <>
+            {/* Without Sticker Pack: Just icons */}
+            {!content?.telegramPackURL && (
+              <div className="flex items-center gap-2">
+                {/* Share Icon */}
+                <button
+                  onClick={handleTelegramShare}
+                  disabled={isSharing}
+                  className="border-tg-section-separator bg-tg-section-bg text-tg-text hover:bg-tg-section-bg/80 flex h-12 w-12 items-center justify-center rounded-xl border-2 shadow-sm transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                  aria-label="Share to Telegram"
+                >
+                  {isSharing ? (
                     <div className="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                    <span className="text-base font-medium">Saving...</span>
-                  </>
-                ) : (
-                  <>
+                  ) : (
+                    <IoSend className="h-6 w-6" />
+                  )}
+                </button>
+
+                {/* Download Icon */}
+                <button
+                  onClick={handleDownload}
+                  disabled={!contentUrl || isDownloading}
+                  className="border-tg-section-separator bg-tg-section-bg text-tg-text hover:bg-tg-section-bg/80 flex h-12 w-12 items-center justify-center rounded-xl border-2 shadow-sm transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                  aria-label="Download content"
+                >
+                  {isDownloading ? (
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                  ) : (
                     <svg
-                      className="h-5 w-5"
+                      className="h-6 w-6"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -429,18 +510,14 @@ function SuccessPage() {
                         d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
                       />
                     </svg>
-                    <span className="text-base font-medium">
-                      Save{' '}
-                      {content?.type
-                        ? content.type.charAt(0).toUpperCase() +
-                          content.type.slice(1)
-                        : 'Content'}
-                    </span>
-                  </>
-                )}
-              </button>
-              {/* Giphy Section */}
-              {isGiphyEnabled && content?.id && (
+                  )}
+                </button>
+              </div>
+            )}
+
+            {/* Giphy - Full Width Below */}
+            {isGiphyEnabled && content?.id && (
+              <div className="mt-3">
                 <GiphyShareButton
                   contentId={content.id}
                   contentType={content.type}
@@ -452,8 +529,8 @@ function SuccessPage() {
                       ?.url
                   }
                 />
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -5,7 +5,7 @@ import { useSession } from '@/auth/SessionProvider';
 import { useContentExecution } from '@/hooks/useContents';
 import { SpinnerFullPage } from '@/components/ui';
 import { FaThumbsUp, FaThumbsDown } from 'react-icons/fa';
-import { IoSend } from 'react-icons/io5';
+import { IoSend, IoInformationCircle } from 'react-icons/io5';
 import { usePromptFeedbackMutation } from '@/hooks/usePrompts';
 import type { PromptFeedbackSentiment } from '@/types/prompt';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
@@ -126,11 +126,6 @@ function SuccessPage() {
       !content?.token?.contract?.address ||
       !selectedCommunity?.collections
     ) {
-      console.log('Giphy check: Missing data', {
-        chain: content?.token?.contract?.chain,
-        address: content?.token?.contract?.address,
-        hasCollections: !!selectedCommunity?.collections,
-      });
       setIsGiphyEnabled(false);
       return;
     }
@@ -141,19 +136,6 @@ function SuccessPage() {
         c.chain === content.token?.contract?.chain &&
         c.address === content.token?.contract?.address
     );
-
-    console.log('Giphy check: Collection match', {
-      searchingFor: {
-        chain: content.token.contract.chain,
-        address: content.token.contract.address,
-      },
-      foundCollection: contentCollection?.name || 'NOT FOUND',
-      allCollections: selectedCommunity.collections.map(c => ({
-        name: c.name,
-        chain: c.chain,
-        address: c.address,
-      })),
-    });
 
     if (!contentCollection) {
       setIsGiphyEnabled(false);
@@ -167,14 +149,6 @@ function SuccessPage() {
       contentCollection.integrations?.some(
         i => i.type === 'giphy' && i.enabled
       ) || false;
-
-    console.log('Giphy check: Final result', {
-      contentType: content.type,
-      isGiphyContent,
-      integrations: contentCollection.integrations,
-      hasGiphyIntegration,
-      enabled: isGiphyContent && hasGiphyIntegration,
-    });
 
     setIsGiphyEnabled(isGiphyContent && hasGiphyIntegration);
   }, [content, selectedCommunity]);
@@ -487,10 +461,17 @@ function SuccessPage() {
                     className="bg-tg-button text-tg-button-text flex h-12 flex-1 items-center justify-center gap-2 rounded-lg px-4 shadow-md transition-all duration-200 hover:opacity-90 active:scale-95"
                   >
                     <span className="text-xs font-medium">
-                      Sticker Pack {content.token.contract.name} #
-                      {content.token.id}
+                      Add Sticker Pack
                     </span>
                   </a>
+                </div>
+
+                {/* Sticker Pack Instructions */}
+                <div className="bg-tg-section-bg border-tg-section-separator mt-2 flex gap-2 rounded-lg border px-3 py-2">
+                  <IoInformationCircle className="text-tg-button mt-0.5 h-4 w-4 flex-shrink-0" />
+                  <p className="text-tg-hint text-xs leading-relaxed">
+                    <span className="text-tg-text font-semibold">Already have this pack?</span> To see the latest sticker, <span className="text-tg-button font-medium">remove and re-add</span> it in Telegram.
+                  </p>
                 </div>
               </div>
             )}

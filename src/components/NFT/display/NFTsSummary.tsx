@@ -23,7 +23,9 @@ export function NFTsSummary({
 
   return (
     <div className="animate-fade-in flex flex-col items-center justify-center gap-6 py-8">
-      <div className="grid grid-cols-2 gap-4 px-4 sm:grid-cols-3 lg:grid-cols-4">
+      <div
+        className={`grid ${totalSlots === 1 ? 'h-32 w-32 grid-cols-1' : 'grid-cols-2 gap-4 px-4 sm:grid-cols-3 lg:grid-cols-4'}`}
+      >
         {displaySlots.map((token, index) => {
           const username = usernamesByIndex?.[index];
           const displayUsername =
@@ -75,7 +77,7 @@ export function NFTsSummary({
                 )}
 
                 {/* Edit Icon - Positioned overlay */}
-                <div className="bg-tg-accent-text absolute right-1 top-1 rounded-full p-1.5 transition-all duration-300 ease-in-out hover:opacity-90">
+                <div className="bg-tg-accent-text absolute top-1 right-1 rounded-full p-1.5 transition-all duration-300 ease-in-out hover:opacity-90">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-7 w-7 text-white"
@@ -88,7 +90,7 @@ export function NFTsSummary({
               </div>
 
               {token && displayUsername && (
-                <div className="mt-2 text-center text-xs text-tg-hint">
+                <div className="text-tg-hint mt-2 text-center text-xs">
                   {displayUsername}
                 </div>
               )}

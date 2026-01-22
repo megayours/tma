@@ -35,6 +35,7 @@ export const RawPromptSchema = z.object({
   gifs: z.array(z.string()).optional(),
   stickers: z.array(z.string()).optional(),
   animated_stickers: z.array(z.string()).optional(),
+  thumbnail_urls: z.array(z.string().nullable()).optional(),
   versions: z.any().optional(),
   lastestContentUrl: z.string().optional(),
   min_tokens: z.number().optional(),
@@ -121,6 +122,8 @@ export const RawContentResponseSchema = z
       .object({
         id: z.union([z.string(), z.number()]),
         name: z.string(),
+        owner: z.string().optional(),
+        published: z.boolean().optional(),
       })
       .nullable()
       .optional(),
@@ -152,6 +155,7 @@ export const RawContentResponseSchema = z
     const prompt =
       data.prompt != null
         ? {
+            ...data.prompt,
             id: data.prompt.id,
             name: data.prompt.name,
             ...('version' in data.prompt

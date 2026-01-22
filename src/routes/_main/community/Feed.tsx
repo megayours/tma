@@ -13,11 +13,7 @@ import { Reshared } from '../stickers/Reshared';
 import { MediaDisplay } from '@/components/lib/LatestContent/MediaDisplay';
 import { Link } from '@tanstack/react-router';
 
-type ContentTypeFilter =
-  | 'images'
-  | 'gifs'
-  | 'stickers'
-  | 'animated_stickers';
+type ContentTypeFilter = 'images' | 'gifs' | 'stickers' | 'animated_stickers';
 
 // Helper function to get display label for prompt type
 const getTypeLabel = (
@@ -30,8 +26,8 @@ const getTypeLabel = (
       return 'Sticker';
     case 'gifs':
       return 'GIF';
-    // case 'animated_stickers':
-    //   return 'Animated';
+    case 'animated_stickers':
+      return 'Animated';
     default:
       return type;
   }
@@ -206,7 +202,7 @@ export function Feed() {
     { value: 'images', label: 'Images' },
     { value: 'stickers', label: 'Stickers' },
     { value: 'gifs', label: 'Gifs' },
-    // { value: 'animated_stickers', label: 'Animated Stickers' },
+    { value: 'animated_stickers', label: 'Animated Stickers' },
   ];
 
   // GSAP animation for collapsing/expanding type filters
@@ -244,6 +240,7 @@ export function Feed() {
             paddingLeft: 0,
             paddingRight: 0,
             marginRight: 0,
+            borderWidth: 0,
             display: 'block',
           },
           {
@@ -252,6 +249,7 @@ export function Feed() {
             paddingLeft: '0.75rem',
             paddingRight: '0.75rem',
             marginRight: isExpanded ? '0.25rem' : 0,
+            borderWidth: '1px',
             duration: 0.45,
             ease: 'power2.inOut',
             delay: isExpanded ? index * 0.05 : 0,
@@ -313,7 +311,7 @@ export function Feed() {
       {isRefetching && <TopLoadingBar />}
       {/* Content type and collection filters */}
       <div
-        className="scrollbar-hide border-tg-section-separator bg-tg-bg/80 sticky top-0 z-10 flex w-full shrink-0 border-b py-3 backdrop-blur-md"
+        className="border-tg-section-separator sticky top-0 z-10 flex w-full border-b py-3 backdrop-blur-md"
         style={{
           paddingLeft: '0.5rem',
           paddingRight: isExpanded ? '0.5rem' : '0.25rem',
@@ -340,7 +338,7 @@ export function Feed() {
               key={prompt.id}
               to="/content/$promptId/details"
               params={{ promptId: prompt.id.toString() }}
-              className="cursor-pointer block"
+              className="block cursor-pointer"
             >
               <div className="group flex cursor-pointer flex-col gap-2">
                 <div className="border-tg-section-separator/50 bg-tg-secondary-bg relative aspect-square w-full overflow-hidden rounded-2xl border">
@@ -360,6 +358,7 @@ export function Feed() {
                         priority={index < 2}
                         lazyLoad={true}
                         videoId={`community-${prompt.id}`}
+                        poster={prompt.thumbnails?.[0]}
                       />
                     ) : (
                       <div className="text-tg-hint flex h-full w-full items-center justify-center">
@@ -421,15 +420,18 @@ export function Feed() {
         )}
 
         {/* End of feed message */}
-        {allPrompts.length > 0 && !hasMorePages && !isLoading && !isFetchingMore && (
-          <div className="flex items-center justify-center py-8">
-            <div className="text-tg-hint text-center">
-              <div className="mb-2 text-2xl">✨</div>
-              <p className="text-sm font-medium">You've reached the end</p>
-              <p className="text-xs opacity-70">No more content to load</p>
+        {allPrompts.length > 0 &&
+          !hasMorePages &&
+          !isLoading &&
+          !isFetchingMore && (
+            <div className="flex items-center justify-center py-8">
+              <div className="text-tg-hint text-center">
+                <div className="mb-2 text-2xl">✨</div>
+                <p className="text-sm font-medium">You've reached the end</p>
+                <p className="text-xs opacity-70">No more content to load</p>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
         {error && allPrompts.length > 0 && (
           <div className="flex items-center justify-center">

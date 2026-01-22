@@ -4,7 +4,11 @@ interface AddButtonProps {
   isLoading?: boolean;
 }
 
-export const AddButton = ({ isOpen, onClick, isLoading = false }: AddButtonProps) => {
+export const AddButton = ({
+  isOpen,
+  onClick,
+  isLoading = false,
+}: AddButtonProps) => {
   return (
     <button
       onClick={onClick}
@@ -23,10 +27,7 @@ export const AddButton = ({ isOpen, onClick, isLoading = false }: AddButtonProps
           className="animate-spin"
         >
           <circle cx="12" cy="12" r="10" opacity="0.25" />
-          <path
-            d="M12 2a10 10 0 0 1 10 10"
-            opacity="0.75"
-          />
+          <path d="M12 2a10 10 0 0 1 10 10" opacity="0.75" />
         </svg>
       ) : (
         <svg

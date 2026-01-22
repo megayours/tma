@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@telegram-apps/telegram-ui';
 import { TokenSlot } from './TokenSlot';
-import { NFTSelectionFlow } from '../NFT/NFTSelectionFlow';
+import { NFTSelectionFlow } from '../NFT/flows';
 import { useGetCollectionsWithPrompt } from '@/hooks/useCollections';
 import type { Token } from '@/types/response';
 import type { Prompt } from '@/types/prompt';
@@ -34,7 +34,7 @@ export const TokenSelectionCore = ({
   });
   const [activeSlotIndex, setActiveSlotIndex] = useState<number | null>(null);
 
-  const { data: collections } = useGetCollectionsWithPrompt(prompt);
+  const { data: collections, isLoading: isLoadingCollections } = useGetCollectionsWithPrompt(prompt);
 
   const handleSlotClick = (index: number) => {
     setActiveSlotIndex(index);
@@ -139,9 +139,10 @@ export const TokenSelectionCore = ({
               onTokenSelect={handleTokenSelect}
               enableMascotMode={true}
               segmentedControlStyle="buttons"
+              isLoadingCollections={isLoadingCollections}
             />
 
-            <div className="flex justify-center mt-4">
+            <div className="mt-4 flex justify-center">
               <Button mode="outline" size="s" onClick={handleCloseSelection}>
                 Cancel
               </Button>

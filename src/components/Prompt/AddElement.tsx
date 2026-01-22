@@ -1,25 +1,24 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { MdAddCircleOutline } from 'react-icons/md';
-import { useNFTSetsContext } from '@/contexts/NFTSetsContext';
-import { NFTSelectionFlow } from '../NFT/NFTSelectionFlow';
+import { NFTSelectionFlow } from '../NFT/flows';
 import { useGetCollectionsWithPrompt } from '@/hooks/useCollections';
 import type { Token } from '@/types/response';
 import type { Prompt } from '../../types/prompt';
 
 interface AddElementProps {
   prompt: Prompt;
-  setIndex: number;
+  addOptionalNFT: (newToken: Token) => void;
+  optionalNFTs: Token[];
+  maxOptionalTokens: number;
 }
 
-export const AddElement = ({ prompt, setIndex }: AddElementProps) => {
+export const AddElement = ({ prompt, addOptionalNFT, optionalNFTs, maxOptionalTokens }: AddElementProps) => {
   const [showAddCloud, setShowAddCloud] = useState(false);
 
-  const { optionalNFTs, maxOptionalTokens, addOptionalNFT } =
-    useNFTSetsContext();
-  const { data: collections } = useGetCollectionsWithPrompt(prompt);
+  const { data: collections, isLoading: isLoadingCollections } = useGetCollectionsWithPrompt(prompt);
 
-  const currentOptionalCount = optionalNFTs[setIndex]?.length || 0;
+  const currentOptionalCount = optionalNFTs.length;
   const canAddOptionalNFT = currentOptionalCount < maxOptionalTokens;
 
   const handleAddClick = () => {
@@ -29,7 +28,7 @@ export const AddElement = ({ prompt, setIndex }: AddElementProps) => {
   };
 
   const handleTokenSelect = (token: Token) => {
-    addOptionalNFT(setIndex, token);
+    addOptionalNFT(token);
     setShowAddCloud(false);
   };
 
@@ -40,7 +39,7 @@ export const AddElement = ({ prompt, setIndex }: AddElementProps) => {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Element;
-      if (!target.closest(`[data-cloud-index="add-${setIndex}"]`)) {
+      if (!target.closest('.add-cloud')) {
         setShowAddCloud(false);
       }
     };
@@ -50,7 +49,7 @@ export const AddElement = ({ prompt, setIndex }: AddElementProps) => {
     }
 
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showAddCloud, setIndex]);
+  }, [showAddCloud]);
 
   // Don't render if max optional tokens is 0
   if (maxOptionalTokens === 0) {
@@ -85,7 +84,7 @@ export const AddElement = ({ prompt, setIndex }: AddElementProps) => {
 
           const addCloudContent = (
             <div
-              className="bg-tg-bg border-tg-hint/20 relative min-h-16 overflow-y-auto rounded-lg border shadow-lg"
+              className="add-cloud bg-tg-bg border-tg-hint/20 relative min-h-16 overflow-y-auto rounded-lg border shadow-lg"
               style={{
                 maxHeight: '60vh',
                 minHeight: '64px',
@@ -96,7 +95,6 @@ export const AddElement = ({ prompt, setIndex }: AddElementProps) => {
                 pointerEvents: 'auto',
                 userSelect: 'auto',
               }}
-              data-cloud-index={`add-${setIndex}`}
               onClick={handleCloudClick}
               onWheel={e => {
                 e.stopPropagation();
@@ -108,6 +106,7 @@ export const AddElement = ({ prompt, setIndex }: AddElementProps) => {
                 enableMascotMode={true}
                 segmentedControlStyle="inline"
                 className="p-2"
+                isLoadingCollections={isLoadingCollections}
               />
             </div>
           );

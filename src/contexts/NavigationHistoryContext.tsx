@@ -2,7 +2,6 @@ import { createContext, useContext, useEffect, useRef, useState, useCallback, ty
 import { useLocation } from '@tanstack/react-router';
 
 const STORAGE_KEY_ROUTE = 'last_content_menu_route';
-const STORAGE_KEY_DEPTH = 'navigation_depth';
 const CONTENT_MENU_ROUTES = ['/stickers', '/community', '/profile'] as const;
 type ContentMenuRoute = (typeof CONTENT_MENU_ROUTES)[number];
 
@@ -10,13 +9,10 @@ interface NavigationHistoryContextType {
   lastContentMenuRoute: ContentMenuRoute;
   navigationDepth: number;
   isAtEntryPoint: boolean;
-  decrementDepth: () => void;
-  resetDepth: () => void;
+  onBackClick: () => void;
 }
 
-const NavigationHistoryContext = createContext<
-  NavigationHistoryContextType | undefined
->(undefined);
+const NavigationHistoryContext = createContext<NavigationHistoryContextType | undefined>(undefined);
 
 function getStoredRoute(): ContentMenuRoute {
   try {
@@ -42,97 +38,42 @@ function isContentMenuRoute(pathname: string): pathname is ContentMenuRoute {
   return CONTENT_MENU_ROUTES.some(route => pathname.startsWith(route));
 }
 
-export function NavigationHistoryProvider({
-  children,
-}: {
-  children: ReactNode;
-}) {
+export function NavigationHistoryProvider({ children }: { children: ReactNode }) {
   const location = useLocation();
   const pathname = location.pathname;
 
-  // Initialize depth from sessionStorage, default to 0 if on root path
-  const [depth, setDepth] = useState(() => {
-    try {
-      const stored = sessionStorage.getItem(STORAGE_KEY_DEPTH);
-      // If on root path, always start at 0
-      if (pathname === '/') return 0;
-      return stored ? parseInt(stored, 10) : 0;
-    } catch {
-      return 0;
-    }
-  });
+  // Ultra-simple: start at 0, increment on every navigation
+  const [depth, setDepth] = useState(0);
+  const prevPathnameRef = useRef(pathname);
 
-  const prevPathRef = useRef(pathname);
-  const isBackNavigationRef = useRef(false);
-
-  // Persist depth to sessionStorage
+  // Increment depth on pathname change
   useEffect(() => {
-    try {
-      sessionStorage.setItem(STORAGE_KEY_DEPTH, depth.toString());
-    } catch (e) {
-      console.warn('[NavigationHistory] Failed to persist depth:', e);
-    }
-  }, [depth]);
+    const prevPath = prevPathnameRef.current;
 
-  // Track pathname changes to detect forward navigation
-  useEffect(() => {
-    const prevPath = prevPathRef.current;
+    // Skip if pathname hasn't changed
+    if (pathname === prevPath) return;
 
-    // Skip if this was a back navigation (already handled)
-    if (isBackNavigationRef.current) {
-      isBackNavigationRef.current = false;
-      prevPathRef.current = pathname;
-      return;
-    }
+    // Every navigation increments depth
+    setDepth(d => d + 1);
+    prevPathnameRef.current = pathname;
 
-    // Detect forward navigation
-    if (prevPath !== pathname) {
-      setDepth(d => {
-        const newDepth = Math.max(0, d + 1);
-        console.log('[NavigationHistory] Forward nav:', prevPath, '→', pathname, `depth: ${d} → ${newDepth}`);
-        return newDepth;
-      });
-      prevPathRef.current = pathname;
-    }
-
-    // Track content menu routes
+    // Track content menu routes for fallback
     if (isContentMenuRoute(pathname)) {
       const route = CONTENT_MENU_ROUTES.find(r => pathname.startsWith(r))!;
       setStoredRoute(route);
-      console.log('[NavigationHistory] Tracked route:', route);
     }
-  }, [pathname]);
 
-  // Listen for browser back/forward button
-  useEffect(() => {
-    const handlePopState = () => {
-      // Browser back button pressed
-      isBackNavigationRef.current = true;
-      setDepth(d => {
-        const newDepth = Math.max(0, d - 1);
-        console.log('[NavigationHistory] Browser back, depth:', d, '→', newDepth);
-        return newDepth;
-      });
-    };
+    console.log(`[Nav] ${prevPath} → ${pathname}, depth: ${depth} → ${depth + 1}`);
+  }, [pathname, depth]);
 
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
-
-  const decrementDepth = useCallback(() => {
-    isBackNavigationRef.current = true;
+  // Back button handler: decrement depth
+  const handleBackClick = useCallback(() => {
     setDepth(d => {
       const newDepth = Math.max(0, d - 1);
-      console.log('[NavigationHistory] Decrement depth:', d, '→', newDepth);
+      console.log(`[Nav] Back clicked, depth: ${d} → ${newDepth}`);
       return newDepth;
     });
   }, []);
-
-  const resetDepth = useCallback(() => {
-    setDepth(0);
-    prevPathRef.current = pathname;
-    console.log('[NavigationHistory] Reset depth to 0');
-  }, [pathname]);
 
   const lastContentMenuRoute = getStoredRoute();
   const isAtEntryPoint = depth === 0;
@@ -143,8 +84,7 @@ export function NavigationHistoryProvider({
         lastContentMenuRoute,
         navigationDepth: depth,
         isAtEntryPoint,
-        decrementDepth,
-        resetDepth,
+        onBackClick: handleBackClick,
       }}
     >
       {children}
@@ -155,9 +95,7 @@ export function NavigationHistoryProvider({
 export function useNavigationHistory() {
   const context = useContext(NavigationHistoryContext);
   if (!context) {
-    throw new Error(
-      'useNavigationHistory must be used within NavigationHistoryProvider'
-    );
+    throw new Error('useNavigationHistory must be used within NavigationHistoryProvider');
   }
   return context;
 }

@@ -1,6 +1,6 @@
 import { useRef, useEffect } from 'react';
 import { gsap } from 'gsap';
-import { hapticFeedback } from '@telegram-apps/sdk-react';
+import { hapticFeedback, viewport, useSignal } from '@telegram-apps/sdk-react';
 import { useNavigate, useLocation } from '@tanstack/react-router';
 import { useSession } from '../auth/SessionProvider';
 import { UserMenuComponent } from './lib/auth/FavoriteNFT';
@@ -17,13 +17,16 @@ export function ContentMenu() {
 
   const { count: notificationCount, isLoading } = useNotifications(session);
 
+  // Use signal to get safe area insets (the blue border you saw in constraints)
+  const safeAreaInsets = useSignal(viewport.safeAreaInsets);
+
   // Derive selected content type from current route
   const getSelectedContentType = (): string => {
     const path = location.pathname;
     if (path.startsWith('/stickers')) return 'Packs';
     if (path.startsWith('/community')) return 'Community';
     if (path.startsWith('/profile')) return 'UserMenu';
-    return 'Packs';
+    return 'Community';
   };
 
   const selectedContentType = getSelectedContentType();
@@ -38,7 +41,7 @@ export function ContentMenu() {
       case 'UserMenu':
         return '/profile';
       default:
-        return '/stickers';
+        return '/community';
     }
   };
 
@@ -71,11 +74,8 @@ export function ContentMenu() {
     }
   }, [selectedContentType]);
 
-  const bottomInset =
-    typeof window !== 'undefined' &&
-    window.Telegram?.WebApp?.contentSafeAreaInset?.bottom
-      ? 20 + window.Telegram.WebApp.contentSafeAreaInset.bottom
-      : 20;
+  // Use the safe area inset bottom (blue border from constraints page)
+  const bottomInset = 10 + (safeAreaInsets?.bottom || 0);
 
   return (
     <div

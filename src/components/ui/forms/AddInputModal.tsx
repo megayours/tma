@@ -7,7 +7,7 @@ import { SelectNFTModal } from './SelectNFTModal';
 import { SelectPromptModal } from './SelectPromptModal';
 import { SelectImageModal } from './SelectImageModal';
 import { useGetModel } from '@/hooks/useModels';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 interface AddInputModalProps {
   isOpen: boolean;
@@ -28,12 +28,34 @@ export const AddInputModal = ({
 }: AddInputModalProps) => {
   const portalContainer = document.getElementById('custom-input-container');
   const latestVersion = prompt.versions?.[0]!;
+  const modalRef = useRef<HTMLDivElement>(null);
 
   const { model, isLoading: isLoadingModel } = useGetModel(
     latestVersion.model!
   );
 
   const [additionalImagesEnabled, setAdditionalImagesEnabled] = useState(true);
+
+  // Handle click outside to close modal
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
+        onClose();
+      }
+    };
+
+    // Add a small delay to prevent immediate closing when opening
+    const timeoutId = setTimeout(() => {
+      document.addEventListener('mousedown', handleClickOutside);
+    }, 100);
+
+    return () => {
+      clearTimeout(timeoutId);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen, onClose]);
 
   useEffect(() => {
     if (latestVersion.additionalContentIds === undefined) {
@@ -65,7 +87,10 @@ export const AddInputModal = ({
   }
 
   const modalContent = (
-    <div className="bg-tg-bg pointer-events-auto relative left-0 h-auto min-h-16 w-full overflow-auto select-auto">
+    <div
+      ref={modalRef}
+      className="bg-tg-secondary-bg pointer-events-auto relative left-0 h-auto min-h-16 w-full overflow-auto select-auto"
+    >
       {/* Main menu when no specific content is selected */}
       {selectedContent === null && (
         <AddInputMenu

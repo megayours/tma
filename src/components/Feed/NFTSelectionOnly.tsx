@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@telegram-apps/telegram-ui';
 import { TokenSlot } from './TokenSlot';
-import { SelectCollection } from '../NFT/SelectCollection';
-import { SelectTokenId } from '../NFT/SelectTokenId';
-import { DisplayNFT } from '../NFT/DisplayNFT';
-import { PickFavoriteNFTs } from '../NFT/PickFavoriteNFTs';
+import { SelectCollection, SelectTokenId, PickFavoriteNFTs } from '../NFT/selection';
+import { DisplayNFT } from '../NFT/display';
 import { useGetCollectionsWithPrompt } from '@/hooks/useCollections';
 import type { SupportedCollection } from '@/hooks/useCollections';
 import type { Token } from '@/types/response';
@@ -56,7 +54,7 @@ export const NFTSelectionOnly = ({
     'favorites' | 'collections'
   >('favorites');
 
-  const { data: collections } = useGetCollectionsWithPrompt(prompt);
+  const { data: collections, isLoading: isLoadingCollections } = useGetCollectionsWithPrompt(prompt);
 
   // Notify parent when tokens change
   useEffect(() => {
@@ -196,10 +194,11 @@ export const NFTSelectionOnly = ({
                   <PickFavoriteNFTs onTokenSelect={handleFavoriteSelect} />
                 )}
 
-                {selectionMode === 'collections' && collections && (
+                {selectionMode === 'collections' && (
                   <SelectCollection
-                    collections={collections}
+                    collections={collections || []}
                     onCollectionSelect={handleCollectionSelect}
+                    isLoading={isLoadingCollections}
                   />
                 )}
 

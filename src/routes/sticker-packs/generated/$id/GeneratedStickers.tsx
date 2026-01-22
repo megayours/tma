@@ -48,6 +48,7 @@ function StickerItem({
           alt={item.bundle_item.prompt.name}
           className="h-full w-full"
           priority={index < 10}
+          poster={item.bundle_item.thumbnailUrl || '/logo.png'}
         />
       );
     }

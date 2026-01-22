@@ -7,12 +7,14 @@ interface SelectCollectionProps {
   onCollectionSelect: (collection: SupportedCollection) => void;
   title?: string;
   className?: string;
+  isLoading?: boolean;
 }
 
 export function SelectCollection({
   collections,
   onCollectionSelect,
   className = '',
+  isLoading = false,
 }: SelectCollectionProps) {
   const { selectedCommunity } = useSelectCommunity();
 
@@ -59,6 +61,56 @@ export function SelectCollection({
     onCollectionSelect(collection);
   };
 
+  // Loading skeleton
+  if (isLoading) {
+    return (
+      <div
+        className={`flex h-full flex-col gap-2 p-2 ${className} w-full`}
+        style={{ height: '100%', maxHeight: 'none' }}
+      >
+        <div
+          className="scrollbar-hide grid flex-1 grid-cols-2 gap-1 overflow-y-auto p-2"
+          style={{
+            height: 'calc(100% - 60px)',
+            maxHeight: 'none',
+            overflowY: 'auto',
+          }}
+        >
+          {[...Array(6)].map((_, index) => (
+            <div
+              key={index}
+              className="bg-tg-secondary border-tg-section-separator flex flex-col items-center justify-center gap-2 rounded-lg border p-1"
+            >
+              <div className="bg-tg-hint/20 h-16 w-full animate-pulse rounded-md" />
+              <div className="bg-tg-hint/20 mt-2 h-4 w-24 animate-pulse rounded" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Empty state
+  if (!filteredCollections || filteredCollections.length === 0) {
+    return (
+      <div
+        className={`flex h-full flex-col gap-2 p-2 ${className} w-full`}
+        style={{ height: '100%', maxHeight: 'none' }}
+      >
+        <div className="flex flex-1 items-center justify-center p-8">
+          <div className="text-tg-hint text-center">
+            <div className="mb-2 text-4xl">📦</div>
+            <div className="text-sm">
+              {selectedCommunity
+                ? 'No collections available for this community'
+                : 'No collections available'}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className={`flex h-full flex-col gap-2 p-2 ${className} w-full`}
@@ -72,7 +124,7 @@ export function SelectCollection({
           overflowY: 'auto',
         }}
       >
-        {filteredCollections?.map((collection: SupportedCollection) => (
+        {filteredCollections.map((collection: SupportedCollection) => (
           <div
             key={collection.address}
             className="bg-tg-secondary hover:bg-tg-secondary/80 border-tg-section-separator flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border p-1 transition-colors"

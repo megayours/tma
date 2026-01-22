@@ -6,6 +6,10 @@ import { Banner, Divider } from '@telegram-apps/telegram-ui';
 import { TelegramDualButtons } from '../../../../components/TelegramDualButtons';
 import { Fragment } from 'react/jsx-runtime';
 import { MediaDisplay } from '@/components/lib/LatestContent/MediaDisplay';
+import { buildShareUrl } from '@/utils/shareUrl';
+import { useSelectCommunity } from '@/contexts/SelectCommunityContext';
+import { canShareMessage, shareTelegramMessage } from '@/utils/telegramShare';
+import { IoShareOutline } from 'react-icons/io5';
 
 export const Route = createFileRoute('/content/$promptId/details/')({
   component: ContentDetails,
@@ -33,6 +37,7 @@ function ContentDetails() {
   const { promptId } = Route.useParams();
   const navigate = useNavigate();
   const { session, isAuthenticating } = useSession();
+  const { selectedCommunity } = useSelectCommunity();
 
   const { data: prompt, isLoading, error } = useGetPrompt(promptId, session);
 
@@ -41,6 +46,16 @@ function ContentDetails() {
       to: '/content/$promptId/select-nfts',
       params: { promptId },
     });
+  };
+
+  const handleShare = () => {
+    const shareUrl = buildShareUrl(
+      import.meta.env.VITE_PUBLIC_BOT_URL || '',
+      `/content/${promptId}/details`,
+      selectedCommunity?.id
+    );
+
+    shareTelegramMessage(shareUrl, `Check out this prompt: ${prompt?.name}`);
   };
 
   if (isAuthenticating) {
@@ -91,10 +106,19 @@ function ContentDetails() {
             <div className="flex w-full flex-col items-center">
               {/* Collection Info */}
               <div className="w-full">
-                <div className="flex flex-col items-center">
+                <div className="flex items-center justify-center gap-3">
                   <h1 className="text-2xl font-bold">
                     {prompt.name || 'Untitled Prompt'}
                   </h1>
+                  {canShareMessage() && (
+                    <button
+                      onClick={handleShare}
+                      className="text-tg-hint hover:text-tg-accent-text transition-colors active:scale-95"
+                      aria-label="Share prompt"
+                    >
+                      <IoShareOutline className="h-5 w-5" />
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -159,6 +183,7 @@ function ContentDetails() {
                         src={imageUrl}
                         alt={`${prompt.name || 'Content'} ${index + 1}`}
                         className="h-full w-full object-cover"
+                        poster={prompt.thumbnails?.[index] || '/logo.png'}
                       />
                     </div>
                   ))}
@@ -171,7 +196,7 @@ function ContentDetails() {
         {/* Get Started Button */}
         <TelegramDualButtons
           mainButton={{
-            text: `Get ${getTypeLabel(prompt.type as 'images' | 'stickers' | 'gifs' | 'animated_stickers').toLowerCase()} with your PFP`,
+            text: `Get Yours`,
             onClick: handleContinue,
             visible: true,
           }}

@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Button } from '@telegram-apps/telegram-ui';
-import { PickFavoriteNFTs } from './PickFavoriteNFTs';
-import { SelectCollection } from './SelectCollection';
-import { SelectTokenId } from './SelectTokenId';
-import { SelectMascot } from './SelectMascot';
-import { DisplayNFT } from './DisplayNFT';
+import { PickFavoriteNFTs } from '../selection/PickFavoriteNFTs';
+import { SelectCollection } from '../selection/SelectCollection';
+import { SelectTokenId } from '../selection/SelectTokenId';
+import { SelectMascot } from '../selection/SelectMascot';
+import { DisplayNFT } from '../display/DisplayNFT';
 import type { SupportedCollection } from '@/hooks/useCollections';
 import type { Token } from '@/types/response';
 
@@ -18,6 +18,7 @@ export interface NFTSelectionFlowProps {
   initialMode?: 'favorites' | 'collections';
   hideSegmentedControl?: boolean;
   segmentedControlStyle?: 'inline' | 'buttons';
+  isLoadingCollections?: boolean;
 }
 
 export const NFTSelectionFlow = ({
@@ -30,6 +31,7 @@ export const NFTSelectionFlow = ({
   initialMode = 'favorites',
   hideSegmentedControl = false,
   segmentedControlStyle = 'inline',
+  isLoadingCollections = false,
 }: NFTSelectionFlowProps) => {
   const [selectedCollection, setSelectedCollection] = useState<SupportedCollection | null>(null);
   const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null);
@@ -121,6 +123,7 @@ export const NFTSelectionFlow = ({
             <SelectCollection
               collections={collections}
               onCollectionSelect={handleCollectionSelect}
+              isLoading={isLoadingCollections}
             />
           )}
         </div>

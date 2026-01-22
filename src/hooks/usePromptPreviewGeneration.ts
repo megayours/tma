@@ -3,7 +3,6 @@ import type { Prompt } from '@/types/prompt';
 import type { Session } from '@/auth/useAuth';
 import { usePromptMutation } from './usePrompts';
 import { usePreviewContentMutation } from './useContents';
-import { useNFTSetsContext } from '@/contexts/NFTSetsContext';
 import type { Token } from '@/types/response';
 
 interface UsePromptGenerationOptions {
@@ -17,12 +16,12 @@ interface UsePromptGenerationReturn {
   generatePromptPreview: (
     promptText: string,
     prompt: Prompt,
+    compulsoryNFTs: Token[],
+    optionalNFTs: Token[],
     hasChanges?: boolean,
     setSelectedVersion?: any,
     currentAdditionalContentIds?: string[]
-  ) => Promise<
-    Array<{ setIndex: number; nftSet: any[]; result: { contentId: number } }>
-  >;
+  ) => Promise<{ nftSet: Token[]; result: { contentId: number } }>;
   reset: () => void;
 }
 
@@ -32,7 +31,6 @@ export function usePromptPreviewGeneration(
   const [isGenerating, setIsGenerating] = useState(false);
   const { onSuccess, onError } = options;
   const { session } = options;
-  const { compulsoryNFTs, optionalNFTs } = useNFTSetsContext();
   const { mutateAsync: updatePrompt } = usePromptMutation(session);
   const { mutateAsync: previewContent } = usePreviewContentMutation(session);
 
@@ -40,6 +38,8 @@ export function usePromptPreviewGeneration(
     async (
       promptText: string,
       prompt: Prompt,
+      compulsoryNFTs: Token[],
+      optionalNFTs: Token[],
       hasChanges = false,
       setSelectedVersion?: any,
       currentAdditionalContentIds?: string[]
@@ -53,7 +53,7 @@ export function usePromptPreviewGeneration(
       }
 
       if (!compulsoryNFTs || !compulsoryNFTs.length) {
-        throw new Error('No NFT sets available');
+        throw new Error('No NFTs available');
       }
 
       setIsGenerating(true);
@@ -83,55 +83,43 @@ export function usePromptPreviewGeneration(
           }
         }
 
-        // Create promises for each NFT set (combining compulsory and optional NFTs)
-        const generationPromises = compulsoryNFTs.map(
-          async (compulsorySet, index) => {
-            const optionalSet = optionalNFTs[index] || [];
-            // Combine compulsory and optional NFTs for this set
-            const combinedSet = [...compulsorySet, ...optionalSet];
+        // Combine compulsory and optional NFTs into single set
+        const combinedSet = [...compulsoryNFTs, ...optionalNFTs];
 
-            // Convert combined NFT set to tokens format expected by generatePromptPreview
-            const tokens = combinedSet.map(token => ({
-              contract: {
-                chain: token.contract.chain,
-                address: token.contract.address,
-                name: token.contract.name,
-              },
-              id: token.id,
-            }));
+        // Convert combined NFT set to tokens format expected by generatePromptPreview
+        const tokens = combinedSet.map(token => ({
+          contract: {
+            chain: token.contract.chain,
+            address: token.contract.address,
+            name: token.contract.name,
+          },
+          id: token.id,
+        }));
 
-            // Call previewContent for this NFT set
-            const result = await previewContent({
-              promptId: prompt.id!,
-              contentIds: [],
-              tokens: tokens as Token[],
-            });
+        // Call previewContent for the NFT set
+        const result = await previewContent({
+          promptId: prompt.id!,
+          contentIds: [],
+          tokens: tokens as Token[],
+        });
 
-            if (!result) {
-              throw new Error(
-                `Failed to generate content preview for set ${index}`
-              );
-            }
+        if (!result) {
+          throw new Error('Failed to generate content preview');
+        }
 
-            return {
-              setIndex: index,
-              nftSet: combinedSet,
-              result,
-            };
-          }
-        );
-
-        // Wait for all generations to complete
-        const results = await Promise.all(generationPromises);
+        const response = {
+          nftSet: combinedSet,
+          result,
+        };
 
         // Call success callback if provided
         onSuccess?.({
           promptText,
           generated: true,
-          results,
+          result: response,
         });
 
-        return results;
+        return response;
       } catch (error) {
         console.error('Generation failed:', error);
         // Call error callback if provided
@@ -148,8 +136,6 @@ export function usePromptPreviewGeneration(
       previewContent,
       onSuccess,
       onError,
-      compulsoryNFTs,
-      optionalNFTs,
     ]
   );
 

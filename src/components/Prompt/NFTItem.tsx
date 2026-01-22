@@ -3,23 +3,28 @@ import { Avatar } from '@telegram-apps/telegram-ui';
 import { NFTCloud } from '../NFT';
 import type { Prompt } from '../../types/prompt';
 import { useGetNFTByCollectionAndTokenId } from '@/hooks/useCollections';
+import { IoCloseCircleOutline } from 'react-icons/io5';
 
 /**
  * Avatar component that fetches NFT data if image is missing
  */
-const NFTAvatar = ({ token, size }: { token: Token; size: 20 | 24 | 28 | 40 | 48 | 96 }) => {
+const NFTAvatar = ({ token }: { token: Token }) => {
   // Only fetch if image is missing
-  const shouldFetch = !token.image && !!token.contract?.chain && !!token.contract?.address && !!token.id;
+  const shouldFetch =
+    !token.image &&
+    !!token.contract?.chain &&
+    !!token.contract?.address &&
+    !!token.id;
 
   const { data: fetchedToken } = useGetNFTByCollectionAndTokenId(
-    shouldFetch ? (token.contract?.chain || '') : '',
-    shouldFetch ? (token.contract?.address || '') : '',
-    shouldFetch ? (token.id || '') : ''
+    shouldFetch ? token.contract?.chain || '' : '',
+    shouldFetch ? token.contract?.address || '' : '',
+    shouldFetch ? token.id || '' : ''
   );
 
-  const imageUrl = fetchedToken?.image || token?.image || '/nfts/not-available.png';
+  const imageUrl = fetchedToken?.image || token?.image || '/logo.png';
 
-  return <Avatar src={imageUrl} size={size} />;
+  return <Avatar src={imageUrl} />;
 };
 
 /**
@@ -29,28 +34,36 @@ const NFTAvatar = ({ token, size }: { token: Token; size: 20 | 24 | 28 | 40 | 48
 export const NFTItem = ({
   token,
   index,
-  isModifyingNFTs,
-  longPressedIndex,
-  onLongPress,
+  pressedIndex,
+  onPress,
   prompt,
   onCloudClose,
-  setIndex,
   isCompulsory,
   onRemove,
+  updateCompulsoryNFT,
+  updateOptionalNFT,
 }: {
   token: Token;
   index: number;
-  isModifyingNFTs: boolean;
-  longPressedIndex: number | null;
-  onLongPress: (index: number) => void;
+  pressedIndex: number | null;
+  onPress: (index: number) => void;
   prompt: Prompt;
   onCloudClose: () => void;
-  setIndex: number;
   isCompulsory: boolean;
   onRemove?: () => void;
+  updateCompulsoryNFT: (nftIndex: number, newToken: Token) => void;
+  updateOptionalNFT: (nftIndex: number, newToken: Token) => void;
 }) => {
   const handleClick = () => {
-    onLongPress(index);
+    console.log('handleClick pressedIndex:', pressedIndex, 'index:', index);
+    if (pressedIndex === index) {
+      console.log('Closing cloud for index:', index);
+      onCloudClose();
+      return;
+    } else {
+      onPress(index);
+      return;
+    }
   };
 
   const handleRemove = (e: React.MouseEvent) => {
@@ -61,62 +74,39 @@ export const NFTItem = ({
   return (
     <>
       {/* Show cloud tooltip when NFT is clicked */}
-      {longPressedIndex === index && (
+      {pressedIndex === index && (
         <NFTCloud
-          setIndex={setIndex}
           nftIndex={index}
           prompt={prompt}
           onClose={onCloudClose}
           isCompulsory={isCompulsory}
+          updateCompulsoryNFT={updateCompulsoryNFT}
+          updateOptionalNFT={updateOptionalNFT}
         />
       )}
       <div
         key={index}
-        className="flex h-8 cursor-pointer flex-row items-center gap-2 rounded-full border border-white/20 bg-white/10 p-2 shadow-lg backdrop-blur-lg select-none"
+        className="flex h-12 cursor-pointer flex-row items-center gap-2 rounded-full border border-white/20 bg-white/10 p-2 shadow-lg backdrop-blur-lg select-none"
         onClick={handleClick}
         onContextMenu={e => e.preventDefault()}
       >
-        {/* Show NFT label when in modification mode */}
-        {isModifyingNFTs && (
-          <span className="text-tg-text text-xs select-none">
-            {isCompulsory ? `Character ${index + 1}` : `Optional ${index + 1}`}
-          </span>
-        )}
-
         {/* NFT avatar */}
-        <div
-          onClick={() => {
-            // Close cloud tooltip if it's open
-            if (longPressedIndex === index) {
-              // This will be handled by the parent component's click outside handler
-            }
-          }}
-        >
-          <NFTAvatar token={token} size={20} />
+        <div className="flex items-center">
+          <NFTAvatar token={token} />
         </div>
+        {/* Show NFT label when in modification mode */}
+        <span className="text-tg-text flex items-center text-sm font-bold select-none">
+          {isCompulsory ? `Character ${index + 1}` : `Optional ${index + 1}`}
+        </span>
 
         {/* X button to remove optional NFT - only show for optional items */}
-        {!isCompulsory && onRemove && isModifyingNFTs && (
-          <button
-            onClick={handleRemove}
-            className="text-tg-hint hover:text-tg-destructive-text border-tg-hint flex h-4 w-4 items-center justify-center rounded-full border transition-colors"
-            aria-label="Remove optional NFT"
-          >
-            <svg
-              className="h-3 w-3"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2.5}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-        )}
+        <button
+          onClick={handleRemove}
+          aria-label="Remove optional NFT"
+          className="flex items-center"
+        >
+          <IoCloseCircleOutline size={20} />
+        </button>
       </div>
     </>
   );

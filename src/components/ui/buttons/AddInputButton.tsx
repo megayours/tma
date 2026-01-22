@@ -8,10 +8,10 @@ import { useQueryClient } from '@tanstack/react-query';
 
 export function AddInputButton({
   prompt,
-  promptTextareaRef,
+  onOpenChange,
 }: {
   prompt: Prompt;
-  promptTextareaRef: React.RefObject<HTMLTextAreaElement | null>;
+  onOpenChange?: (isOpen: boolean) => void;
 }) {
   const { session } = useSession();
   const queryClient = useQueryClient();
@@ -22,13 +22,8 @@ export function AddInputButton({
 
   const handleCloseModal = () => {
     setIsOpen(false);
+    onOpenChange?.(false);
     setSelectedContent(null);
-    // Focus textarea after closing
-    setTimeout(() => {
-      if (promptTextareaRef.current) {
-        promptTextareaRef.current.focus();
-      }
-    }, 100);
   };
 
   const handleBackClick = () => {
@@ -36,8 +31,10 @@ export function AddInputButton({
   };
 
   const handleClick = () => {
-    setIsOpen(!isOpen);
-    if (!isOpen) {
+    const newIsOpen = !isOpen;
+    setIsOpen(newIsOpen);
+    onOpenChange?.(newIsOpen);
+    if (newIsOpen) {
       setSelectedContent(null); // Reset content when opening
     }
   };

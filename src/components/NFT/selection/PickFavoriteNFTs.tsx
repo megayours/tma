@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useSession } from '@/auth/SessionProvider';
 import { useGetFavorites, useRemoveFromFavorites } from '@/hooks/useFavorites';
 import type { Token } from '@/types/response';
-import type { SupportedCollection } from '../../hooks/useCollections';
+import type { SupportedCollection } from '@/hooks/useCollections';
 import { Blockquote } from '@telegram-apps/telegram-ui';
 
 interface PickFavoriteNFTsProps {
@@ -197,9 +197,40 @@ export const PickFavoriteNFTs = ({
   const { session } = useSession();
   const { favorites, isLoadingFavorites } = useGetFavorites(session);
 
-  // Don't render if loading or no favorites
-  if (isLoadingFavorites || !favorites || favorites.length === 0) {
-    return null;
+  // Loading skeleton
+  if (isLoadingFavorites) {
+    return (
+      <div className="flex flex-col gap-3 pt-5">
+        <div className="scrollbar-hide flex gap-2 overflow-x-auto p-2">
+          {[...Array(4)].map((_, index) => (
+            <div key={index} className="flex-shrink-0">
+              <div className="flex flex-col items-center gap-2">
+                <div className="bg-tg-secondary border-tg-section-separator h-20 w-20 animate-pulse rounded-full border" />
+                <div className="bg-tg-hint/20 h-3 w-16 animate-pulse rounded" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Empty state
+  if (!favorites || favorites.length === 0) {
+    return (
+      <div className="flex flex-col gap-3 pt-5">
+        <div className="flex items-center justify-center p-8">
+          <div className="text-tg-hint text-center">
+            <div className="mb-2 text-4xl">⭐</div>
+            <div className="text-sm">No favorite NFTs yet</div>
+            <div className="text-tg-hint mt-1 text-xs">
+              Add favorites by creating a content with a Character from
+              collections
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   // Handlers - defined early to be used in validation logic

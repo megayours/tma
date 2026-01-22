@@ -14,11 +14,7 @@ export const Route = createFileRoute('/_main/profile/admin/prompt/create')({
 function CreatePromptComponent() {
   const { session } = useSession();
   const { selectedCommunity } = useSelectCommunity();
-  const isMegaAdmin = session?.communityPermissions?.some(
-    perm =>
-      perm.communityId === selectedCommunity?.id &&
-      perm.permissions.includes('admin')
-  );
+
   const isEditor = session?.communityPermissions?.some(
     perm =>
       perm.communityId === selectedCommunity?.id &&
@@ -135,17 +131,12 @@ function CreatePromptComponent() {
                 </div>
               </div>
               <div
-                onClick={() =>
-                  isMegaAdmin && handleTypeSelect('animated_stickers')
-                }
+                onClick={() => handleTypeSelect('animated_stickers')}
                 className="cursor-pointer"
               >
                 <div className="border-tg-section-separator flex flex-row items-center gap-2 overflow-hidden rounded-2xl border p-4">
                   <span className="text-5xl">✨</span>
                   <span className="text-lg">Animated Sticker</span>
-                  {!isMegaAdmin && (
-                    <span className="text-tg-hint">(Coming Soon)</span>
-                  )}
                 </div>
               </div>
             </div>

@@ -8,10 +8,11 @@ import { AdditionalContentDisplay } from './AdditionalContentDisplay';
 import { usePromptPreviewGeneration } from '@/hooks/usePromptPreviewGeneration';
 import { useSession } from '@/auth/SessionProvider';
 import { ContentPreviews } from './ContentPreview';
-import { NFTSetsProvider } from '@/contexts/NFTSetsContext';
 import { useToast } from '@/components/ui/toast';
 import { useGetPrompt, usePromptMutation } from '@/hooks/usePrompts';
 import { viewport, useSignal } from '@telegram-apps/sdk-react';
+import { useNFTSet } from '@/hooks/useNFTSet';
+import { useSelectCommunity } from '@/contexts/SelectCommunityContext';
 
 const PromptEditorContent = ({
   promptId,
@@ -24,6 +25,7 @@ const PromptEditorContent = ({
   const { addToast } = useToast();
   const [hasChanges, setHasChanges] = useState(false);
   const [isTextareaFocused, setIsTextareaFocused] = useState(false);
+  const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
   const promptTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Use React Query to get the prompt data
@@ -31,6 +33,23 @@ const PromptEditorContent = ({
 
   // Prompt mutation for saving changes
   const promptMutation = usePromptMutation(session);
+
+  // Get community data for NFT initialization
+  const { defaultCollection, selectedCommunity } = useSelectCommunity();
+  const allCollections = selectedCommunity?.collections;
+
+  // Use the simplified single NFT set hook
+  const {
+    compulsoryNFTs,
+    optionalNFTs,
+    updateCompulsoryNFT,
+    updateOptionalNFT,
+    addOptionalNFT,
+    removeOptionalNFT,
+    addCompulsoryNFT,
+    removeCompulsoryNFT,
+    maxOptionalTokens,
+  } = useNFTSet(prompt || null, defaultCollection, allCollections);
 
   const [promptText, setPromptText] = useState('');
   const [currentAdditionalContentIds, setCurrentAdditionalContentIds] =
@@ -95,11 +114,21 @@ const PromptEditorContent = ({
       console.error('No prompt available');
       return;
     }
+    // console.log(
+    //   'Generating preview with:',
+    //   promptText,
+    //   compulsoryNFTs,
+    //   optionalNFTs,
+    //   hasChanges,
+    //   currentAdditionalContentIds
+    // );
 
     try {
       await generatePromptPreview(
         promptText,
         prompt,
+        compulsoryNFTs,
+        optionalNFTs,
         hasChanges,
         setSelectedVersion,
         currentAdditionalContentIds
@@ -114,12 +143,9 @@ const PromptEditorContent = ({
   if (error) return <div>Error loading prompt: {error.message}</div>;
   if (!prompt) return <div>Prompt not found</div>;
 
-  const isViewportMounted = useSignal(viewport.isMounted);
-  const viewportSafeAreaInsets = useSignal(viewport.safeAreaInsets);
+  const safeAreaInsets = useSignal(viewport.safeAreaInsets);
 
-  const paddingBottom = isViewportMounted
-    ? 300 + (viewportSafeAreaInsets?.top || 0)
-    : 300;
+  const paddingBottom = 320 + (safeAreaInsets?.bottom || 0);
 
   return (
     <div
@@ -129,7 +155,10 @@ const PromptEditorContent = ({
       }}
     >
       {/* Main content area */}
-      <div className={`h-full overflow-hidden`}>
+      <div
+        className={`h-full overflow-hidden`}
+        style={{ paddingBottom: `${safeAreaInsets?.bottom || 0}px` }}
+      >
         {/* Your main content goes here */}
         {selectedVersion && (
           <div className="h-full overflow-hidden">
@@ -142,49 +171,69 @@ const PromptEditorContent = ({
       </div>
 
       {/* Portal container for AddContentButton and NFTCloud */}
-      <div className="bg-tg-bg pointer-events-none fixed right-0 bottom-20 left-0 z-29 overflow-y-hidden pb-16">
+      <div className="bg-tg-secondary-bg pointer-events-none fixed right-0 bottom-20 left-0 z-99 overflow-y-hidden">
         <div id="custom-input-container"></div>
       </div>
 
       {/* Bottom toolbar */}
-      <div className="safe-area-inset-bottom fixed right-0 bottom-0 left-0 z-30 border-t border-white/20">
+      <div
+        className="fixed right-0 left-0 z-30 border-t border-white/20"
+        style={{ bottom: `${safeAreaInsets?.bottom || 0}px` }}
+      >
         <div className="flex h-full flex-col pb-4">
-          <div className="bg-tg-bg justify-startgap-2 flex flex-row items-center">
+          <div
+            className="scrollbar-hide flex min-w-0 flex-row items-center justify-start overflow-x-scroll"
+            style={{ WebkitOverflowScrolling: 'touch' }}
+          >
             {selectedVersion && (
-              <AdditionalContentDisplay
-                contentIds={currentAdditionalContentIds || []}
-                isMutating={promptMutation.isPending}
-                removeContent={async contentId => {
-                  setCurrentAdditionalContentIds(
-                    currentAdditionalContentIds.filter(id => id !== contentId)
-                  );
+              <div className="flex flex-shrink-20">
+                <AdditionalContentDisplay
+                  contentIds={currentAdditionalContentIds || []}
+                  isMutating={promptMutation.isPending}
+                  removeContent={async contentId => {
+                    setCurrentAdditionalContentIds(
+                      currentAdditionalContentIds.filter(id => id !== contentId)
+                    );
 
-                  // update prompt with the new additional content ids
-                  await promptMutation.mutateAsync({
-                    prompt: {
-                      ...prompt,
-                      additionalContentIds: currentAdditionalContentIds.filter(
-                        id => id !== contentId
-                      ),
-                    },
-                  });
+                    // update prompt with the new additional content ids
+                    await promptMutation.mutateAsync({
+                      prompt: {
+                        ...prompt,
+                        additionalContentIds:
+                          currentAdditionalContentIds.filter(
+                            id => id !== contentId
+                          ),
+                      },
+                    });
 
-                  setHasChanges(true);
-                }}
-              />
+                    setHasChanges(true);
+                  }}
+                />
+              </div>
             )}
-            <div className="border-tg-section-separator h-12 border-1"></div>
-            <div className="h-15">
-              <InputsEditor prompt={prompt} />
+            {currentAdditionalContentIds &&
+              currentAdditionalContentIds.length > 0 && (
+                <div className="border-tg-section-separator h-12 flex-shrink-0 border-1"></div>
+              )}
+            <div className="h-15 flex-shrink-0">
+              <InputsEditor
+                prompt={prompt}
+                compulsoryNFTs={compulsoryNFTs}
+                optionalNFTs={optionalNFTs}
+                updateCompulsoryNFT={updateCompulsoryNFT}
+                updateOptionalNFT={updateOptionalNFT}
+                addOptionalNFT={addOptionalNFT}
+                removeOptionalNFT={removeOptionalNFT}
+                addCompulsoryNFT={addCompulsoryNFT}
+                removeCompulsoryNFT={removeCompulsoryNFT}
+                maxOptionalTokens={maxOptionalTokens}
+              />
             </div>
           </div>
           <Divider />
           <div className="flex flex-row items-center gap-2 px-2 py-2">
             <div className="bg-tg-button text-tg-button-text flex items-center justify-center overflow-hidden rounded-4xl shadow-lg">
-              <AddInputButton
-                prompt={prompt}
-                promptTextareaRef={promptTextareaRef}
-              />
+              <AddInputButton prompt={prompt} onOpenChange={setIsAddMenuOpen} />
             </div>
             <div className="flex flex-1 flex-col">
               <textarea
@@ -206,13 +255,17 @@ const PromptEditorContent = ({
                 if (
                   !isGenerating &&
                   !promptMutation.isPending &&
+                  !isAddMenuOpen &&
                   promptText.trim()
                 ) {
                   handleGenerate();
                 }
               }}
               className={`bg-tg-button text-tg-button-text flex cursor-pointer items-center justify-center rounded-4xl p-4 shadow-lg transition-all ${
-                isGenerating || promptMutation.isPending || !promptText.trim()
+                isGenerating ||
+                promptMutation.isPending ||
+                isAddMenuOpen ||
+                !promptText.trim()
                   ? 'cursor-not-allowed opacity-50'
                   : 'hover:brightness-110 active:scale-95'
               }`}
@@ -239,16 +292,11 @@ export const PromptEditor = ({
   selectedNFTs: Token[];
   setSelectedNFTs: (nfts: Token[]) => void;
 }) => {
-  const { session } = useSession();
-  const { data: prompt } = useGetPrompt(promptId, session);
-
   return (
-    <NFTSetsProvider prompt={prompt || null}>
-      <PromptEditorContent
-        promptId={promptId}
-        selectedNFTs={selectedNFTs}
-        setSelectedNFTs={setSelectedNFTs}
-      />
-    </NFTSetsProvider>
+    <PromptEditorContent
+      promptId={promptId}
+      selectedNFTs={selectedNFTs}
+      setSelectedNFTs={setSelectedNFTs}
+    />
   );
 };

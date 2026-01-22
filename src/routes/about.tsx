@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { List, Section, Cell } from '@telegram-apps/telegram-ui';
 import {
   TelegramThemeStatus,
@@ -8,13 +8,45 @@ import {
   ThemeUsageExamples,
 } from '../components';
 import { getBuildInfo } from '../utils/buildInfo';
+import { shareURL } from '@telegram-apps/sdk-react';
 
 export const Route = createFileRoute('/about')({
   component: Demo,
 });
 
+function TelegramShareButton() {
+  // Only render if shareURL is available (in Telegram environment)
+  if (!shareURL.isAvailable()) {
+    return null;
+  }
+
+  const handleShare = () => {
+    try {
+      shareURL(
+        'https://t.me/share/url',
+        'Check out this awesome Telegram Mini App! 🚀'
+      );
+    } catch (error) {
+      console.error('Error sharing message:', error);
+    }
+  };
+
+  return (
+    <Cell
+      subtitle="Share a message via Telegram"
+      onClick={handleShare}
+      className="cursor-pointer"
+    >
+      <span className="font-semibold text-purple-600 dark:text-purple-400">
+        Share Message
+      </span>
+    </Cell>
+  );
+}
+
 function Demo() {
   const buildInfo = getBuildInfo();
+  const navigate = useNavigate();
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
@@ -125,7 +157,7 @@ function Demo() {
         </Cell>
       </Section>
 
-      <Section header="Sentry Test">
+      <Section header="Developer Tools">
         <Cell
           subtitle="Click to test Sentry error tracking"
           onClick={testSentry}
@@ -133,6 +165,16 @@ function Demo() {
         >
           <span className="font-semibold text-red-600">Throw Test Error</span>
         </Cell>
+        <Cell
+          subtitle="View safe area insets and margins"
+          onClick={() => navigate({ to: '/constraints' })}
+          className="cursor-pointer"
+        >
+          <span className="font-semibold text-blue-600 dark:text-blue-400">
+            View Constraints
+          </span>
+        </Cell>
+        <TelegramShareButton />
       </Section>
 
       <Section>

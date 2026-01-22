@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import { Button, Card } from '@telegram-apps/telegram-ui';
 import type { SupportedCollection } from '@/hooks/useCollections';
 import { useGetNFTByCollectionAndTokenId } from '@/hooks/useCollections';
-import type { Token } from '../../types/response';
+import type { Token } from '@/types/response';
 import { Spinner } from '@/components/ui';
 
 interface DisplayNFTProps {

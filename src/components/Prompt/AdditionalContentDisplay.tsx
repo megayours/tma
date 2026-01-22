@@ -29,10 +29,7 @@ const AdditionalContentItem = ({
   }
 
   return (
-    <div className="flex flex-row items-center gap-1 rounded-xl bg-white/10 px-2 py-1 backdrop-blur-lg">
-      <h1 className="text-tg-text text-xs font-medium select-none">
-        Image {index + 1}
-      </h1>
+    <div className="flex flex-shrink-0 flex-row items-center gap-1 rounded-xl bg-white/10 px-2 py-1 backdrop-blur-lg">
       <div className="relative h-8 w-8 flex-shrink-0 rounded-md">
         <img
           src={imageData}
@@ -45,9 +42,12 @@ const AdditionalContentItem = ({
           </div>
         )}
       </div>
+      <h1 className="text-tg-text text-sm font-bold whitespace-nowrap select-none">
+        Image {index + 1}
+      </h1>
       <button
         onClick={() => removeContent(contentId)}
-        className="flex h-4 w-4 items-center justify-center rounded-full border border-gray-300 text-gray-500 transition-colors hover:border-red-500 hover:text-red-500"
+        className="flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full border border-gray-300 text-gray-500 transition-colors hover:border-red-500 hover:text-red-500"
         disabled={isMutating}
       >
         <svg
@@ -85,7 +85,7 @@ export const AdditionalContentDisplay = ({
   }
 
   return (
-    <div className="flex gap-2 overflow-x-auto px-2 py-2">
+    <div className="flex w-full min-w-0 flex-nowrap gap-2 px-2 py-2">
       {contentIds.map((contentId, index) => (
         <AdditionalContentItem
           key={contentId}

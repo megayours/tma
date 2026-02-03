@@ -25,6 +25,7 @@ import {
   downloadTelegramFile,
   canDownloadFile,
 } from '@/utils/telegramDownload';
+import { shareTelegramMessage } from '@/utils/telegramShare';
 
 const successSearchSchema = z.object({
   executionId: z.string().optional(),
@@ -65,7 +66,6 @@ function SuccessPage() {
     );
   }, []);
   const [isDownloading, setIsDownloading] = useState(false);
-  const [isSharing, setIsSharing] = useState(false);
   const [isGiphyEnabled, setIsGiphyEnabled] = useState(false);
   const [downloadSuccess, setDownloadSuccess] = useState(false);
   const hasSubmittedFeedback = useRef(false);
@@ -188,40 +188,14 @@ function SuccessPage() {
     }
   };
 
-  const handleTelegramShare = async () => {
-    try {
-      setIsSharing(true);
-      const shareUrl = buildShareUrl(
-        import.meta.env.VITE_PUBLIC_BOT_URL || '',
-        `/content/${promptId}/details`,
-        selectedCommunity?.id
-      );
-      const shareTitle = content?.prompt?.name || 'Check out my creation!';
-      const shareText = `${shareTitle} - Created with MegaYours`;
-
-      if (navigator.share) {
-        await navigator.share({
-          title: shareTitle,
-          text: shareText,
-          url: shareUrl,
-        });
-        if (isTelegram) {
-          triggerHapticImpact('light');
-        }
-      } else {
-        await navigator.clipboard.writeText(shareUrl);
-        if (isTelegram) {
-          triggerHapticImpact('light');
-        }
-      }
-    } catch (error) {
-      console.error('Failed to share:', error);
-      if (isTelegram) {
-        triggerHapticNotification('error');
-      }
-    } finally {
-      setIsSharing(false);
-    }
+  const handleTelegramShare = () => {
+    const shareUrl = buildShareUrl(
+      import.meta.env.VITE_PUBLIC_BOT_URL || '',
+      `/content/${promptId}/details`,
+      selectedCommunity?.id
+    );
+    const shareText = content?.prompt?.name || 'Check out my creation!';
+    shareTelegramMessage(shareUrl, shareText);
   };
 
   const handleBackToFeed = () => {
@@ -457,15 +431,10 @@ function SuccessPage() {
                   {/* Share Icon */}
                   <button
                     onClick={handleTelegramShare}
-                    disabled={isSharing}
-                    className="border-tg-section-separator bg-tg-section-bg text-tg-text hover:bg-tg-section-bg/80 flex h-12 w-12 items-center justify-center rounded-xl border-2 shadow-sm transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="border-tg-section-separator bg-tg-section-bg text-tg-text hover:bg-tg-section-bg/80 flex h-12 w-12 items-center justify-center rounded-xl border-2 shadow-sm transition-all active:scale-95"
                     aria-label="Share to Telegram"
                   >
-                    {isSharing ? (
-                      <div className="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                    ) : (
-                      <IoSend className="h-6 w-6" />
-                    )}
+                    <IoSend className="h-6 w-6" />
                   </button>
 
                   {/* Download Icon */}
@@ -524,15 +493,10 @@ function SuccessPage() {
                 {/* Share Icon */}
                 <button
                   onClick={handleTelegramShare}
-                  disabled={isSharing}
-                  className="border-tg-section-separator bg-tg-section-bg text-tg-text hover:bg-tg-section-bg/80 flex h-12 w-12 items-center justify-center rounded-xl border-2 shadow-sm transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="border-tg-section-separator bg-tg-section-bg text-tg-text hover:bg-tg-section-bg/80 flex h-12 w-12 items-center justify-center rounded-xl border-2 shadow-sm transition-all active:scale-95"
                   aria-label="Share to Telegram"
                 >
-                  {isSharing ? (
-                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                  ) : (
-                    <IoSend className="h-6 w-6" />
-                  )}
+                  <IoSend className="h-6 w-6" />
                 </button>
 
                 {/* Download Icon */}

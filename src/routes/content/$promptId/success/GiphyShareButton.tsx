@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSession } from '@/auth/SessionProvider';
 import { useShareContent } from '@/hooks/useContents';
 import { useTelegramTheme } from '@/auth/useTelegram';
@@ -89,7 +89,7 @@ export function GiphyShareButton({
     setIsGiphyEnabled(isGiphyContent && hasGiphyIntegration);
   }, [collectionChain, collectionAddress, collections, contentType]);
 
-  const pollForGiphyUrl = async () => {
+  const pollForGiphyUrl = useCallback(async () => {
     if (!session) return;
 
     try {
@@ -109,50 +109,53 @@ export function GiphyShareButton({
           (i: any) => i.integration === 'giphy'
         );
 
-        if (giphyIntegration && giphyIntegration.url !== 'pending') {
-          // URL is ready!
-          console.log('Giphy URL ready:', giphyIntegration.url);
-
-          // Clear polling
-          if (pollingIntervalRef.current) {
-            clearInterval(pollingIntervalRef.current);
-            pollingIntervalRef.current = null;
-          }
-          if (pollingTimeoutRef.current) {
-            clearTimeout(pollingTimeoutRef.current);
-            pollingTimeoutRef.current = null;
-          }
-
-          // Show success
-          setGiphyShareSuccess(true);
-          if (isTelegram) {
-            triggerHapticNotification('success');
-          }
-
-          // Invalidate queries to refetch with new integration URL
-          queryClient.invalidateQueries({
-            predicate: (query) =>
-              query.queryKey[0] === 'content-execution' &&
-              query.queryKey[1] === contentId,
-          });
-          queryClient.invalidateQueries({
-            queryKey: ['content'],
-            exact: false,
-          });
-
-          // Stop loading
-          setIsGiphySharing(false);
-
-          // Reset success state after 3 seconds
-          setTimeout(() => {
-            setGiphyShareSuccess(false);
-          }, 3000);
+        // If no integration or no URL yet, keep polling
+        if (!giphyIntegration || !giphyIntegration.url) {
+          return;
         }
+
+        // Clear polling
+        if (pollingIntervalRef.current) {
+          clearInterval(pollingIntervalRef.current);
+          pollingIntervalRef.current = null;
+        }
+        if (pollingTimeoutRef.current) {
+          clearTimeout(pollingTimeoutRef.current);
+          pollingTimeoutRef.current = null;
+        }
+
+        // URL is ready
+        console.log('Giphy URL ready:', giphyIntegration.url);
+
+        // Show success
+        setGiphyShareSuccess(true);
+        if (isTelegram) {
+          triggerHapticNotification('success');
+        }
+
+        // Invalidate queries to refetch with new integration URL
+        queryClient.invalidateQueries({
+          predicate: (query) =>
+            query.queryKey[0] === 'content-execution' &&
+            query.queryKey[1] === contentId,
+        });
+        queryClient.invalidateQueries({
+          queryKey: ['content'],
+          exact: false,
+        });
+
+        // Stop loading
+        setIsGiphySharing(false);
+
+        // Reset success state after 3 seconds
+        setTimeout(() => {
+          setGiphyShareSuccess(false);
+        }, 3000);
       }
     } catch (error) {
       console.error('Error polling for Giphy URL:', error);
     }
-  };
+  }, [session, contentId, isTelegram, queryClient]);
 
   const handleShareToGiphy = async () => {
     if (!contentId) return;
@@ -168,65 +171,63 @@ export function GiphyShareButton({
         // Find Giphy integration result
         const giphyResult = data.find(result => result.integration === 'giphy');
 
-        if (giphyResult?.success) {
-          console.log('Giphy share initiated, URL status:', giphyResult.url);
-
-          // If URL is pending, start polling
-          if (giphyResult.url === 'pending') {
-            console.log('Starting polling for Giphy URL...');
-
-            // Start polling every 2 seconds
-            pollingIntervalRef.current = setInterval(pollForGiphyUrl, 2000);
-
-            // Set timeout to stop polling after 60 seconds
-            pollingTimeoutRef.current = setTimeout(() => {
-              if (pollingIntervalRef.current) {
-                clearInterval(pollingIntervalRef.current);
-                pollingIntervalRef.current = null;
-              }
-
-              // Show error if still loading
-              if (isGiphySharing) {
-                setIsGiphySharing(false);
-                if (isTelegram) {
-                  triggerHapticNotification('error');
-                }
-                console.error(
-                  'Polling timeout: Giphy URL not ready after 60 seconds'
-                );
-              }
-            }, 60000);
-          } else {
-            // URL is already available (not pending)
-            setGiphyShareSuccess(true);
-            if (isTelegram) {
-              triggerHapticNotification('success');
-            }
-
-            // Invalidate queries
-            queryClient.invalidateQueries({
-              predicate: (query) =>
-                query.queryKey[0] === 'content-execution' &&
-                query.queryKey[1] === contentId,
-            });
-            queryClient.invalidateQueries({
-              queryKey: ['content'],
-              exact: false,
-            });
-
-            setIsGiphySharing(false);
-
-            setTimeout(() => {
-              setGiphyShareSuccess(false);
-            }, 3000);
-          }
-        } else {
-          console.error('Giphy share failed:', giphyResult?.error);
-          if (isTelegram) {
-            triggerHapticNotification('error');
-          }
+        if (!giphyResult) {
+          console.error('No Giphy integration in response');
           setIsGiphySharing(false);
+          return;
         }
+
+        // If URL is already available, we're done
+        if (giphyResult.url) {
+          console.log('Giphy share completed, URL:', giphyResult.url);
+          setGiphyShareSuccess(true);
+          if (isTelegram) {
+            triggerHapticNotification('success');
+          }
+
+          // Invalidate queries
+          queryClient.invalidateQueries({
+            predicate: (query) =>
+              query.queryKey[0] === 'content-execution' &&
+              query.queryKey[1] === contentId,
+          });
+          queryClient.invalidateQueries({
+            queryKey: ['content'],
+            exact: false,
+          });
+
+          setIsGiphySharing(false);
+
+          setTimeout(() => {
+            setGiphyShareSuccess(false);
+          }, 3000);
+          return;
+        }
+
+        // No URL yet, start polling
+        console.log('Giphy share in progress, starting polling...');
+
+        // Start polling every 2 seconds
+        pollingIntervalRef.current = setInterval(pollForGiphyUrl, 2000);
+
+        // Set timeout to stop polling after 60 seconds
+        pollingTimeoutRef.current = setTimeout(() => {
+          if (pollingIntervalRef.current) {
+            clearInterval(pollingIntervalRef.current);
+            pollingIntervalRef.current = null;
+          }
+
+          // Show error if still loading
+          if (isGiphySharing) {
+            setIsGiphySharing(false);
+            if (isTelegram) {
+              triggerHapticNotification('error');
+            }
+            console.error(
+              'Polling timeout: Giphy URL not ready after 60 seconds'
+            );
+          }
+        }, 60000);
       },
       onError: error => {
         console.error('Failed to share to Giphy:', error);
@@ -241,7 +242,7 @@ export function GiphyShareButton({
   };
 
   const handleCopyUrl = async () => {
-    if (!giphyUrl || giphyUrl === 'pending') return;
+    if (!giphyUrl) return;
 
     try {
       await navigator.clipboard.writeText(giphyUrl);
@@ -263,13 +264,8 @@ export function GiphyShareButton({
     }
   };
 
-  // If URL exists and not pending, show two-button layout
-  if (
-    giphyUrl &&
-    giphyUrl !== 'pending' &&
-    !isGiphySharing &&
-    !giphyShareSuccess
-  ) {
+  // If URL exists, show two-button layout
+  if (giphyUrl && !isGiphySharing && !giphyShareSuccess) {
     return (
       <div className="flex w-full gap-2">
         {/* Open in Giphy */}

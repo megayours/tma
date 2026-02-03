@@ -21,6 +21,11 @@ import { useSelectCommunity } from '@/contexts/SelectCommunityContext';
 import { GiphyShareButton } from './GiphyShareButton';
 import { MediaDisplay } from '@/components/lib/LatestContent/MediaDisplay';
 import { buildShareUrl } from '@/utils/shareUrl';
+import {
+  downloadTelegramFile,
+  canDownloadFile,
+} from '@/utils/telegramDownload';
+import { shareTelegramMessage } from '@/utils/telegramShare';
 
 const successSearchSchema = z.object({
   executionId: z.string().optional(),
@@ -61,8 +66,8 @@ function SuccessPage() {
     );
   }, []);
   const [isDownloading, setIsDownloading] = useState(false);
-  const [isSharing, setIsSharing] = useState(false);
   const [isGiphyEnabled, setIsGiphyEnabled] = useState(false);
+  const [downloadSuccess, setDownloadSuccess] = useState(false);
   const hasSubmittedFeedback = useRef(false);
 
   // Fetch execution data if executionId is provided
@@ -183,40 +188,14 @@ function SuccessPage() {
     }
   };
 
-  const handleTelegramShare = async () => {
-    try {
-      setIsSharing(true);
-      const shareUrl = buildShareUrl(
-        import.meta.env.VITE_PUBLIC_BOT_URL || '',
-        `/content/${promptId}/details`,
-        selectedCommunity?.id
-      );
-      const shareTitle = content?.prompt?.name || 'Check out my creation!';
-      const shareText = `${shareTitle} - Created with MegaYours`;
-
-      if (navigator.share) {
-        await navigator.share({
-          title: shareTitle,
-          text: shareText,
-          url: shareUrl,
-        });
-        if (isTelegram) {
-          triggerHapticImpact('light');
-        }
-      } else {
-        await navigator.clipboard.writeText(shareUrl);
-        if (isTelegram) {
-          triggerHapticImpact('light');
-        }
-      }
-    } catch (error) {
-      console.error('Failed to share:', error);
-      if (isTelegram) {
-        triggerHapticNotification('error');
-      }
-    } finally {
-      setIsSharing(false);
-    }
+  const handleTelegramShare = () => {
+    const shareUrl = buildShareUrl(
+      import.meta.env.VITE_PUBLIC_BOT_URL || '',
+      `/content/${promptId}/details`,
+      selectedCommunity?.id
+    );
+    const shareText = content?.prompt?.name || 'Check out my creation!';
+    shareTelegramMessage(shareUrl, shareText);
   };
 
   const handleBackToFeed = () => {
@@ -235,22 +214,53 @@ function SuccessPage() {
     typeof navigator.canShare === 'function';
 
   const handleDownload = async () => {
-    if (!contentUrl) return;
+    console.log('[Download] Starting download...', {
+      contentUrl,
+      isTelegram,
+      isMobileDevice,
+      canDownloadFile: canDownloadFile(),
+    });
+
+    if (!contentUrl) {
+      console.log('[Download] No contentUrl, aborting');
+      return;
+    }
 
     try {
       setIsDownloading(true);
 
-      // On Telegram Desktop, use direct URL instead of blob
-      if (isTelegram && !isMobileDevice) {
-        // Open in new tab for Telegram Desktop
-        window.open(contentUrl, '_blank');
+      // Determine file extension from URL or content type
+      const urlExtension = contentUrl.split('.').pop()?.split('?')[0] || 'png';
+      const fileName = `artwork-${content?.id || promptId}.${urlExtension}`;
+      console.log('[Download] File name:', fileName);
 
-        if (isTelegram) {
-          triggerHapticImpact('light');
+      // Try Telegram SDK downloadFile first (most reliable for Telegram)
+      if (canDownloadFile()) {
+        console.log('[Download] Using Telegram SDK downloadFile');
+        try {
+          const success = await downloadTelegramFile(contentUrl, fileName);
+          if (success) {
+            triggerHapticImpact('light');
+            setDownloadSuccess(true);
+            console.log('[Download] Telegram download completed successfully');
+            return;
+          }
+        } catch (error) {
+          console.error('[Download] Telegram SDK download failed:', error);
+          // Fall through to other methods
         }
-        return; // Early return - finally block will clean up
       }
 
+      // Telegram Desktop (without downloadFile): Open in new tab
+      if (isTelegram && !isMobileDevice) {
+        console.log('[Download] Telegram Desktop - opening in new tab');
+        window.open(contentUrl, '_blank');
+        triggerHapticImpact('light');
+        return;
+      }
+
+      // Non-Telegram: Fetch and download
+      console.log('[Download] Fallback path - fetching blob');
       const response = await fetch(contentUrl, {
         mode: 'cors',
         cache: 'no-store',
@@ -261,19 +271,21 @@ function SuccessPage() {
       }
 
       const blob = await response.blob();
-
       const mimeType = blob.type || 'image/png';
       const extension = mimeType.split('/')[1]?.split('+')[0] || 'png';
-      const fileName = `artwork-${content?.id || promptId}.${extension}`;
-      const file = new File([blob], fileName, { type: mimeType });
+      const blobFileName = `artwork-${content?.id || promptId}.${extension}`;
+      const file = new File([blob], blobFileName, { type: mimeType });
+      console.log('[Download] Blob created:', { mimeType, blobFileName, size: blob.size });
 
       // Check conditions
       const canShareThisFile = navigator.canShare
         ? navigator.canShare({ files: [file] })
         : false;
+      console.log('[Download] Share conditions:', { canShareFiles, canShareThisFile, isMobileDevice });
 
-      // Mobile: use share API to save to camera roll
+      // Mobile (non-Telegram): use share API to save to camera roll
       if (isMobileDevice && canShareFiles && canShareThisFile) {
+        console.log('[Download] Using navigator.share for mobile');
         await navigator.share({
           files: [file],
           title: 'Save your artwork',
@@ -281,10 +293,11 @@ function SuccessPage() {
         });
       } else {
         // Desktop (non-Telegram): direct download
+        console.log('[Download] Using anchor download for desktop');
         const objectUrl = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = objectUrl;
-        link.download = fileName;
+        link.download = blobFileName;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -294,13 +307,16 @@ function SuccessPage() {
       if (isTelegram) {
         triggerHapticImpact('light');
       }
+      setDownloadSuccess(true);
+      console.log('[Download] Download completed successfully');
     } catch (error: any) {
       // User canceled the share dialog - not an error
       if (error?.name === 'AbortError') {
+        console.log('[Download] User cancelled share dialog');
         return; // Don't show error haptic for user cancellation
       }
 
-      console.error('Failed to download content:', error);
+      console.error('[Download] Failed to download content:', error);
       if (isTelegram) {
         triggerHapticNotification('error');
       }
@@ -415,15 +431,10 @@ function SuccessPage() {
                   {/* Share Icon */}
                   <button
                     onClick={handleTelegramShare}
-                    disabled={isSharing}
-                    className="border-tg-section-separator bg-tg-section-bg text-tg-text hover:bg-tg-section-bg/80 flex h-12 w-12 items-center justify-center rounded-xl border-2 shadow-sm transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="border-tg-section-separator bg-tg-section-bg text-tg-text hover:bg-tg-section-bg/80 flex h-12 w-12 items-center justify-center rounded-xl border-2 shadow-sm transition-all active:scale-95"
                     aria-label="Share to Telegram"
                   >
-                    {isSharing ? (
-                      <div className="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                    ) : (
-                      <IoSend className="h-6 w-6" />
-                    )}
+                    <IoSend className="h-6 w-6" />
                   </button>
 
                   {/* Download Icon */}
@@ -482,15 +493,10 @@ function SuccessPage() {
                 {/* Share Icon */}
                 <button
                   onClick={handleTelegramShare}
-                  disabled={isSharing}
-                  className="border-tg-section-separator bg-tg-section-bg text-tg-text hover:bg-tg-section-bg/80 flex h-12 w-12 items-center justify-center rounded-xl border-2 shadow-sm transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="border-tg-section-separator bg-tg-section-bg text-tg-text hover:bg-tg-section-bg/80 flex h-12 w-12 items-center justify-center rounded-xl border-2 shadow-sm transition-all active:scale-95"
                   aria-label="Share to Telegram"
                 >
-                  {isSharing ? (
-                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                  ) : (
-                    <IoSend className="h-6 w-6" />
-                  )}
+                  <IoSend className="h-6 w-6" />
                 </button>
 
                 {/* Download Icon */}
@@ -536,6 +542,28 @@ function SuccessPage() {
                       ?.url
                   }
                 />
+              </div>
+            )}
+
+            {/* Download Success Message */}
+            {downloadSuccess && (
+              <div className="bg-tg-button/10 border-tg-button/20 mt-3 flex items-center gap-2 rounded-lg border px-3 py-2">
+                <svg
+                  className="text-tg-button h-5 w-5 flex-shrink-0"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+                <p className="text-tg-text text-sm">
+                  The image was saved to your gallery
+                </p>
               </div>
             )}
           </div>

@@ -140,7 +140,9 @@ export const RawContentResponseSchema = z
       .array(
         z.object({
           integration: z.string(),
-          url: z.string(),
+          status: z.enum(['in_progress', 'completed', 'failed']).optional(),
+          url: z.string().optional(),
+          error: z.string().optional(),
         })
       )
       .optional(),
@@ -257,7 +259,7 @@ export type MyRecentGenerationsResponse = z.infer<
 // Share integration result schema
 export const ShareIntegrationResultSchema = z.object({
   integration: z.string(),
-  success: z.boolean(),
+  status: z.enum(['in_progress', 'completed', 'failed']),
   url: z.string().optional(),
   error: z.string().optional(),
 });

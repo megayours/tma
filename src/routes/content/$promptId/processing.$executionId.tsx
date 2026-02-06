@@ -91,11 +91,8 @@ function ProcessingPage() {
       // Small delay to let user see the completion state
       const timer = setTimeout(() => {
         navigate({
-          to: '/content/$promptId/success',
-          params: { promptId },
-          search: {
-            executionId: execution.contentId,
-          },
+          to: '/content/$promptId/success/execution/$executionId',
+          params: { promptId, executionId: execution.contentId },
         });
       }, 1000);
 

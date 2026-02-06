@@ -5,11 +5,11 @@ import { SpinnerFullPage } from '@/components/ui';
 import { Banner, Divider } from '@telegram-apps/telegram-ui';
 import { TelegramDualButtons } from '../../../../components/TelegramDualButtons';
 import { Fragment } from 'react/jsx-runtime';
-import { MediaDisplay } from '@/components/lib/LatestContent/MediaDisplay';
 import { buildShareUrl } from '@/utils/shareUrl';
 import { useSelectCommunity } from '@/contexts/SelectCommunityContext';
 import { canShareMessage, shareTelegramMessage } from '@/utils/telegramShare';
 import { IoShareOutline } from 'react-icons/io5';
+import { ContentList } from './ContentList';
 
 export const Route = createFileRoute('/content/$promptId/details/')({
   component: ContentDetails,
@@ -40,6 +40,8 @@ function ContentDetails() {
   const { selectedCommunity } = useSelectCommunity();
 
   const { data: prompt, isLoading, error } = useGetPrompt(promptId, session);
+
+  console.log('PROMPT DETAILS DATA:', prompt);
 
   const handleContinue = () => {
     navigate({
@@ -173,21 +175,7 @@ function ContentDetails() {
               }}
             >
               <Fragment>
-                <div className="grid grid-cols-3 gap-2 md:gap-4">
-                  {previewImages.map((imageUrl, index) => (
-                    <div
-                      key={index}
-                      className="bg-tg-hint/10 relative aspect-square overflow-hidden rounded-lg"
-                    >
-                      <MediaDisplay
-                        src={imageUrl}
-                        alt={`${prompt.name || 'Content'} ${index + 1}`}
-                        className="h-full w-full object-cover"
-                        poster={prompt.thumbnails?.[index] || '/logo.png'}
-                      />
-                    </div>
-                  ))}
-                </div>
+                <ContentList prompt={prompt} />
               </Fragment>
             </Banner>
           </div>

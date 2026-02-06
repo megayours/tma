@@ -92,6 +92,73 @@ export const useGetContents = (
   });
 };
 
+export const useGetContentByPrompt = (
+  session: Session | null | undefined,
+  promptId: number | null,
+  pagination?: { page: number; size: number },
+  preferredFormats: string = 'webm'
+) => {
+  const paginationParams = pagination || { page: 1, size: 10 };
+
+  return useQuery({
+    queryKey: [
+      'content-by-prompt',
+      session?.id,
+      promptId,
+      paginationParams.page,
+      paginationParams.size,
+      preferredFormats,
+    ],
+    queryFn: async ({ signal }) => {
+      if (!session || !promptId) return;
+
+      const queryParams = new URLSearchParams({
+        prompt_id: promptId.toString(),
+        page: paginationParams.page.toString(),
+        size: paginationParams.size.toString(),
+        sort_by: 'created_at',
+        sort_order: 'desc',
+      });
+
+      // Add preferred_formats parameter
+      queryParams.append('preferred_formats', preferredFormats);
+
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/content?${queryParams.toString()}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: session?.authToken,
+          },
+          signal,
+        }
+      );
+      if (!response.ok) {
+        throw Error('Failed to GET content by prompt');
+      }
+      const data = await response.json();
+
+      // Validate and transform with Zod schema
+      const result = safeParse(RawContentListResponseSchema, data);
+
+      if (!result) {
+        const errors = getValidationErrors(RawContentListResponseSchema, data);
+        console.error('Content by prompt validation errors:', errors);
+        console.error('Raw data:', JSON.stringify(data, null, 2));
+        throw new Error('Invalid content by prompt response format');
+      }
+
+      return {
+        pagination: result.pagination,
+        content: result.data as Content[],
+      };
+    },
+    enabled: !!session && !!promptId,
+    retry: false,
+  });
+};
+
 export const usePreviewContentMutation = (
   session: Session | null | undefined
 ) => {

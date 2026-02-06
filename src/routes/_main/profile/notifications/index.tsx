@@ -137,9 +137,11 @@ function NotificationItem({
   if (!isUnread && content.promptId) {
     return (
       <Link
-        to="/content/$promptId/success"
-        params={{ promptId: String(content.promptId) }}
-        search={{ executionId: content.id }}
+        to="/content/$promptId/success/execution/$executionId"
+        params={{
+          promptId: String(content.promptId),
+          executionId: String(content.id),
+        }}
       >
         {contentElement}
       </Link>
@@ -172,9 +174,11 @@ function NotificationsPage() {
       // Redirect to success page after successful reveal
       if (content.promptId) {
         navigate({
-          to: '/content/$promptId/success',
-          params: { promptId: String(content.promptId) },
-          search: { executionId: content.id },
+          to: '/content/$promptId/success/execution/$executionId',
+          params: {
+            promptId: String(content.promptId),
+            executionId: String(content.id),
+          },
         });
       }
     } catch (error) {

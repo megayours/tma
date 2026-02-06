@@ -13,7 +13,7 @@ export function ContentList({ prompt }: { prompt: Prompt }) {
     error,
   } = useGetContentByPrompt(session, prompt.id, { size: 9, page: 1 });
 
-  if (true || isLoading) {
+  if (isLoading) {
     return (
       <div className="grid w-full grid-cols-3 gap-2 md:gap-4">
         {[0, 1, 2].map(i => (

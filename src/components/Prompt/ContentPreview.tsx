@@ -10,9 +10,7 @@ import { DisplayContent } from '../DisplayContent';
 import { Spinner } from '@/components/ui';
 import { GiphyShareButton } from '@/routes/content/$promptId/success/GiphyShareButton';
 import { useSelectCommunity } from '@/contexts/SelectCommunityContext';
-import { IoSend } from 'react-icons/io5';
-import { buildShareUrl } from '@/utils/shareUrl';
-import { shareTelegramMessage } from '@/utils/telegramShare';
+
 import {
   canDownloadFile,
   downloadTelegramFile,
@@ -183,17 +181,6 @@ export const ContentPreviews = ({
     }
   };
 
-  const handleTelegramShare = () => {
-    const shareUrl = buildShareUrl(
-      import.meta.env.VITE_PUBLIC_BOT_URL || '',
-      `/content/${prompt.id}/details`,
-      selectedCommunity?.id
-    );
-    const shareText =
-      selectedContent?.prompt?.name || prompt.name || 'Check out my creation!';
-    shareTelegramMessage(shareUrl, shareText);
-  };
-
   const contentUrl =
     selectedContent?.url ||
     selectedContent?.image ||
@@ -277,14 +264,6 @@ export const ContentPreviews = ({
             </div>
             {selectedContent.status === 'completed' && (
               <div className="flex w-full items-center gap-2">
-                <button
-                  onClick={handleTelegramShare}
-                  className="border-tg-section-separator bg-tg-section-bg text-tg-text hover:bg-tg-section-bg/80 flex h-12 w-12 items-center justify-center rounded-xl border-2 shadow-sm transition-all active:scale-95"
-                  aria-label="Share to Telegram"
-                >
-                  <IoSend className="h-6 w-6" />
-                </button>
-
                 <button
                   onClick={handleDownload}
                   disabled={!contentUrl || isDownloading}

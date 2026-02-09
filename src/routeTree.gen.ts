@@ -42,7 +42,6 @@ import { Route as StickerPacksStickerPackIdDetailsIndexRouteImport } from './rou
 import { Route as PostCreateVideoIndexRouteImport } from './routes/post/create/video/index'
 import { Route as PostCreateStickerIndexRouteImport } from './routes/post/create/sticker/index'
 import { Route as PostCreateImageIndexRouteImport } from './routes/post/create/image/index'
-import { Route as ContentPromptIdSuccessIndexRouteImport } from './routes/content/$promptId/success/index'
 import { Route as ContentPromptIdSelectNftsIndexRouteImport } from './routes/content/$promptId/select-nfts/index'
 import { Route as ContentPromptIdInvitationIndexRouteImport } from './routes/content/$promptId/invitation/index'
 import { Route as ContentPromptIdDetailsIndexRouteImport } from './routes/content/$promptId/details/index'
@@ -233,12 +232,6 @@ const PostCreateImageIndexRoute = PostCreateImageIndexRouteImport.update({
   path: '/post/create/image/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ContentPromptIdSuccessIndexRoute =
-  ContentPromptIdSuccessIndexRouteImport.update({
-    id: '/success/',
-    path: '/success/',
-    getParentRoute: () => ContentPromptIdRoute,
-  } as any)
 const ContentPromptIdSelectNftsIndexRoute =
   ContentPromptIdSelectNftsIndexRouteImport.update({
     id: '/select-nfts/',
@@ -361,7 +354,6 @@ export interface FileRoutesByFullPath {
   '/content/$promptId/details': typeof ContentPromptIdDetailsIndexRoute
   '/content/$promptId/invitation': typeof ContentPromptIdInvitationIndexRoute
   '/content/$promptId/select-nfts': typeof ContentPromptIdSelectNftsIndexRoute
-  '/content/$promptId/success': typeof ContentPromptIdSuccessIndexRoute
   '/post/create/image': typeof PostCreateImageIndexRoute
   '/post/create/sticker': typeof PostCreateStickerIndexRoute
   '/post/create/video': typeof PostCreateVideoIndexRoute
@@ -408,7 +400,6 @@ export interface FileRoutesByTo {
   '/content/$promptId/details': typeof ContentPromptIdDetailsIndexRoute
   '/content/$promptId/invitation': typeof ContentPromptIdInvitationIndexRoute
   '/content/$promptId/select-nfts': typeof ContentPromptIdSelectNftsIndexRoute
-  '/content/$promptId/success': typeof ContentPromptIdSuccessIndexRoute
   '/post/create/image': typeof PostCreateImageIndexRoute
   '/post/create/sticker': typeof PostCreateStickerIndexRoute
   '/post/create/video': typeof PostCreateVideoIndexRoute
@@ -459,7 +450,6 @@ export interface FileRoutesById {
   '/content/$promptId/details/': typeof ContentPromptIdDetailsIndexRoute
   '/content/$promptId/invitation/': typeof ContentPromptIdInvitationIndexRoute
   '/content/$promptId/select-nfts/': typeof ContentPromptIdSelectNftsIndexRoute
-  '/content/$promptId/success/': typeof ContentPromptIdSuccessIndexRoute
   '/post/create/image/': typeof PostCreateImageIndexRoute
   '/post/create/sticker/': typeof PostCreateStickerIndexRoute
   '/post/create/video/': typeof PostCreateVideoIndexRoute
@@ -511,7 +501,6 @@ export interface FileRouteTypes {
     | '/content/$promptId/details'
     | '/content/$promptId/invitation'
     | '/content/$promptId/select-nfts'
-    | '/content/$promptId/success'
     | '/post/create/image'
     | '/post/create/sticker'
     | '/post/create/video'
@@ -558,7 +547,6 @@ export interface FileRouteTypes {
     | '/content/$promptId/details'
     | '/content/$promptId/invitation'
     | '/content/$promptId/select-nfts'
-    | '/content/$promptId/success'
     | '/post/create/image'
     | '/post/create/sticker'
     | '/post/create/video'
@@ -608,7 +596,6 @@ export interface FileRouteTypes {
     | '/content/$promptId/details/'
     | '/content/$promptId/invitation/'
     | '/content/$promptId/select-nfts/'
-    | '/content/$promptId/success/'
     | '/post/create/image/'
     | '/post/create/sticker/'
     | '/post/create/video/'
@@ -882,13 +869,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PostCreateImageIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/content/$promptId/success/': {
-      id: '/content/$promptId/success/'
-      path: '/success'
-      fullPath: '/content/$promptId/success'
-      preLoaderRoute: typeof ContentPromptIdSuccessIndexRouteImport
-      parentRoute: typeof ContentPromptIdRoute
-    }
     '/content/$promptId/select-nfts/': {
       id: '/content/$promptId/select-nfts/'
       path: '/select-nfts'
@@ -1113,7 +1093,6 @@ interface ContentPromptIdRouteChildren {
   ContentPromptIdDetailsIndexRoute: typeof ContentPromptIdDetailsIndexRoute
   ContentPromptIdInvitationIndexRoute: typeof ContentPromptIdInvitationIndexRoute
   ContentPromptIdSelectNftsIndexRoute: typeof ContentPromptIdSelectNftsIndexRoute
-  ContentPromptIdSuccessIndexRoute: typeof ContentPromptIdSuccessIndexRoute
   ContentPromptIdSuccessExecutionExecutionIdIndexRoute: typeof ContentPromptIdSuccessExecutionExecutionIdIndexRoute
 }
 
@@ -1124,7 +1103,6 @@ const ContentPromptIdRouteChildren: ContentPromptIdRouteChildren = {
   ContentPromptIdDetailsIndexRoute: ContentPromptIdDetailsIndexRoute,
   ContentPromptIdInvitationIndexRoute: ContentPromptIdInvitationIndexRoute,
   ContentPromptIdSelectNftsIndexRoute: ContentPromptIdSelectNftsIndexRoute,
-  ContentPromptIdSuccessIndexRoute: ContentPromptIdSuccessIndexRoute,
   ContentPromptIdSuccessExecutionExecutionIdIndexRoute:
     ContentPromptIdSuccessExecutionExecutionIdIndexRoute,
 }

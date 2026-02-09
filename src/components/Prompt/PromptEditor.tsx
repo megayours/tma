@@ -149,7 +149,7 @@ const PromptEditorContent = ({
 
   return (
     <div
-      className={`bg-tg-bg h-screen overflow-hidden`}
+      className={`bg-tg-bg no-scrollbar relative h-screen overflow-hidden`}
       style={{
         paddingBottom: `${paddingBottom}px`,
       }}

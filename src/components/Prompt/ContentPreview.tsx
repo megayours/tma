@@ -262,70 +262,72 @@ export const ContentPreviews = ({
   };
 
   return (
-    <div className="flex h-full w-full flex-col gap-2">
-      <div className="relative flex min-h-0 w-full flex-1 items-center justify-center p-4">
+    <div className="flex h-full w-full flex-col">
+      <div className="relative flex min-h-0 w-full flex-1 items-center justify-center overflow-hidden p-4 pb-10">
         {selectedContent && (
-          <div className="flex h-full w-full flex-col items-center justify-start gap-2 overflow-y-auto pb-10">
+          <div className="flex h-full w-full flex-col items-center justify-center gap-2">
             <div className="aspect-square max-h-full max-w-full">
               <DisplayContent
                 content={selectedContent}
-                className="h-full min-h-24 w-full min-w-24 rounded-lg object-cover"
+                className="h-full min-h-24 w-full min-w-24 overflow-hidden rounded-lg object-cover"
                 showVersion={true}
                 onRetry={() => handleRetry(selectedContent)}
                 isRetrying={retryingContentId === selectedContent.id}
               />
             </div>
             {selectedContent.status === 'completed' && (
-              <div className="flex w-full flex-col gap-2">
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={handleTelegramShare}
-                    className="border-tg-section-separator bg-tg-section-bg text-tg-text hover:bg-tg-section-bg/80 flex h-12 w-12 items-center justify-center rounded-xl border-2 shadow-sm transition-all active:scale-95"
-                    aria-label="Share to Telegram"
-                  >
-                    <IoSend className="h-6 w-6" />
-                  </button>
+              <div className="flex w-full items-center gap-2">
+                <button
+                  onClick={handleTelegramShare}
+                  className="border-tg-section-separator bg-tg-section-bg text-tg-text hover:bg-tg-section-bg/80 flex h-12 w-12 items-center justify-center rounded-xl border-2 shadow-sm transition-all active:scale-95"
+                  aria-label="Share to Telegram"
+                >
+                  <IoSend className="h-6 w-6" />
+                </button>
 
-                  <button
-                    onClick={handleDownload}
-                    disabled={!contentUrl || isDownloading}
-                    className="border-tg-section-separator bg-tg-section-bg text-tg-text hover:bg-tg-section-bg/80 flex h-12 w-12 items-center justify-center rounded-xl border-2 shadow-sm transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
-                    aria-label="Download content"
-                  >
-                    {isDownloading ? (
-                      <div className="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                    ) : (
-                      <svg
-                        className="h-6 w-6"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                        />
-                      </svg>
-                    )}
-                  </button>
-                </div>
+                <button
+                  onClick={handleDownload}
+                  disabled={!contentUrl || isDownloading}
+                  className="border-tg-section-separator bg-tg-section-bg text-tg-text hover:bg-tg-section-bg/80 flex h-12 w-12 items-center justify-center rounded-xl border-2 shadow-sm transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                  aria-label="Download content"
+                >
+                  {isDownloading ? (
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                  ) : (
+                    <svg
+                      className="h-6 w-6"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                      />
+                    </svg>
+                  )}
+                </button>
 
                 {isGiphyEnabled && (
-                  <GiphyShareButton
-                    contentId={selectedContent.id}
-                    contentType={selectedContent.type || 'image'}
-                    collectionChain={selectedContent.token?.contract?.chain}
-                    collectionAddress={selectedContent.token?.contract?.address}
-                    collections={selectedCommunity?.collections}
-                    giphyUrl={
-                      selectedContent.integrations?.find(
-                        i => i.integration === 'giphy'
-                      )?.url
-                    }
-                  />
+                  <div className="h-full flex-1">
+                    <GiphyShareButton
+                      contentId={selectedContent.id}
+                      contentType={selectedContent.type || 'image'}
+                      collectionChain={selectedContent.token?.contract?.chain}
+                      collectionAddress={
+                        selectedContent.token?.contract?.address
+                      }
+                      collections={selectedCommunity?.collections}
+                      giphyUrl={
+                        selectedContent.integrations?.find(
+                          i => i.integration === 'giphy'
+                        )?.url
+                      }
+                    />
+                  </div>
                 )}
               </div>
             )}
@@ -337,11 +339,11 @@ export const ContentPreviews = ({
           </div>
         )}
       </div>
-      <div className="fixed bottom-40 w-full">
+      <div>
         {groupedContent.length > 0 && (
           <div
             ref={scrollContainerRef}
-            className="bg-tg-secondary flex max-h-25 w-full flex-shrink-0 flex-row items-center gap-2 overflow-x-auto border border-white/20 p-2 shadow-lg backdrop-blur-lg"
+            className="scrollbar-hide bg-tg-secondary-bg flex max-h-25 w-full flex-shrink-0 flex-row items-center gap-2 overflow-x-auto border border-white/20 p-2 shadow-lg backdrop-blur-lg"
           >
             {groupedContent.flatMap((group, groupIndex) => {
               const isSelectedVersion =

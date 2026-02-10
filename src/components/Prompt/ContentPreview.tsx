@@ -8,6 +8,13 @@ import type { Content } from '@/types/response';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { DisplayContent } from '../DisplayContent';
 import { Spinner } from '@/components/ui';
+import { GiphyShareButton } from '@/routes/content/$promptId/success/GiphyShareButton';
+import { useSelectCommunity } from '@/contexts/SelectCommunityContext';
+
+import {
+  canDownloadFile,
+  downloadTelegramFile,
+} from '@/utils/telegramDownload';
 
 export const ContentPreviews = ({
   prompt,
@@ -17,6 +24,7 @@ export const ContentPreviews = ({
   selectedVersion: PromptVersion;
 }) => {
   const { session } = useSession();
+  const { selectedCommunity } = useSelectCommunity();
   const [page, setPage] = useState(1);
   const [allContent, setAllContent] = useState<Content[]>([]);
   const [hasMorePages, setHasMorePages] = useState(true);
@@ -36,8 +44,22 @@ export const ContentPreviews = ({
     page,
     size: 10,
   });
-  console.log('Fetched preview content:', content);
+
   const [selectedContent, setSelectedContent] = useState<Content | null>(null);
+  const [isGiphyEnabled, setIsGiphyEnabled] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const isMobileDevice = useMemo(() => {
+    if (typeof navigator === 'undefined') return false;
+    const nav = navigator as Navigator & {
+      userAgentData?: { mobile?: boolean };
+    };
+    if (nav.userAgentData && typeof nav.userAgentData.mobile === 'boolean') {
+      return nav.userAgentData.mobile;
+    }
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      nav.userAgent
+    );
+  }, []);
 
   // Update allContent when new data is fetched
   useEffect(() => {
@@ -100,6 +122,40 @@ export const ContentPreviews = ({
     }
   }, [groupedContent]);
 
+  // Check if Giphy integration is enabled for the selected content's collection
+  useEffect(() => {
+    if (
+      !selectedContent?.token?.contract?.chain ||
+      !selectedContent?.token?.contract?.address ||
+      !selectedCommunity?.collections
+    ) {
+      setIsGiphyEnabled(false);
+      return;
+    }
+
+    // Find matching collection by chain + address
+    const contentCollection = selectedCommunity.collections.find(
+      c =>
+        c.chain === selectedContent.token?.contract?.chain &&
+        c.address === selectedContent.token?.contract?.address
+    );
+
+    if (!contentCollection) {
+      setIsGiphyEnabled(false);
+      return;
+    }
+
+    // Giphy only supports animated content (GIFs, videos, animated stickers)
+    const isGiphyContent = selectedContent.type !== 'image';
+
+    const hasGiphyIntegration =
+      contentCollection.integrations?.some(
+        i => i.type === 'giphy' && i.enabled
+      ) || false;
+
+    setIsGiphyEnabled(isGiphyContent && hasGiphyIntegration);
+  }, [selectedContent, selectedCommunity]);
+
   // Retry handler for failed/error content
   const handleRetry = async (content: Content) => {
     if (
@@ -125,11 +181,78 @@ export const ContentPreviews = ({
     }
   };
 
+  const contentUrl =
+    selectedContent?.url ||
+    selectedContent?.image ||
+    selectedContent?.gif ||
+    selectedContent?.video ||
+    null;
+
+  const handleDownload = async () => {
+    if (!contentUrl || isDownloading) return;
+
+    try {
+      setIsDownloading(true);
+
+      const urlExtension = contentUrl.split('.').pop()?.split('?')[0] || 'png';
+      const fileName = `artwork-${selectedContent?.id || prompt.id}.${urlExtension}`;
+
+      if (canDownloadFile()) {
+        const success = await downloadTelegramFile(contentUrl, fileName);
+        if (success) return;
+      }
+
+      const response = await fetch(contentUrl, {
+        mode: 'cors',
+        cache: 'no-store',
+      });
+
+      if (!response.ok) {
+        throw new Error('Unable to download content');
+      }
+
+      const blob = await response.blob();
+      const mimeType = blob.type || 'image/png';
+      const extension = mimeType.split('/')[1]?.split('+')[0] || 'png';
+      const blobFileName = `artwork-${selectedContent?.id || prompt.id}.${extension}`;
+      const file = new File([blob], blobFileName, { type: mimeType });
+
+      const canShareFiles =
+        typeof navigator !== 'undefined' &&
+        typeof navigator.share === 'function' &&
+        typeof navigator.canShare === 'function';
+      const canShareThisFile = navigator.canShare
+        ? navigator.canShare({ files: [file] })
+        : false;
+
+      if (isMobileDevice && canShareFiles && canShareThisFile) {
+        await navigator.share({
+          files: [file],
+          title: 'Save your artwork',
+          text: 'Choose "Save Image" to store this in your camera roll.',
+        });
+      } else {
+        const objectUrl = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = objectUrl;
+        link.download = blobFileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(objectUrl);
+      }
+    } catch (error) {
+      console.error('[Download] Failed to download content:', error);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   return (
     <div className="flex h-full w-full flex-col">
-      <div className="relative flex min-h-0 w-full flex-1 items-center justify-center overflow-hidden p-4">
+      <div className="relative flex min-h-0 w-full flex-1 items-center justify-center overflow-hidden p-4 pb-10">
         {selectedContent && (
-          <div className="flex h-full w-full items-center justify-center">
+          <div className="flex h-full w-full flex-col items-center justify-center gap-2">
             <div className="aspect-square max-h-full max-w-full">
               <DisplayContent
                 content={selectedContent}
@@ -139,6 +262,54 @@ export const ContentPreviews = ({
                 isRetrying={retryingContentId === selectedContent.id}
               />
             </div>
+            {selectedContent.status === 'completed' && (
+              <div className="flex w-full items-center gap-2">
+                <button
+                  onClick={handleDownload}
+                  disabled={!contentUrl || isDownloading}
+                  className="border-tg-section-separator bg-tg-section-bg text-tg-text hover:bg-tg-section-bg/80 flex h-12 w-12 items-center justify-center rounded-xl border-2 shadow-sm transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                  aria-label="Download content"
+                >
+                  {isDownloading ? (
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                  ) : (
+                    <svg
+                      className="h-6 w-6"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                      />
+                    </svg>
+                  )}
+                </button>
+
+                {isGiphyEnabled && (
+                  <div className="h-full flex-1">
+                    <GiphyShareButton
+                      contentId={selectedContent.id}
+                      contentType={selectedContent.type || 'image'}
+                      collectionChain={selectedContent.token?.contract?.chain}
+                      collectionAddress={
+                        selectedContent.token?.contract?.address
+                      }
+                      collections={selectedCommunity?.collections}
+                      giphyUrl={
+                        selectedContent.integrations?.find(
+                          i => i.integration === 'giphy'
+                        )?.url
+                      }
+                    />
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
         {!selectedContent && (
@@ -154,7 +325,8 @@ export const ContentPreviews = ({
             className="scrollbar-hide bg-tg-secondary-bg flex max-h-25 w-full flex-shrink-0 flex-row items-center gap-2 overflow-x-auto border border-white/20 p-2 shadow-lg backdrop-blur-lg"
           >
             {groupedContent.flatMap((group, groupIndex) => {
-              const isSelectedVersion = group.version === selectedVersion.version;
+              const isSelectedVersion =
+                group.version === selectedVersion.version;
               const items = [
                 // Content items for this version
                 ...group.items.map((content: Content) => (
@@ -184,8 +356,12 @@ export const ContentPreviews = ({
                           isSelectedVersion ? 'opacity-100' : 'opacity-50'
                         }`}
                       >
-                        <div className={`h-8 w-px ${isSelectedVersion ? 'bg-blue-500' : 'bg-tg-hint/30'}`}></div>
-                        <div className={`mt-1 text-xs font-medium ${isSelectedVersion ? 'text-blue-500' : 'text-tg-hint'}`}>
+                        <div
+                          className={`h-8 w-px ${isSelectedVersion ? 'bg-blue-500' : 'bg-tg-hint/30'}`}
+                        ></div>
+                        <div
+                          className={`mt-1 text-xs font-medium ${isSelectedVersion ? 'text-blue-500' : 'text-tg-hint'}`}
+                        >
                           v{group.version}
                         </div>
                       </div>,

@@ -131,9 +131,11 @@ function SingleContent({ content }: { content: Content }) {
           },
         }
       : {
-          to: '/content/$promptId/success' as const,
-          params: { promptId: String(content.promptId) },
-          search: { executionId: content.executionId || content.id },
+          to: '/content/$promptId/success/execution/$executionId' as const,
+          params: {
+            promptId: String(content.promptId),
+            executionId: String(content.executionId || content.id),
+          },
         };
 
   return (

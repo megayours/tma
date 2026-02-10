@@ -2,6 +2,7 @@ import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import type { Content } from '@/types/content';
 import { MdRefresh } from 'react-icons/md';
 import { MediaDisplay } from '@/components/lib/LatestContent/MediaDisplay';
+import { useRef } from 'react';
 
 interface DisplayContentProps {
   content: Content;
@@ -19,6 +20,17 @@ export const DisplayContent = ({
   isRetrying = false,
 }: DisplayContentProps) => {
   const baseClasses = `rounded-lg ${className}`.trim();
+  const lastContentIdRef = useRef<string | null>(null);
+  const lastCompletedSrcRef = useRef<string | null>(null);
+
+  if (lastContentIdRef.current !== content.id) {
+    lastContentIdRef.current = content.id;
+    lastCompletedSrcRef.current = null;
+  }
+
+  if (content.status !== 'completed') {
+    lastCompletedSrcRef.current = null;
+  }
 
   const renderContent = () => {
     switch (content.status) {
@@ -32,9 +44,13 @@ export const DisplayContent = ({
               : null;
 
         if (mediaSrc) {
+          if (!lastCompletedSrcRef.current) {
+            lastCompletedSrcRef.current = mediaSrc;
+          }
+          const stableMediaSrc = lastCompletedSrcRef.current || mediaSrc;
           return (
             <MediaDisplay
-              src={mediaSrc}
+              src={stableMediaSrc}
               alt={content.id}
               className={baseClasses}
               poster={content.thumbnailUrl || '/logo.png'}

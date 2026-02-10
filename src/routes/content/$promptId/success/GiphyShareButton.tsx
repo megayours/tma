@@ -36,6 +36,9 @@ export function GiphyShareButton({
   const [giphyShareSuccess, setGiphyShareSuccess] = useState(false);
   const [isGiphyEnabled, setIsGiphyEnabled] = useState(false);
   const [showCopied, setShowCopied] = useState(false);
+  const [giphyUrlLocal, setGiphyUrlLocal] = useState<string | undefined>(
+    undefined
+  );
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const pollingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -58,7 +61,7 @@ export function GiphyShareButton({
   const giphyUrlFromShare = shareData?.find(
     result => result.integration === 'giphy'
   )?.url;
-  const giphyUrl = giphyUrlFromShare || giphyUrlProp;
+  const giphyUrl = giphyUrlFromShare || giphyUrlLocal || giphyUrlProp;
 
   // Check if Giphy integration is enabled for this collection
   // Only enable for animated content (GIFs, videos, animated stickers), not static images
@@ -126,6 +129,7 @@ export function GiphyShareButton({
 
         // URL is ready
         console.log('Giphy URL ready:', giphyIntegration.url);
+        setGiphyUrlLocal(giphyIntegration.url);
 
         // Show success
         setGiphyShareSuccess(true);
@@ -135,7 +139,7 @@ export function GiphyShareButton({
 
         // Invalidate queries to refetch with new integration URL
         queryClient.invalidateQueries({
-          predicate: (query) =>
+          predicate: query =>
             query.queryKey[0] === 'content-execution' &&
             query.queryKey[1] === contentId,
         });
@@ -180,6 +184,7 @@ export function GiphyShareButton({
         // If URL is already available, we're done
         if (giphyResult.url) {
           console.log('Giphy share completed, URL:', giphyResult.url);
+          setGiphyUrlLocal(giphyResult.url);
           setGiphyShareSuccess(true);
           if (isTelegram) {
             triggerHapticNotification('success');
@@ -187,7 +192,7 @@ export function GiphyShareButton({
 
           // Invalidate queries
           queryClient.invalidateQueries({
-            predicate: (query) =>
+            predicate: query =>
               query.queryKey[0] === 'content-execution' &&
               query.queryKey[1] === contentId,
           });
@@ -267,16 +272,16 @@ export function GiphyShareButton({
   // If URL exists, show two-button layout
   if (giphyUrl && !isGiphySharing && !giphyShareSuccess) {
     return (
-      <div className="flex w-full gap-2">
+      <div className="grid h-full w-full grid-cols-2 flex-row gap-1">
         {/* Open in Giphy */}
         <a
           href={giphyUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-[#6157ff] via-[#a640ff] to-[#ff0099] px-4 py-3 shadow-md transition-all duration-200 hover:opacity-90 active:scale-95"
+          className="flex h-full items-center justify-center gap-1 rounded-lg bg-gradient-to-r from-[#6157ff] via-[#a640ff] to-[#ff0099] px-2 py-1.5 shadow-md transition-all duration-200 hover:opacity-90 active:scale-95"
         >
           <svg
-            className="h-4 w-4 text-white"
+            className="h-3.5 w-3.5 text-white"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -289,13 +294,13 @@ export function GiphyShareButton({
               d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
             />
           </svg>
-          <span className="text-base font-medium text-white">Open in Giphy</span>
+          <span className="text-xs font-medium text-white">Open in Giphy</span>
         </a>
 
         {/* Copy URL */}
         <button
           onClick={handleCopyUrl}
-          className="flex flex-1 items-center justify-center gap-2 rounded-lg border-2 border-transparent bg-transparent px-4 py-3 shadow-md transition-all duration-200 hover:bg-white/10 active:scale-95"
+          className="flex h-full items-center justify-center gap-1 rounded-lg border-2 border-transparent bg-transparent px-2 py-1.5 shadow-md transition-all duration-200 hover:bg-white/10 active:scale-95"
           style={{
             borderImage:
               'linear-gradient(to right, #6157ff, #a640ff, #ff0099) 1',
@@ -303,14 +308,14 @@ export function GiphyShareButton({
         >
           {showCopied ? (
             <>
-              <span className="text-tg-text text-base font-medium">
+              <span className="text-tg-text text-xs font-medium">
                 ✓ Copied!
               </span>
             </>
           ) : (
             <>
               <svg
-                className="text-tg-text h-4 w-4"
+                className="text-tg-text h-3.5 w-3.5"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -323,7 +328,7 @@ export function GiphyShareButton({
                   d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
                 />
               </svg>
-              <span className="text-tg-text text-base font-medium">Copy URL</span>
+              <span className="text-tg-text text-xs font-medium">Copy URL</span>
             </>
           )}
         </button>
@@ -353,7 +358,9 @@ export function GiphyShareButton({
         </>
       ) : (
         <>
-          <span className="text-base font-medium text-white">Share on Giphy</span>
+          <span className="text-base font-medium text-white">
+            Share on Giphy
+          </span>
         </>
       )}
     </button>

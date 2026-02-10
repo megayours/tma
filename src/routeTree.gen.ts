@@ -42,7 +42,6 @@ import { Route as StickerPacksStickerPackIdDetailsIndexRouteImport } from './rou
 import { Route as PostCreateVideoIndexRouteImport } from './routes/post/create/video/index'
 import { Route as PostCreateStickerIndexRouteImport } from './routes/post/create/sticker/index'
 import { Route as PostCreateImageIndexRouteImport } from './routes/post/create/image/index'
-import { Route as ContentPromptIdSuccessIndexRouteImport } from './routes/content/$promptId/success/index'
 import { Route as ContentPromptIdSelectNftsIndexRouteImport } from './routes/content/$promptId/select-nfts/index'
 import { Route as ContentPromptIdInvitationIndexRouteImport } from './routes/content/$promptId/invitation/index'
 import { Route as ContentPromptIdDetailsIndexRouteImport } from './routes/content/$promptId/details/index'
@@ -55,6 +54,7 @@ import { Route as AuthDiscordV1CallbackIndexRouteImport } from './routes/auth/di
 import { Route as MainProfileAdminPromptIndexRouteImport } from './routes/_main/profile/admin/prompt/index'
 import { Route as MainProfileAdminPromptCreateRouteImport } from './routes/_main/profile/admin/prompt/create'
 import { Route as MainProfileAdminPromptEditRouteRouteImport } from './routes/_main/profile/admin/prompt/edit/route'
+import { Route as ContentPromptIdSuccessExecutionExecutionIdIndexRouteImport } from './routes/content/$promptId/success/execution/$executionId/index'
 import { Route as MainProfileAdminPromptEditPromptIdRouteRouteImport } from './routes/_main/profile/admin/prompt/edit/$promptId/route'
 import { Route as MainProfileAdminPromptEditPromptIdIndexRouteImport } from './routes/_main/profile/admin/prompt/edit/$promptId/index'
 
@@ -232,12 +232,6 @@ const PostCreateImageIndexRoute = PostCreateImageIndexRouteImport.update({
   path: '/post/create/image/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ContentPromptIdSuccessIndexRoute =
-  ContentPromptIdSuccessIndexRouteImport.update({
-    id: '/success/',
-    path: '/success/',
-    getParentRoute: () => ContentPromptIdRoute,
-  } as any)
 const ContentPromptIdSelectNftsIndexRoute =
   ContentPromptIdSelectNftsIndexRouteImport.update({
     id: '/select-nfts/',
@@ -309,6 +303,12 @@ const MainProfileAdminPromptEditRouteRoute =
     path: '/profile/admin/prompt/edit',
     getParentRoute: () => MainRoute,
   } as any)
+const ContentPromptIdSuccessExecutionExecutionIdIndexRoute =
+  ContentPromptIdSuccessExecutionExecutionIdIndexRouteImport.update({
+    id: '/success/execution/$executionId/',
+    path: '/success/execution/$executionId/',
+    getParentRoute: () => ContentPromptIdRoute,
+  } as any)
 const MainProfileAdminPromptEditPromptIdRouteRoute =
   MainProfileAdminPromptEditPromptIdRouteRouteImport.update({
     id: '/$promptId',
@@ -354,7 +354,6 @@ export interface FileRoutesByFullPath {
   '/content/$promptId/details': typeof ContentPromptIdDetailsIndexRoute
   '/content/$promptId/invitation': typeof ContentPromptIdInvitationIndexRoute
   '/content/$promptId/select-nfts': typeof ContentPromptIdSelectNftsIndexRoute
-  '/content/$promptId/success': typeof ContentPromptIdSuccessIndexRoute
   '/post/create/image': typeof PostCreateImageIndexRoute
   '/post/create/sticker': typeof PostCreateStickerIndexRoute
   '/post/create/video': typeof PostCreateVideoIndexRoute
@@ -369,6 +368,7 @@ export interface FileRoutesByFullPath {
   '/auth/discord/v1/callback': typeof AuthDiscordV1CallbackIndexRoute
   '/sticker-packs/$stickerPackId/processing/$executionId': typeof StickerPacksStickerPackIdProcessingExecutionIdIndexRoute
   '/profile/admin/prompt/edit/$promptId': typeof MainProfileAdminPromptEditPromptIdRouteRouteWithChildren
+  '/content/$promptId/success/execution/$executionId': typeof ContentPromptIdSuccessExecutionExecutionIdIndexRoute
   '/profile/admin/prompt/edit/$promptId/': typeof MainProfileAdminPromptEditPromptIdIndexRoute
 }
 export interface FileRoutesByTo {
@@ -400,7 +400,6 @@ export interface FileRoutesByTo {
   '/content/$promptId/details': typeof ContentPromptIdDetailsIndexRoute
   '/content/$promptId/invitation': typeof ContentPromptIdInvitationIndexRoute
   '/content/$promptId/select-nfts': typeof ContentPromptIdSelectNftsIndexRoute
-  '/content/$promptId/success': typeof ContentPromptIdSuccessIndexRoute
   '/post/create/image': typeof PostCreateImageIndexRoute
   '/post/create/sticker': typeof PostCreateStickerIndexRoute
   '/post/create/video': typeof PostCreateVideoIndexRoute
@@ -414,6 +413,7 @@ export interface FileRoutesByTo {
   '/profile/admin/prompt': typeof MainProfileAdminPromptIndexRoute
   '/auth/discord/v1/callback': typeof AuthDiscordV1CallbackIndexRoute
   '/sticker-packs/$stickerPackId/processing/$executionId': typeof StickerPacksStickerPackIdProcessingExecutionIdIndexRoute
+  '/content/$promptId/success/execution/$executionId': typeof ContentPromptIdSuccessExecutionExecutionIdIndexRoute
   '/profile/admin/prompt/edit/$promptId': typeof MainProfileAdminPromptEditPromptIdIndexRoute
 }
 export interface FileRoutesById {
@@ -450,7 +450,6 @@ export interface FileRoutesById {
   '/content/$promptId/details/': typeof ContentPromptIdDetailsIndexRoute
   '/content/$promptId/invitation/': typeof ContentPromptIdInvitationIndexRoute
   '/content/$promptId/select-nfts/': typeof ContentPromptIdSelectNftsIndexRoute
-  '/content/$promptId/success/': typeof ContentPromptIdSuccessIndexRoute
   '/post/create/image/': typeof PostCreateImageIndexRoute
   '/post/create/sticker/': typeof PostCreateStickerIndexRoute
   '/post/create/video/': typeof PostCreateVideoIndexRoute
@@ -465,6 +464,7 @@ export interface FileRoutesById {
   '/auth/discord/v1/callback/': typeof AuthDiscordV1CallbackIndexRoute
   '/sticker-packs/$stickerPackId/processing/$executionId/': typeof StickerPacksStickerPackIdProcessingExecutionIdIndexRoute
   '/_main/profile/admin/prompt/edit/$promptId': typeof MainProfileAdminPromptEditPromptIdRouteRouteWithChildren
+  '/content/$promptId/success/execution/$executionId/': typeof ContentPromptIdSuccessExecutionExecutionIdIndexRoute
   '/_main/profile/admin/prompt/edit/$promptId/': typeof MainProfileAdminPromptEditPromptIdIndexRoute
 }
 export interface FileRouteTypes {
@@ -501,7 +501,6 @@ export interface FileRouteTypes {
     | '/content/$promptId/details'
     | '/content/$promptId/invitation'
     | '/content/$promptId/select-nfts'
-    | '/content/$promptId/success'
     | '/post/create/image'
     | '/post/create/sticker'
     | '/post/create/video'
@@ -516,6 +515,7 @@ export interface FileRouteTypes {
     | '/auth/discord/v1/callback'
     | '/sticker-packs/$stickerPackId/processing/$executionId'
     | '/profile/admin/prompt/edit/$promptId'
+    | '/content/$promptId/success/execution/$executionId'
     | '/profile/admin/prompt/edit/$promptId/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -547,7 +547,6 @@ export interface FileRouteTypes {
     | '/content/$promptId/details'
     | '/content/$promptId/invitation'
     | '/content/$promptId/select-nfts'
-    | '/content/$promptId/success'
     | '/post/create/image'
     | '/post/create/sticker'
     | '/post/create/video'
@@ -561,6 +560,7 @@ export interface FileRouteTypes {
     | '/profile/admin/prompt'
     | '/auth/discord/v1/callback'
     | '/sticker-packs/$stickerPackId/processing/$executionId'
+    | '/content/$promptId/success/execution/$executionId'
     | '/profile/admin/prompt/edit/$promptId'
   id:
     | '__root__'
@@ -596,7 +596,6 @@ export interface FileRouteTypes {
     | '/content/$promptId/details/'
     | '/content/$promptId/invitation/'
     | '/content/$promptId/select-nfts/'
-    | '/content/$promptId/success/'
     | '/post/create/image/'
     | '/post/create/sticker/'
     | '/post/create/video/'
@@ -611,6 +610,7 @@ export interface FileRouteTypes {
     | '/auth/discord/v1/callback/'
     | '/sticker-packs/$stickerPackId/processing/$executionId/'
     | '/_main/profile/admin/prompt/edit/$promptId'
+    | '/content/$promptId/success/execution/$executionId/'
     | '/_main/profile/admin/prompt/edit/$promptId/'
   fileRoutesById: FileRoutesById
 }
@@ -869,13 +869,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PostCreateImageIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/content/$promptId/success/': {
-      id: '/content/$promptId/success/'
-      path: '/success'
-      fullPath: '/content/$promptId/success'
-      preLoaderRoute: typeof ContentPromptIdSuccessIndexRouteImport
-      parentRoute: typeof ContentPromptIdRoute
-    }
     '/content/$promptId/select-nfts/': {
       id: '/content/$promptId/select-nfts/'
       path: '/select-nfts'
@@ -959,6 +952,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/profile/admin/prompt/edit'
       preLoaderRoute: typeof MainProfileAdminPromptEditRouteRouteImport
       parentRoute: typeof MainRoute
+    }
+    '/content/$promptId/success/execution/$executionId/': {
+      id: '/content/$promptId/success/execution/$executionId/'
+      path: '/success/execution/$executionId'
+      fullPath: '/content/$promptId/success/execution/$executionId'
+      preLoaderRoute: typeof ContentPromptIdSuccessExecutionExecutionIdIndexRouteImport
+      parentRoute: typeof ContentPromptIdRoute
     }
     '/_main/profile/admin/prompt/edit/$promptId': {
       id: '/_main/profile/admin/prompt/edit/$promptId'
@@ -1093,7 +1093,7 @@ interface ContentPromptIdRouteChildren {
   ContentPromptIdDetailsIndexRoute: typeof ContentPromptIdDetailsIndexRoute
   ContentPromptIdInvitationIndexRoute: typeof ContentPromptIdInvitationIndexRoute
   ContentPromptIdSelectNftsIndexRoute: typeof ContentPromptIdSelectNftsIndexRoute
-  ContentPromptIdSuccessIndexRoute: typeof ContentPromptIdSuccessIndexRoute
+  ContentPromptIdSuccessExecutionExecutionIdIndexRoute: typeof ContentPromptIdSuccessExecutionExecutionIdIndexRoute
 }
 
 const ContentPromptIdRouteChildren: ContentPromptIdRouteChildren = {
@@ -1103,7 +1103,8 @@ const ContentPromptIdRouteChildren: ContentPromptIdRouteChildren = {
   ContentPromptIdDetailsIndexRoute: ContentPromptIdDetailsIndexRoute,
   ContentPromptIdInvitationIndexRoute: ContentPromptIdInvitationIndexRoute,
   ContentPromptIdSelectNftsIndexRoute: ContentPromptIdSelectNftsIndexRoute,
-  ContentPromptIdSuccessIndexRoute: ContentPromptIdSuccessIndexRoute,
+  ContentPromptIdSuccessExecutionExecutionIdIndexRoute:
+    ContentPromptIdSuccessExecutionExecutionIdIndexRoute,
 }
 
 const ContentPromptIdRouteWithChildren = ContentPromptIdRoute._addFileChildren(

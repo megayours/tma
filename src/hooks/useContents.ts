@@ -200,7 +200,16 @@ export const usePreviewContentMutation = (
         }
       );
       if (!response.ok) {
-        throw new Error('Failed to preview content');
+        let errorMessage = 'Failed to preview content';
+        try {
+          const errorData = await response.json();
+          if (errorData && typeof errorData.error === 'string') {
+            errorMessage = errorData.error;
+          }
+        } catch {
+          // ignore parse errors and fall back to default message
+        }
+        throw new Error(errorMessage);
       }
       const data = await response.json();
       return { contentId: data.id };

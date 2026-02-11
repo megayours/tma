@@ -1,5 +1,4 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { z } from 'zod';
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { useSession } from '@/auth/SessionProvider';
 import { useContentExecution } from '@/hooks/useContents';
@@ -18,7 +17,7 @@ import {
 import { GenerateAgainButton } from '@/components/GenerateAgainButton';
 import { TelegramDualButtons } from '@/components/TelegramDualButtons';
 import { useSelectCommunity } from '@/contexts/SelectCommunityContext';
-import { GiphyShareButton } from './GiphyShareButton';
+import { GiphyShareButton } from '../../GiphyShareButton';
 import { MediaDisplay } from '@/components/lib/LatestContent/MediaDisplay';
 import { buildShareUrl } from '@/utils/shareUrl';
 import {
@@ -27,18 +26,14 @@ import {
 } from '@/utils/telegramDownload';
 import { shareTelegramMessage } from '@/utils/telegramShare';
 
-const successSearchSchema = z.object({
-  executionId: z.string().optional(),
-});
-
-export const Route = createFileRoute('/content/$promptId/success/')({
-  validateSearch: successSearchSchema,
+export const Route = createFileRoute(
+  '/content/$promptId/success/execution/$executionId/'
+)({
   component: SuccessPage,
 });
 
 function SuccessPage() {
-  const search = Route.useSearch();
-  const { promptId } = Route.useParams();
+  const { promptId, executionId } = Route.useParams();
   const navigate = useNavigate();
   const { session } = useSession();
   const { isTelegram } = useTelegramTheme();
@@ -70,12 +65,12 @@ function SuccessPage() {
   const [downloadSuccess, setDownloadSuccess] = useState(false);
   const hasSubmittedFeedback = useRef(false);
 
-  // Fetch execution data if executionId is provided
+  // Fetch execution data using executionId from path params
   const { data: content, isLoading } = useContentExecution(
-    search.executionId || '',
+    executionId,
     session,
     {
-      enabled: !!search.executionId,
+      enabled: true,
       preferredFormats: isMobileDevice ? 'gif' : 'webm',
     }
   );

@@ -79,7 +79,6 @@ export const AdditionalContentDisplay = ({
   removeContent,
   isMutating = false,
 }: AdditionalContentDisplayProps) => {
-  console.log('contentIds', contentIds);
   if (!contentIds || contentIds.length === 0) {
     return null;
   }

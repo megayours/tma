@@ -45,7 +45,15 @@ export const ContentPreviews = ({
     size: 10,
   });
 
-  const [selectedContent, setSelectedContent] = useState<Content | null>(null);
+  const [selectedContentId, setSelectedContentId] = useState<string | null>(
+    null
+  );
+  const selectedContent = useMemo(
+    () => allContent.find(item => item.id === selectedContentId) ?? null,
+    [allContent, selectedContentId]
+  );
+  const [hasUserSelected, setHasUserSelected] = useState(false);
+  const prevProcessingIdsRef = useRef<Set<string>>(new Set());
   const [isGiphyEnabled, setIsGiphyEnabled] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const isMobileDevice = useMemo(() => {
@@ -105,22 +113,47 @@ export const ContentPreviews = ({
 
   // Auto-select the first item when content loads or when new content arrives
   useEffect(() => {
+    const processingIds = new Set(
+      allContent.filter(item => item.status === 'processing').map(item => item.id)
+    );
+
+    // If any previously-processing item has completed, auto-select it
+    const completedFromProcessing = allContent.find(
+      item =>
+        item.status === 'completed' &&
+        prevProcessingIdsRef.current.has(item.id)
+    );
+    if (completedFromProcessing) {
+      setSelectedContentId(completedFromProcessing.id);
+      setHasUserSelected(false);
+      prevProcessingIdsRef.current = processingIds;
+      return;
+    }
+
+    // Update selected content if its status moved from processing to completed
+    if (
+      selectedContent &&
+      selectedContent.status === 'completed' &&
+      selectedContentId &&
+      prevProcessingIdsRef.current.has(selectedContentId)
+    ) {
+      setSelectedContentId(selectedContentId);
+      setHasUserSelected(false);
+      prevProcessingIdsRef.current = processingIds;
+      return;
+    }
+
     if (groupedContent.length > 0 && groupedContent[0].items.length > 0) {
       const newestContent = groupedContent[0].items[0];
 
-      // Select if no content is selected yet, or if the newest content is newer than selected
-      // OR if the selected content's status has changed (e.g., from processing to completed)
-      if (
-        !selectedContent ||
-        newestContent.createdAt > (selectedContent.createdAt || 0) ||
-        (selectedContent &&
-          newestContent.id === selectedContent.id &&
-          newestContent.status !== selectedContent.status)
-      ) {
-        setSelectedContent(newestContent);
+      // Select only when nothing is selected yet, or when the user hasn't made a manual selection
+      if (!selectedContentId || !hasUserSelected) {
+        setSelectedContentId(newestContent.id);
       }
     }
-  }, [groupedContent]);
+
+    prevProcessingIdsRef.current = processingIds;
+  }, [groupedContent, allContent, selectedContent, selectedContentId, hasUserSelected]);
 
   // Check if Giphy integration is enabled for the selected content's collection
   useEffect(() => {
@@ -337,7 +370,10 @@ export const ContentPreviews = ({
                         ? 'border-blue-500'
                         : 'border-transparent'
                     }`}
-                    onClick={() => setSelectedContent(content)}
+                    onClick={() => {
+                      setSelectedContentId(content.id);
+                      setHasUserSelected(true);
+                    }}
                   >
                     <DisplayContent
                       content={content}

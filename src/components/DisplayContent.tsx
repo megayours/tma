@@ -36,7 +36,8 @@ export const DisplayContent = ({
     switch (content.status) {
       case 'completed': {
         const mediaSrc =
-          (content.type === 'image' || content.type === 'sticker') && content.image
+          (content.type === 'image' || content.type === 'sticker') &&
+          content.image
             ? content.image
             : (content.type === 'gif' || content.type === 'animated_sticker') &&
                 content.gif

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { Token } from '@/types/response';
 import type { Prompt } from '@/types/prompt';
 import { useGetFavorites } from './useFavorites';
@@ -107,21 +107,68 @@ export const useNFTSet = (
   // Initialize state for single NFT set
   const [compulsoryNFTs, setCompulsoryNFTs] = useState<Token[]>([]);
   const [optionalNFTs, setOptionalNFTs] = useState<Token[]>([]);
+  const previousPromptIdRef = useRef<number | null>(null);
 
-  // Initialize NFT set when prompt changes
+  // Preserve user-selected NFTs across unrelated re-renders and query refreshes.
+  // Only reset when the prompt changes, or resize the arrays when slot counts change.
   useEffect(() => {
-    if (!prompt?.id) {
+    const promptId = prompt?.id ?? null;
+    const minTokens = prompt?.minTokens || 0;
+    const maxTokens = prompt?.maxTokens || minTokens;
+    const maxOptionalTokens = Math.max(0, maxTokens - minTokens);
+    const promptChanged = previousPromptIdRef.current !== promptId;
+
+    if (!promptId) {
       setCompulsoryNFTs([]);
       setOptionalNFTs([]);
+      previousPromptIdRef.current = null;
       return;
     }
 
-    // Create initial compulsory set (from favorites, default collection, or random collection)
-    if (prompt?.minTokens && (favorites || defaultCollection || allCollections)) {
-      const initialCompulsorySet = createCompulsoryNFTs(favorites || null, prompt.minTokens, defaultCollection, allCollections);
-      setCompulsoryNFTs(initialCompulsorySet);
-      setOptionalNFTs([]);  // Start with empty optional set
-    }
+    setCompulsoryNFTs(prev => {
+      if (minTokens === 0) {
+        return [];
+      }
+
+      if (promptChanged || prev.length === 0) {
+        return createCompulsoryNFTs(
+          favorites || null,
+          minTokens,
+          defaultCollection,
+          allCollections
+        );
+      }
+
+      if (prev.length > minTokens) {
+        return prev.slice(0, minTokens);
+      }
+
+      if (prev.length < minTokens) {
+        const generated = createCompulsoryNFTs(
+          favorites || null,
+          minTokens - prev.length,
+          defaultCollection,
+          allCollections
+        );
+        return [...prev, ...generated];
+      }
+
+      return prev;
+    });
+
+    setOptionalNFTs(prev => {
+      if (promptChanged) {
+        return [];
+      }
+
+      if (prev.length > maxOptionalTokens) {
+        return prev.slice(0, maxOptionalTokens);
+      }
+
+      return prev;
+    });
+
+    previousPromptIdRef.current = promptId;
   }, [prompt?.id, prompt?.minTokens, prompt?.maxTokens, favorites, defaultCollection, allCollections]);
 
   // Function to update a compulsory NFT

@@ -33,9 +33,12 @@ export const NFTSelectionFlow = ({
   segmentedControlStyle = 'inline',
   isLoadingCollections = false,
 }: NFTSelectionFlowProps) => {
-  const [selectedCollection, setSelectedCollection] = useState<SupportedCollection | null>(null);
+  const [selectedCollection, setSelectedCollection] =
+    useState<SupportedCollection | null>(null);
   const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null);
-  const [selectionMode, setSelectionMode] = useState<'favorites' | 'collections'>(initialMode);
+  const [selectionMode, setSelectionMode] = useState<
+    'favorites' | 'collections'
+  >(initialMode);
 
   const handleCollectionSelect = (collection: SupportedCollection) => {
     // Blur textarea to prevent keyboard from opening (mobile UX)
@@ -59,7 +62,7 @@ export const NFTSelectionFlow = ({
 
     if (segmentedControlStyle === 'buttons') {
       return (
-        <div className="flex justify-center gap-2 mb-3">
+        <div className="mb-3 flex justify-center gap-2">
           <Button
             mode={selectionMode === 'favorites' ? 'filled' : 'outline'}
             size="s"
@@ -131,7 +134,7 @@ export const NFTSelectionFlow = ({
 
       {selectedCollection && (
         <>
-          {enableMascotMode && selectedCollection.size < 15 ? (
+          {enableMascotMode && selectedCollection.size < 20 ? (
             <SelectMascot
               collection={selectedCollection}
               onBack={handleBack}

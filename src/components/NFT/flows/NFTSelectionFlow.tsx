@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button } from '@telegram-apps/telegram-ui';
 import { PickFavoriteNFTs } from '../selection/PickFavoriteNFTs';
 import { SelectCollection } from '../selection/SelectCollection';
+import { SelectGridMascot } from '../selection/SelectGridMascot';
 import { SelectTokenId } from '../selection/SelectTokenId';
 import { SelectMascot } from '../selection/SelectMascot';
 import { DisplayNFT } from '../display/DisplayNFT';
@@ -33,9 +34,12 @@ export const NFTSelectionFlow = ({
   segmentedControlStyle = 'inline',
   isLoadingCollections = false,
 }: NFTSelectionFlowProps) => {
-  const [selectedCollection, setSelectedCollection] = useState<SupportedCollection | null>(null);
+  const [selectedCollection, setSelectedCollection] =
+    useState<SupportedCollection | null>(null);
   const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null);
-  const [selectionMode, setSelectionMode] = useState<'favorites' | 'collections'>(initialMode);
+  const [selectionMode, setSelectionMode] = useState<
+    'favorites' | 'collections'
+  >(initialMode);
 
   const handleCollectionSelect = (collection: SupportedCollection) => {
     // Blur textarea to prevent keyboard from opening (mobile UX)
@@ -59,7 +63,7 @@ export const NFTSelectionFlow = ({
 
     if (segmentedControlStyle === 'buttons') {
       return (
-        <div className="flex justify-center gap-2 mb-3">
+        <div className="mb-3 flex justify-center gap-2">
           <Button
             mode={selectionMode === 'favorites' ? 'filled' : 'outline'}
             size="s"
@@ -131,13 +135,44 @@ export const NFTSelectionFlow = ({
 
       {selectedCollection && (
         <>
-          {enableMascotMode && selectedCollection.size < 15 ? (
+          {enableMascotMode && selectedCollection.size < 6 ? (
             <SelectMascot
               collection={selectedCollection}
               onBack={handleBack}
               onTokenSelect={setSelectedTokenId}
               onSubmitNFT={onTokenSelect}
             />
+          ) : enableMascotMode && selectedCollection.size <= 30 ? (
+            <>
+              <SelectGridMascot
+                collection={selectedCollection}
+                onBack={handleBack}
+                onTokenSelect={setSelectedTokenId}
+              />
+
+              <div className="h-[356px]">
+                {selectedTokenId ? (
+                  <DisplayNFT
+                    collection={selectedCollection}
+                    tokenId={selectedTokenId}
+                    onClick={onTokenSelect}
+                  />
+                ) : (
+                  <div className="flex flex-col gap-4 p-4">
+                    <div className="flex justify-center">
+                      <div className="bg-tg-secondary flex w-64 items-center justify-center rounded-lg">
+                        <div className="text-tg-hint text-center text-sm">
+                          Select a character to view NFT
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-tg-hint text-center text-lg font-medium">
+                      {selectedCollection.name}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </>
           ) : (
             <>
               <SelectTokenId

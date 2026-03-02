@@ -2,7 +2,13 @@
 export { DisplayNFT, SelectedNFTDisplay, NFTsSummary } from './display';
 
 // Selection methods
-export { SelectCollection, SelectMascot, SelectTokenId, PickFavoriteNFTs } from './selection';
+export {
+  SelectCollection,
+  SelectGridMascot,
+  SelectMascot,
+  SelectTokenId,
+  PickFavoriteNFTs,
+} from './selection';
 
 // Flow orchestrators
 export {

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button } from '@telegram-apps/telegram-ui';
 import { PickFavoriteNFTs } from '../selection/PickFavoriteNFTs';
 import { SelectCollection } from '../selection/SelectCollection';
+import { SelectGridMascot } from '../selection/SelectGridMascot';
 import { SelectTokenId } from '../selection/SelectTokenId';
 import { SelectMascot } from '../selection/SelectMascot';
 import { DisplayNFT } from '../display/DisplayNFT';
@@ -134,13 +135,44 @@ export const NFTSelectionFlow = ({
 
       {selectedCollection && (
         <>
-          {enableMascotMode && selectedCollection.size < 20 ? (
+          {enableMascotMode && selectedCollection.size < 6 ? (
             <SelectMascot
               collection={selectedCollection}
               onBack={handleBack}
               onTokenSelect={setSelectedTokenId}
               onSubmitNFT={onTokenSelect}
             />
+          ) : enableMascotMode && selectedCollection.size <= 30 ? (
+            <>
+              <SelectGridMascot
+                collection={selectedCollection}
+                onBack={handleBack}
+                onTokenSelect={setSelectedTokenId}
+              />
+
+              <div className="h-[356px]">
+                {selectedTokenId ? (
+                  <DisplayNFT
+                    collection={selectedCollection}
+                    tokenId={selectedTokenId}
+                    onClick={onTokenSelect}
+                  />
+                ) : (
+                  <div className="flex flex-col gap-4 p-4">
+                    <div className="flex justify-center">
+                      <div className="bg-tg-secondary flex w-64 items-center justify-center rounded-lg">
+                        <div className="text-tg-hint text-center text-sm">
+                          Select a character to view NFT
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-tg-hint text-center text-lg font-medium">
+                      {selectedCollection.name}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </>
           ) : (
             <>
               <SelectTokenId

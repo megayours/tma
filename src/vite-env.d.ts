@@ -27,6 +27,7 @@ interface ImportMetaEnv {
   // App configuration
   readonly VITE_PUBLIC_API_URL?: string;
   readonly VITE_PUBLIC_BOT_URL?: string;
+  readonly VITE_PUBLIC_BOT_CLIENT_ID?: string;
   readonly VITE_ALLOWED_HOSTS?: string;
   // Sentry
   readonly VITE_SENTRY_DSN?: string;
